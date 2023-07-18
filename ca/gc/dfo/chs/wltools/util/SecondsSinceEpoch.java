@@ -10,8 +10,8 @@ package ca.gc.dfo.chs.wltools.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -35,8 +35,9 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
   /**
    * @param utcDateTimeData : { YYYY, MM, DD, hh, mm, ss } UTC Year, Month, Day, Hour, minutes, seconds array.
    */
-  public SecondsSinceEpoch(@NotNull final int[] utcDateTimeData) {
-    
+  //public SecondsSinceEpoch(@NotNull final int[] utcDateTimeData) {
+  public SecondsSinceEpoch(final int[] utcDateTimeData) {
+
     this();
     
     this.cld = getUTCCalendarSinceEpoch(utcDateTimeData);
@@ -80,8 +81,9 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
   /**
    * @param tsSeconds : A time-stamp in seconds since the epoch.
    */
-  public SecondsSinceEpoch(@Min(0) final long tsSeconds) {
-    
+  //public SecondsSinceEpoch(@Min(0) final long tsSeconds) {
+  public SecondsSinceEpoch(final long tsSeconds) {
+
     this.cld = new GregorianCalendar();
     
     this.cld.setTimeZone(TimeZone.getTimeZone(CALENDAR_ZULU_TIME_ZONE));
@@ -92,8 +94,9 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
   /**
    * @param tsSeconds : A time-stamp in seconds since the epoch.
    */
-  public final void set(@Min(0) final long tsSeconds) {
-    
+  //public final void set(@Min(0) final long tsSeconds) {
+  public final void set(final long tsSeconds) {
+
     //--- WARNING: No check on this.cld here. Could be null.
     //             Could be used in loops so we need performance here:
 //        if (this.cld==null) {
@@ -119,9 +122,10 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
    * @param tz        : boolean to signal that the time-zone info. is wanted in the result.
    * @return String representing the time-stamp of tsSeconds.
    */
-  @NotNull
-  public static final String dtFmtString(@Min(0) final long tsSeconds, final boolean tz) {
-    
+  //@NotNull
+  //public static final String dtFmtString(@Min(0) final long tsSeconds, final boolean tz) {
+  public static final String dtFmtString(final long tsSeconds, final boolean tz) {
+
     final SecondsSinceEpoch sse = new SecondsSinceEpoch(tsSeconds);
     
     return sse.dateTimeString(tz);
@@ -131,7 +135,7 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
    * @param tz : boolean to signal that the time-zone info. is wanted in the result.
    * @return String representing the time-stamp with OR without time-zone info. of the SecondsSinceEpoch current object.
    */
-  @NotNull
+  //@NotNull
   public final String dateTimeString(final boolean tz) {
     return TimeMachine.dateTimeString(this.cld, tz);
   }
@@ -140,7 +144,9 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
    * @param tsSeconds : A time-stamp in seconds since the epoch.
    * @return String representing the time-stamp of tsSeconds formatted a la ODIN DB: YYYY/MM/DD::hh:mm:ss;   *.***;
    */
-  public static final String odinDtFmtString(@Min(0) final long tsSeconds) {
+  //public static final String odinDtFmtString(@Min(0) final long tsSeconds) {
+  public static final String odinDtFmtString(final long tsSeconds) {
+
     return odinDtFmtString(new SecondsSinceEpoch(tsSeconds));
   }
   
@@ -148,8 +154,9 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
    * @param sse : A SecondsSinceEpoch object
    * @return String representing the time-stamp of tsSeconds formatted a la ODIN DB: YYYY/MM/DD::hh:mm:ss;   *.***;
    */
-  public static final String odinDtFmtString(@NotNull final SecondsSinceEpoch sse) {
-    
+  //public static final String odinDtFmtString(@NotNull final SecondsSinceEpoch sse) {
+  public static final String odinDtFmtString(final SecondsSinceEpoch sse) {
+
     final String odinDtFmtString =
         sse.cld.get(Calendar.YEAR) + "/" +
             prependZero(Integer.toString(sse.cld.get(Calendar.MONTH) + GRGCAL_MONTH_OFFSET)) + "/" +
@@ -177,7 +184,7 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
   /**
    * @return String representing the time-stamp without time-zone info. of the SecondsSinceEpoch current object.
    */
-  @NotNull
+  //@NotNull
   public final String dateTimeString() {
     return TimeMachine.dateTimeString(this.cld, false);
   }
@@ -186,9 +193,10 @@ public final class SecondsSinceEpoch extends TimeMachine implements ITimeMachine
    * @param sseIncr : A time increment in seconds.
    * @return the current SecondsSinceEpoch object.
    */
-  @NotNull
-  public final SecondsSinceEpoch incr(@Min(0) final long sseIncr) {
-    
+  //@NotNull
+  //public final SecondsSinceEpoch incr(@Min(0) final long sseIncr) {
+  public final SecondsSinceEpoch incr(final long sseIncr) {
+
     //--- WARNING: No check on this.cld here. Could be null.
 //        if (this.cld==null) {
 //            this.log.error("this.cld == null !");

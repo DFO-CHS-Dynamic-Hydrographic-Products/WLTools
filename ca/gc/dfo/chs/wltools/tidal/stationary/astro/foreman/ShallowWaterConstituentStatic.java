@@ -13,8 +13,8 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.ConstituentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.List;
 
 //import javax.validation.constraints.Min;
@@ -47,7 +47,7 @@ final public class ShallowWaterConstituentStatic extends ConstituentFactory impl
   /**
    * @param name : The name of the ShallowWaterConstituent.
    */
-  public ShallowWaterConstituentStatic(@NotNull final String name) {
+  public ShallowWaterConstituentStatic(/*@NotNull*/ final String name) {
     
     super(name);
     this.data = null;
@@ -59,9 +59,9 @@ final public class ShallowWaterConstituentStatic extends ConstituentFactory impl
    * @param mainConstituentStaticArray : An array of main constituent static data from which a shallow water
    *                                   constituent is derived.
    */
-  public ShallowWaterConstituentStatic(@NotNull final String name,
-                                       @NotNull @Size(min = 1) final List<String> strDataAL,
-                                       @NotNull @Size(min = 1) final MainConstituentStatic[] mainConstituentStaticArray) {
+  public ShallowWaterConstituentStatic(/*@NotNull*/ final String name,
+                                       /*@NotNull @Size(min = 1)*/ final List<String> strDataAL,
+                                       /*@NotNull @Size(min = 1)*/ final MainConstituentStatic[] mainConstituentStaticArray) {
     
     super(name);
     
@@ -81,14 +81,15 @@ final public class ShallowWaterConstituentStatic extends ConstituentFactory impl
       
       final int stringIdx = (dit + 1) * DATA_COMBO_LEN;
       
-      final MainConstituentStatic mainConstituentStatic =
-          (MainConstituentStatic) ConstituentFactory.get(strDataAL.get(stringIdx), mainConstituentStaticArray);
+      final MainConstituentStatic
+         mainConstituentStatic= (MainConstituentStatic)
+             ConstituentFactory.get(strDataAL.get(stringIdx), mainConstituentStaticArray);
       
       //System.out.println("dit="+dit+", stringIdx="+stringIdx +", strDataAL.get(idx)="+strDataAL.get(stringIdx)+",
       // mfc="+mfc);
       
-      this.data[dit--] = new ShallowWaterConstituentDerivation(Double.parseDouble(strDataAL.get(stringIdx - 1)),
-          mainConstituentStatic);
+      this.data[dit--]= new
+         ShallowWaterConstituentDerivation(Double.parseDouble(strDataAL.get(stringIdx - 1)), mainConstituentStatic);
     }
     
     this.log.debug("Done with shallow water tidal constituent: " + name + ", this.toString()=" + this.toString());
@@ -117,7 +118,8 @@ final public class ShallowWaterConstituentStatic extends ConstituentFactory impl
    *                                 shallow water constituent is derived).
    * @return The ShallowWaterConstituentStatic object.
    */
-  final protected ShallowWaterConstituentStatic setMainConstituentsReferences(@NotNull @Size(min = 1) final ConstituentFactory[] constituentFactoryArrray) {
+  final protected ShallowWaterConstituentStatic
+    setMainConstituentsReferences(/*@NotNull @Size(min = 1)*/ final ConstituentFactory[] constituentFactoryArrray) {
     
     //--- Set the MainConstituent objects references for each ShallowWaterMainConstituentDerivation in this.data;
     
@@ -129,8 +131,8 @@ final public class ShallowWaterConstituentStatic extends ConstituentFactory impl
       
       this.log.debug("setMainConstituentsReferences: mainConstName=" + mainConstName);
       
-      shallowWaterConstituentDerivation.mainConstituent = (MainConstituent) ConstituentFactory.get(mainConstName,
-          constituentFactoryArrray);
+      shallowWaterConstituentDerivation.mainConstituent=
+          (MainConstituent) ConstituentFactory.get(mainConstName,constituentFactoryArrray);
     }
     
     this.log.debug("setMainConstituentsReferences: this.toString()=" + this.toString());

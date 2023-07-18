@@ -10,9 +10,9 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +46,8 @@ final public class Constituent1DData {
   /**
    * @param howMany : The size of this.data
    */
-  public Constituent1DData(@Min(1) final int howMany) {
-    
+  public Constituent1DData(/*@Min(1)*/ final int howMany) {
+
     if (howMany <= 0) {
       
       this.log.error("Constituent1DData constructor: howMany <= 0!");
@@ -104,7 +104,7 @@ final public class Constituent1DData {
   /**
    * @param constituent1DList : List of Constituent1D objects.
    */
-  public Constituent1DData(@NotNull @Size(min = 1) final List<Constituent1D> constituent1DList) {
+  public Constituent1DData(/*@NotNull @Size(min = 1)*/ final List<Constituent1D> constituent1DList) {
     
     if (constituent1DList.size() <= 0) {
       
@@ -167,8 +167,8 @@ final public class Constituent1DData {
    * @param tcDataMap         : Map of Constituent1D objects.
    * @param astroInfosFactory : AstroInfosFactory object.
    */
-  public Constituent1DData(@NotNull @Size(min = 1) final Map<String, Constituent1D> tcDataMap,
-                           @NotNull final AstroInfosFactory astroInfosFactory) {
+  public Constituent1DData(/*@NotNull @Size(min = 1)*/ final Map<String, Constituent1D> tcDataMap,
+                           /*@NotNull*/ final AstroInfosFactory astroInfosFactory) {
     
     try {
       tcDataMap.size();

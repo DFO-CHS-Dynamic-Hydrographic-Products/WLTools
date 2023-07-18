@@ -13,8 +13,8 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.ConstituentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.List;
 
 //import javax.validation.constraints.Min;
@@ -58,8 +58,8 @@ final public class MainConstituentStatic extends ConstituentFactory implements I
    * @param name                      : Main constituent name.
    * @param mainConstituentStaticData : List of List of Strings which defines the main constituent static data.
    */
-  public MainConstituentStatic(@NotNull final String name,
-                               @NotNull @Size(min = 1) final List<List<String>> mainConstituentStaticData) {
+  public MainConstituentStatic(/*@NotNull*/ final String name,
+                               /*@NotNull @Size(min = 1)*/ final List<List<String>> mainConstituentStaticData) {
     
     super(name);
     

@@ -19,8 +19,8 @@ import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 
 //---
 
@@ -66,7 +66,7 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    * @param secondsSinceEpoch : A SecondsSinceEpoch object which time-stamp will be the initial time-stamp of the
    *                          time reference of the astronomic informations.
    */
-  public AstroInfosFactory(@NotNull final Method method, final double latitudeRad,
+  public AstroInfosFactory(/*@NotNull*/ final Method method, final double latitudeRad,
                            final SecondsSinceEpoch secondsSinceEpoch) {
     
     this();
@@ -99,7 +99,7 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    * @param aTidalMethod : A tidal astronomic method ID to validate.
    * @return true if the tidal astronomicmethod ID is a vlid one, false otherwise.
    */
-  private final static boolean validateAstroMethod(@NotNull final Method aTidalMethod) {
+  private final static boolean validateAstroMethod(/*@NotNull*/ final Method aTidalMethod) {
     
     boolean found = false;
     
@@ -139,7 +139,8 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    * @param startTimeSeconds : The initial time-stamp of the time reference of the astronomic informations. It is a
    *                         time-stamp since the epoch.
    */
-  public AstroInfosFactory(@NotNull final Method method, final double latitudeRad, final long startTimeSeconds) {
+  public AstroInfosFactory(/*@NotNull*/ final Method method, final double latitudeRad, final long startTimeSeconds) {
+
     this(method, latitudeRad, new SecondsSinceEpoch(startTimeSeconds));
   }
   
@@ -179,7 +180,7 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
   }
   
   public final double computeTidalPrediction(final long timeStampSeconds,
-                                             @NotNull @Size(min = 1) final Constituent1DData constituent1DData) {
+                                             /*@NotNull @Size(min = 1)*/ final Constituent1DData constituent1DData) {
     
     //--- NOTE 1: Need to pass the time stamp difference to this.updateTimeReference.
     //    NOTE 2: This difference could be < 0.
@@ -234,7 +235,7 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    *                     informations.
    * @return this AstroInfosFactory object.
    */
-  @NotNull
+  //@NotNull
   public AstroInfosFactory updateTimeReference(final long timePosLIncr) {
     
     if (this.sse == null) {

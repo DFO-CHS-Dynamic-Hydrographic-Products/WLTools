@@ -12,7 +12,7 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 
 //---
 
@@ -54,8 +54,11 @@ final public class Constituent2D {
    * @param constituent1DI :  A Constituent1D object to use to initialize the i component of the new one.
    * @param constituent1DJ :  A Constituent1D object to use to initialize the j component of the new one.
    */
-  public Constituent2D(@NotNull final Constituent1D constituent1DI, @NotNull final Constituent1D constituent1DJ) {
-    this(constituent1DI.amplitude, constituent1DI.grnwchPhLag, constituent1DJ.amplitude, constituent1DJ.grnwchPhLag);
+  public Constituent2D(/*@NotNull*/ final Constituent1D constituent1DI,
+                       /*@NotNull*/ final Constituent1D constituent1DJ) {
+
+    this(constituent1DI.amplitude, constituent1DI.grnwchPhLag,
+         constituent1DJ.amplitude, constituent1DJ.grnwchPhLag);
   }
   
   /**
@@ -96,8 +99,8 @@ final public class Constituent2D {
    * @param iConstituentAstro : A IConstituentAstro object(could be null).
    */
   public Constituent2D(final double iAmplitude, final double iGrnwchPhLag,
-                       final double jAmplitude, final double jGrnwchPhLag, final boolean deg2rad,
-                       final IConstituentAstro iConstituentAstro) {
+                       final double jAmplitude, final double jGrnwchPhLag,
+                       final boolean deg2rad, final IConstituentAstro iConstituentAstro) {
     
     try {
       iConstituentAstro.getName();
@@ -112,8 +115,8 @@ final public class Constituent2D {
     this.j = new Constituent1D(jAmplitude, jGrnwchPhLag, deg2rad, iConstituentAstro);
   }
   
-  public Constituent2D(@NotNull final Constituent1D constituent1DI, @NotNull final Constituent1D constituent1DJ,
-                       final boolean deepCopy) {
+  public Constituent2D(/*@NotNull*/ final Constituent1D constituent1DI,
+                       /*@NotNull*/ final Constituent1D constituent1DJ, final boolean deepCopy) {
     
     try {
       constituent1DI.getAmplitude();
@@ -212,8 +215,8 @@ final public class Constituent2D {
    * @param jGrnwchPhLag Greenwich phase lag(radians) of the j component of a 2D tidal constituent.
    * @return The current Constituent2D object this.
    */
-  protected Constituent2D set(final double iAmplitude, final double iGrnwchPhLag, final double jAmplitude,
-                              final double jGrnwchPhLag) {
+  protected Constituent2D set(final double iAmplitude, final double iGrnwchPhLag,
+                              final double jAmplitude, final double jGrnwchPhLag) {
     
     this.i.set(iAmplitude, iGrnwchPhLag);
     this.j.set(jAmplitude, jGrnwchPhLag);

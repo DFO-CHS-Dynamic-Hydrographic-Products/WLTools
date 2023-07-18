@@ -11,7 +11,7 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
+//import javax.validation.constraints.Min;
 
 //import javax.validation.constraints.Size;
 //import javax.validation.constraints.NotNull;
@@ -82,8 +82,8 @@ final public class Constituent2DData {
    * @param idx : The indice of the Constituent2D object wanted in this.data
    * @return The Constituent2D object at indice idx in this.data if indice is ok, null otherwise.
    */
-  public final Constituent2D getDataItem(@Min(0) final int idx) {
-    
+  public final Constituent2D getDataItem(/*@Min(0)*/ final int idx) {
+
     try {
       this.data.hashCode();
       

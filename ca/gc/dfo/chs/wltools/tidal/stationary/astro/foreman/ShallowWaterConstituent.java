@@ -15,8 +15,8 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.ConstituentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 
 //---
 //---
@@ -48,14 +48,15 @@ final public class ShallowWaterConstituent extends ForemanConstituentAstro {
    *                                object(s) from which the
    *                                shallow water constituent is derived).
    */
-  public ShallowWaterConstituent(@NotNull final ShallowWaterConstituentStatic staticData,
-                                 @NotNull @Size(min = 1) final ConstituentFactory[] constituentFactoryArray) {
+  public ShallowWaterConstituent(/*@NotNull*/ final ShallowWaterConstituentStatic staticData,
+                                 /*@NotNull @Size(min = 1)*/ final ConstituentFactory[] constituentFactoryArray) {
     
     super(staticData.getName());
     
     this.log.debug("this.name=" + name);
     
-    this.shallowWaterConstituentStatic = staticData.setMainConstituentsReferences(constituentFactoryArray);
+    this.shallowWaterConstituentStatic= staticData.
+       setMainConstituentsReferences(constituentFactoryArray);
     
     this.log.debug(this.toString());
   }
@@ -86,7 +87,7 @@ final public class ShallowWaterConstituent extends ForemanConstituentAstro {
    */
   @Override
   final protected ShallowWaterConstituent update(final double latPosRadians,
-                                                 @NotNull final SunMoonEphemerides sunMoonEphemerides) {
+                                                 /*@NotNull*/ final SunMoonEphemerides sunMoonEphemerides) {
     
     //this.log.debug("updating shallow water constituent: "+this.name);
     

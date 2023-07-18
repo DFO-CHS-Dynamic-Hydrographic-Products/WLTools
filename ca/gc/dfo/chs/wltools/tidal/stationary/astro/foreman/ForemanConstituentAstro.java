@@ -21,8 +21,8 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.IConstituentAstro;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 
 //---
 //---
@@ -70,7 +70,7 @@ abstract public class ForemanConstituentAstro
   /**
    * @param name : Constituent name.
    */
-  public ForemanConstituentAstro(@NotNull final String name) {
+  public ForemanConstituentAstro(/*@NotNull*/ final String name) {
     super(name);
     
     this.log.debug("name=" + name);
@@ -82,7 +82,9 @@ abstract public class ForemanConstituentAstro
    * @param fNodalModAdj   :  Nodal modulation adjustment factor for amplitude to set this.fNodalModAdj with.
    * @param astroArgument  : Astronomical argument to set this.astroArgument
    */
-  public ForemanConstituentAstro(@NotNull final String name, final double tidalFrequency, final double fNodalModAdj,
+  public ForemanConstituentAstro(/*@NotNull*/ final String name,
+                                 final double tidalFrequency,
+                                 final double fNodalModAdj,
                                  final double astroArgument) {
     
     super(name);
@@ -96,7 +98,8 @@ abstract public class ForemanConstituentAstro
    * @param astroArgument  :  Astronomical argument to set this.astroArgument with.
    * @return A generic ForemanConstituentAstro object.
    */
-  public final ForemanConstituentAstro set(final double tidalFrequency, final double fNodalModAdj,
+  public final ForemanConstituentAstro set(final double tidalFrequency,
+                                           final double fNodalModAdj,
                                            final double astroArgument) {
     
     this.tidalFrequency = tidalFrequency;
@@ -114,7 +117,8 @@ abstract public class ForemanConstituentAstro
    * @param foremanConstituentAstroArray : Array of ForemanConstituentAstro objects.
    * @return The array of ForemanConstituentAstro objects.
    */
-  protected final static ForemanConstituentAstro[] applyZero2PISandwich(@NotNull @Size(min = 1) final ForemanConstituentAstro[] foremanConstituentAstroArray) {
+  protected final static ForemanConstituentAstro[]
+    applyZero2PISandwich(/*@NotNull @Size(min = 1)*/ final ForemanConstituentAstro[] foremanConstituentAstroArray) {
     
     //--- The Trigonometry.getZero2PISandwich method must always be applied after the individual FrmnConstituent
     // update method calls.
@@ -134,10 +138,11 @@ abstract public class ForemanConstituentAstro
    * without use of a time-offset from this.astroArgument(otherwise said: with a time-offset of 0.0)
    */
   @Override
-  public final double computeTidalAmplitude(@NotNull final Constituent1D constituent1D) {
+  public final double computeTidalAmplitude(/*@NotNull*/ final Constituent1D constituent1D) {
     
     //--- GrwnchPhLag MUST be in radians here.
-    return this.fNodalModAdj * constituent1D.getAmplitude() * Math.cos(this.astroArgument - constituent1D.getGrnwchPhLag());
+    return this.fNodalModAdj * constituent1D.getAmplitude() *
+       Math.cos(this.astroArgument - constituent1D.getGrnwchPhLag());
   }
   
   /**
@@ -150,11 +155,13 @@ abstract public class ForemanConstituentAstro
    * Greenwich phase lag.
    */
   @Override
-  public final double computeTidalAmplitude(final double dTimePos, @NotNull final Constituent1D constituent1D) {
+  public final double computeTidalAmplitude(final double dTimePos,
+                                            /*@NotNull*/ final Constituent1D constituent1D) {
     
     //--- NOTE 1: GrwnchPhLag MUST be in radians and dTimePos in seconds here.
     //    NOTE 2: dTimePos could be < 0
-    return this.fNodalModAdj * constituent1D.getAmplitude() * Math.cos((this.astroArgument + dTimePos * this.tidalFrequency) - constituent1D.getGrnwchPhLag());
+    return this.fNodalModAdj * constituent1D.getAmplitude() *
+      Math.cos((this.astroArgument + dTimePos * this.tidalFrequency) - constituent1D.getGrnwchPhLag());
   }
   
   /**
@@ -200,12 +207,14 @@ abstract public class ForemanConstituentAstro
    * phase lag
    */
   @Override
-  public final double computeTidalAmplitude(final double dTimePos, final double amplitude,
+  public final double computeTidalAmplitude(final double dTimePos,
+                                            final double amplitude,
                                             final double greenwichPhaseLag) {
     
     //--- NOTE 1: GrwnchPhLag MUST be in radians and DTimePos in seconds here.
     //    NOTE 2: dTimePos could be < 0
-    return this.fNodalModAdj * amplitude * Math.cos((this.astroArgument + dTimePos * this.tidalFrequency) - greenwichPhaseLag);
+    return this.fNodalModAdj * amplitude *
+       Math.cos((this.astroArgument + dTimePos * this.tidalFrequency) - greenwichPhaseLag);
   }
   
   /**
@@ -231,8 +240,10 @@ abstract public class ForemanConstituentAstro
    * @param astroArgument  : Astronomical argument to set this.astroArgument.
    * @return A generic ForemanConstituentAstro object.
    */
-  public final ForemanConstituentAstro set(@NotNull final String name, final double tidalFrequency,
-                                           final double fNodalModAdj, final double astroArgument) {
+  public final ForemanConstituentAstro set(/*@NotNull*/ final String name,
+                                           final double tidalFrequency,
+                                           final double fNodalModAdj,
+                                           final double astroArgument) {
     
     super.setName(name);
     //super(Name);
@@ -260,7 +271,7 @@ abstract public class ForemanConstituentAstro
    * @return A generic ForemanConstituentAstro object.
    */
   abstract protected ForemanConstituentAstro update(final double latPosRadians,
-                                                    @NotNull final SunMoonEphemerides sunMoonEphemerides);
+                                                    /*@NotNull*/ final SunMoonEphemerides sunMoonEphemerides);
   
   //--- For possible future usage.
 //    public final double tidalFrequency() {

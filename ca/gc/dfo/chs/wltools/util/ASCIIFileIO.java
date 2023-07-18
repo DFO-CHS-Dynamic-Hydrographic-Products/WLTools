@@ -1,6 +1,5 @@
 //package ca.gc.dfo.iwls.fmservice.modeling.util;
-package ca.gc.dfo.chs.wltools.util
-
+package ca.gc.dfo.chs.wltools.util;
 
 /**
  * Created by Gilles Mercier on 2017-12-19.
@@ -16,7 +15,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,9 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
    * @param aSCIIFilePath : Complete file path of an ASCII input file.
    * @return A List of all the lines contained in the ASCII input file.
    */
-  final public static List<String> getFileLinesAsArrayList(@NotNull final String aSCIIFilePath) {
+  //final public static List<String> getFileLinesAsArrayList(@NotNull final String aSCIIFilePath) {
+  final public static List<String> getFileLinesAsArrayList(final String aSCIIFilePath) {
+  
     
     String tmpLine = null;
     FileReader fr = null;
@@ -111,11 +112,17 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
    * @param updatedForecast  : A new WL forecast Measurement data List (could be null or empty).
    * @param outDir           : The complete path of the directory where to write the WL ODIN DB ASCII format files
    */
-  public static void writeOdinAsciiFmtFile(@NotNull final String stationCode,
-                                           @NotNull final WLStationTimeNode stationTimeNode0,
+  //public static void writeOdinAsciiFmtFile(@NotNull final String stationCode,
+  //                                         @NotNull final WLStationTimeNode stationTimeNode0,
+  //                                       final List<MeasurementCustom> updatedForecast,
+  //                                         @NotNull final String outDir) {
+
+  public static void writeOdinAsciiFmtFile(final String stationCode,
+                                           final WLStationTimeNode stationTimeNode0,
                                            final List<MeasurementCustom> updatedForecast,
-                                           @NotNull final String outDir) {
-    
+                                           /*@NotNull*/ final String outDir) {
+
+
     try {
       stationCode.length();
       

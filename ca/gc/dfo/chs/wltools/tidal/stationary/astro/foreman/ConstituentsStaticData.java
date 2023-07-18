@@ -15,7 +15,13 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.AstroInfosFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+//import java.util.*;
+import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 //import javax.validation.constraints.Min;
 //import javax.validation.constraints.Size;
@@ -67,8 +73,9 @@ final public class ConstituentsStaticData implements IForemanConstituentAstro, I
     
     staticLog.debug("ConstituentsStaticData set : Start !");
     
-    final Map shWtConstsHM = new HashMap<String, List<String>>();
-    final Map mainConstsHM = new HashMap<String, List<List<String>>>();
+    final Map<String, List<String>> shWtConstsHM = new HashMap<>(); //<String, List<String>>();
+
+    final Map<String, List<List<String>>> mainConstsHM = new HashMap<>(); //<String, List<List<String>>>();
     
     //--- Extract MainConstituentsLegacyDef data in a HashMap:
     for (final MainConstituentsLegacyDef mainConstituentsLegacyDef : MainConstituentsLegacyDef.values()) {
@@ -147,8 +154,10 @@ final public class ConstituentsStaticData implements IForemanConstituentAstro, I
    * @param mainConstsHM : Map of all the MainConstituentsLegacyDef data extracted as Strings.
    * @param shWtConstsHM : Map of all the ShallowWaterConstituentsLegacyDef data extracted as Strings.
    */
-  private static void setStaticData(final Map<String, List<List<String>>> mainConstsHM, final Map<String,
-      List<String>> shWtConstsHM) {
+  private static void setStaticData(final Map<String,
+                                    List<List<String>>> mainConstsHM,
+                                    final Map<String,
+                                    List<String>> shWtConstsHM) {
     
     //--- Allocate the MainConstituentStatic and ShallowWaterConstituentStatic objects arrays:
     mcStaticData = new MainConstituentStatic[mainConstsHM.size()];

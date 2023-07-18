@@ -6,8 +6,7 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
  */
 
 //---
-
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 
 /**
  * Specific class for one main constituent data from which a shallow water constituent is derived.
@@ -57,7 +56,7 @@ final public class ShallowWaterConstituentDerivation {
    * @param mainConstituentStatic : A MainConstituentStatic object to use for the this.mainConstituentStatic reference.
    */
   public ShallowWaterConstituentDerivation(final double coefficient,
-                                           @NotNull final MainConstituentStatic mainConstituentStatic) {
+                                           /*@NotNull*/ final MainConstituentStatic mainConstituentStatic) {
     
     this.coefficient = coefficient;
     this.mainConstituentStatic = mainConstituentStatic;
@@ -71,10 +70,10 @@ final public class ShallowWaterConstituentDerivation {
    * @return A String representing the contents of the ShallowWaterConstituentDerivation object.
    */
   public final String toString() {
-    
+
     return "this.coefficient=" + this.coefficient +
-        ", this.mainConstituentStatic=" + this.mainConstituentStatic.toString() + (this.mainConstituent != null ? ", "
-        + this.mainConstituent.toString() : "");
+        ", this.mainConstituentStatic=" + this.mainConstituentStatic.toString() +
+        (this.mainConstituent != null ? ", " + this.mainConstituent.toString() : "");
   }
   
   //--- Kept for possible future usage:

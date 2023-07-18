@@ -13,8 +13,8 @@ import ca.gc.dfo.chs.wltools.util.ITrigonometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.Map;
 
 //import javax.validation.constraints.Min;
@@ -51,7 +51,8 @@ final public class Constituent1D implements ITrigonometry {
   /**
    * @param constituent1D : A Constituent1D object used for initialization of the new Constituent1D.
    */
-  public Constituent1D(@NotNull final Constituent1D constituent1D) {
+  public Constituent1D(/*@NotNull*/ final Constituent1D constituent1D) {
+
     this(constituent1D.amplitude, constituent1D.grnwchPhLag, false, constituent1D.iConstituentAstro);
   }
   
@@ -62,8 +63,9 @@ final public class Constituent1D implements ITrigonometry {
    * @param deg2rad           : boolean to signal that a degrees to radians is needed for the Greenwich phase lag.
    * @param iConstituentAstro : IConstituentAstro object.
    */
-  public Constituent1D(final double amplitude, final double grnwchPhLag, final boolean deg2rad,
-                       final IConstituentAstro iConstituentAstro) {
+  public Constituent1D(final double amplitude, final double grnwchPhLag,
+                       final boolean deg2rad, final IConstituentAstro iConstituentAstro) {
+
     this.set(amplitude, grnwchPhLag, deg2rad, iConstituentAstro);
   }
   
@@ -121,9 +123,8 @@ final public class Constituent1D implements ITrigonometry {
    * @param tcMap             : A Map of String,Constituent1D to populate with relevant AstroInfosFactory informations.
    * @return The populated tcMap object.
    */
-  public final static Map<String, Constituent1D> setAstroInfosReferences(@NotNull final AstroInfosFactory astroInfosFactory,
-                                                                         @NotNull @Size(min = 1) final Map<String,
-                                                                             Constituent1D> tcMap) {
+  public final static Map<String, Constituent1D> setAstroInfosReferences(/*@NotNull*/ final AstroInfosFactory astroInfosFactory,
+                                                                         /*@NotNull @Size(min = 1)*/ final Map<String, Constituent1D> tcMap) {
     
     try {
       astroInfosFactory.size();
@@ -233,7 +234,8 @@ final public class Constituent1D implements ITrigonometry {
    * @param iConstituentAstro : IConstituentAstro object to be set in this object.
    * @return this.
    */
-  protected final Constituent1D set(final double amplitude, final double grnwchPhLag,
+  protected final Constituent1D set(final double amplitude,
+                                    final double grnwchPhLag,
                                     final IConstituentAstro iConstituentAstro) {
     
     try {

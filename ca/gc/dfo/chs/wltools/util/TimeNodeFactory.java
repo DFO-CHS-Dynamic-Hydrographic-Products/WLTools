@@ -12,8 +12,8 @@ package ca.gc.dfo.chs.wltools.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
 
 //---
 
@@ -51,7 +51,8 @@ abstract public class TimeNodeFactory implements ITimeMachine {
   /**
    * @param seconds : The seconds since epoch used to construct the underlying GregorianCalendar object this.sse.
    */
-  public TimeNodeFactory(@Min(0) final long seconds) {
+  //public TimeNodeFactory(@Min(0) final long seconds) {
+  public TimeNodeFactory(final long seconds) {
     this();
     this.sse = new SecondsSinceEpoch(seconds);
   }
@@ -75,8 +76,9 @@ abstract public class TimeNodeFactory implements ITimeMachine {
    * @param futr : (Could be null) eference to a TimeNodeFactory  which is just after in time(i.e. this.sse.seconds()
    *             is smaller than this.futr.seconds()).
    */
-  public TimeNodeFactory(@NotNull final SecondsSinceEpoch sse, final TimeNodeFactory pstr, final TimeNodeFactory futr) {
-    
+  //public TimeNodeFactory(@NotNull final SecondsSinceEpoch sse, final TimeNodeFactory pstr, final TimeNodeFactory futr) {
+  public TimeNodeFactory(final SecondsSinceEpoch sse, final TimeNodeFactory pstr, final TimeNodeFactory futr) {
+
     //--- Only a reference here
     this.sse = sse;
     
@@ -114,7 +116,7 @@ abstract public class TimeNodeFactory implements ITimeMachine {
    * @param futr : Another TimeNodeFactory object just after in time.
    * @return this TimeNodeFactory.
    */
-  @NotNull
+  //@NotNull
   protected TimeNodeFactory setRefs(final TimeNodeFactory pstr, final TimeNodeFactory futr) {
     
     if (pstr == this) {
@@ -183,8 +185,9 @@ abstract public class TimeNodeFactory implements ITimeMachine {
    * @param seconds : The specific time-stamp wanted.
    * @return TimeNodeFactory if found.
    */
-  public final TimeNodeFactory findInPastR(@Min(0) final long seconds) {
-    
+  //public final TimeNodeFactory findInPastR(@Min(0) final long seconds) {
+  public final TimeNodeFactory findInPastR(final long seconds) {
+
     if (seconds > this.sse.seconds()) {
       
       this.log.error("TimeNodeFactory findInPastR: seconds dt=" +
@@ -246,8 +249,10 @@ abstract public class TimeNodeFactory implements ITimeMachine {
    * @param sse : SecondsSinceEpoch object.
    * @return The same SecondsSinceEpoch object.
    */
-  @NotNull
-  final public SecondsSinceEpoch setSseRef(@NotNull final SecondsSinceEpoch sse) {
+  //@NotNull
+  //final public SecondsSinceEpoch setSseRef(@NotNull final SecondsSinceEpoch sse) {
+  final public SecondsSinceEpoch setSseRef(final SecondsSinceEpoch sse) {
+
     return (this.sse = sse);
   }
   

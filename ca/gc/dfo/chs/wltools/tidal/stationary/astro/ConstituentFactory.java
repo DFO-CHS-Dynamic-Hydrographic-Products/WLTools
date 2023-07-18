@@ -13,8 +13,8 @@ import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +52,7 @@ abstract public class ConstituentFactory implements ITidalIO {
   /**
    * @param name : The name of a specific tidal constituent ex. M2, O1, S2...
    */
-  public ConstituentFactory(@NotNull final String name) {
+  public ConstituentFactory(/*@NotNull*/ final String name) {
     this.setName(name);
   }
   
@@ -61,8 +61,8 @@ abstract public class ConstituentFactory implements ITidalIO {
    * @param constituentFactoryArray : An array of ConstituentFactory objects.
    * @return The ConstituentFactory object wanted if it is found in constituentFactoryArray, null otherwise.
    */
-  public static final ConstituentFactory get(@NotNull final String name,
-                                             @NotNull @Size(min = 1) final ConstituentFactory[] constituentFactoryArray) {
+  public static final ConstituentFactory get(/*@NotNull*/ final String name,
+                                             /*@NotNull @Size(min = 1)*/ final ConstituentFactory[] constituentFactoryArray) {
     
     ConstituentFactory ret = null;
     
@@ -89,8 +89,8 @@ abstract public class ConstituentFactory implements ITidalIO {
    * @param constituentFactoryList : A List of ConstituentFactory objects.
    * @return The ConstituentFactory object wanted if it is found in constituentFactoryList, null otherwise.
    */
-  public static final ConstituentFactory get(@NotNull final String name,
-                                             @NotNull @Size(min = 1) final List<ConstituentFactory> constituentFactoryList) {
+  public static final ConstituentFactory get(/*@NotNull*/ final String name,
+                                             /*@NotNull @Size(min = 1)*/ final List<ConstituentFactory> constituentFactoryList) {
     
     ConstituentFactory ret = null;
     
@@ -112,9 +112,9 @@ abstract public class ConstituentFactory implements ITidalIO {
    * @return A List of ConstituentFactory objects which is a subset of the ConstituentFactory objects contained in
    * the staticSet array.
    */
-  public final static List<ConstituentFactory> getSubsetList(@NotNull @Size(min = 1) final String[] constsNames,
-                                                             @NotNull @Size(min = 1) final String[] validConstsNames,
-                                                             @NotNull @Size(min = 1) final ConstituentFactory[] staticSet) {
+  public final static List<ConstituentFactory> getSubsetList(/*@NotNull @Size(min = 1)*/ final String[] constsNames,
+                                                             /*@NotNull @Size(min = 1)*/ final String[] validConstsNames,
+                                                             /*@NotNull @Size(min = 1)*/ final ConstituentFactory[] staticSet) {
     
     try {
       constsNames.hashCode();
@@ -176,7 +176,7 @@ abstract public class ConstituentFactory implements ITidalIO {
     return retList;
   }
   
-  @NotNull
+  //@NotNull
   public final String getName() {
     return this.name;
   }

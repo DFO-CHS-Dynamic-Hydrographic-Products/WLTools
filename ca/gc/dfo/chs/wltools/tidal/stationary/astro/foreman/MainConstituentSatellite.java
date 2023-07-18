@@ -11,9 +11,9 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 
 //---
 
@@ -77,7 +77,7 @@ final public class MainConstituentSatellite implements IForemanConstituentAstro 
    * @param phaseCorrection    : The phaseCorrection to set this.phaseCorrection.
    */
   public MainConstituentSatellite(final int amplitudeRatioFlag,
-                                  @NotNull @Size(min = MC_DOODSON_NUM_CHG_LEN) final int[] doodsonNumChanges,
+                                  /*@NotNull @Size(min = MC_DOODSON_NUM_CHG_LEN)*/ final int[] doodsonNumChanges,
                                   final double amplitudeRatio, final double phaseCorrection) {
     
     try {
@@ -138,7 +138,7 @@ final public class MainConstituentSatellite implements IForemanConstituentAstro 
    * @param index : Index of the Doodson number wanted.
    * @return The Doodson number wanted.
    */
-  final public int getDoodsonNumAt(@Min(0) final int index) {
+  final public int getDoodsonNumAt(/*@Min(0)*/ final int index) {
     
     int ret = -1;
     

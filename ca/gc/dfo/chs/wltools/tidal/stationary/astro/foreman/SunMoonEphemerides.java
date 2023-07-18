@@ -14,8 +14,8 @@ import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
 import java.util.Calendar;
 
 //import javax.validation.constraints.Size;
@@ -119,7 +119,7 @@ final public class SunMoonEphemerides implements IForemanConstituentAstro, ITime
    * @param sse : A SecondsSinceEpoch which time-stamp will be used as the time-reference for the new
    *            SunMoonEphemerides object.
    */
-  public SunMoonEphemerides(@NotNull final SecondsSinceEpoch sse) {
+  public SunMoonEphemerides(/*@NotNull*/ final SecondsSinceEpoch sse) {
     this(sse.getCalendarItem(Calendar.HOUR_OF_DAY), ForemanAstroInfosFactory.getAstroD1(sse.seconds()));
   }
   
@@ -129,7 +129,7 @@ final public class SunMoonEphemerides implements IForemanConstituentAstro, ITime
    * @param astroD1 : Number of days in double precision since December 31 1899 at noon(see method
    *                ForemanAstroInfosFactory.getAstroD1 for details).
    */
-  public SunMoonEphemerides(@Min(0) final int dayHour, final double astroD1) {
+  public SunMoonEphemerides(/*@Min(0)*/ final int dayHour, final double astroD1) {
     
     this.set(dayHour, astroD1);
   }
@@ -141,7 +141,7 @@ final public class SunMoonEphemerides implements IForemanConstituentAstro, ITime
    *                ForemanAstroInfosFactory.getAstroD1 for details).
    * @return The current SunMoonEphemerides ready to use.
    */
-  protected final SunMoonEphemerides set(@Min(0) final int dayHour, final double astroD1) {
+  protected final SunMoonEphemerides set(/*@Min(0)*/ final int dayHour, final double astroD1) {
     
     this.clear();
     

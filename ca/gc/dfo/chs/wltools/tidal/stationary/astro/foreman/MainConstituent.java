@@ -12,7 +12,7 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 
 //---
 
@@ -89,7 +89,7 @@ final public class MainConstituent extends ForemanConstituentAstro {
    */
   @Override
   final protected MainConstituent update(final double latPosRadians,
-                                         @NotNull final SunMoonEphemerides sunMoonEphemerides) {
+                                         /*@NotNull*/ final SunMoonEphemerides sunMoonEphemerides) {
     
     //--- NOTE: This method could be used repetively in many loops so no check for potentially null object
     // sunMoonEphemerides argument
@@ -100,15 +100,16 @@ final public class MainConstituent extends ForemanConstituentAstro {
     
     //---- Need to convert result from method ForemanAstroInfosFactory.getMainConstTidalFrequency
     //     from cycles per hours to radians per second here.
-    this.tidalFrequency = CPH_2_RPS * ForemanAstroInfosFactory.getMainConstTidalFrequency(sunMoonEphemerides,
-        this.mainConstituentStatic.doodsonNumbers);
+    this.tidalFrequency = CPH_2_RPS * ForemanAstroInfosFactory.
+       getMainConstTidalFrequency(sunMoonEphemerides,this.mainConstituentStatic.doodsonNumbers);
     
     //this.log.debug("update: this.name="+this.getName()+", this.tidalFrequency="+this.tidalFrequency+",this
     // .mainConstituentStatic="+this.mainConstituentStatic);
     
     //---
-    this.astroArgument = ForemanAstroInfosFactory.getMainConstAstroArgument(this.mainConstituentStatic.phaseCorrection,
-        sunMoonEphemerides, this.mainConstituentStatic.doodsonNumbers);
+    this.astroArgument = ForemanAstroInfosFactory.
+       getMainConstAstroArgument(this.mainConstituentStatic.phaseCorrection,
+                                 sunMoonEphemerides, this.mainConstituentStatic.doodsonNumbers);
     
     if ((this.mainConstituentStatic.satellites != null) && (this.mainConstituentStatic.satellites.length > 0)) {
       
@@ -116,11 +117,12 @@ final public class MainConstituent extends ForemanConstituentAstro {
       //        ", num sats="+this.mainConstituentStatic.satellites.length+", this.mainConstituentStatic
       //        .phaseCorrection="+this.mainConstituentStatic.phaseCorrection);
       
-      this.mcCosSinAcc = ForemanAstroInfosFactory.getMainConstCosSinAcc(latPosRadians, sunMoonEphemerides,
-          this.mainConstituentStatic.satellites, this.mcCosSinAcc);
+      this.mcCosSinAcc = ForemanAstroInfosFactory.
+         getMainConstCosSinAcc(latPosRadians, sunMoonEphemerides,
+                               this.mainConstituentStatic.satellites, this.mcCosSinAcc);
       
-      this.fNodalModAdj =
-          Math.sqrt(this.mcCosSinAcc[COS_INDEX] * this.mcCosSinAcc[COS_INDEX] + this.mcCosSinAcc[SIN_INDEX] * this.mcCosSinAcc[SIN_INDEX]);
+      this.fNodalModAdj = Math.sqrt(this.mcCosSinAcc[COS_INDEX] * this.mcCosSinAcc[COS_INDEX] +
+                                    this.mcCosSinAcc[SIN_INDEX] * this.mcCosSinAcc[SIN_INDEX]);
       
       //--- NOTE: We have an accumulation here for TmpInfo.VPhaUNodalModAdj:
       this.astroArgument += Math.atan2(this.mcCosSinAcc[SIN_INDEX], this.mcCosSinAcc[COS_INDEX]) / TWO_PI;

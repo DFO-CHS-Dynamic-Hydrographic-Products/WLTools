@@ -14,8 +14,8 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.ConstituentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Set;
 
@@ -59,8 +59,9 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
    *                         and Moon ephemerides computations.
    * @param constNames       : Set of tidal constituents names to use.
    */
-  public ForemanAstroInfos(final double latPosRadians, final long startTimeSeconds,
-                           @NotNull @Size(min = 1) final Set constNames) {
+  public ForemanAstroInfos(final double latPosRadians, 
+                           final long startTimeSeconds,
+                           /*@NotNull @Size(min = 1)*/ final Set constNames) {
     
     super(latPosRadians, startTimeSeconds);
     
@@ -103,7 +104,7 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
    * @return The ForemanAstroInfos object.
    */
   protected final ForemanAstroInfos set(final double latPosRadians,
-                                        @NotNull @Size(min = 1) final String[] constsNamesArray) {
+                                        /*@NotNull @Size(min = 1)*/ final String[] constsNamesArray) {
     
     try {
       constsNamesArray.hashCode();
@@ -143,8 +144,8 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
         "process.");
     
     //--- Get the shallow water constituents static data objects references subset:
-    this.swcStaticDataSubset = ConstituentFactory.getSubsetList(constsNamesArray, TC_NAMES,
-        ConstituentsStaticData.swcStaticData);
+    this.swcStaticDataSubset= ConstituentFactory.getSubsetList(constsNamesArray,
+                                                               TC_NAMES, ConstituentsStaticData.swcStaticData);
     
     final int nbSWConsts = this.swcStaticDataSubset.size();
     
@@ -174,9 +175,9 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       //          Also assign the newly created MainConstituent object in tmpMcInfos for usage by the shallow water
       //          constituents(if any) and also use the ForemanConstituentAstro update method to get a ready to use new
       //          MainConstituent object.
-      this.infos[tcit] = tmpMcInfos[tcit++] =
-          new MainConstituent((MainConstituentStatic) constituentFactory).update(latPosRadians,
-              this.sunMoonEphemerides);
+      this.infos[tcit]=
+         tmpMcInfos[tcit++]= new
+            MainConstituent((MainConstituentStatic) constituentFactory).update(latPosRadians, this.sunMoonEphemerides);
       
       //this.log.debug("main const.:"+constituentFactory.getName()+" updated");
     }
@@ -194,8 +195,9 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
         //         time!)
         //          and also use the ForemanConstituentAstro update method to get a ready to use new
         //          ShallowWaterConstituent object.
-        this.infos[tcit++] = new ShallowWaterConstituent((ShallowWaterConstituentStatic) constituentFactory,
-            (ConstituentFactory[]) tmpMcInfos).update(latPosRadians, this.sunMoonEphemerides);
+        this.infos[tcit++] = new
+           ShallowWaterConstituent((ShallowWaterConstituentStatic) constituentFactory,
+               (ConstituentFactory[]) tmpMcInfos).update(latPosRadians, this.sunMoonEphemerides);
       }
     }
     
@@ -216,8 +218,8 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
    *                     the astronomic informations.
    * @return The ForemanAstroInfos object.
    */
-  @NotNull
-  @Override
+  //@NotNull
+  //@Override
   public final ForemanAstroInfos updateTimeReference(final long timePosLIncr) {
     
     //--- NOTE: timePosLIncr could be < 0 here:

@@ -16,8 +16,8 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.AstroInfosFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -87,7 +87,7 @@ abstract public class ForemanAstroInfosFactory
    * @param yearMonthDayHourArray : A { YYYY, MM, DD, hh, mm, ss } UTC Year, Month, Day, Hour, minutes, seconds array.
    */
   public ForemanAstroInfosFactory(final double latitudeRad,
-                                  @NotNull @Size(min = DATE_TIME_FMT_LEN) final int[] yearMonthDayHourArray) {
+                                  /*@NotNull @Size(min = DATE_TIME_FMT_LEN)*/ final int[] yearMonthDayHourArray) {
     
     super(Method.FOREMAN, latitudeRad, SecondsSinceEpoch.getUTCLongSinceEpoch(yearMonthDayHourArray));
     
@@ -112,10 +112,11 @@ abstract public class ForemanAstroInfosFactory
    * @param cosSinAcc                     : Array of cos-sin accumulators.
    * @return The array of cos-sin accumulators.
    */
-  @NotNull
+  //@NotNull
   protected final static double[] getMainConstCosSinAcc(final double latPosRadians,
-                                                        @NotNull final SunMoonEphemerides sunMoonEphemerides,
-                                                        @NotNull @Size(min = 1) final MainConstituentSatellite[] mainConstituentSatelliteArray, @NotNull @Size(min = SIN_INDEX + 1) final double[] cosSinAcc) {
+                                                        /*@NotNull*/ final SunMoonEphemerides sunMoonEphemerides,
+                                                        /*@NotNull @Size(min = 1)*/ final MainConstituentSatellite[] mainConstituentSatelliteArray,
+                                                        /*@NotNull @Size(min = SIN_INDEX + 1)*/ final double[] cosSinAcc) {
     
     final double sinLatRad = Math.sin(latPosRadians);
     final double adj1Fact = (1.0 - 5.0 * sinLatRad * sinLatRad) / sinLatRad;
@@ -175,8 +176,8 @@ abstract public class ForemanAstroInfosFactory
    * @param doodsonNumsArray   : An array of Doodson numbers used(but not modified) in the computations.
    * @return The updated frequency of a tidal constituent.
    */
-  protected final static double getMainConstTidalFrequency(@NotNull final SunMoonEphemerides sunMoonEphemerides,
-                                                           @NotNull @Size(min = MC_DOODSON_NUM_LEN) final int[] doodsonNumsArray) {
+  protected final static double getMainConstTidalFrequency(/*@NotNull*/ final SunMoonEphemerides sunMoonEphemerides,
+                                                           /*@NotNull @Size(min = MC_DOODSON_NUM_LEN)*/ final int[] doodsonNumsArray) {
     
     //--- NOTE: No checks here for a potentially null sunMoonEphemerides and-or doodsonNumsArray objects, we need
     // performance here.
@@ -185,11 +186,11 @@ abstract public class ForemanAstroInfosFactory
     // better performance.
     
     return ((doodsonNumsArray[0] * sunMoonEphemerides.dTau +
-        doodsonNumsArray[1] * sunMoonEphemerides.moonDS +
-        doodsonNumsArray[2] * sunMoonEphemerides.sunDH +
-        doodsonNumsArray[3] * sunMoonEphemerides.moonDP +
-        doodsonNumsArray[4] * sunMoonEphemerides.meanAscModeDNP +
-        doodsonNumsArray[5] * sunMoonEphemerides.sunDPP) / (double) HOURS_PER_NORMAL_YEAR); // *
+             doodsonNumsArray[1] * sunMoonEphemerides.moonDS +
+             doodsonNumsArray[2] * sunMoonEphemerides.sunDH +
+             doodsonNumsArray[3] * sunMoonEphemerides.moonDP +
+             doodsonNumsArray[4] * sunMoonEphemerides.meanAscModeDNP +
+             doodsonNumsArray[5] * sunMoonEphemerides.sunDPP) / (double) HOURS_PER_NORMAL_YEAR); // *
     // HOURS_PER_NORMAL_YEAR_INVD;
   }
   
@@ -200,8 +201,8 @@ abstract public class ForemanAstroInfosFactory
    * @return The astronomic argument needed.
    */
   protected final static double getMainConstAstroArgument(final double phaseCorrection,
-                                                          @NotNull final SunMoonEphemerides sunMoonEphemerides,
-                                                          @NotNull @Size(min = MC_DOODSON_NUM_LEN) final int[] doodsonNumsArray) {
+                                                          /*@NotNull*/ final SunMoonEphemerides sunMoonEphemerides,
+                                                          /*@NotNull @Size(min = MC_DOODSON_NUM_LEN)*/ final int[] doodsonNumsArray) {
     
     //--- M. Foreman's Fortran source code for the V astronomical argument:
     //
@@ -218,11 +219,11 @@ abstract public class ForemanAstroInfosFactory
     // performance here.
     
     final double vAstro = (doodsonNumsArray[0] * sunMoonEphemerides.tau +
-        doodsonNumsArray[1] * sunMoonEphemerides.moonS +
-        doodsonNumsArray[2] * sunMoonEphemerides.sunH +
-        doodsonNumsArray[3] * sunMoonEphemerides.moonP +
-        doodsonNumsArray[4] * sunMoonEphemerides.meanAscModeNP +
-        doodsonNumsArray[5] * sunMoonEphemerides.sunPP) + phaseCorrection;
+                           doodsonNumsArray[1] * sunMoonEphemerides.moonS +
+                           doodsonNumsArray[2] * sunMoonEphemerides.sunH +
+                           doodsonNumsArray[3] * sunMoonEphemerides.moonP +
+                           doodsonNumsArray[4] * sunMoonEphemerides.meanAscModeNP +
+                           doodsonNumsArray[5] * sunMoonEphemerides.sunPP) + phaseCorrection;
     
     //--- Only the fractional part of vAstro is needed if it is superior to
     //    int constant "V_ASTRO_PHASE_INT_THRESHOLD"
@@ -245,8 +246,8 @@ abstract public class ForemanAstroInfosFactory
    *                     astronomic informations.
    * @return A generic ForemanAstroInfosFactory object.
    */
-  @NotNull
-  @Override
+  //@NotNull
+  //@Override
   public ForemanAstroInfosFactory updateTimeReference(final long timePosLIncr) {
     
     //--- NOTE: timePosLIncr could be < 0 here:

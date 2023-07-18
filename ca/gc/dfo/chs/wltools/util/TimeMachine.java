@@ -9,15 +9,15 @@ package ca.gc.dfo.chs.wltools.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 //import javax.validation.constraints.Min;
 //---
+//import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 
 /**
  * abstract class TimeMachine to manage time related data.
@@ -34,8 +34,9 @@ abstract public class TimeMachine implements ITimeMachine {
    * @param tz  : boolean flag to signal that the time-zone info should be appended to the returned String.
    * @return String representing the Calendar time-stamp
    */
-  public static String dateTimeString(@NotNull final Calendar cld, final boolean tz) {
-    
+   public static String dateTimeString(/*@NotNull*/ final Calendar cld, final boolean tz) {
+  //public static String dateTimeString(final Calendar cld, final boolean tz) {
+
     //--- Need to increment cld.get(Calendar.MONTH) by GRGCAL_MONTH_OFFSET== 1 to
     //    get the normal 1->12 Month convention.
     final String dateTimeString = cld.get(Calendar.YEAR) +
@@ -53,8 +54,9 @@ abstract public class TimeMachine implements ITimeMachine {
    * @param integerString : String version of an integer.
    * @return "0" String prepended to integerString if needed(for date-time formatting stuff)
    */
-  public static String prependZero(@NotNull final String integerString) {
-    
+  //public static String prependZero(@NotNull final String integerString) {
+  public static String prependZero(final String integerString) {
+
     return (integerString.length() < 2 ? "0" + integerString : integerString);
   }
   
@@ -62,8 +64,9 @@ abstract public class TimeMachine implements ITimeMachine {
    * @param dateTimeData : { YYYY, MM, DD, hh, mm, ss } Year, Month, Day, Hour, minutes, seconds array.
    * @return long representing the UTC time-stamp in seconds since the epoch.
    */
-  public static long getUTCLongSinceEpoch(@NotNull final int[] dateTimeData) {
-    
+  //public static long getUTCLongSinceEpoch(@NotNull final int[] dateTimeData) {
+  public static long getUTCLongSinceEpoch(final int[] dateTimeData) {
+
     //--- JDK-1.7 and JDK-1.8
     
     //---- We are only able to get milliseconds with Calendar interface so we have to
@@ -75,8 +78,9 @@ abstract public class TimeMachine implements ITimeMachine {
    * @param dateTimeData : { YYYY, MM, DD, hh, mm, ss } Year, Month, Day, Hour, minutes, seconds array.
    * @return A Calendar object with its time-stamp set according to the date-time data.
    */
-  public static Calendar getUTCCalendarSinceEpoch(@NotNull @Size(min = 6) final int[] dateTimeData) {
-    
+  //public static Calendar getUTCCalendarSinceEpoch(@NotNull @Size(min = 6) final int[] dateTimeData) {
+  public static Calendar getUTCCalendarSinceEpoch(final int[] dateTimeData) {
+
     //--- JDK-1.7 and JDK-1.8
     checkDateTimeData(dateTimeData);
     
@@ -101,7 +105,8 @@ abstract public class TimeMachine implements ITimeMachine {
    * @param dateTimeData : { YYYY, MM, DD, hh, mm, ss } Year, Month, Day, Hour, minutes, seconds array.
    * @return a boolean to signal that the dateTime data is OK
    */
-  private static boolean checkDateTimeData(@NotNull @Size(min = 6) final int[] dateTimeData) {
+  //private static boolean checkDateTimeData(@NotNull @Size(min = 6) final int[] dateTimeData) {
+  private static boolean checkDateTimeData(final int[] dateTimeData) {
     
     if (dateTimeData.length != DATE_TIME_FMT6_LEN) {
       

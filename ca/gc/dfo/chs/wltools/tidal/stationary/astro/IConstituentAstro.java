@@ -9,7 +9,7 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro;
 //import javax.validation.constraints.Min;
 //import javax.validation.constraints.Size;
 
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 
 /**
  * Interface for generics tidal constituents astronomic computations methods.
@@ -19,7 +19,7 @@ public interface IConstituentAstro {
   /**
    * @return The name of a tidal constituent.
    */
-  @NotNull
+  //@NotNull
   String getName();
   
   /**
@@ -27,7 +27,7 @@ public interface IConstituentAstro {
    *            specific constituent.
    * @return The double precision value of the computed tidal component related to a specific constituent.
    */
-  double computeTidalAmplitude(@NotNull final Constituent1D c1d);
+  double computeTidalAmplitude(/*@NotNull*/ final Constituent1D c1d);
   
   /**
    * @param dTimePos : The seconds(in double precision) since the last update of the astronomic informations
@@ -37,7 +37,7 @@ public interface IConstituentAstro {
    * @return The double precision value of the computed(at the dTimePos time offset) tidal component related to a
    * specific constituent.
    */
-  double computeTidalAmplitude(final double dTimePos, @NotNull final Constituent1D c1d);
+  double computeTidalAmplitude(final double dTimePos, /*@NotNull*/ final Constituent1D c1d);
   
   /**
    * @param amplitude   : Amplitude of a specific tidal constituent.
