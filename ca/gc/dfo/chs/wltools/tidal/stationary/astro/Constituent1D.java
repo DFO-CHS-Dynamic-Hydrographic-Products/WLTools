@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
+//package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
+package ca.gc.dfo.chs.wltools.tidal.stationary.astro;
 
 /**
  * Created by Gilles Mercier on 2018-01-02.
@@ -6,7 +7,9 @@ package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
 
 //---
 
-import ca.gc.dfo.iwls.fmservice.modeling.util.ITrigonometry;
+import ca.gc.dfo.chs.wltools.util.ITrigonometry;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.ITrigonometry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,13 +1,16 @@
-package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
+//package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
+package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
 
 /**
  * Created by Gilles Mercier on 2018-01-02.
  */
 
 //---
+import ca.gc.dfo.chs.wltools.util.ITimeMachine;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.ITimeMachine;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
 
-import ca.gc.dfo.iwls.fmservice.modeling.util.ITimeMachine;
-import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

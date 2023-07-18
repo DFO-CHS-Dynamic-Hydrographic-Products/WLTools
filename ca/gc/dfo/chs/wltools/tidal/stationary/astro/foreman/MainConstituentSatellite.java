@@ -1,4 +1,6 @@
-package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
+//package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
+package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
+
 
 /**
  * Created by Gilles Mercier on 2018-01-02.

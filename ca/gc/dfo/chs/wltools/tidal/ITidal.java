@@ -11,7 +11,7 @@ import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 /**
  * Interface for tidal data constants.
  */
-public interface ITides extends ITimeMachine {
+public interface ITidal extends ITimeMachine {
   
   /**
    * M. Foreman's method implies that the astronomic informations could only be updated for

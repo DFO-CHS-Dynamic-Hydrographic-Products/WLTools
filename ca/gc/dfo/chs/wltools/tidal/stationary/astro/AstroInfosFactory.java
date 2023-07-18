@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
+//package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
+package ca.gc.dfo.chs.wltools.tidal.stationary.astro;
 
 /**
  * Created by Gilles Mercier on 2018-01-02.
@@ -8,9 +9,13 @@ package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
 //import java.time.Instant;
 //import javax.validation.constraints.Min;
 
-import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
-import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
-import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.tidal.ITidal;
+import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +27,8 @@ import javax.validation.constraints.Size;
 /**
  * Generic class for astronomic informations data.
  */
-abstract public class AstroInfosFactory implements ITides, ITidesIO {
-  
+abstract public class AstroInfosFactory implements ITidal, ITidalIO {
+
   private final static Logger staticLog = LoggerFactory.getLogger("AstroInfosFactory");
   /**
    * log utility.

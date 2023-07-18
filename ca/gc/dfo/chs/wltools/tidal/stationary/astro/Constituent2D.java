@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
+//package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
+package ca.gc.dfo.chs.wltools.tidal.stationary.astro;
 
 /**
  * Created by Gilles Mercier on 2018-01-02.

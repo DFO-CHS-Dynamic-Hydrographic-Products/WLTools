@@ -7,16 +7,19 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
 //---
 
 //---
+import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.wltools.util.ITimeMachine;
+import ca.gc.dfo.chs.wltools.util.ITrigonometry;
 
-import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
-import ca.gc.dfo.iwls.fmservice.modeling.util.ITimeMachine;
-import ca.gc.dfo.iwls.fmservice.modeling.util.ITrigonometry;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.ITimeMachine;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.ITrigonometry;
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.IConstituentAstro;
 
 /**
  * Interface for classes designed to apply Foreman's tidal prediction method.
  */
-public interface IForemanConstituentAstro extends ITidesIO, ITimeMachine, ITrigonometry {
+public interface IForemanConstituentAstro extends ITidalIO, ITimeMachine, ITrigonometry {
   
   /**
    * To compute(as a constant long int) the number of days(in seconds) elapsed since December 31 1899 at

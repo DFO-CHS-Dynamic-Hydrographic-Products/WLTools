@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
+//package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
+package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
 
 /**
  * Created by Gilles Mercier on 2018-01-03.
@@ -6,8 +7,11 @@ package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
 
 //---
 
-import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.AstroInfosFactory;
-import ca.gc.dfo.iwls.fmservice.modeling.util.IASCIIFileIO;
+import ca.gc.dfo.chs.wltools.util.IASCIIFileIO;
+import ca.gc.dfo.chs.wltools.tidal.stationary.astro.AstroInfosFactory;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.AstroInfosFactory;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.IASCIIFileIO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

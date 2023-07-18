@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
+//package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
+package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
 
 /**
  * Created by Gilles Mercier on 2018-01-02.
@@ -7,10 +8,16 @@ package ca.gc.dfo.iwls.fmservice.modeling.tides.astro.foreman;
 //---
 //import javax.validation.constraints.Min;
 
-import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
-import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.ConstituentFactory;
-import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.IConstituentAstro;
-import ca.gc.dfo.iwls.fmservice.modeling.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
+import ca.gc.dfo.chs.wltools.tidal.stationary.astro.ConstituentFactory;
+import ca.gc.dfo.chs.wltools.tidal.stationary.astro.IConstituentAstro;
+
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.ConstituentFactory;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.IConstituentAstro;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.Trigonometry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +30,8 @@ import javax.validation.constraints.Size;
 /**
  * Generic class for common attributes of child classes MainConstituent and ShallowWaterConstituent.
  */
-abstract public class ForemanConstituentAstro extends ConstituentFactory implements IForemanConstituentAstro,
-    IConstituentAstro {
+abstract public class ForemanConstituentAstro
+   extends ConstituentFactory implements IForemanConstituentAstro, IConstituentAstro {
   
   /**
    * log utility.

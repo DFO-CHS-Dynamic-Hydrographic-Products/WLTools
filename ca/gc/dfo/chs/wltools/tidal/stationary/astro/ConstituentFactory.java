@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
+//package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
+package ca.gc.dfo.chs.wltools.tidal.stationary.astro;
 
 /**
  * Created by Gilles Mercier on 2018-01-02.
@@ -6,7 +7,9 @@ package ca.gc.dfo.iwls.fmservice.modeling.tides.astro;
 
 //---
 
-import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
+import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +23,7 @@ import java.util.List;
 /**
  * Generic class for tidal constituents common data;
  */
-abstract public class ConstituentFactory implements ITidesIO {
+abstract public class ConstituentFactory implements ITidalIO {
   
   /**
    * static log utility,
