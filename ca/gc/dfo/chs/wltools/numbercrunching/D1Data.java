@@ -369,7 +369,7 @@ public class D1Data implements INumberCrunching {
    * @param d2Matrix : A D2Data matrix object.
    * @return A new D1Data object resulting from the product of this.data(vector) with the D2Data object d2Matrix.
    */
-  @NotNull
+  //@NotNull
   final public D1Data rowD1xD2(/*@NotNull*/ final D2Data d2Matrix) {
     
     final D1Data rhd1 = new D1Data(this.data.length);

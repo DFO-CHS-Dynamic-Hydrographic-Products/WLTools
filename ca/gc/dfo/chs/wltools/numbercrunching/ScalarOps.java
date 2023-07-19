@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.numbercrunching;
+//package ca.gc.dfo.iwls.fmservice.modeling.numbercrunching;
+package ca.gc.dfo.chs.wltools.numbercrunching;
 
 /**
  * Abstract class for static scalar operations.

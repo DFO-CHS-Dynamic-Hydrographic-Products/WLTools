@@ -50,7 +50,7 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
   /**
    * @param nbcolsAndRows : 2D square dimensions.
    */
-  public D2Data(@Min(1) final int nbcolsAndRows) {
+  public D2Data(/*@Min(1)*/ final int nbcolsAndRows) {
     //--- Square matrix:
     this(nbcolsAndRows, nbcolsAndRows, DOUBLE_NO_DATA);
   }
@@ -60,7 +60,7 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param nbrows    : Number of rows.
    * @param initValue : Data initialization value.
    */
-  public D2Data(@Min(1) final int nbcols, @Min(1) final int nbrows, final double initValue) {
+  public D2Data(/*@Min(1)*/ final int nbcols, /*@Min(1)*/ final int nbrows, final double initValue) {
     
     this();
     
@@ -105,7 +105,7 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param nbcolsAndRows : 2D square dimensions.
    * @param initValue     : Data initialization value.
    */
-  public D2Data(@Min(1) final int nbcolsAndRows, final double initValue) {
+  public D2Data(/*@Min(1)*/ final int nbcolsAndRows, final double initValue) {
     //--- Square matrix:
     this(nbcolsAndRows, nbcolsAndRows, initValue);
   }
@@ -114,7 +114,9 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param nbcolsAndRows             : 2D square dimensions.
    * @param multiDimArrayIndexingType : The multi-dimensional memory mapping type wanted.
    */
-  public D2Data(@Min(1) final int nbcolsAndRows, @NotNull final MultiDimArrayIndexingType multiDimArrayIndexingType) {
+  public D2Data(/*@Min(1)*/ final int nbcolsAndRows,
+                /*@NotNull*/ final MultiDimArrayIndexingType multiDimArrayIndexingType) {
+
     this(nbcolsAndRows, DOUBLE_ACC_INIT, multiDimArrayIndexingType);
   }
   
@@ -123,8 +125,9 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param initValue                 : Data initialization value.
    * @param multiDimArrayIndexingType : The multi-dimensional memory mapping type wanted.
    */
-  public D2Data(@Min(1) final int nbcolsAndRows, final double initValue,
-                @NotNull final MultiDimArrayIndexingType multiDimArrayIndexingType) {
+  public D2Data(/*@Min(1)*/  final int nbcolsAndRows, final double initValue,
+                /*@NotNull*/ final MultiDimArrayIndexingType multiDimArrayIndexingType) {
+
     this(nbcolsAndRows, nbcolsAndRows, initValue, multiDimArrayIndexingType);
   }
   
@@ -134,8 +137,10 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param initValue                 : Data initialization value.
    * @param multiDimArrayIndexingType : The multi-dimensional memory mapping type wanted.
    */
-  public D2Data(@Min(1) final int ncols, @Min(1) final int nrows, final double initValue,
-                @NotNull final MultiDimArrayIndexingType multiDimArrayIndexingType) {
+  public D2Data(/*@Min(1)*/  final int ncols,
+                /*@Min(1)*/  final int nrows,
+                             final double initValue,
+                /*@NotNull*/ final MultiDimArrayIndexingType multiDimArrayIndexingType) {
     
     this(ncols, nrows, initValue);
     this.multiDimArrayIndexingType = multiDimArrayIndexingType;
@@ -145,7 +150,7 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param nbcols : Number of columns.
    * @param nbrows : Number of rows.
    */
-  public D2Data(@Min(1) final int nbcols, @Min(1) final int nbrows) {
+  public D2Data(/*@Min(1)*/ final int nbcols, /*@Min(1)*/ final int nbrows) {
     this(nbcols, nbrows, DOUBLE_ACC_INIT);
   }
   
@@ -154,8 +159,10 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param nrows                     : Number of rows.
    * @param multiDimArrayIndexingType : The multi-dimensional memory mapping type wanted.
    */
-  public D2Data(@Min(1) final int ncols, @Min(1) final int nrows,
-                @NotNull final MultiDimArrayIndexingType multiDimArrayIndexingType) {
+  public D2Data(/*@Min(1)*/  final int ncols,
+                /*@Min(1)*/  final int nrows,
+                /*@NotNull*/ final MultiDimArrayIndexingType multiDimArrayIndexingType) {
+
     this(ncols, nrows, DOUBLE_ACC_INIT, multiDimArrayIndexingType);
   }
   
@@ -166,9 +173,9 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param d1Data2add : A D2Data object(which could be the same as this).
    * @return The D2Data object which is now this.data + d2m.data(i.e. member to member addition)
    */
-  @NotNull
+  //@NotNull
   @Override
-  public final D1Data add(@NotNull final D1Data d1Data2add) {
+  public final D1Data add(/*@NotNull*/ final D1Data d1Data2add) {
     
     if (!this.checkMultiDimArrayIndexingConsistency((D2Data) d1Data2add)) {
       this.log.error(whoAmI + " add: d2m.multiDimArrayIndexingType != this.multiDimArrayIndexingType!");
@@ -182,7 +189,7 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param d2m : Another D2Data object.
    * @return true if this has the same multi-dimensional memory mapping type as d2m, false otherwise.
    */
-  protected final boolean checkMultiDimArrayIndexingConsistency(@NotNull final D2Data d2m) {
+  protected final boolean checkMultiDimArrayIndexingConsistency(/*@NotNull*/ final D2Data d2m) {
     return checkMultiDimArrayIndexingConsistency(this, d2m);
   }
   
@@ -191,8 +198,8 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param d2b : Another D2Data object.
    * @return true if d2a has the same multi-dimensional memory mapping type as d2b, false otherwise.
    */
-  protected static final boolean checkMultiDimArrayIndexingConsistency(@NotNull final D2Data d2a,
-                                                                       @NotNull final D2Data d2b) {
+  protected static final boolean checkMultiDimArrayIndexingConsistency(/*@NotNull*/ final D2Data d2a,
+                                                                       /*@NotNull*/ final D2Data d2b) {
     return (d2a.multiDimArrayIndexingType == d2b.multiDimArrayIndexingType);
   }
   
@@ -203,8 +210,8 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param row: The row index.
    * @return The column major 1D index mapping which correspond to matrix(col,row) element position.
    */
-  @Min(0)
-  public final int colMajor(@Min(0) final int col, @Min(0) final int row) {
+  //@Min(0)
+  public final int colMajor(/*@Min(0)*/ final int col, /*@Min(0)*/ final int row) {
     return colMajor(col, row, this.ncols);
   }
   
@@ -216,8 +223,10 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param ncols : The number of columns of the 2D data mapping
    * @return The column major 1D index mapping which correspond to matrix(col,row) element position.
    */
-  @Min(0)
-  public static final int colMajor(@Min(0) final int col, @Min(0) final int row, @Min(1) final int ncols) {
+  //@Min(0)
+  public static final int colMajor(/*@Min(0)*/ final int col,
+                                   /*@Min(0)*/ final int row,
+                                   /*@Min(1)*/ final int ncols) {
     //return i + j*this.ni;
     return col + row * ncols;
   }
@@ -229,8 +238,8 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param colVector : Right hand side D1Data vector.
    * @return D1Data lhColVector holding this.data x colVector (matrix x column vector) result.
    */
-  @NotNull
-  public final D1Data D2xColD1(@NotNull final D1Data colVector) {
+  //@NotNull
+  public final D1Data D2xColD1(/*@NotNull*/ final D1Data colVector) {
     return this.D2xColD1(colVector, new D1Data(colVector.data.length));
   }
   
@@ -242,8 +251,9 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param lhColVector : Left hand side D1Data vector.
    * @return D1Data lhColVector holding this.data x lhColVector (matrix x column vector) result.
    */
-  @NotNull
-  public final D1Data D2xColD1(@NotNull final D1Data rhColVector, @NotNull final D1Data lhColVector) {
+  //@NotNull
+  public final D1Data D2xColD1(/*@NotNull*/ final D1Data rhColVector,
+                               /*@NotNull*/ final D1Data lhColVector) {
     
     for (int d = 0; d < lhColVector.data.length; d++) {
       
@@ -261,12 +271,13 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param colVector : A D1Data column vector.
    * @return The dot product D2Data(at row index  row) x D1Data column vector.
    */
-  abstract public double rowDotProd(@Min(0) final int row, @NotNull final D1Data colVector);
+  abstract public double rowDotProd(/*@Min(0)*/ final int row,
+                                    /*@NotNull*/ final D1Data colVector);
   
   /**
    * @return this.ncols.
    */
-  @Min(1)
+  //@Min(1)
   public final int ncols() {
     return this.ncols;
   }
@@ -274,7 +285,7 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
   /**
    * @return this.nrows.
    */
-  @Min(1)
+  //@Min(1)
   public final int nrows() {
     return this.nrows;
   }
@@ -286,8 +297,9 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param row: The row index.
    * @return The row major 1D index mapping which correspond to matrix(col,row) element position.
    */
-  @Min(0)
-  public final int rowMajor(@Min(0) final int col, @Min(0) final int row) {
+  //@Min(0)
+  public final int rowMajor(/*@Min(0)*/ final int col,
+                            /*@Min(0)*/ final int row) {
     return rowMajor(col, row, this.nrows);
   }
   
@@ -299,8 +311,10 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param nrows : The number of rows of the 2D data mapping.
    * @return The row major 1D index mapping which correspond to matrix(col,row) element position.
    */
-  @Min(0)
-  public static final int rowMajor(@Min(0) final int col, @Min(0) final int row, @Min(1) final int nrows) {
+  //@Min(0)
+  public static final int rowMajor(/*@Min(0)*/ final int col,
+                                   /*@Min(0)*/ final int row,
+                                   /*@Min(1)*/ final int nrows) {
     //return j + i*this.nj;
     return row + col * nrows;
   }
@@ -313,9 +327,9 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param d2m : A D2Data object(which could be the same as this).
    * @return The D2Data object which is now this.data - d2m.data(i.e. member to member subtraction)
    */
-  @NotNull
+  //@NotNull
   @Override
-  public final D1Data subtract(@NotNull final D1Data d2m) {
+  public final D1Data subtract(/*@NotNull*/ final D1Data d2m) {
     
     //this.log.debug(this.whoAmI +": subtract: start");
     
@@ -337,7 +351,8 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param row : The row index.
    * @return The double data element.
    */
-  abstract public double at(@Min(0) final int col, @Min(0) final int row);
+  abstract public double at(/*@Min(0)*/ final int col,
+                            /*@Min(0)*/ final int row);
   
   /**
    * D1Data row vector x D2Data column(at column index col). To be implemented by child-classes.
@@ -346,7 +361,8 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param rowVector : A D1Data row vector.
    * @return The dot product D1Data row vector x D2Data column.
    */
-  abstract public double colDotProd(@Min(0) final int col, @NotNull final D1Data rowVector);
+  abstract public double colDotProd(/*@Min(0)*/  final int col,
+                                    /*@NotNull*/ final D1Data rowVector);
   
   //public abstract D1 D2xColD1(final D1 colD1);
   //public abstract D1 rowD1xD2(final D1 rowD1);
@@ -359,8 +375,9 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param value : The value used to set D2Data at col,row.
    * @return The D2Data object.
    */
-  @NotNull
-  abstract public D2Data put(@Min(0) final int col, @Min(0) final int row, final double value);
+  //@NotNull
+  abstract public D2Data put(/*@Min(0)*/ final int col,
+                             /*@Min(0)*/ final int row, final double value);
   
   /**
    * Do the product of a D1Data column vector with a D1Data row vector and store the result in the D2Data object(i.e.
@@ -374,12 +391,13 @@ public abstract class D2Data extends D1Data implements INumberCrunching {
    * @param rowVector : Another D1Data object. Must have a number of columns equal to the colVector number of rows.
    * @return The D2Data object. Must have NxN square dimensions.
    */
-  @NotNull
-  abstract public D2Data colD1xRowD1(@NotNull final D1Data colVector, @NotNull final D1Data rowVector);
+  //@NotNull
+  abstract public D2Data colD1xRowD1(/*@NotNull*/ final D1Data colVector,
+                                     /*@NotNull*/ final D1Data rowVector);
   
   /**
    * @return A string representation of this.data. To be implemented by child-classes.
    */
-  @NotNull
+  //@NotNull
   abstract public String toString();
 }

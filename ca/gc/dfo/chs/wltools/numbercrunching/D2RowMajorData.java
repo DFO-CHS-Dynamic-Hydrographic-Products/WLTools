@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.numbercrunching;
+//package ca.gc.dfo.iwls.fmservice.modeling.numbercrunching;
+package ca.gc.dfo.chs.wltools.numbercrunching;
 
 /**
  *
@@ -9,8 +10,8 @@ package ca.gc.dfo.iwls.fmservice.modeling.numbercrunching;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
 
 //---
 
@@ -46,7 +47,7 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
   /**
    * @param ncolsAndRows : Same number of rows and columns: square matrix.
    */
-  public D2RowMajorData(@Min(1) final int ncolsAndRows) {
+  public D2RowMajorData(/*@Min(1)*/ final int ncolsAndRows) {
     super(ncolsAndRows, DOUBLE_NO_DATA, MultiDimArrayIndexingType.ROW_MAJOR);
   }
   
@@ -54,7 +55,7 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
    * @param ncolsAndRows : Same number of rows and columns: square matrix.
    * @param initVal      : Double value to use for data initialization.
    */
-  public D2RowMajorData(@Min(1) final int ncolsAndRows, @Min(1) final double initVal) {
+  public D2RowMajorData(/*@Min(1)*/ final int ncolsAndRows, /*@Min(1)*/ final double initVal) {
     super(ncolsAndRows, initVal, MultiDimArrayIndexingType.ROW_MAJOR);
   }
   
@@ -62,7 +63,7 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
    * @param ncols : Number of columns.
    * @param nrows : Numeber of rows.
    */
-  public D2RowMajorData(@Min(1) final int ncols, @Min(1) final int nrows) {
+  public D2RowMajorData(/*@Min(1)*/ final int ncols, /*@Min(1)*/ final int nrows) {
     super(ncols, nrows, DOUBLE_NO_DATA, MultiDimArrayIndexingType.ROW_MAJOR);
   }
   
@@ -71,7 +72,9 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
    * @param nrows   : Numeber of rows.
    * @param initVal : Double value to use for data initialization.
    */
-  public D2RowMajorData(@Min(1) final int ncols, @Min(1) final int nrows, final double initVal) {
+  public D2RowMajorData(/*@Min(1)*/ final int ncols,
+                        /*@Min(1)*/ final int nrows,
+                                    final double initVal) {
     super(ncols, nrows, initVal, MultiDimArrayIndexingType.ROW_MAJOR);
   }
   
@@ -84,7 +87,7 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
    * @return The Matrix element data wanted.
    */
   @Override
-  public final double at(@Min(0) final int col, @Min(0) final int row) {
+  public final double at(/*@Min(0)*/ final int col, /*@Min(0)*/ final int row) {
     return this.data[D2Data.rowMajor(col, row, this.nrows)];
   }
   
@@ -98,7 +101,7 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
    * @return The dot product of the row vector argument and the column col of this.data.
    */
   @Override
-  public final double colDotProd(@Min(0) final int col, @NotNull final D1Data rowVector) {
+  public final double colDotProd(/*@Min(0)*/ final int col, /*@NotNull*/ final D1Data rowVector) {
     
     double dp = 0.0;
     
@@ -126,7 +129,8 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
    * @return The D2Data object. Must have NxN square dimensions.
    */
   @Override
-  public final D2Data colD1xRowD1(@NotNull final D1Data colVector, @NotNull final D1Data rowVector) {
+  public final D2Data colD1xRowD1(/*@NotNull*/ final D1Data colVector,
+                                  /*@NotNull*/ final D1Data rowVector) {
     
     //--- Fool-proof dimensions validation: uncomment it for debugging purposes.
 //        if (this.nrows != this.ncols) {
@@ -171,7 +175,8 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
    * @return The dot product of the D1Data column vector argument and the row row of this.data.
    */
   @Override
-  public final double rowDotProd(@Min(0) final int row, @NotNull final D1Data colVector) {
+  public final double rowDotProd(/*@Min(0)*/  final int row,
+                                 /*@NotNull*/ final D1Data colVector) {
     
     double dp = 0.0;
     
@@ -198,7 +203,9 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
    * @return The D2Data object.
    */
   @Override
-  public final D2Data put(@Min(0) final int col, @Min(0) final int row, final double value) {
+  public final D2Data put(/*@Min(0)*/ final int col,
+                          /*@Min(0)*/ final int row,
+                                      final double value) {
     
     //try {
     
@@ -214,7 +221,7 @@ public final class D2RowMajorData extends D2Data implements INumberCrunching {
   /**
    * @return A string representation of this.data.
    */
-  @NotNull
+  //@NotNull
   @Override
   public final String toString() {
     

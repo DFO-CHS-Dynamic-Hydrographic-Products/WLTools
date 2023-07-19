@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.numbercrunching;
+//package ca.gc.dfo.iwls.fmservice.modeling.numbercrunching;
+package ca.gc.dfo.chs.wltools.numbercrunching;
 
 /**
  *
@@ -10,7 +11,7 @@ package ca.gc.dfo.iwls.fmservice.modeling.numbercrunching;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 
 //---
 
@@ -33,8 +34,8 @@ abstract public class Statistics implements INumberCrunching {
    * (i.e. item 0 of the returned D1Data object is the standard deviation of the 0th column of the D2Data
    * matrix argument).
    */
-  @NotNull
-  public static D1Data columnsStdDev(@NotNull final D2Data matrix) {
+  //@NotNull
+  public static D1Data columnsStdDev(/*@NotNull*/ final D2Data matrix) {
     
     if (matrix.nrows < 2) {
       staticLogger.error("Statistics columnsStdDev: matrix.nrows < 2 !");
@@ -61,8 +62,8 @@ abstract public class Statistics implements INumberCrunching {
       colAvg /= matrix.nrows;
       
       double colStdDev = 0.0;
-      
-      //--- column std dev
+
+ //--- column std dev
       for (int row = 0; row < matrix.nrows; row++) {
         
         final double diff = matrix.at(col, row) - colAvg;
@@ -83,8 +84,8 @@ abstract public class Statistics implements INumberCrunching {
    * (i.e. item 0 of the returned D1Data object is the standard deviation of the 0th row of the D2Data matrix
    * argument).
    */
-  @NotNull
-  public static D1Data rowsStdDev(@NotNull final D2Data matrix) {
+  //@NotNull
+  public static D1Data rowsStdDev(/*@NotNull*/ final D2Data matrix) {
     
     if (matrix.ncols < 2) {
       staticLogger.error("Statistics rowsStdDev: matrix.ncols < 2 !");
