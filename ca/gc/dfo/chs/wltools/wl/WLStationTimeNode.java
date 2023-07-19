@@ -7,6 +7,7 @@ package ca.gc.dfo.chs.wltools.wl;
 
 //---
 
+import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.TimeNodeFactory;
 /**
  * ca.gc.dfo.chs.wltools.util.MeasurementCustom;
