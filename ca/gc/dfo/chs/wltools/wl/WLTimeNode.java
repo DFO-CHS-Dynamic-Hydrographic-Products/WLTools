@@ -1,20 +1,23 @@
-package ca.gc.dfo.iwls.fmservice.modeling.wl;
+//package ca.gc.dfo.iwls.fmservice.modeling.wl;
+package ca.gc.dfo.chs.wltools.wl;
 
 /**
  *
  */
 
 //---
+import ca.gc.dfo.chs.wltools.util.TimeNodeFactory;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.TimeNodeFactory;
 
-import ca.gc.dfo.iwls.fmservice.modeling.util.TimeNodeFactory;
+import java.util.List;
+import java.util.ArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.List;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 
 //---
 //---
@@ -50,7 +53,8 @@ final public class WLTimeNode extends TimeNodeFactory implements IWL {
    *              WLTimeNode.
    * @param wlsda : A list of already existing WLStationTimeNode objects.
    */
-  public WLTimeNode(final WLTimeNode pstr, @NotNull @Size(min = 1) final List<WLStationTimeNode> wlsda) {
+  public WLTimeNode(final WLTimeNode pstr,
+                    /*@NotNull @Size(min = 1)*/ final List<WLStationTimeNode> wlsda) {
     
     //---  NOTE: it is mandatory that all WLStationTimeNode Objects of wlsda have the same time-stamp
     super(wlsda.get(0).dbData[PREDICTION].seconds());
@@ -107,7 +111,7 @@ final public class WLTimeNode extends TimeNodeFactory implements IWL {
    * @param stationIndex : index in this.stationsNodes List.
    * @return WLStationTimeNode at index stationIndex.
    */
-  public final WLStationTimeNode getStationNode(@Min(0) final int stationIndex) {
+  public final WLStationTimeNode getStationNode(/*@Min(0)*/ final int stationIndex) {
     
     this.log.debug("WLTimeNode getStationNode: stationIndex=" + stationIndex);
     

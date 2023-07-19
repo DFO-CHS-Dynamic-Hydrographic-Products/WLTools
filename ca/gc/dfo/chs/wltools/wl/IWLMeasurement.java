@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.wl;
+//package ca.gc.dfo.iwls.fmservice.modeling.wl;
+package ca.gc.dfo.chs.wltools.wl;
 
 /**
  *
@@ -6,7 +7,7 @@ package ca.gc.dfo.iwls.fmservice.modeling.wl;
 
 //---
 
-import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.NotNull;
 
 /**
  * interface for Measurement class wrapping.
@@ -41,6 +42,6 @@ public interface IWLMeasurement extends IWL {
    * @param zError : The new uncertainty of the water level.
    * @return IWLMeasurement object
    */
-  @NotNull
+  //@NotNull
   IWLMeasurement set(final double zValue, final double zError);
 }

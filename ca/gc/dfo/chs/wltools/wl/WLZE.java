@@ -1,20 +1,24 @@
-package ca.gc.dfo.iwls.fmservice.modeling.wl;
+//package ca.gc.dfo.iwls.fmservice.modeling.wl;
+package ca.gc.dfo.chs.wltools.wl;
 
 /**
  *
  */
 
 //---
+import ca.gc.dfo.chs.wltools.numbercrunching.D1Data;
+import ca.gc.dfo.chs.wltools.numbercrunching.D2Data;
 
-import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D1Data;
-import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D2Data;
+//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D1Data;
+//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D2Data;
+
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.List;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 
 //---
 //---
@@ -40,6 +44,7 @@ public class WLZE implements IWL {
   /**
    * zw error(uncertainty).
    */
+  // --- TODO: RENAME error to uncertainty
   protected double error = 0.0;
 
 //    public WLZE() {
@@ -79,8 +84,9 @@ public class WLZE implements IWL {
    * @param wlzeBunch : The List of WLZE objects.
    * @return List of WLZE : The List WLZEa.
    */
-  @NotNull
-  public final static List<WLZE> add(final double zw, @NotNull @Size(min = 1) final List<WLZE> wlzeBunch) {
+  //@NotNull
+  public final static List<WLZE> add(final double zw,
+                                     /*@NotNull @Size(min = 1)*/ final List<WLZE> wlzeBunch) {
     
     if (wlzeBunch.isEmpty()) {
       staticLogger.error("WLZE add: wlzeBunch is Empty !");
@@ -101,7 +107,8 @@ public class WLZE implements IWL {
    * @param wlzeBunch : The List of WLZE objects.
    * @return List of WLZE : The List WLZEa.
    */
-  public final static List<WLZE> multWith(final double zw, @NotNull @Size(min = 1) final List<WLZE> wlzeBunch) {
+  public final static List<WLZE> multWith(final double zw,
+                                          /*@NotNull @Size(min = 1)*/ final List<WLZE> wlzeBunch) {
     
     for (final WLZE wlze : wlzeBunch) {
       wlze.zw *= zw;
@@ -116,7 +123,7 @@ public class WLZE implements IWL {
    * @param wlzeBunch The List of WLZE objects.
    * @return new D1Data object
    */
-  public final static D1Data populateD1(@NotNull @Size(min = 1) final List<WLZE> wlzeBunch) {
+  public final static D1Data populateD1(/*@NotNull @Size(min = 1)*/ final List<WLZE> wlzeBunch) {
     
     if (wlzeBunch.isEmpty()) {
       staticLogger.error("WLZE populateD1: wlzeBunch.isEmpty() !");
@@ -143,8 +150,9 @@ public class WLZE implements IWL {
    * @return matrix: The D2Data object with the column at index col filled with the Z values of the List of WLZE
    * objects.
    */
-  public final static D2Data populateD2Col(@Min(0) final int col, @NotNull @Size(min = 1) final List<WLZE> wlzeBunch,
-                                           @NotNull final D2Data matrix) {
+  public final static D2Data populateD2Col(/*@Min(0)*/ final int col,
+                                           /*@NotNull @Size(min = 1)*/ final List<WLZE> wlzeBunch,
+                                           /*@NotNull*/ final D2Data matrix) {
     
     if (wlzeBunch.isEmpty()) {
       staticLogger.error("WLZE populateD2Col: wlzeBunch.isEmpty() !");
@@ -183,8 +191,9 @@ public class WLZE implements IWL {
    * @param matrix    : A D2Data object.
    * @return matrix: The D2Data object with the row at index row filled with the Z values of the List of WLZE objects.
    */
-  public final static D2Data populateD2Row(@Min(0) final int row, @NotNull @Size(min = 1) final List<WLZE> wlzeBunch,
-                                           @NotNull final D2Data matrix) {
+  public final static D2Data populateD2Row(/*@Min(0)*/ final int row,
+                                           /*@NotNull @Size(min = 1)*/ final List<WLZE> wlzeBunch,
+                                           /*@NotNull*/ final D2Data matrix) {
     
     if (wlzeBunch.isEmpty()) {
       staticLogger.error("WLZE populateD2Row: wlzeBunch.isEmpty() !");
@@ -224,7 +233,8 @@ public class WLZE implements IWL {
    * @param wlzeBunch : The List of WLZE objects
    * @return List of WLZE objects.
    */
-  public final static List<WLZE> subtract(final double zw, @NotNull @Size(min = 1) final List<WLZE> wlzeBunch) {
+  public final static List<WLZE> subtract(final double zw,
+                                          /*@NotNull @Size(min = 1)*/ final List<WLZE> wlzeBunch) {
     
     for (final WLZE wlze : wlzeBunch) {
       wlze.zw -= zw;
@@ -239,7 +249,7 @@ public class WLZE implements IWL {
    * @param wlzeBunch : A List of WLZE objects.
    * @return WL standard deviation (unbiased) estimate in double precision
    */
-  public final static double stdDev(@NotNull @Size(min = 2) final List<WLZE> wlzeBunch) {
+  public final static double stdDev(/*@NotNull @Size(min = 2)*/ final List<WLZE> wlzeBunch) {
     
     if (wlzeBunch.isEmpty()) {
       staticLogger.error("WLZE stdDev: wlzeBunch.isEmpty() !");
@@ -272,7 +282,7 @@ public class WLZE implements IWL {
    * @param wlzeBunch : The List of WLZE objects.
    * @return double : The Z values mean of the List WLZEa.
    */
-  protected final static double mean(@NotNull @Size(min = 1) final List<WLZE> wlzeBunch) {
+  protected final static double mean(/*@NotNull @Size(min = 1)*/ final List<WLZE> wlzeBunch) {
     
     if (wlzeBunch.isEmpty()) {
       staticLogger.error("WLZE mean: wlzeBunch is Empty !");
@@ -295,7 +305,7 @@ public class WLZE implements IWL {
    * @param zw : The double value to add to this.zw
    * @return WLZE : this WLZE
    */
-  @NotNull
+  //@NotNull
   public final WLZE add2Zw(final double zw) {
     
     this.zw += zw;
@@ -309,8 +319,8 @@ public class WLZE implements IWL {
    * @param wlze : Another WLZE object.
    * @return WLZE : this WLZE
    */
-  @NotNull
-  public final WLZE add2Zw(@NotNull final WLZE wlze) {
+  //@NotNull
+  public final WLZE add2Zw(/*@NotNull*/ final WLZE wlze) {
     
     this.zw += wlze.zw;
     
@@ -337,7 +347,7 @@ public class WLZE implements IWL {
    * @param wlze : Another WLZE object.
    * @return WLZEE : this WLZEE.
    */
-  public final WLZE multZw(@NotNull final WLZE wlze) {
+  public final WLZE multZw(/*@NotNull*/ final WLZE wlze) {
     
     this.zw *= wlze.zw;
     
@@ -360,7 +370,7 @@ public class WLZE implements IWL {
    * @param zw : The double value to subtract from this.zw
    * @return WLZE : this WLZE object.
    */
-  @NotNull
+  //@NotNull
   public final WLZE subtrac2Zw(final double zw) {
     
     this.zw -= zw;
@@ -374,7 +384,7 @@ public class WLZE implements IWL {
    * @param wlz : Another WLZE object.
    * @return WLZE: this WLZE object.
    */
-  public final WLZE subtractZw(@NotNull final WLZE wlz) {
+  public final WLZE subtractZw(/*@NotNull*/ final WLZE wlz) {
     
     this.zw -= wlz.zw;
     

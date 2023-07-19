@@ -1,21 +1,33 @@
-package ca.gc.dfo.iwls.fmservice.modeling.wl;
+//package ca.gc.dfo.iwls.fmservice.modeling.wl;
+package ca.gc.dfo.chs.wltools.wl;
 
 /**
  * Created by Gilles Mercier on 2017-12-08.
  */
 
 //---
+import ca.gc.dfo.chs.wltools.util.ITimeMachine;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+/**
+ * ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+ * abstract wrapper class that mimics the official IWLS ca.gc.dfo.iwls.timeseries.MeasurementCustom class.
+ * This is a placeholder of the same name and we use it to be able to use elsewhere the wltools code
+ * developped alongside the IWLS code base. We will then be able to switch back quickly to the official
+ * IWLS package MeasurementCustom class usage if needed.
+ */
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 
-import ca.gc.dfo.iwls.fmservice.modeling.util.ITimeMachine;
-import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.ITimeMachine;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
+//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.List;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 
 //---
 //---
@@ -54,7 +66,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
   /**
    * @param dbDataArg : The List of Measurement objects which is normally retreived from the Oracle JDBC IWLS database.
    */
-  public WLMeasurementFinder(@NotNull @Size(min = 1) final List<MeasurementCustom> dbDataArg) {
+  public WLMeasurementFinder(/*@NotNull @Size(min = 1)*/ final List<MeasurementCustom> dbDataArg) {
     
     super();
     
@@ -100,7 +112,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
    * @param seconds : The time-stamp to find.
    * @return Measurement : The Measurement if found(null if not found).
    */
-  final public MeasurementCustom find(@Min(0) final long seconds) {
+  final public MeasurementCustom find(/*@Min(0)*/ final long seconds) {
   
     MeasurementCustom ret = null;
     
@@ -132,7 +144,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
    * @param seconds : The time-stamp to find.
    * @return Measurement : The Measurement if found(null if not found).
    */
-  final public MeasurementCustom findInFuture(@Min(0) final long seconds) {
+  final public MeasurementCustom findInFuture(/*@Min(0)*/ final long seconds) {
   
     MeasurementCustom ret = null;
     
@@ -160,7 +172,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
    * @param seconds : The time-stamp to find.
    * @return Measurement : The Measurement if found(null if not found).
    */
-  final public MeasurementCustom findInPast(@Min(0) final long seconds) {
+  final public MeasurementCustom findInPast(/*@Min(0)*/ final long seconds) {
   
     MeasurementCustom ret = null;
     
@@ -183,7 +195,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
    * @param seconds : The time-stamp to find in the List.
    * @return Measurement : The Measurement if found(null if not found).
    */
-  final public MeasurementCustom findFwdMode(@Min(0) final long seconds) {
+  final public MeasurementCustom findFwdMode(/*@Min(0)*/ final long seconds) {
   
     MeasurementCustom ret = null;
     
@@ -215,7 +227,8 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
       }
     }
     
-    this.log.debug("WLMeasurementFinder findFwdMode end : seconds dt:" + SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex + ", ret=" + ret);
+    this.log.debug("WLMeasurementFinder findFwdMode end : seconds dt:" +
+                   SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex + ", ret=" + ret);
     
     return ret;
   }
@@ -227,7 +240,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
    * @param seconds : The time-stamp to find in the List.
    * @return Measurement : The Measurement if found(null if not found).
    */
-  final public MeasurementCustom findBwdMode(@Min(0) final long seconds) {
+  final public MeasurementCustom findBwdMode(/*@Min(0)*/ final long seconds) {
   
     MeasurementCustom ret = null;
     
@@ -261,19 +274,21 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
   /**
    * @return long : The lastSse at the last index in the wrapped List
    */
-  @Min(0)
+  //@Min(0)
   final public long getLastSse() {
     return ((this.dbData != null) && (this.dbData.size() > 0)) ?
-        this.dbData.get(this.dbData.size() - 1).getEventDate().getEpochSecond() : 0L;
+      this.dbData.get(this.dbData.size() - 1).getEventDate().getEpochSecond() : 0L;
   }
   
   /**
    * @return long : The absolute value of the time-stamps difference between the first two Measurement items of the
    * wrapped List.
    */
-  @Min(0)
+  //@Min(0)
   final public long getSecondsIncrement() {
-    return Math.abs(this.dbData.get(1).getEventDate().getEpochSecond() - this.dbData.get(0).getEventDate().getEpochSecond());
+
+    return Math.abs(this.dbData.get(1).getEventDate().getEpochSecond() -
+                    this.dbData.get(0).getEventDate().getEpochSecond());
   }
   
   /**

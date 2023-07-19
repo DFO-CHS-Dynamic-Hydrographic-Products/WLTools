@@ -1,4 +1,5 @@
-package ca.gc.dfo.iwls.fmservice.modeling.wl;
+//package ca.gc.dfo.iwls.fmservice.modeling.wl;
+package ca.gc.dfo.chs.wltools.wl;
 
 /**
  *
@@ -6,14 +7,26 @@ package ca.gc.dfo.iwls.fmservice.modeling.wl;
 
 //---
 
-import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+/**
+ * ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+ * abstract wrapper class that mimics the official IWLS ca.gc.dfo.iwls.timeseries.MeasurementCustom class.
+ * This is a placeholder of the same name and we use it to be able to use elsewhere the wltools code
+ * developped alongside the IWLS code base. We will then be able to switch back quickly to the official
+ * IWLS package MeasurementCustom class usage if needed.
+ */
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+
+//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
+//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -56,7 +69,7 @@ abstract public class WLMeasurement implements IWLMeasurement {
    * @param msm : A Measurement object
    * @return String : The date-time-stamp String representation of the time-stamp of the  Measurement object argument.
    */
-  public static String dateTimeString(@NotNull final MeasurementCustom msm) {
+  public static String dateTimeString(/*@NotNull*/ final MeasurementCustom msm) {
     return SecondsSinceEpoch.dtFmtString(msm.getEventDate().getEpochSecond(), true);
   }
   
@@ -69,8 +82,9 @@ abstract public class WLMeasurement implements IWLMeasurement {
    * @param msma       : The Measurement List.
    * @return WLMeasurement : this
    */
-  protected final WLMeasurement findWLBackward(@Min(0) final long seconds, @Min(0) final int startIndex,
-                                               @NotNull @Size(min = 2) final List<MeasurementCustom> msma) {
+  protected final WLMeasurement findWLBackward(/*@Min(0)*/ final long seconds,
+                                               /*@Min(0)*/ final int startIndex,
+                                               /*@NotNull @Size(min = 2)*/ final List<MeasurementCustom> msma) {
     
     if (startIndex == 0) {
   
@@ -116,8 +130,9 @@ abstract public class WLMeasurement implements IWLMeasurement {
    * @param msma       : The Measurement List.
    * @return WLMeasurement : this
    */
-  protected final WLMeasurement findWLForward(@Min(0) final long seconds, @Min(0) final int startIndex,
-                                              @NotNull @Size(min = 2) final List<MeasurementCustom> msma) {
+  protected final WLMeasurement findWLForward(/*@Min(0)*/ final long seconds,
+                                              /*@Min(0)*/ final int startIndex,
+                                              /*@NotNull @Size(min = 2)*/ final List<MeasurementCustom> msma) {
     
     this.log.debug("WLMeasurement findWLForward start: seconds dt=" + SecondsSinceEpoch.dtFmtString(seconds, true) +
         ", startIndex=" + startIndex);
@@ -224,7 +239,7 @@ abstract public class WLMeasurement implements IWLMeasurement {
   /**
    * @return long : return this.measurement seconds since the epoch.
    */
-  @Min(0)
+  //@Min(0)
   @Override
   final public long seconds() {
     return this.measurement.getEventDate().getEpochSecond();
@@ -238,7 +253,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
    * @return WLMeasurement : this
    */
   @Override
-  final public WLMeasurement set(final double zValue, @Min(0) final double zError) {
+  final public WLMeasurement set(final double zValue,
+                                 /*@Min(0)*/ final double zError) {
     
     this.measurement.setValue(zValue);
     this.measurement.setUncertainty(zError);
