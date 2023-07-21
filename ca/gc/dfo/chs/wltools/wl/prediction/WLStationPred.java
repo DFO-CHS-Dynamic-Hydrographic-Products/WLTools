@@ -27,7 +27,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Class for the computation of water levels tidal predictions
  */
-final public class WLStationTidalPredictions extends WLStationTidalPredictionsFactory {
+final public class WLStationPred extends WLStationPredFactory {
   
   /**
    * static log utility.
@@ -38,7 +38,7 @@ final public class WLStationTidalPredictions extends WLStationTidalPredictionsFa
   /**
    * Default constuctor:
    */
-  public WLStationTidalPredictions() {
+  public WLStationTidalPred() {
     super();
   }
   
@@ -49,8 +49,8 @@ final public class WLStationTidalPredictions extends WLStationTidalPredictionsFa
    * @param latitudeDecimalDegrees: Need latitude of the target location for astronomic ephemerides computations.
    * @param startTimeSeconds:       Time stamp in seconds since UNIX epoch for the astronomic ephemerides computations.
    */
-  public WLStationTidalPredictions(final String stationId, final WLConstituentsInputFileFormat inputfileFormat,
-                                   final double latitudeDecimalDegrees, final long startTimeSeconds) {
+  public WLStationTidalPred(final String stationId, final WLConstituentsInputFileFormat inputfileFormat,
+                            final double latitudeDecimalDegrees, final long startTimeSeconds) {
     
     super(Method.FOREMAN, stationId, inputfileFormat, latitudeDecimalDegrees, startTimeSeconds);
   }
@@ -63,7 +63,7 @@ final public class WLStationTidalPredictions extends WLStationTidalPredictionsFa
    *                          computations.
    * @param stationInfo:      IWLS Station object normally retreived from the DB with a SQL request.
    */
-  public WLStationTidalPredictions(final Method method, final WLConstituentsInputFileFormat inputFileFormat,
+  public WLStationTidalPred(final Method method, final WLConstituentsInputFileFormat inputFileFormat,
                                    final long startTimeSeconds, @NotNull final Station stationInfo) {
     
     //--- No more com.vividsolutions.jts.geom.Point object in IWLS Station class.

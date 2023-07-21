@@ -10,7 +10,7 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.prediction;
 // ---
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent2D;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent2DData;
-import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.TidalPredictionsFactory;
+import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.StationaryTidalPredFactory;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent2D;
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent2DData;
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 /**
  * eneric class for producing 2D(i.e. two spatial components usually U,V tidal currents) tidal predictions
  */
-abstract public class TidalPredictions2DFactory extends TidalPredictionsFactory {
+abstract public class Stationary2DTidalPredFactory extends StationaryTidalPredFactory {
   
   /**
    * log utility.
@@ -46,7 +46,7 @@ abstract public class TidalPredictions2DFactory extends TidalPredictionsFactory 
   /**
    * Default constructor.
    */
-  public TidalPredictions2DFactory() {
+  public Stationary2DTidalPredFactory() {
     
     super();
     
@@ -63,19 +63,19 @@ abstract public class TidalPredictions2DFactory extends TidalPredictionsFactory 
    * @return The current TidalPredictions2DFactory object.
    */
   @Override
-  final protected TidalPredictions2DFactory setAstroInfos(final Method method,
-                                                          final double latitudeRadians,
-                                                          final long startTimeSeconds,
-                                                          /*@NotNull @Size(min = 1)*/ final Set constNames) {
+  final protected Stationary2DTidalPredFactory setAstroInfos(final Method method,
+                                                             final double latitudeRadians,
+                                                             final long startTimeSeconds,
+                                                            /*@NotNull @Size(min = 1)*/ final Set constNames) {
     
-    this.log.debug("TidalPredictions2DFactory setAstroInfos : start");
+    this.log.debug("Stationary2DTidalPredFactory setAstroInfos : start");
     
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
     
     //--- TODO: implement constructor Constituent2DData(this.tcDataMap, this.astroInfosFactory)
     //this.constituent2DData= new Constituent2DData(this.tcDataMap, this.astroInfosFactory);
     
-    this.log.debug("TidalPredictions2DFactory setAstroInfos : end");
+    this.log.debug("Stationary2DTidalPredFactory setAstroInfos : end");
     
     return this;
   }

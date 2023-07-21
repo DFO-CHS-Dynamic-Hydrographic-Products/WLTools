@@ -1,4 +1,4 @@
-package ca.gc.dfo.chs.wltools.stage;
+package ca.gc.dfo.chs.wltools.nontidal.stage;
 
 /**
  * Created on 2023-07-20.

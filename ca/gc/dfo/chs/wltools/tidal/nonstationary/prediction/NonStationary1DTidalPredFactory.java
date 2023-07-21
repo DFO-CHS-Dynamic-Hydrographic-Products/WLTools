@@ -9,9 +9,10 @@ package ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction;
 
 //---
 import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1DData;
-import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.TidalPredictions1DFactory;
+import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFactory;
 //import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.TidalPredictionsFactory;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
@@ -30,9 +31,11 @@ import org.slf4j.LoggerFactory;
 //---
 
 /**
- * Generic class for producing 1D(i.e. only one spatial component) tidal predictions
+ * River-discharge and-or atmospheric influenced (a.k.a. non-stationary) tidal prediction object.
+ * This implements the prediction-reconstruction part of the NS_TIDE theory
+ *  (Matte et al., Journal of Atmospheric and Oceanic Technology, 2013)
  */
-final public class NonStationaryTidalPredictionsFactory extends TidalPredictions1DFactory {
+final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPredFactory {
   
   /**
    * log utility.
@@ -40,7 +43,7 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
-   * List of Map objects of tidal constituents information for the non-stationary(fluvial and-or atmospheric)
+   * List of Map objects of tidal constituents information for the non-stationary(river discharge and-or atmospheric)
    * for a specific location coming from a file or a DB. Should have at least one item in it.
    */
   protected List<Map<String, Constituent1D>> tcDataMaps = null;
@@ -55,17 +58,18 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
   /**
    * To store the stage input data (river discharges and-or atmos. data) with their related time stamps
    */
-  private Map<String,List<MeasurementCustom>> stageTimeVaryingData= null;
+  private Map<String,List<MeasurementCustom>> staticStageInputData= null;
 
   /**
    * Default constructor.
    */
-  public NonStationaryTidalPredictionsFactory() {
+  public NonStationary1DTidalPredFactory() {
     
     super();
     
     this.tcDataMaps= null;
     this.stageEquation= null;
+    this.staticStageInputData= null;
     this.constituent1DDataItems= null;
   }
   
@@ -92,23 +96,23 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
    * @param startTimeSeconds : Time-stamp in seconds since the epoch for the time reference used for astronomic
    *                         arguments computations.
    * @param constNames       : A Set of tidal constituents names to use for the tidal predictions.
-   * @return The current TidalPredictions1DFactory object.
+   * @return The current  object.
    */
   @Override
-  final protected NonStationaryTidalPredictionsFactory setAstroInfos(final Method method,
-                                                                     final double latitudeRadians,
-                                                                     final long startTimeSeconds,
-                                                                     /*@NotNull @Size(min = 1)*/ final Set constNames) {
+  final protected NonStationary1DTidalPredFactory setAstroInfos(final Method method,
+                                                                final double latitudeRadians,
+                                                                final long startTimeSeconds,
+                                                               /*@NotNull @Size(min = 1)*/ final Set constNames) {
     try {
       constNames.size();
       
     } catch (NullPointerException e) {
       
-      this.log.error("NonStationaryTidalPredictionsFactory setAstroInfos: constNames==null !!");
+      this.log.error("NonStationary1DTidalPredFactory setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    this.log.debug("NonStationaryTidalPredictionsFactory setAstroInfos: setAstroInfos : start");
+    this.log.debug("NonStationary1DTidalPredFactory setAstroInfos: setAstroInfos : start");
     
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
     
@@ -121,7 +125,7 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
 
     //this.constituent1DData = new Constituent1DData(this.tcDataMap, this.astroInfosFactory);
     
-    this.log.debug("NonStationaryTidalPredictionsFactory setAstroInfos: end");
+    this.log.debug("NonStationary1DTidalPredFactory setAstroInfos: end");
     
     return this;
   }

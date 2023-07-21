@@ -1,28 +1,40 @@
-package ca.gc.dfo.iwls.fmservice.modeling.wl;
+//package ca.gc.dfo.iwls.fmservice.modeling.wl;
+package ca.gc.dfo.chs.wltools.wl.prediction;
 
 /**
- * Created by Gilles Mercier on 2018-01-12.
+ * Created on 2018-01-12.
+ * @author Gilles Mercier (DFO-CHS-ENAV-DHP)
+ * Modified on 2023-07-21, Gilles Mercier
  */
 
 //---
+import ca.gc.dfo.chs.wltools.tidal.ITidal;
+import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.wltools.utilASCIIFileIO;
+import ca.gc.dfo.chs.wltools.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
+//import ca.gc.dfo.chs.wltools.nontidal.climatology.Climatology;
+import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
+import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFactory;
+import ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidalPredFactory;
 
-import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
-import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
-import ca.gc.dfo.iwls.fmservice.modeling.tides.TidalPredictions1DFactory;
-import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
-import ca.gc.dfo.iwls.fmservice.modeling.util.ASCIIFileIO;
-import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.TidalPredictions1DFactory;
+//import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.ASCIIFileIO;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
+//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+
+import java.util.List;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
+import org.slf4j.LoggerFactory;
 
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Min;
 //---
 //---
@@ -32,50 +44,76 @@ import java.util.List;
 /**
  * Class WLTidalPredictionsFactory acts as abstract base class for water levels tidal predictions:
  */
-abstract public class WLStationTidalPredictionsFactory extends TidalPredictions1DFactory implements IWL, ITides,
-    ITidesIO {
+abstract public class WLStationPredFactory
+   implements IWL, ITidal, ITidalIO, IStage, INonStationaryIO {
   
   /**
    * Usual log utility.
    */
+
   private final Logger log = LoggerFactory.getLogger(this.getClass());
+
   /**
    * unfortunateUTCOffsetSeconds: The WL tidal constituents could(unfortunately) be defined for local time zones
    * so we have to apply a time zone offset to the results in order to have the
    * tidal predictions defined in UTC(a.k.a. ZULU).
    */
   protected long unfortunateUTCOffsetSeconds = 0L;
+
+  /**
+   *  Simple climatology (yearly average normally) prediction object.
+   */
+  //protected Climatology climatoPred= null;
+
+  /**
+   * Stage (river discharge and-or atmospheric) only prediction object.
+   */
+  protected Stage stagePred= null;
+
+  /**
+   * Classic astronomic-harmonic (a.k.a. stationary) tidal prediction object.
+   * This implements the prediction-reconstruction part of M. Foreman's tidal
+   * package theory and related code.
+   */ 
+  protected Stationary1DTidalPredFactory stationaryTidalPred= null;
+
+  /**
+   * River-discharge and-or atmospheric influenced (a.k.a. non-stationary) tidal prediction object.
+   * This implements the prediction-reconstruction part of the NS_TIDE theory
+   *  (Matte et al., Journal of Atmospheric and Oceanic Technology, 2013)
+   */
+  protected NonStationary1DTidalPredFactory nonStationaryTidalPred= null;
+
   /**
    * Keep the station ID to avoid WL tidal predictions data mix-up between two WL stations data:
    */
   private String stationId = null;
-  
+
   /**
    * Default constructor.
    */
-  public WLStationTidalPredictionsFactory() {
+  public WLStationPredFactory() {
     this.unfortunateUTCOffsetSeconds = 0L;
   }
   
   /**
-   * @param method:                 The tidal prediction method to use as defined in the Method object.
-   * @param stationId               : The WL station SINECO ID.
+   * @param method:                 The prediction method to use as defined in the Method object.
+   * @param stationId               : The WL station id.
    * @param inputFileFormat:        WL Tidal constituents input file format(When the WL tidal constituents are not
    *                                retreived from the DB).
    * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station.
    * @param startTimeSeconds:       The start time(in seconds since the epoch) for the astronomic arguments
    *                                computations.
    */
-  public WLStationTidalPredictionsFactory(final Method method, final String stationId,
-                                          final WLConstituentsInputFileFormat inputFileFormat,
-                                          final double latitudeDecimalDegrees, final long startTimeSeconds) {
-    
+  public WLStationPredFactory(final Method method, final String stationId,
+                              final WLConstituentsInputFileFormat inputFileFormat,
+                              final double latitudeDecimalDegrees, final long startTimeSeconds) {
     try {
       stationId.length();
       
     } catch (NullPointerException e) {
       
-      this.log.error("WLStationTidalPredictionsFactory constructor: stationId==null !!");
+      this.log.error("WLStationPredFactory constructor: stationId==null !!");
       throw new RuntimeException(e);
     }
     
@@ -87,8 +125,10 @@ abstract public class WLStationTidalPredictionsFactory extends TidalPredictions1
     this.getStationConstituentsData(stationId, inputFileFormat);
     
     //--- MUST convert decimal degrees latitude to radians here:
-    super.setAstroInfos(method, DEGREES_2_RADIANS * latitudeDecimalDegrees, startTimeSeconds,
-        this.tcDataMap.keySet());
+    super.setAstroInfos(method,
+                        DEGREES_2_RADIANS * latitudeDecimalDegrees,
+                        startTimeSeconds,
+                        this.tcDataMap.keySet());
   }
   
   /**
@@ -100,17 +140,17 @@ abstract public class WLStationTidalPredictionsFactory extends TidalPredictions1
    * @return The current WLStationTidalPredictionsFactory object with its WL tidal constituents data ready to use.
    */
   @NotNull
-  final public WLStationTidalPredictionsFactory getStationConstituentsData(@NotNull final String stationId,
-                                                                           @NotNull final ITidesIO.WLConstituentsInputFileFormat inputFileFormat) {
+  final public WLStationPredFactory getStationConstituentsData(/*@NotNull*/ final String stationId,
+                                                               /*@NotNull*/ final ITidesIO.WLConstituentsInputFileFormat inputFileFormat) {
     
-    this.log.debug("WLStationTidalPredictionsFactory getStationConstituentsData: : start");
+    this.log.debug("WLStationPredFactory getStationConstituentsData: : start");
     
     try {
       stationId.length();
       
     } catch (NullPointerException e) {
       
-      this.log.error("WLStationTidalPredictionsFactory getStationConstituentsData: stationId==null !!");
+      this.log.error("WLStationTidalPredFactory getStationConstituentsData: stationId==null !!");
       throw new RuntimeException(e);
     }
     
@@ -119,7 +159,7 @@ abstract public class WLStationTidalPredictionsFactory extends TidalPredictions1
       
     } catch (NullPointerException e) {
       
-      this.log.error("WLStationTidalPredictionsFactory getStationConstituentsData: inputFileFormat==null !!");
+      this.log.error("WLStationTidalPredFactory getStationConstituentsData: inputFileFormat==null !!");
       throw new RuntimeException(e);
     }
     
@@ -133,12 +173,12 @@ abstract public class WLStationTidalPredictionsFactory extends TidalPredictions1
       
       default:
         
-        this.log.error("WLStationTidalPredictionsFactory getStationConstituentsData: Invalid file format ->" + inputFileFormat);
-        throw new RuntimeException("WLStationTidalPredictionsFactory getStationConstituentsData");
+        this.log.error("WLStationTidalPredFactory getStationConstituentsData: Invalid file format ->" + inputFileFormat);
+        throw new RuntimeException("WLStationTidalPredFactory getStationConstituentsData");
         //break;
     }
     
-    this.log.debug("WLStationTidalPredictionsFactory getStationConstituentsData: : end");
+    this.log.debug("WLStationTidalPredFactory getStationConstituentsData: : end");
     
     return this;
   }
@@ -150,7 +190,7 @@ abstract public class WLStationTidalPredictionsFactory extends TidalPredictions1
    * @return The current WLStationTidalPredictionsFactory object (this).
    */
   @NotNull
-  final public WLStationTidalPredictionsFactory getTCFFileData(@NotNull final String aTCFFilePath) {
+  final public WLStationTidalPredFactory getTCFFileData(@NotNull final String aTCFFilePath) {
     
     //--- Deal with possible null aTCFFilePath String:
     try {
@@ -158,7 +198,7 @@ abstract public class WLStationTidalPredictionsFactory extends TidalPredictions1
       
     } catch (NullPointerException e) {
       
-      this.log.error("WLStationTidalPredictionsFactory getTCFFileData: aTCFFilePath==null!!");
+      this.log.error("WLStationTidalPredFactory getTCFFileData: aTCFFilePath==null!!");
       throw new RuntimeException("WLStationTidalPredictionsFactory getTCFFileData");
     }
     

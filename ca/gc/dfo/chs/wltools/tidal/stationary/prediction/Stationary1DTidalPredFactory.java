@@ -10,7 +10,7 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.prediction;
 //---
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1DData;
-import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.TidalPredictionsFactory;
+import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.StationaryTidalPredFactory;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1DData;
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Generic class for producing 1D(i.e. only one spatial component) tidal predictions
  */
-abstract public class TidalPredictions1DFactory extends TidalPredictionsFactory {
+abstract public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
   
   /**
    * log utility.
@@ -47,7 +47,7 @@ abstract public class TidalPredictions1DFactory extends TidalPredictionsFactory 
   /**
    * Default constructor.
    */
-  public TidalPredictions1DFactory() {
+  public Stationary1DTidalPredFactory() {
     
     super();
     
@@ -70,30 +70,29 @@ abstract public class TidalPredictions1DFactory extends TidalPredictionsFactory 
    * @param startTimeSeconds : Time-stamp in seconds since the epoch for the time reference used for astronomic
    *                         arguments computations.
    * @param constNames       : A Set of tidal constituents names to use for the tidal predictions.
-   * @return The current TidalPredictions1DFactory object.
+   * @return The current Stationary1DTidalPredFactory object.
    */
   @Override
-  protected TidalPredictions1DFactory setAstroInfos(final Method method,
-                                                    final double latitudeRadians,
-                                                    final long startTimeSeconds,
-                                                    /*@NotNull @Size(min = 1)*/ final Set constNames) {
-
+  protected Stationary1DTidalPredFactory setAstroInfos(final Method method,
+                                                       final double latitudeRadians,
+                                                       final long startTimeSeconds,
+                                                       /*@NotNull @Size(min = 1)*/ final Set constNames) {
     try {
       constNames.size();
       
     } catch (NullPointerException e) {
       
-      this.log.error("TidalPredictions1DFactory setAstroInfos: constNames==null !!");
+      this.log.error("Stationary1DTidalPredFactory setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    this.log.debug("TidalPredictions1DFactory setAstroInfos: setAstroInfos : start");
+    this.log.debug("Stationary1DTidalPredFactory setAstroInfos: setAstroInfos : start");
     
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
     
     this.constituent1DData = new Constituent1DData(this.tcDataMap, this.astroInfosFactory);
     
-    this.log.debug("TidalPredictions1DFactory setAstroInfos: end");
+    this.log.debug("Stationary1DTidalPredFactory setAstroInfos: end");
     
     return this;
   }

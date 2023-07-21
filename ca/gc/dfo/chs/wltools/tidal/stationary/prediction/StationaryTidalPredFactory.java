@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1DData;
 
 /**
- * Generic class for tidal predictions.
+ * Generic class for classic astronomic-harmonic (a.k.a stationary) tidal predictions.
  */
-abstract public class TidalPredictionsFactory implements ITidal, ITidalIO {
+abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
 
   /**
    * log utility
@@ -46,7 +46,7 @@ abstract public class TidalPredictionsFactory implements ITidal, ITidalIO {
   /**
    * Default constructor:
    */
-  public TidalPredictionsFactory() {
+  public StationaryTidalPredFactory() {
     this.astroInfosFactory = null;
   }
   
@@ -58,23 +58,23 @@ abstract public class TidalPredictionsFactory implements ITidal, ITidalIO {
    * @param constNames       : A Set of tidal constituents names to use for the tidal predictions.
    * @return The current TidalPredictionsFactory object.
    */
-  protected TidalPredictionsFactory setAstroInfos(final Method method,
-                                                  final double latitudeRadians,
-                                                  final long startTimeSeconds,
-                                                  /*@NotNull @Size(min = 1)*/ final Set constNames) {
+  protected StationaryTidalPredFactory setAstroInfos(final Method method,
+                                                     final double latitudeRadians,
+                                                     final long startTimeSeconds,
+                                                      /*@NotNull @Size(min = 1)*/ final Set constNames) {
     
     try {
       constNames.size();
       
     } catch (NullPointerException e) {
-      this.log.error("TidalPredictionsFactory setAstroInfos: constNames==null !!");
+      this.log.error("StationaryTidalPredFactory setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    this.log.debug("TidalPredictionsFactory setAstroInfos : start");
-    this.log.debug("TidalPredictionsFactory setAstroInfos : method=" + method + ", latitudeRadians=" + latitudeRadians);
-    this.log.debug("TidalPredictionsFactory setAstroInfos : startTimeSeconds dt=" + SecondsSinceEpoch.dtFmtString(startTimeSeconds, true));
-    this.log.debug("TidalPredictionsFactory setAstroInfos : constNames=" + constNames.toString());
+    this.log.debug("StationaryTidalPredFactory setAstroInfos : start");
+    this.log.debug("StationaryTidalPredFactory setAstroInfos : method=" + method + ", latitudeRadians=" + latitudeRadians);
+    this.log.debug("StationaryTidalPredFactory setAstroInfos : startTimeSeconds dt=" + SecondsSinceEpoch.dtFmtString(startTimeSeconds, true));
+    this.log.debug("StationaryTidalPredFactory setAstroInfos : constNames=" + constNames.toString());
     
     switch (method) {
       
@@ -93,12 +93,12 @@ abstract public class TidalPredictionsFactory implements ITidal, ITidalIO {
       
       default:
         
-        this.log.error("TidalPredictionsFactory setAstroInfos : Invalid tidal prediction method-> " + method);
-        throw new RuntimeException("TidalPredictionsFactory setAstroInfos");
+        this.log.error("StationaryTidalPredFactory setAstroInfos : Invalid tidal prediction method-> " + method);
+        throw new RuntimeException("StationaryTidalPredFactory setAstroInfos");
         //break;
     }
     
-    this.log.debug("TidalPredictionsFactory setAstroInfos : end");
+    this.log.debug("StationaryTidalPredFactory setAstroInfos : end");
     
     return this;
   }
