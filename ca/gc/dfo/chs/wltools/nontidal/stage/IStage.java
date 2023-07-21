@@ -19,6 +19,16 @@ import ca.gc.dfo.chs.wltools.util.Coefficient;
  */
 public interface IStage {
 
+   enum StageDataType {
+      DISCHARGE,
+      ATMOS,
+      DISCHARGE_AND_ATMOS
+   }
+
+   enum StageDataStatus {
+      FROM_MODEL,
+      CLIMATOLOGY
+   }
 
    /**
     * evaluate the stage polynomial with the factor values provided by
