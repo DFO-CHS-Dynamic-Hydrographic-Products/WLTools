@@ -8,10 +8,11 @@ package ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction;
  */
 
 //---
-import ca.gc.dfo.chs.wltools.stage.Stage;
+import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1DData;
-import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.TidalPredictionsFactory;
+import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.TidalPredictions1DFactory;
+//import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.TidalPredictionsFactory;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1DData;
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Generic class for producing 1D(i.e. only one spatial component) tidal predictions
  */
-final public class NonStationaryTidalPredictionsFactory extends TidalPredictionsFactory {
+final public class NonStationaryTidalPredictionsFactory extends TidalPredictions1DFactory {
   
   /**
    * log utility.
@@ -39,7 +40,8 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
-   * List of Map objects of tidal constituents information for a specific location coming from a file or a DB.
+   * List of Map objects of tidal constituents information for the non-stationary(fluvial and-or atmospheric)
+   * for a specific location coming from a file or a DB. Should have at least one item in it.
    */
   protected List<Map<String, Constituent1D>> tcDataMaps = null;
 
@@ -48,7 +50,12 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
    */
   private List<Constituent1DData> constituent1DDataItems = null;
 
-  private Stage stageTerms= null;
+  private Stage stageEquation= null;
+
+  /**
+   * To store the stage input data (river discharges and-or atmos. data) with their related time stamps
+   */
+  private Map<String,List<MeasurementCustom>> stageTimeVaryingData= null;
 
   /**
    * Default constructor.
@@ -58,7 +65,7 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
     super();
     
     this.tcDataMaps= null;
-    this.stageTerms= null;
+    this.stageEquation= null;
     this.constituent1DDataItems= null;
   }
   
@@ -69,7 +76,9 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
   @Override
   final public double computeTidalPrediction(final long timeStampSeconds) {
 
-     double retAcc= 0.0; 
+     // --- Compute the stationary part (NOTE: no Z0 average to use here, it is rather
+     //     in the stage part (the S0 item)
+     double retAcc= super.computeTidalPrediction(timeStampSeconds);
 
      //this.stageTerms.evaluate(
      // return this.astroInfosFactory.computeTidalPrediction(timeStampSeconds, this.constituent1DDataItems);
@@ -106,9 +115,9 @@ final public class NonStationaryTidalPredictionsFactory extends TidalPredictions
     int dimCount= 0;
 
     // ---
-    for (Constituent1DData c1DD: this.constituent1DDataItems) {
-        c1DD= new Constituent1DData(this.tcDataMaps.get(dimCount),this.astroInfosFactory);
-    }
+    //for (Constituent1DData c1DD: this.constituent1DDataItems) {
+    //    c1DD= new Constituent1DData(this.tcDataMaps.get(dimCount),this.astroInfosFactory);
+    //}
 
     //this.constituent1DData = new Constituent1DData(this.tcDataMap, this.astroInfosFactory);
     

@@ -60,7 +60,7 @@ abstract public class TidalPredictions1DFactory extends TidalPredictionsFactory 
    * @return The newly computed single tidal prediction in double precision.
    */
   @Override
-  final public double computeTidalPrediction(final long timeStampSeconds) {
+  public double computeTidalPrediction(final long timeStampSeconds) {
     return this.astroInfosFactory.computeTidalPrediction(timeStampSeconds, this.constituent1DData);
   }
   
@@ -73,10 +73,10 @@ abstract public class TidalPredictions1DFactory extends TidalPredictionsFactory 
    * @return The current TidalPredictions1DFactory object.
    */
   @Override
-  final protected TidalPredictions1DFactory setAstroInfos(final Method method,
-                                                          final double latitudeRadians,
-                                                          final long startTimeSeconds,
-                                                          /*@NotNull @Size(min = 1)*/ final Set constNames) {
+  protected TidalPredictions1DFactory setAstroInfos(final Method method,
+                                                    final double latitudeRadians,
+                                                    final long startTimeSeconds,
+                                                    /*@NotNull @Size(min = 1)*/ final Set constNames) {
 
     try {
       constNames.size();
