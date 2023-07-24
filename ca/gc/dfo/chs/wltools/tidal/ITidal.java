@@ -31,9 +31,9 @@ public interface ITidal extends ITimeMachine {
   enum Method {
     
     // ---- TODO: Rename  FOREMAN As STATIONARY_FOREMAN??
-    FOREMAN,  //--- Mike Foreman's (DFO-Sidney B.C.) classic HA method type :
+    STATIONARY_FOREMAN,  //--- Mike Foreman's (DFO-Sidney B.C.) classic HA method type :
 
-    NON_STATIONARY // --- ECCC's Pascal Matte non-stationary method.
+    NON_STATIONARY_FOREMAN // --- ECCC's Pascal Matte non-stationary method.
 
     //--- In case we want to test T_TIDE method.
     //SATIONARY_T_TIDE     //--- T_Tide method type
