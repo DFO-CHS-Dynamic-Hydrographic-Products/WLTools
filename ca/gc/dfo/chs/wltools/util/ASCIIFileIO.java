@@ -33,8 +33,9 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
   /**
    * static log utility
    */
-  private final static Logger staticLog = LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.util.ASCIIFileIO");
-  
+   private final static Logger log = LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.util.ASCIIFileIO");
+   //private final Logger log = LoggerFactory.getLogger(this.getClass());  
+
   /**
    * @param aSCIIFilePath : Complete file path of an ASCII input file.
    * @return A List of all the lines contained in the ASCII input file.
@@ -55,11 +56,11 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       
     } catch (NullPointerException e) {
       
-      staticLog.error("ASCIIFileIO getFileLinesAsArrayList: aSCIIFilePath==null!!");
+      log.error("ASCIIFileIO getFileLinesAsArrayList: aSCIIFilePath==null!!");
       throw new RuntimeException(e);
     }
     
-    staticLog.debug("getFileLinesAsArrayList Start: aSCIIFilePath=" + aSCIIFilePath);
+    log.debug("getFileLinesAsArrayList Start: aSCIIFilePath=" + aSCIIFilePath);
     
     try {
       
@@ -67,13 +68,13 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       
     } catch (FileNotFoundException e) {
       
-      staticLog.error("ASCIIFileIO getFileLinesAsArrayList: ASCII file " + aSCIIFilePath + " not found !!");
+      log.error("ASCIIFileIO getFileLinesAsArrayList: ASCII file " + aSCIIFilePath + " not found !!");
       throw new RuntimeException(e);
     }
     
     if ((br = new BufferedReader(fr)) == null) {
       
-      staticLog.error("ASCIIFileIO getFileLinesAsArrayList: Cannot create BufferedReader for file " + aSCIIFilePath);
+      log.error("ASCIIFileIO getFileLinesAsArrayList: Cannot create BufferedReader for file " + aSCIIFilePath);
       throw new RuntimeException("ASCIIFileIO getFileLinesAsArrayList.");
     }
     
@@ -87,7 +88,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       
     } catch (IOException e) {
       
-      staticLog.error("ASCIIFileIO getFileLinesAsArrayList: Problem reading ASCII file " + aSCIIFilePath);
+      log.error("ASCIIFileIO getFileLinesAsArrayList: Problem reading ASCII file " + aSCIIFilePath);
       throw new RuntimeException(e);
     }
     
@@ -97,11 +98,11 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       
     } catch (IOException e) {
       
-      staticLog.error("ASCIIFileIO getFileLinesAsArrayList: Cannot close file " + aSCIIFilePath);
+      log.error("ASCIIFileIO getFileLinesAsArrayList: Cannot close file " + aSCIIFilePath);
       throw new RuntimeException(e);
     }
     
-    staticLog.debug("getFileLinesAsArrayList end");
+    log.debug("getFileLinesAsArrayList end");
     
     return allLines;
   }
@@ -116,7 +117,6 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
   //                                         @NotNull final WLStationTimeNode stationTimeNode0,
   //                                       final List<MeasurementCustom> updatedForecast,
   //                                         @NotNull final String outDir) {
-
   public static void writeOdinAsciiFmtFile(final String stationCode,
                                            final WLStationTimeNode stationTimeNode0,
                                            final List<MeasurementCustom> updatedForecast,
@@ -128,18 +128,18 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       
     } catch (NullPointerException e) {
       
-      staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: stationCode==null !!");
+      log.error("ASCIIFileIO writeOdinAsciiFmtFile: stationCode==null !!");
       throw new RuntimeException(e);
     }
     
-    staticLog.debug("ASCIIFileIO writeOdinAsciiFmtFile start: station=" + stationCode);
+    log.debug("ASCIIFileIO writeOdinAsciiFmtFile start: station=" + stationCode);
     
     try {
       stationTimeNode0.getSse();
       
     } catch (NullPointerException e) {
       
-      staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: stationTimeNode0==null !!");
+      log.error("ASCIIFileIO writeOdinAsciiFmtFile: stationTimeNode0==null !!");
       throw new RuntimeException(e);
     }
     
@@ -149,10 +149,10 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
     
     for (final IWL.WLType type : IWL.WLType.values()) {
       
-      final String fpath =
-          outDir + "\\" + stationCode + "-" + dt0.dateTimeString() + "." + type.asciiFileExt;
+      final String fpath = outDir + "\\" + stationCode + "-" +
+                   dt0.dateTimeString() + "." + type.asciiFileExt;
       
-      staticLog.debug("ASCIIFileIO writeOdinAsciiFmtFile: Opening odin format " + type + " output file: " + fpath);
+      log.debug("ASCIIFileIO writeOdinAsciiFmtFile: Opening odin format " + type + " output file: " + fpath);
       
       try {
         
@@ -160,7 +160,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
         
       } catch (IOException e) {
         
-        staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot open output file: " + fpath);
+        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot open output file: " + fpath);
         
         e.printStackTrace();
         throw new RuntimeException(e);
@@ -168,13 +168,13 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       
       try {
         
-        staticLog.debug("ASCIIFileIO writeOdinAsciiFmtFile: write header: " + AsciiFormats.ODIN.header + " in " + fpath);
+        log.debug("ASCIIFileIO writeOdinAsciiFmtFile: write header: " + AsciiFormats.ODIN.header + " in " + fpath);
         fwra[type.ordinal()].write(AsciiFormats.ODIN.header + type.asciiFileExt.toUpperCase() + ";\n");
         
       } catch (IOException e) {
         
         e.printStackTrace();
-        staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write header in " + fpath);
+        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write header in " + fpath);
         throw new RuntimeException(e);
       }
     }
@@ -202,7 +202,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
             
           } catch (IOException e) {
             
-            staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write data line in output file type: " + type);
+            log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write data line in output file type: " + type);
             e.printStackTrace();
             throw new RuntimeException(e);
           }
@@ -216,7 +216,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
     
     for (final IWL.WLType type : IWL.WLType.values()) {
       
-      staticLog.debug("ASCIIFileIO writeOdinAsciiFmtFile: closing output file type: " + type);
+      log.debug("ASCIIFileIO writeOdinAsciiFmtFile: closing output file type: " + type);
       
       try {
         
@@ -224,7 +224,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
         
       } catch (IOException e) {
         
-        staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot close output file for WL type: " + type.toString());
+        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot close output file for WL type: " + type.toString());
         
         e.printStackTrace();
         throw new RuntimeException(e);
@@ -234,13 +234,13 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
     //--- Updated forecast could be null or empty:
     if ((updatedForecast != null) && (updatedForecast.size() != 0)) {
       
-      staticLog.debug("ASCIIFileIO writeOdinAsciiFmtFile: writing udpdated forecast data for station: " + stationCode);
+      log.debug("ASCIIFileIO writeOdinAsciiFmtFile: writing udpdated forecast data for station: " + stationCode);
       
-      final String fpath =
-          outDir + "\\" + stationCode + "-" + dt0.dateTimeString() + "-updated." + IWL.WLType.FORECAST.asciiFileExt;
+      final String fpath= outDir + "\\" + stationCode + "-" +
+          dt0.dateTimeString() + "-updated." + IWL.WLType.FORECAST.asciiFileExt;
       
-      staticLog.debug("ASCIIFileIO writeOdinAsciiFmtFile: Opening odin format updated " + IWL.WLType.FORECAST + " " +
-          "output file: " + fpath);
+      log.debug("ASCIIFileIO writeOdinAsciiFmtFile: Opening odin format updated " +
+                 IWL.WLType.FORECAST + " " +"output file: " + fpath);
       
       FileWriter fw = null;
       
@@ -249,7 +249,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
         
       } catch (IOException e) {
         
-        staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot open output file: " + fpath);
+        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot open output file: " + fpath);
         
         e.printStackTrace();
         throw new RuntimeException(e);
@@ -257,12 +257,12 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       
       try {
         
-        staticLog.debug("ASCIIFileIO writeOdinAsciiFmtFile: write header: " + AsciiFormats.ODIN.header + " in " + fpath);
+        log.debug("ASCIIFileIO writeOdinAsciiFmtFile: write header: " + AsciiFormats.ODIN.header + " in " + fpath);
         fw.write(AsciiFormats.ODIN.header + IWL.WLType.FORECAST.asciiFileExt.toUpperCase() + ";\n");
         
       } catch (IOException e) {
         
-        staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write header in " + fpath);
+        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write header in " + fpath);
         
         e.printStackTrace();
         throw new RuntimeException(e);
@@ -280,7 +280,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
           
         } catch (IOException e) {
           
-          staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write data line in output file: " + fpath);
+          log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write data line in output file: " + fpath);
           
           e.printStackTrace();
           throw new RuntimeException(e);
@@ -292,7 +292,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
         
       } catch (IOException e) {
         
-        staticLog.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot close file " + fpath);
+        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot close file " + fpath);
         
         e.printStackTrace();
         throw new RuntimeException(e);
@@ -300,9 +300,9 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       
     } else {
       
-      staticLog.warn("ASCIIFileIO writeOdinAsciiFmtFile: updatedForecast is null or empty !");
+      log.warn("ASCIIFileIO writeOdinAsciiFmtFile: updatedForecast is null or empty !");
     }
     
-    staticLog.debug("ASCIIFileIO writeOdinAsciiFmtFile: end for station=" + stationCode);
+    log.debug("ASCIIFileIO writeOdinAsciiFmtFile: end for station=" + stationCode);
   }
 }

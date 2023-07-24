@@ -27,9 +27,11 @@ final public class MeasurementCustom {
 
   private Instant eventDate;
 
-  private double value;
+  //private double value;
+  //private double uncertainty;
 
-  private double uncertainty;
+  private Double value;
+  private Double uncertainty;
 
   public MeasurementCustom() {
 
@@ -40,7 +42,7 @@ final public class MeasurementCustom {
   }
 
   public MeasurementCustom(final Instant eventDate,
-                           final double value, final double uncertainty) {
+                           final Double value, final Double uncertainty) {
 
      this.eventDate= eventDate;
 
@@ -57,11 +59,11 @@ final public class MeasurementCustom {
     return this.eventDate.getEpochSecond();
   }
 
-  public final double getValue() {
+  public final Double getValue() {
      return this.value;
   }
 
-  public final double getUncertainty() {
+  public final Double getUncertainty() {
      return this.uncertainty;
   }
 
@@ -69,11 +71,11 @@ final public class MeasurementCustom {
      this.eventDate= eventDate;
   }
 
-  public final void setValue(final double value) {
+  public final void setValue(final Double value) {
      this.value= value;
   }
 
-  public final void setUncertainty(final double uncertainty) {
+  public final void setUncertainty(final Double uncertainty) {
      this.uncertainty= uncertainty;
   }
 }

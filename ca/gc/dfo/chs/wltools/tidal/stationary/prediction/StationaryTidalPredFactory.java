@@ -78,7 +78,7 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
     
     switch (method) {
       
-      case FOREMAN:
+      case STATIONARY_FOREMAN:
         
         this.astroInfosFactory = new ForemanAstroInfos(latitudeRadians, startTimeSeconds, constNames);
         break;

@@ -30,10 +30,10 @@ import org.slf4j.LoggerFactory;
  * as the WL Z0 (average) of the tidal-astro part. Obviously in this case, the List<WLZE>
  * attribute has only one item.
  */
-final public class Stage implements IStage {
+final public class Stage implements IStage, IStageIO {
 
   /**
-   * static log utility.
+   * log utility.
    */
    private final Logger log = LoggerFactory.getLogger(this.getClass());
 

@@ -38,4 +38,6 @@ public interface ITidal extends ITimeMachine {
     //--- In case we want to test T_TIDE method.
     //SATIONARY_T_TIDE     //--- T_Tide method type
   }
+
+  public double computeTidalPrediction(final long timeStampSeconds);
 }

@@ -75,14 +75,15 @@ abstract public class WLStationPredFactory
    * This implements the prediction-reconstruction part of M. Foreman's tidal
    * package theory and related code.
    */ 
-  protected Stationary1DTidalPredFactory stationaryTidalPred= null;
+  //protected Stationary1DTidalPredFactory stationaryTidalPred= null;
+   protected Stationary1DTidalPredFactory 1DTidalPred= null;
 
   /**
    * River-discharge and-or atmospheric influenced (a.k.a. non-stationary) tidal prediction object.
    * This implements the prediction-reconstruction part of the NS_TIDE theory
    *  (Matte et al., Journal of Atmospheric and Oceanic Technology, 2013)
    */
-  protected NonStationary1DTidalPredFactory nonStationaryTidalPred= null;
+  //protected NonStationary1DTidalPredFactory nonStationaryTidalPred= null;
 
   /**
    * Keep the station ID to avoid WL tidal predictions data mix-up between two WL stations data:
@@ -98,16 +99,19 @@ abstract public class WLStationPredFactory
   
   /**
    * @param method:                 The prediction method to use as defined in the Method object.
-   * @param stationId               : The WL station id.
-   * @param inputFileFormat:        WL Tidal constituents input file format(When the WL tidal constituents are not
-   *                                retreived from the DB).
+   * @param stationId               The WL station id.
+   * @param inputFile               A data input file, if any (could be null)
+   * @param inputFileFormat:        Input file format to use.
    * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station.
    * @param startTimeSeconds:       The start time(in seconds since the epoch) for the astronomic arguments
    *                                computations.
    */
-  public WLStationPredFactory(final Method method, final String stationId,
+  public WLStationPredFactory(final Method method,
+                              final String stationId,
+                              final String inputFile,
                               final WLConstituentsInputFileFormat inputFileFormat,
-                              final double latitudeDecimalDegrees, final long startTimeSeconds) {
+                              final double latitudeDecimalDegrees,
+                              final long startTimeSeconds ) {
     try {
       stationId.length();
       
@@ -116,41 +120,66 @@ abstract public class WLStationPredFactory
       this.log.error("WLStationPredFactory constructor: stationId==null !!");
       throw new RuntimeException(e);
     }
-    
+
     //--- To avoid SNAFU mix-up between WL stations data:
     this.stationId = stationId;
+
+    if ( method == STATIONARY_FOREMAN || method == NON_STATIONARY_FOREMAN) {
+
+       if ( method == STATIONARY_FOREMAN ) {
+
+          if ( inputFileFormat != STATIONARY_TCF) {
+              this.log.error("WLStationPredFactory constructor: STATIONARY_FOREMAN prediction method -> Must have STATONARY_TCF for the tc input file format!");
+              throw new RuntimeException("WLStationPredFactory constructor");
+          }
+ 
+          this.1DTidalPred= new Stationary1DTidalPredFactory();
+       }
+
+       if ( method == NON_STATIONARY_FOREMAN) { 
+
+          if ( inputFileFormat != NON_STATIONARY_JSON) {
+              this.log.error("WLStationPredFactory constructor: NON_STATONARY_JSON prediction method -> Must have NON_STATONARY_JSON for the tc input file format!");
+              throw new RuntimeException("WLStationPredFactory constructor");
+          }
+
+          this.1DTidalPred= new NonStationary1DTidalPredFactory();
+       }
+
+       //--- Retreive WL station tidal constituents from a local disk file.
+       //    TODO: Write a WLStationTidalPredictionsFactory constructor that take the input file as argument.
+       this.1DTidalPred.getStationConstituentsData(stationId, inputFile, inputFileFormat);
     
-    //--- Retreive WL station tidal constituents from a local disk file.
-    //    TODO: Write a WLStationTidalPredictionsFactory constructor that take the input file as argument.
-    this.getStationConstituentsData(stationId, inputFileFormat);
-    
-    //--- MUST convert decimal degrees latitude to radians here:
-    super.setAstroInfos(method,
-                        DEGREES_2_RADIANS * latitudeDecimalDegrees,
-                        startTimeSeconds,
-                        this.tcDataMap.keySet());
+       //--- MUST convert decimal degrees latitude to radians here:
+       super.setAstroInfos(method,
+                           DEGREES_2_RADIANS * latitudeDecimalDegrees,
+                           startTimeSeconds,
+                           this.tcDataMap.keySet());
+    }
   }
   
   /**
    * Extract tidal constituents data for a SINECO station from a local disk file.
    *
+   * @param tcInputfilePath  : Path of the tidal constituents input file for a given station (or grid point). Could be null.
    * @param stationId        : WL Station String ID
    * @param inputFileFormat: WL Tidal constituents input file format(When the WL tidal constituents are not
    *                         retreived from the DB).
    * @return The current WLStationTidalPredictionsFactory object with its WL tidal constituents data ready to use.
    */
-  @NotNull
-  final public WLStationPredFactory getStationConstituentsData(/*@NotNull*/ final String stationId,
-                                                               /*@NotNull*/ final ITidesIO.WLConstituentsInputFileFormat inputFileFormat) {
+  //@NotNull
+  final public Stationary1DTidalPredFactory getStationConstituentsData(/*@NotNull*/ final String stationId,
+                                                                            final String tcInputfilePath,
+                                                                       /*@NotNull*/ final ITidesIO.WLConstituentsInputFileFormat inputFileFormat ) {
     
-    this.log.debug("WLStationPredFactory getStationConstituentsData: : start");
+    this.log.debug("WLStationPredFactory getStationConstituentsData: start");
     
     try {
       stationId.length();
       
     } catch (NullPointerException e) {
       
-      this.log.error("WLStationTidalPredFactory getStationConstituentsData: stationId==null !!");
+      this.log.error("WLStationPredFactory getStationConstituentsData: stationId==null !!");
       throw new RuntimeException(e);
     }
     
@@ -159,26 +188,50 @@ abstract public class WLStationPredFactory
       
     } catch (NullPointerException e) {
       
-      this.log.error("WLStationTidalPredFactory getStationConstituentsData: inputFileFormat==null !!");
+      this.log.error("WLStationPredFactory getStationConstituentsData: inputFileFormat==null !!");
       throw new RuntimeException(e);
     }
     
     switch (inputFileFormat) {
       
-      case TCF:
-        
+      case STATIONARY_TCF:
+
+        if (tcInputfilePath != null) {
+           final String tcfFilePath= tcInputfilePath;
+
+        } else {
+           final String tcfFilePath= ITidesIO.TCF_DATA_DIR + stationId + ITidesIO.TCF_DATA_FILE_EXT;
+        }
+
+        this.log.info("WLStationPredFactory getStationConstituentsData: reading TCF format file: "+tcfFilePath)
+
         //--- Extract tidal constituents data from a classic legacy DFO TCF ASCII file.
-        this.getTCFFileData(ITidesIO.TCF_DATA_DIR + stationId + ITidesIO.TCF_DATA_FILE_EXT);
+        this.getTCFFileData(tcfFilePath);
+
+        this.log.info("WLStationPredFactory getStationConstituentsData: Done with reading TCF format file: "+tcfFilePath)
+
         break;
-      
+
+      case NON_STATONARY_JSON:
+
+        if (tcInputfilePath == null) {
+           this.log.error("WLStationPredFactory getStationConstituentsData: NON_STATONARY_JSON input file format: tcInputfilePath cannot be null !!");
+           throw new RuntimeException(e);
+        }
+
+        this.log.info("WLStationPredFactory getStationConstituentsData: reading NON_STATONARY_JSON tc input file: "+tcfFilePath);
+
+        this.getNSJSONFileData(tcInputfilePath);
+        break;
+
       default:
-        
-        this.log.error("WLStationTidalPredFactory getStationConstituentsData: Invalid file format ->" + inputFileFormat);
-        throw new RuntimeException("WLStationTidalPredFactory getStationConstituentsData");
+
+        this.log.error("WLStationPredFactory getStationConstituentsData: Invalid file format ->" + inputFileFormat);
+        throw new RuntimeException("WLStationPredFactory getStationConstituentsData");
         //break;
     }
     
-    this.log.debug("WLStationTidalPredFactory getStationConstituentsData: : end");
+    this.log.debug("WLStationPredFactory getStationConstituentsData: : end");
     
     return this;
   }
@@ -189,8 +242,8 @@ abstract public class WLStationPredFactory
    * @param aTCFFilePath : Complete WL tidal constituents TCF format input file path on a local disk.
    * @return The current WLStationTidalPredictionsFactory object (this).
    */
-  @NotNull
-  final public WLStationTidalPredFactory getTCFFileData(@NotNull final String aTCFFilePath) {
+  //@NotNull
+  final public WLStationPredFactory getTCFFileData(/*@NotNull*/ final String aTCFFilePath) {
     
     //--- Deal with possible null aTCFFilePath String:
     try {
@@ -198,11 +251,11 @@ abstract public class WLStationPredFactory
       
     } catch (NullPointerException e) {
       
-      this.log.error("WLStationTidalPredFactory getTCFFileData: aTCFFilePath==null!!");
-      throw new RuntimeException("WLStationTidalPredictionsFactory getTCFFileData");
+      this.log.error("WLStationPredFactory getTCFFileData: aTCFFilePath==null!!");
+      throw new RuntimeException("WLStationPredFactory getTCFFileData");
     }
     
-    this.log.debug("WLStationTidalPredictionsFactory getTCFFileData: Start, aTCFFilePath=" + aTCFFilePath);
+    this.log.debug("WLStationPredFactory getTCFFileData: Start, aTCFFilePath=" + aTCFFilePath);
     
     //--- Get the TCF format ASCII lines in a List of Strings:
     final List<String> tcfFileLines = ASCIIFileIO.getFileLinesAsArrayList(aTCFFilePath);
@@ -212,19 +265,19 @@ abstract public class WLStationPredFactory
     
     if (this.tcDataMap != null) {
       
-      this.log.warn("WLStationTidalPredictionsFactory getTCFFileData: this.tcDataMap!=null, need to clear it first !");
+      this.log.warn("WLStationPredFactory getTCFFileData: this.tcDataMap!=null, need to clear it first !");
       this.tcDataMap.clear();
       
     } else {
       
-      this.log.debug("WLStationTidalPredictionsFactory getTCFFileData: Creating this.tcDataMap.");
+      this.log.debug("WLStationlPredFactory getTCFFileData: Creating this.tcDataMap.");
       this.tcDataMap = new HashMap<String, Constituent1D>();
     }
     
     //--- Process the TCF format lines
     for (final String line : tcfFileLines) {
       
-      this.log.debug("WLStationTidalPredictionsFactory getTCFFileData: processing line: " + line);
+      this.log.debug("WLStationPredFactory getTCFFileData: processing line: " + line);
       
       //--- Split( blank spaces as delimiters) line in an array of Strings:
       final String[] lineSplit = line.trim().split("\\s+");
@@ -251,7 +304,7 @@ abstract public class WLStationPredFactory
           
         } else {
           
-          this.log.debug("WLStationTidalPredictionsFactory getTCFFileData: Skipping TCF file header line: " + line);
+          this.log.debug("WLStationPredFactory getTCFFileData: Skipping TCF file header line: " + line);
         }
         
         continue;
@@ -259,9 +312,10 @@ abstract public class WLStationPredFactory
       
       if (lineSplit.length != TCF_LINE_NB_ITEMS) {
         
-        this.log.error("WLStationTidalPredictionsFactory getTCFFileData: lineSplit.length=" + lineSplit.length + " !=" +
+        this.log.error("WLStationPredFactory getTCFFileData: lineSplit.length=" + lineSplit.length + " !=" +
             " TCF_LINE_NB_ITEMS=" + TCF_LINE_NB_ITEMS);
-        throw new RuntimeException("WLStationTidalPredictionsFactory getTCFFileData");
+
+        throw new RuntimeException("WLStationPredFactory getTCFFileData");
       }
       
       final String tcName = lineSplit[0];
@@ -275,14 +329,14 @@ abstract public class WLStationPredFactory
       final Constituent1D c1d = new Constituent1D(Double.valueOf(lineSplit[TCF_AMPLITUDE_LINE_INDEX]),
           DEGREES_2_RADIANS * phaseLagDegrees);
       
-      this.log.debug("WLStationTidalPredictionsFactory getTCFFileData:  Setting this.tcDataMap with tidal " +
+      this.log.debug("WLStationPredFactory getTCFFileData:  Setting this.tcDataMap with tidal " +
           "constitutent ->" +
           tcName + ", phaseLagDegrees=" + phaseLagDegrees);
       
       this.tcDataMap.put(tcName, c1d);
     }
     
-    this.log.debug("WLStationTidalPredictionsFactory getTCFFileData: end,  unfortunateUTCOffset in hours=" + this.unfortunateUTCOffsetSeconds / SECONDS_PER_HOUR);
+    this.log.debug("WLStationPredFactory getTCFFileData: end, unfortunateUTCOffset in hours=" + this.unfortunateUTCOffsetSeconds / SECONDS_PER_HOUR);
     
     return this;
   }
@@ -312,8 +366,8 @@ abstract public class WLStationPredFactory
       
     } catch (NullPointerException e) {
       
-      this.log.error("WLStationTidalPredictionsFactory computeForecastingContextPreds: forecastingContext==null !!");
-      throw new RuntimeException("WLStationTidalPredictionsFactory computeForecastingContextPreds");
+      this.log.error("WLStationPredFactory computeForecastingContextPreds: forecastingContext==null !!");
+      throw new RuntimeException("WLStationPredFactory computeForecastingContextPreds");
     }
     
     //--- Avoid awkward WL tidal predictions data mix-up between two WL stations data:
