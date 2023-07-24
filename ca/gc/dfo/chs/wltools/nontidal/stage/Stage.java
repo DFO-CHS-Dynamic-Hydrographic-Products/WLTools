@@ -6,12 +6,13 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
  */
 
 // ---
+import java.util.Map;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // ---
-import ca.gc.dfo.chs.wltools.util.Coefficient;
+//import ca.gc.dfo.chs.wltools.util.Coefficient;
 
 /**
  * class for the WL stage (non-tidal) type. The WL values are calculated
@@ -29,30 +30,39 @@ import ca.gc.dfo.chs.wltools.util.Coefficient;
  * as the WL Z0 (average) of the tidal-astro part. Obviously in this case, the List<WLZE>
  * attribute has only one item.
  */
-public class Stage implements IStage {
+final public class Stage implements IStage {
 
   /**
    * static log utility.
    */
-   private static final Logger staticLogger = LoggerFactory.getLogger("Stage");
+   private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
-   * List of Coefficients (can have only one item)
+   * List of Map object(s) of StageCoefficient object(s).
    */
-   protected List<Coefficient> coefficients;
+   protected Map<String,StageCoefficient> coefficients;
+
+  /**
+   * List of Map object(s) of StageStaticInputData object(s).
+   */
+   protected Map<String,StageStaticInputData> staticInputData;
 
   /**
    * basic constructor
    */
    public Stage() {
       this.coefficients= null;
+      this.staticInputData= null;
    }
 
   /**
-   * constructor taking a List<Coefficient> arg.
+   * 
    */
-   public Stage(final List<Coefficient> coefficients) {
+   public Stage(final Map<String,StageCoefficient> coefficients,
+                final Map<String,StageStaticInputData> staticInputData) {
+
       this.coefficients= coefficients;
+      this.staticInputData= staticInputData;
    }
 
    //final public List<Coefficient> getCoefficients() {
@@ -60,36 +70,45 @@ public class Stage implements IStage {
    //}
 
   /**
-   * method that returns the stage calculation
+   * method that returns the stage calculation using a client defined double [] factorDValues.
+   * NOTE: The factorDValues[0] value should be either 1.0 or 0.0 since the 1st coefficient
+   *       is used for the polynomial order 0 (p= s0*factorDValues[0] + s1*factorDValues[1] + ... sN*factorDValues[N])
    */
    //final double evaluate(final List<Double> factorDValues) {
-   final public double evaluate( /*@NotNull @Size(min = 1)*/ final double [] factorDValues, final boolean addC0) {
+   final public double evaluate( /*@NotNull @Size(min = 1)*/ final double [] factorDValues) { //, final boolean addC0) {
 
       // --- Assuming that factorDValues is not null
       //     here if @NotNull is not activated.
 
       // --- Can renove the following if block check if @Size(min = 1) is activated
       if (factorDValues.length == 0) {
-         staticLogger.error("Stage.evaluate(): factorDValues.length == 0");
+         this.log.error("Stage.evaluate(): factorDValues.length == 0");
          throw new RuntimeException("Stage.evaluate()");
       }
 
-      //if (factorDValues.size() != this.coefficients.size()) {
-      if (factorDValues.length + 1 != this.coefficients.size()) {
-         staticLogger.error("Stage.evaluate(): factorDValues.size() != this.coefficients.size()");
+      if (factorDValues.length != this.coefficients.size()) {
+      //if (factorDValues.length + 1 != this.coefficients.size()) {
+         this.log.error("Stage.evaluate(): factorDValues.size() != this.coefficients.size()");
          throw new RuntimeException("Stage.evaluate()");
       }
 
       double retAcc= 0.0;
 
+      int cf= 0;
+
       // --- No unsigned int in Java unfortunately.
-      for (int cf= 0; cf < factorDValues.length; cf++) {
-         retAcc += this.coefficients.get(cf+1).getValue() * factorDValues[cf];
+      //for (int cf= 0; cf < factorDValues.length; cf++) {
+      for (final String stageId: this.coefficients.keySet()) {
+
+         retAcc += this.coefficients.get(stageId).getValue() * factorDValues[cf++];
+         //cf++;
       }
+
+      return retAcc;
 
       // --- Could have to add the C0 coefficient after all the C1, C2, ..., CN
       //     terms have been added together
-      return addC0 ? retAcc + this.coefficients.get(0).getValue() : retAcc;
+      //return addC0 ? retAcc + this.coefficients.get(0).getValue() : retAcc;
    }
 
    // --- TODO: Implement evaluateWithUncertainties

@@ -5,10 +5,10 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
  * @author Gilles Mercier (DFO-CHS-ENAV-DHP)
  */
 
-import java.util.List;
+//import java.util.List;
 
 //// ---
-import ca.gc.dfo.chs.wltools.util.Coefficient;
+//import ca.gc.dfo.chs.wltools.util.Coefficient;
 
 /**
  * Interface for the WL stage (non-tidal) type. The WL values are calculated
@@ -34,7 +34,7 @@ public interface IStage {
     * evaluate the stage polynomial with the factor values provided by
     * the client method that is using this method.
     */
-   double evaluate( /*@NotNull @Size(min = 1)*/ final double [] factorDValues, final boolean addC0);
+   double evaluate( /*@NotNull @Size(min = 1)*/ final double [] factorDValues); //, final boolean addC0);
 
    //List<Coefficient> getCoefficients();
 

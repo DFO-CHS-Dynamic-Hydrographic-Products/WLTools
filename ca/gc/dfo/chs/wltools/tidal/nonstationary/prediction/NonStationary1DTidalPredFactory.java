@@ -44,21 +44,27 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
 
   /**
    * List of Map objects of tidal constituents information for the non-stationary(river discharge and-or atmospheric)
-   * for a specific location coming from a file or a DB. Should have at least one item in it.
+   * for a specific location coming from a file or a DB.
    */
   protected List<Map<String, Constituent1D>> tcDataMaps = null;
 
   /**
    * List of Constituent1DData objects which will be used by the non-stationary tidal prediction method.
+   * MUST have the number of Constituent1DData objects in the constituent1DDataItems being the same as we
+   * have Map items in one Map item of tcDataMaps list.
    */
   private List<Constituent1DData> constituent1DDataItems = null;
 
-  private Stage stageEquation= null;
+  /**
+   * The stage equation (polynomial) object.
+   */
+  private Stage stagePart= null;
 
   /**
    * To store the stage input data (river discharges and-or atmos. data) with their related time stamps
    */
-  private Map<String,List<MeasurementCustom>> staticStageInputData= null;
+  //private Map<String,List<MeasurementCustom>> staticStageInputData= null;
+  private List<List<Map<Long,MeasurementCustom>>> staticStageInputData= null;
 
   /**
    * Default constructor.
@@ -68,7 +74,7 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
     super();
     
     this.tcDataMaps= null;
-    this.stageEquation= null;
+    this.stagePart= null;
     this.staticStageInputData= null;
     this.constituent1DDataItems= null;
   }
@@ -84,6 +90,13 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
      //     in the stage part (the S0 item)
      double retAcc= super.computeTidalPrediction(timeStampSeconds);
 
+     // --- Add the non-stationary parts of the signal
+     //for (final List<Map<Long,MeasurementCustom>> ssInputData: staticStageInputData) {
+     //   retAcc += ssInputData.get(timeStampSeconds-timeLagSeconds) * 
+     //      super.astroInfosFactory.computeTidalPrediction(timeStampSeconds,this.);
+     //}
+
+     // Add the stage part.
      //this.stageTerms.evaluate(
      // return this.astroInfosFactory.computeTidalPrediction(timeStampSeconds, this.constituent1DDataItems);
 

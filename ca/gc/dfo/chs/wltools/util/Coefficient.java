@@ -5,7 +5,7 @@ package ca.gc.dfo.chs.wltools.util;
  * @author Gilles Mercier (DFO-CHS-ENAV-DHP)
  */
 
-final public class Coefficient {
+public class Coefficient {
 
    protected double value;
    protected double uncertainty;
