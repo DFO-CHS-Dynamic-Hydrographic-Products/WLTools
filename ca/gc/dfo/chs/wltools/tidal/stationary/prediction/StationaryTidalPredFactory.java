@@ -108,4 +108,15 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
    * @return The newly computed single tidal prediction in double precision.
    */
   abstract public double computeTidalPrediction(final long timeStampSeconds);
+
+  /**
+   * Comments please!
+   */
+  abstract public StationaryTidalPredFactory getTCFFileData(/*@NotNull*/ final String tcfFilePath);
+
+  ///**
+  // * Comments please!
+  // */
+  //abstract public StationaryTidalPredFactory getNSJSONFileData(/*@NotNull*/ final String jsonFilePath);
+
 }

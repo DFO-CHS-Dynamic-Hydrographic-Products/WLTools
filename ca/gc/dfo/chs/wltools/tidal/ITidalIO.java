@@ -39,8 +39,8 @@ public interface ITidalIO extends ITidal, ITrigonometry, ITimeMachine {
    */
   enum WLConstituentsInputFileFormat {
 
-    STATONARY_TCF,
-    NON_STATONARY_JSON
+    STATIONARY_TCF,
+    NON_STATIONARY_JSON
     //WEBTIDE
   }
 }

@@ -1,5 +1,5 @@
 //package ca.gc.dfo.iwls.fmservice.modeling.wl;
-package ca.gc.dfo.chs.wltools.wl;
+package ca.gc.dfo.chs.wltools.wl.prediction;
 
 /**
  * Created by Gilles Mercier on 2018-01-10.

@@ -27,7 +27,8 @@ final public class StageInputData {
   /**
    * List of time (seconds since epoch) mapped MeasurementCustom objects.
    */
-   protected List<Map<Long,MeasurementCustom>> timeMappedData;
+   //protected List<Map<Long,MeasurementCustom>> timeMappedData;
+   protected Map<Long,MeasurementCustom> timeMappedData;
 
   /**
    * basic constructor
@@ -39,7 +40,15 @@ final public class StageInputData {
   /**
    * constructor taking a List<Coefficient> arg.
    */
-   public StageInputData(final List<Map<Long,MeasurementCustom>> timeMappedData) {
+   //public StageInputData(final List<Map<Long,MeasurementCustom>> timeMappedData) {
+   public StageInputData(final Map<Long,MeasurementCustom> timeMappedData) {
       this.timeMappedData= timeMappedData;
+   }
+
+  /**
+   * comments please!
+   */
+   final public double getAtTimeStamp(final long timeStampSeconds) {
+      return this.timeMappedData.get(timeStampSeconds).getValue();
    }
 }

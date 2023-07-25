@@ -7,19 +7,34 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
 
 import ca.gc.dfo.chs.wltools.util.Coefficient;
 
+/**
+ * Comments please!
+ */
 final public class StageCoefficient extends Coefficient {
 
+   /**
+    * Comments please!
+    */
    protected long timeLagSeconds= 0L;
 
+   /**
+    * Comments please!
+    */
    public StageCoefficient() {
       this.timeLagSeconds= 0L;
    }
 
+   /**
+    * Comments please!
+    */
    public StageCoefficient(final long timeLagSeconds) {
       this.timeLagSeconds= timeLagSeconds;
    }
 
-   final public double getTimeLagSeconds() {
+   /**
+    * Comments please!
+    */
+   final public long getTimeLagSeconds() {
       return this.timeLagSeconds;
    }
 }
