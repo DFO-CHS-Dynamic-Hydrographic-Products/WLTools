@@ -46,25 +46,25 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
    * List of Map objects of tidal constituents information for the non-stationary(river discharge and-or atmospheric)
    * for a specific location coming from a file or a DB.
    */
-  protected List<Map<String, Constituent1D>> tcDataMaps = null;
+  protected Map<Map<String, Constituent1D>> tcDataMaps= null;
 
   /**
    * List of Constituent1DData objects which will be used by the non-stationary tidal prediction method.
    * MUST have the number of Constituent1DData objects in the constituent1DDataItems being the same as we
    * have Map items in one Map item of tcDataMaps list.
    */
-  private List<Constituent1DData> constituent1DDataItems = null;
+  private Map<String,Constituent1DData> constituent1DDataItems= null;
 
   /**
    * The stage equation (polynomial) object.
    */
   private Stage stagePart= null;
 
-  /**
-   * To store the stage input data (river discharges and-or atmos. data) with their related time stamps
-   */
+  ///**
+  // * To store the stage input data (river discharges and-or atmos. data) with their related time stamps
+  // */
   //private Map<String,List<MeasurementCustom>> staticStageInputData= null;
-  private List<List<Map<Long,MeasurementCustom>>> staticStageInputData= null;
+  //private List<List<Map<Long,MeasurementCustom>>> staticStageInputData= null;
 
   /**
    * Default constructor.
@@ -75,7 +75,7 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
     
     this.tcDataMaps= null;
     this.stagePart= null;
-    this.staticStageInputData= null;
+    //this.staticStageInputData= null;
     this.constituent1DDataItems= null;
   }
   
@@ -87,20 +87,29 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
   final public double computeTidalPrediction(final long timeStampSeconds) {
 
      // --- Compute the stationary part (NOTE: no Z0 average to use here, it is rather
-     //     in the stage part (the S0 item)
+     //     in the stage part (the CS0 coefficient, added at the end.)
      double retAcc= super.computeTidalPrediction(timeStampSeconds);
 
      // --- Add the non-stationary parts of the signal
-     //for (final List<Map<Long,MeasurementCustom>> ssInputData: staticStageInputData) {
-     //   retAcc += ssInputData.get(timeStampSeconds-timeLagSeconds) * 
-     //      super.astroInfosFactory.computeTidalPrediction(timeStampSeconds,this.);
-     //}
+     for (final String stInputDataId: this.stagePart.staticInputData.keySet()) {
+
+        // --- Calculate the non-stationary tidal argument.
+        final double nsTidalArg= super.astroInfosFactory
+           .computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stInputDataId));
+
+        // ---- Apply the stage calculation with the related stage part and the non-stationart tidal arg. added together
+        //      (multiply  by the time varying stage input data,note the lag time subtraction.)
+        retAcc += (stagePart.coefficients.get(stInputDataId) + nsTidalArg) *
+                   this.stagePart.staticInputData.get(stInputDataId).get(timeStampSeconds-timeLagSeconds);
+     }
 
      // Add the stage part.
      //this.stageTerms.evaluate(
      // return this.astroInfosFactory.computeTidalPrediction(timeStampSeconds, this.constituent1DDataItems);
 
-     return retAcc;
+     // --- Add the stage zero'th order coefficient (WL signal average) for the returned WL prediction
+     //     for this timestamp.
+     return retAcc + stagePart.coefficients.get(IStageIO.STAGE_JSON_D0_KEY);
   }
   
   /**
@@ -126,15 +135,20 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
     }
     
     this.log.debug("NonStationary1DTidalPredFactory setAstroInfos: setAstroInfos : start");
-    
+
+    // --- Compute the stationary astronomic information and set the stationary
+    //     tidal constituents amplitudes and phases.
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
     
-    int dimCount= 0;
+    //int dimCount= 0;
 
-    // ---
+    // --- Set the non-stationary tidal constituents amplitudes and phases.
     //for (Constituent1DData c1DD: this.constituent1DDataItems) {
-    //    c1DD= new Constituent1DData(this.tcDataMaps.get(dimCount),this.astroInfosFactory);
-    //}
+    for (final String tcMapId: this.constituent1DDataItems.keySet()) {
+
+        this.constituent1DDataItems.get(tcMapId)=
+           new Constituent1DData(this.tcDataMaps.get(tcMapId),this.astroInfosFactory);
+    }
 
     //this.constituent1DData = new Constituent1DData(this.tcDataMap, this.astroInfosFactory);
     

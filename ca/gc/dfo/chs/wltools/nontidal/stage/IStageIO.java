@@ -17,10 +17,13 @@ public interface IStageIO {
 
    String STAGE_JSON_DICT_KEY= "Stage";
 
-   String STAGE_JSON_D0_KEY= "s0"; // --- The stage zero order coefficient json dict key. (WL average or Z0 in classic HA jargon)
+    String STAGE_JSON_D0_KEY= "CS0";
+   //String STAGE_JSON_D0_KEY= "s0"; // --- The stage zero order coefficient json dict key. (WL average or Z0 in classic HA jargon)
 
-   String STAGE_JSON_DNFCT_KEYS= "s*.factor";  // --- The stage order>=1 coefficient factors json dict keys.
-   String STAGE_JSON_DNLAG_KEYS= "s*.hoursLag"; // --- The stage order>=1 coefficient time lags (in hours) json dict keys.
+   String STAGE_JSON_DNFCT_KEYS= "CS*.factor";  // --- The stage order>=1 coefficient factors json dict keys.
+   String STAGE_JSON_DNLAG_KEYS= "CS*.hoursLag"; // --- The stage order>=1 coefficient time lags (in hours) json dict keys.
+   //String STAGE_JSON_DNFCT_KEYS= "s*.factor";  // --- The stage order>=1 coefficient factors json dict keys.
+   //String STAGE_JSON_DNLAG_KEYS= "s*.hoursLag"; // --- The stage order>=1 coefficient time lags (in hours) json dict keys.
 
    String STATION_INFO_JSON_DICT_KEY= "channelGridPointInfo"; // --- The json dict key for the station info dict.
 

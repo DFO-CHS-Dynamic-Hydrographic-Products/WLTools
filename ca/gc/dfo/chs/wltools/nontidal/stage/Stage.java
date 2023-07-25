@@ -43,26 +43,26 @@ final public class Stage implements IStage, IStageIO {
    protected Map<String,StageCoefficient> coefficients;
 
   /**
-   * List of Map object(s) of StageStaticInputData object(s).
+   * List of Map object(s) of StageInputData object(s).
    */
-   protected Map<String,StageStaticInputData> staticInputData;
+   protected Map<String,StageInputData> inputData;
 
   /**
    * basic constructor
    */
    public Stage() {
       this.coefficients= null;
-      this.staticInputData= null;
+      this.inputData= null;
    }
 
   /**
    * 
    */
    public Stage(final Map<String,StageCoefficient> coefficients,
-                final Map<String,StageStaticInputData> staticInputData) {
+                final Map<String,StageInputData> inputData) {
 
       this.coefficients= coefficients;
-      this.staticInputData= staticInputData;
+      this.inputData= inputData;
    }
 
    //final public List<Coefficient> getCoefficients() {
@@ -75,41 +75,39 @@ final public class Stage implements IStage, IStageIO {
    *       is used for the polynomial order 0 (p= s0*factorDValues[0] + s1*factorDValues[1] + ... sN*factorDValues[N])
    */
    //final double evaluate(final List<Double> factorDValues) {
-   final public double evaluate( /*@NotNull @Size(min = 1)*/ final double [] factorDValues) { //, final boolean addC0) {
-
-      // --- Assuming that factorDValues is not null
-      //     here if @NotNull is not activated.
-
-      // --- Can renove the following if block check if @Size(min = 1) is activated
-      if (factorDValues.length == 0) {
-         this.log.error("Stage.evaluate(): factorDValues.length == 0");
-         throw new RuntimeException("Stage.evaluate()");
-      }
-
-      if (factorDValues.length != this.coefficients.size()) {
-      //if (factorDValues.length + 1 != this.coefficients.size()) {
-         this.log.error("Stage.evaluate(): factorDValues.size() != this.coefficients.size()");
-         throw new RuntimeException("Stage.evaluate()");
-      }
-
-      double retAcc= 0.0;
-
-      int cf= 0;
-
-      // --- No unsigned int in Java unfortunately.
-      //for (int cf= 0; cf < factorDValues.length; cf++) {
-      for (final String stageId: this.coefficients.keySet()) {
-
-         retAcc += this.coefficients.get(stageId).getValue() * factorDValues[cf++];
-         //cf++;
-      }
-
-      return retAcc;
-
-      // --- Could have to add the C0 coefficient after all the C1, C2, ..., CN
-      //     terms have been added together
-      //return addC0 ? retAcc + this.coefficients.get(0).getValue() : retAcc;
-   }
+   //final public double evaluate( /*@NotNull @Size(min = 1)*/ final double [] factorDValues) { //, final boolean addC0) {
+   //
+   //   // --- Assuming that factorDValues is not null
+   //   //     here if @NotNull is not activated.
+   //
+   //   // --- Can renove the following if block check if @Size(min = 1) is activated
+   //   if (factorDValues.length == 0) {
+   //      this.log.error("Stage.evaluate(): factorDValues.length == 0");
+   //      throw new RuntimeException("Stage.evaluate()");
+   //   }
+   //
+   //   if (factorDValues.length != this.coefficients.size()) {
+   //   //if (factorDValues.length + 1 != this.coefficients.size()) {
+   //      this.log.error("Stage.evaluate(): factorDValues.size() != this.coefficients.size()");
+   //      throw new RuntimeException("Stage.evaluate()");
+   //   }
+   //
+   //   double retAcc= 0.0;
+   //
+   //   int cf= 0;
+   //   // --- No unsigned int in Java unfortunately.
+   //   //for (int cf= 0; cf < factorDValues.length; cf++) {
+   //   for (final String stageId: this.coefficients.keySet()) {
+   //
+   //      retAcc += this.coefficients.get(stageId).getValue() * factorDValues[cf++];
+   //      //cf++;
+   //   }
+   //
+   //   return retAcc;
+   //   // --- Could have to add the C0 coefficient after all the C1, C2, ..., CN
+   //   //     terms have been added together
+   //   //return addC0 ? retAcc + this.coefficients.get(0).getValue() : retAcc;
+   //}
 
    // --- TODO: Implement evaluateWithUncertainties
    //final double [] evaluateWithUncertainties( /*@NotNull @Size(min = 1)*/ final double [] factorDValues) {

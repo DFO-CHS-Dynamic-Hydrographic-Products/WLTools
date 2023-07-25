@@ -17,7 +17,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 /**
  * TODO: Add comments please!
  */
-final public class StageStaticInputData {
+final public class StageInputData {
 
   /**
    * static log utility
@@ -32,15 +32,14 @@ final public class StageStaticInputData {
   /**
    * basic constructor
    */
-   public StageStaticInputData() {
+   public StageInputData() {
       this.timeMappedData= null;
    }
 
   /**
    * constructor taking a List<Coefficient> arg.
    */
-   public StageStaticInputData(final List<Map<Long,MeasurementCustom>> timeMappedData) {
+   public StageInputData(final List<Map<Long,MeasurementCustom>> timeMappedData) {
       this.timeMappedData= timeMappedData;
    }
-
 }

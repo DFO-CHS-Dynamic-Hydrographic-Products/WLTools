@@ -30,14 +30,11 @@ public interface IStage {
       CLIMATOLOGY
    }
 
-   /**
-    * evaluate the stage polynomial with the factor values provided by
-    * the client method that is using this method.
-    */
-   double evaluate( /*@NotNull @Size(min = 1)*/ final double [] factorDValues); //, final boolean addC0);
-
-   //List<Coefficient> getCoefficients();
-
+   ///**
+   // * evaluate the stage polynomial with the factor values provided by
+   // * the client method that is using this method.
+   // */
+   //double evaluate( /*@NotNull @Size(min = 1)*/ final double [] factorDValues); //, final boolean addC0);O
    //double [] evaluateWithUncertainties( /*@NotNull @Size(min = 1)*/ final double [] factorDValues);
 }
 
