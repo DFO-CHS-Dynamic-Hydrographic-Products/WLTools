@@ -27,7 +27,28 @@ final public class StageCoefficient extends Coefficient {
    /**
     * Comments please!
     */
-   public StageCoefficient(final long timeLagSeconds) {
+   public StageCoefficient(final double value) {
+
+      super(value,0.0);
+      this.timeLagSeconds= 0L;
+   }
+
+   /**
+    * Comments please!
+    */
+   public StageCoefficient(final double value, final double uncertainty) {
+
+      super(value,uncertainty);
+      this.timeLagSeconds= 0L;
+   }
+
+   /**
+    * Comments please!
+    */
+   public StageCoefficient(final double value, final double uncertainty, final long timeLagSeconds) {
+
+      super(value,uncertainty);
+
       this.timeLagSeconds= timeLagSeconds;
    }
 

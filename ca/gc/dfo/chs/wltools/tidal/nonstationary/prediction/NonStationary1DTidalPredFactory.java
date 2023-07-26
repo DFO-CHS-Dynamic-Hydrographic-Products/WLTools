@@ -26,6 +26,7 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFa
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.HashMap;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
@@ -124,7 +125,7 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
                     stageInputData.getAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
      }
 
-     // --- 
+     // ---
      return retAcc + stageCoefficientMap.get(IStageIO.STAGE_JSON_D0_KEY).getValue();
   }
 
@@ -133,36 +134,97 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
    */
   final public NonStationary1DTidalPredFactory getNSJSONFileData(/*@NotNull*/ final String tcInputfilePath) {
 
+    //System.out.println("NonStationary1DTidalPredFactory getNSJSONFileData: start");
+
     //--- Deal with possible null tcInputfilePath String:
     try {
       tcInputfilePath.length();
 
     } catch (NullPointerException e) {
 
-      this.log.error("NonStationary1DTidalPredFactory getNSJSONFileData: tcInputfilePath==null!!");
+      this.log.error("tcInputfilePath is null !!");
       throw new RuntimeException("NonStationary1DTidalPredFactory getNSJSONFileData");
     }
 
-    this.log.debug("NonStationary1DTidalPredFactory getNSJSONFileData: Start, tcInputfilePath=" + tcInputfilePath);
+    this.log.info("Start: tcInputfilePath=" + tcInputfilePath);
 
     //--- Get the TCF format ASCII lines in a List of Strings:
     //final List<String> jsonFileLines = ASCIIFileIO.getFileLinesAsArrayList(tcInputfilePath);
     //final JsonParser tcJsonInput= Json.createParser(new FileInputStream(tcInputfilePath));
 
+    JsonObject jsonTcDataInputObj= null;
+
     try {
         //final FileInputStream tcInputfilePathRdr= new FileInputStream(tcInputfilePath);
        //final JsonArray jsonTcDataInputArray= Json.createReader(new FileInputStream(tcInputfilePath)).readArray();
 
-       final JsonObject jsonTcDataInputArray= Json.createReader(new FileInputStream(tcInputfilePath)).readObject();
+       jsonTcDataInputObj= Json.createReader(new FileInputStream(tcInputfilePath)).readObject();
 
     } catch (FileNotFoundException e) {
 
-      this.log.error("NonStationary1DTidalPredFactory getNSJSONFileData: tcInputfilePath"+tcInputfilePath+" not found !!");
+      this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
       throw new RuntimeException("NonStationary1DTidalPredFactory getNSJSONFileData");
     }
 
+    // --- TODO: add fool-proof checks on all the Json dict keys.
+
+    final JsonObject stageJsonObj= jsonTcDataInputObj.getJsonObject(IStageIO.STAGE_JSON_DICT_KEY);
+
+    // --- This populate procedure should be done in the Stage class itself
+    Map<String,StageCoefficient> stageCoefficients= new HashMap<>();
+
+    stageCoefficients.put( IStageIO.STAGE_JSON_D0_KEY,
+          new StageCoefficient(stageJsonObj.getJsonNumber(IStageIO.STAGE_JSON_D0_KEY).doubleValue()) );
+
+    final Set<String> coefficientsIdsSet= stageJsonObj.keySet();
+    //this.log.info("coefficientsIds="+coefficientsIds.toString());
+
+    // ---- coefficientsIdsSet.size() MUST be odd here!
+    final int nbNonZeroThOrderCoeffs= (coefficientsIdsSet.size()-1)/2;
+
+    //this.log.info("nbNonZeroThOrderCoeffs="+nbNonZeroThOrderCoeffs);
+    //this.log.info("Debug System.exit(0)");
+    //System.exit(0);
+
+    for (Integer coeffOrder= 1; coeffOrder<= nbNonZeroThOrderCoeffs; coeffOrder++) {
+
+       final String coeffOrderKey=
+          IStageIO.STAGE_JSON_DN_KEYS_BEG + coeffOrder.toString();
+
+       final String coeffFactorKey= coeffOrderKey +
+          IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNFCT_KEYS;
+
+       final String coeffHoursLagKey= coeffOrderKey +
+          IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNLAG_KEYS;
+
+       //this.log.info("coeffFactorKey="+coeffFactorKey);
+       //this.log.info("coeffHoursLagKey="+coeffHoursLagKey);
+
+       final double coeffFactorValue= stageJsonObj.getJsonNumber(coeffFactorKey).doubleValue();
+       final long   coeffHoursLagValue= stageJsonObj.getJsonNumber(coeffHoursLagKey).longValue();
+
+       this.log.info("coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
+       this.log.info("coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
+
+       // --- uncertaintu is 0.0 for now.
+       stageCoefficients.put( coeffOrderKey, new StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue));
+    }
+
+    this.stagePart= new Stage();
+
+    this.stagePart.setCoeffcientsMap(stageCoefficients);
+
+    final JsonObject channelGridPointJsonObj=
+       jsonTcDataInputObj.getJsonObject(IStageIO.STATION_INFO_JSON_DICT_KEY);
+
+    //this.log.info("channelGridPointInfo="+channelGridPointInfo.toString());
+
+    final double lat= channelGridPointJsonObj.getJsonNumber(IStageIO.STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+
+    this.log.info("station lat="+lat);
+
     //this.log.debug("NonStationary1DTidalPredFactory getNSJSONFileData: done with Json.createParser");
-    this.log.debug("NonStationary1DTidalPredFactory getNSJSONFileData: System.exit(0)");
+    this.log.info("Debug System.exit(0)");
     System.exit(0);
 
     return this;

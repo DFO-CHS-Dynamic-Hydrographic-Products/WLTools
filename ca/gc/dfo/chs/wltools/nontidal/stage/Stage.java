@@ -58,11 +58,23 @@ final public class Stage implements IStage, IStageIO {
   /**
    * Comments please!
    */
-   public Stage(final Map<String,StageCoefficient> coefficients,
-                final Map<String,StageInputData> inputData) {
+   public Stage(final Map<String,StageInputData> inputData,
+                final Map<String,StageCoefficient> coefficients) {
 
       this.coefficients= coefficients;
       this.inputData= inputData;
+   }
+
+   final public Stage setCoeffcientsMap(final Map<String,StageCoefficient> coefficients) {
+
+      this.coefficients= coefficients;
+      return this;
+   }
+
+   final public Stage setInputDataMap(final Map<String,StageInputData> inputData) {
+
+      this.inputData= inputData;
+      return this;
    }
 
   /**

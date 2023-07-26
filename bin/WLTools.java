@@ -10,6 +10,10 @@ import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
 final public class WLTools {
 
+   static {
+      System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace");
+   }
+
    static public void main (String[] args) {
 
       System.out.println("WLTools main start");
