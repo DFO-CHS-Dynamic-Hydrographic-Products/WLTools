@@ -34,9 +34,14 @@ final public class WLStationPred extends WLStationPredFactory {
   /**
    * static log utility.
    */
-  private final static Logger staticLogger = LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.wl" +
-      ".WLTidalPredictions");
-  
+  //private final static Logger staticLogger= 
+  //    LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.wl" + ".WLTidalPredictions");
+
+  /**
+   * Usual class instance log utility.
+   */
+  private final Logger log= LoggerFactory.getLogger(this.getClass());
+
   /**
    * Default constuctor:
    */
@@ -46,36 +51,45 @@ final public class WLStationPred extends WLStationPredFactory {
   
   /**
    * @param stationId:              String id. of the WL station.
-   * @param inputfileFormat:        object of class ConstituentsInputFileFormat for the Z tidal constituents input
-   *                                file format.
-   * @param latitudeDecimalDegrees: Need latitude of the target location for astronomic ephemerides computations.
-   * @param startTimeSeconds:       Time stamp in seconds since UNIX epoch for the astronomic ephemerides computations.
+   * @param startTimeSeconds:       Starting time in seconds.
+   * @param enTimeSeconds:          Ending time in seconds.
+   * @param timeIncrSeconds:        Time increments between sucessive WLs (in seconds)
+   * @param latitudeDecimalDegrees: (null for stage-only and climatology methods) Need latitude of the target location for astronomic ephemerides computations.
+   * @param method:                 (null for stage-only and climatology methods) The Tidal prediction method name id.
+   * @param wlTContstfileFormat:    
    */
-  public WLStationPred(final String stationId, final WLConstituentsInputFileFormat inputfileFormat,
-                       final double latitudeDecimalDegrees, final long startTimeSeconds) {
-    
-    super(Method.FOREMAN, stationId, inputfileFormat, latitudeDecimalDegrees, startTimeSeconds);
+  public WLStationPred(/*@NotNull*/ final String stationId,
+                       /*@NotNull*/ final long startTimeSeconds,
+                       final long endTimeSeconds,
+                       final long timeIncrSeconds,
+                       final double latitudeDecimalDegrees,
+                       final WLConstituentsInputFileFormat wlTContstfileFormat,
+                       final Method method,
+                       /*@NotNull*/ final Map<String, String> stageTimeVaryingData) {
+
+     super(method, stationId, inputfileFormat, latitudeDecimalDegrees, startTimeSeconds);
+    //super(Method.FOREMAN, stationId, inputfileFormat, latitudeDecimalDegrees, startTimeSeconds);
   }
   
-  /**
-   * @param method            : Method object which specify which method to use for the tidal computations.
-   * @param inputFileFormat:  object of class ConstituentsInputFileFormat for the Z tidal constituents input file
-   *                          format.
-   * @param startTimeSeconds: Time stamp in seconds since UNIX epoch time 0 for the astronomic ephemerides
-   *                          computations.
-   * @param stationInfo:      IWLS Station object normally retreived from the DB with a SQL request.
-   */
-  public WLStationPred(final Method method,
-                       final WLConstituentsInputFileFormat inputFileFormat,
-                       final long startTimeSeconds, /*@NotNull*/ final Station stationInfo) {
-    
-    //--- No more com.vividsolutions.jts.geom.Point object in IWLS Station class.
-    //    But it could eventually make a comeback.
-    super(method, stationInfo.getCode(), inputFileFormat, stationInfo.getLatitude(), startTimeSeconds);
-
-    //super(method, stationInfo.getCode(), inputFileFormat, stationInfo.getLocation().getCoordinates()[0].y,
-    // startTimeSeconds);
-  }
+  ///**
+  // * @param method            : Method object which specify which method to use for the tidal computations.
+  // * @param inputFileFormat:  object of class ConstituentsInputFileFormat for the Z tidal constituents input file
+  // *                          format.
+  // * @param startTimeSeconds: Time stamp in seconds since UNIX epoch time 0 for the astronomic ephemerides
+  // *                          computations.
+  // * @param stationInfo:      IWLS Station object normally retreived from the DB with a SQL request.
+  // */
+  //public WLStationPred(final Method method,
+  //                     final WLConstituentsInputFileFormat inputFileFormat,
+  //                     final long startTimeSeconds, /*@NotNull*/ final Station stationInfo) {
+  //
+  //  //--- No more com.vividsolutions.jts.geom.Point object in IWLS Station class.
+  //  //    But it could eventually make a comeback.
+  //  super(method, stationInfo.getCode(), inputFileFormat, stationInfo.getLatitude(), startTimeSeconds);
+  //
+  //  //super(method, stationInfo.getCode(), inputFileFormat, stationInfo.getLocation().getCoordinates()[0].y,
+  //  // startTimeSeconds);
+  //}
   
   /**
    * @param method              : Method object which specify which method to use for the tidal computations.

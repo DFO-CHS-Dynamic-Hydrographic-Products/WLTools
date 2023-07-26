@@ -151,7 +151,9 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
 
     try {
         //final FileInputStream tcInputfilePathRdr= new FileInputStream(tcInputfilePath);
-       final JsonArray jsonTcDataInputArray= Json.createReader(new FileInputStream(tcInputfilePath)).readArray();
+       //final JsonArray jsonTcDataInputArray= Json.createReader(new FileInputStream(tcInputfilePath)).readArray();
+
+       final JsonObject jsonTcDataInputArray= Json.createReader(new FileInputStream(tcInputfilePath)).readObject();
 
     } catch (FileNotFoundException e) {
 

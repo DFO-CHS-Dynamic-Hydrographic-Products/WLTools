@@ -11,6 +11,7 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+//import ca.gc.dfo.chs.wltools.util.ITrigonometry;
 //import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
@@ -31,6 +32,7 @@ import ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidal
 //import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
 //import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
 
+import java.lang.Math;
 import java.util.List;
 import org.slf4j.Logger;
 import java.time.Instant;
@@ -48,8 +50,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Class WLTidalPredictionsFactory acts as abstract base class for water levels tidal predictions:
  */
-abstract public class WLStationPredFactory
-   implements IWL, ITidal, ITidalIO, IStage, INonStationaryIO {
+//abstract
+public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
 
   /**
    * Usual log utility.
@@ -94,6 +96,8 @@ abstract public class WLStationPredFactory
    */
   private String stationId = null;
 
+  protected long timeIncrSeconds= IWLStationPred.DEFAULT_TIME_INCR;
+
   /**
    * Default constructor.
    */
@@ -102,20 +106,31 @@ abstract public class WLStationPredFactory
   }
   
   /**
+   * Specific WLStationPredFactory constructor for the tidal predictions (stationary or non-stationary).
    * @param method:                 The prediction method to use as defined in the Method object.
-   * @param stationId               The WL station id.
-   * @param inputFile               A data input file, if any (could be null)
-   * @param inputFileFormat:        Input file format to use.
+   * @param stationId               The WL station id. where we want to produce predictions.
+   * @param tcInputFile             A tidal consts. input data file for the station.
+   * @param tcInputFileFormat:      Tidal consts. input file format to use.
    * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station.
-   * @param startTimeSeconds:       The start time(in seconds since the epoch) for the astronomic arguments
-   *                                computations.
+   * @param startTimeSeconds:       The start time(in seconds since the epoch) for the astronomic arguments computations.
+   * @param endTimeSeconds:         The end time(in seconds since the epoch) for the prediction data produced.
+   * @param timeIncrSeconds:        The time increment to use between the successive WL prediction data produced (must be a multiple of 60 seconds,default 900)
+   * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station (null if the station lat is defined in the tcInputFile)
    */
-  public WLStationPredFactory(final Method method,
-                              final String stationId,
-                              final String inputFile,
-                              final WLConstituentsInputFileFormat inputFileFormat,
-                              final double latitudeDecimalDegrees,
-                              final long startTimeSeconds ) {
+  public WLStationPredFactory(/*@NotNull*/final ITidal.Method method,
+                              /*@NOtNull*/final String stationId,
+                              /*@NotNull*/final String stationTcInputFile,
+                              /*@NotNull*/final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
+                              /*@NotNull*/final long startTimeSeconds,
+                              /*@NotNull*/final long endTimeSeconds,
+                              final Long timeIncrSeconds,
+                              final Double stationLatitudeDecimalDegrees ) {
+
+    // ---
+    if (timeIncrSeconds != null) {
+       this.timeIncrSeconds= timeIncrSeconds;
+    }
+
     try {
       stationId.length();
       
@@ -128,11 +143,12 @@ abstract public class WLStationPredFactory
     //--- To avoid SNAFU mix-up between WL stations data:
     this.stationId = stationId;
 
+    // --- 
     if ( method == ITidal.Method.STATIONARY_FOREMAN || method == ITidal.Method.NON_STATIONARY_FOREMAN) {
 
        if ( method == ITidal.Method.STATIONARY_FOREMAN ) {
 
-          if ( inputFileFormat != ITidalIO.WLConstituentsInputFileFormat.STATIONARY_TCF) {
+          if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.STATIONARY_TCF) {
 
               this.log.error("WLStationPredFactory constructor: STATIONARY_FOREMAN prediction method -> Must have STATONARY_TCF for the tc input file format!");
               throw new RuntimeException("WLStationPredFactory constructor");
@@ -143,7 +159,7 @@ abstract public class WLStationPredFactory
 
        if ( method == ITidal.Method.NON_STATIONARY_FOREMAN) {
 
-          if ( inputFileFormat != ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON) {
+          if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON) {
 
               this.log.error("WLStationPredFactory constructor: NON_STATONARY_JSON prediction method -> Must have NON_STATONARY_JSON for the tc input file format!");
               throw new RuntimeException("WLStationPredFactory constructor");
@@ -155,7 +171,7 @@ abstract public class WLStationPredFactory
        //--- Retreive WL station tidal constituents from a local disk file.
        //    It MUST be used before the following this.1DTidalPred.setAstroInfos
        //    method call
-       this.getStationConstituentsData(stationId, inputFile, inputFileFormat);
+       this.getStationConstituentsData(stationId, stationTcInputFile, tcInputFileFormat);
 
        this.log.debug("WLStationPredFactory constructor: after this.getStationConstituentsData System.exit(0)");
        System.exit(0);
@@ -163,10 +179,10 @@ abstract public class WLStationPredFactory
        //--- MUST convert decimal degrees latitude to radians here:
        ///   MUST be used after this.getStationConstituentsData method call.
        this.tidalPred1D.setAstroInfos(method,
-                                      DEGREES_2_RADIANS * latitudeDecimalDegrees,
+                                      Math.toRadians(stationLatitudeDecimalDegrees),
                                       startTimeSeconds,
                                       this.tidalPred1D.getTcNames());
-    }
+    } // ---
   }
   
   /**
@@ -234,7 +250,7 @@ abstract public class WLStationPredFactory
            throw new RuntimeException("WLStationPredFactory getStationConstituentsData");
         }
 
-        this.log.debug("WLStationPredFactory getStationConstituentsData: reading NON_STATONARY_JSON tc input file: "+tcfFilePath);
+        this.log.debug("WLStationPredFactory getStationConstituentsData: reading NON_STATONARY_JSON tc input file: "+tcInputfilePath);
 
         this.tidalPred1D.getNSJSONFileData(tcInputfilePath);
 

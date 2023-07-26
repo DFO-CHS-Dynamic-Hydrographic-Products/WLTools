@@ -234,5 +234,10 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
   /**
    * Comments please!
    */
-  //abstract public StationaryTidalPredFactory getNSJSONFileData(/*@NotNull*/ final String jsonFilePath);
+   public Stationary1DTidalPredFactory getNSJSONFileData(/*@NotNull*/ final String jsonFilePath) {
+
+      throw new RuntimeException("Stationary1DTidalPredFactory getNSJSONFileData method not implemented yet!");
+
+      //return this;
+   }
 }
