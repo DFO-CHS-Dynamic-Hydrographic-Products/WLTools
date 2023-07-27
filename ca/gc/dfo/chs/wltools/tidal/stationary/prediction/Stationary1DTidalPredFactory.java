@@ -110,17 +110,17 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
       
     } catch (NullPointerException e) {
       
-      this.log.error("Stationary1DTidalPredFactory setAstroInfos: constNames==null !!");
+      log.error("setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    this.log.debug("Stationary1DTidalPredFactory setAstroInfos: setAstroInfos : start");
+    log.info("setAstroInfos : start");
     
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
     
-    this.constituent1DData = new Constituent1DData(this.tcDataMap, this.astroInfosFactory);
+    this.constituent1DData= new Constituent1DData(this.tcDataMap, this.astroInfosFactory);
     
-    this.log.debug("Stationary1DTidalPredFactory setAstroInfos: end");
+    log.info("setAstroInfos: end");
     
     return this;
   }

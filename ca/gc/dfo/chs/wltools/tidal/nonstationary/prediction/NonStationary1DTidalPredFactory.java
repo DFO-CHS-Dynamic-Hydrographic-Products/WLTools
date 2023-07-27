@@ -51,18 +51,18 @@ import org.slf4j.LoggerFactory;
  *  (Matte et al., Journal of Atmospheric and Oceanic Technology, 2013)
  */
 final public class NonStationary1DTidalPredFactory
-   extends Stationary1DTidalPredFactory implements INonStationaryIO {
+   extends Stationary1DTidalPredFactory implements IStageIO, INonStationaryIO {
 
   /**
    * log utility.
    */
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
   /**
-   * List of Map objects of tidal constituents information for the non-stationary(river discharge and-or atmospheric)
-   * for a specific location coming from a file or a DB.
+   * List of HashMap objects of tidal constituents information for the non-stationary(river discharge and-or atmospheric)
+   * tidal constituents with polynomial order >=1 for a specific location(station) coming from a file or a DB.
    */
-  private HashMap<String, HashMap<String, Constituent1D>> tcDataMaps= null;
+  private HashMap<String, HashMap<String, Constituent1D>> hoTcDataMaps= null;
 
   /**
    * List of Constituent1DData objects which will be used by the non-stationary tidal prediction method.
@@ -70,7 +70,7 @@ final public class NonStationary1DTidalPredFactory
    * have Map items in one Map item of tcDataMaps list.
    */
   //private Map<String, Map<String,Constituent1DData>> constituent1DDataItems= null;
-  private HashMap<String,Constituent1DData> constituent1DDataItems= null;
+  private HashMap<String, Constituent1DData> constituent1DDataItems= null;
 
   /**
    * The stage equation (polynomial) object.
@@ -87,14 +87,14 @@ final public class NonStationary1DTidalPredFactory
    * Default constructor.
    */
   public NonStationary1DTidalPredFactory() {
-    
+
     super();
-    
-    this.tcDataMaps= null;
+
     this.stagePart= null;
+    this.hoTcDataMaps= null;
     this.constituent1DDataItems= null;
   }
-  
+
   /**
    * @param timeStampSeconds : A time-stamp in seconds since the epoch where we want a single tidal prediction.
    * @return The newly computed single tidal prediction in double precision.
@@ -102,33 +102,38 @@ final public class NonStationary1DTidalPredFactory
   @Override
   final public double computeTidalPrediction(final long timeStampSeconds) {
 
-     // --- Compute the stationary part (NOTE: no Z0 average to use here, it is rather
-     //     in the stage part (the CS0 coefficient, added at the end.)
-     double retAcc= super.computeTidalPrediction(timeStampSeconds);
-
      final Map<String,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
-
      final Map<String,StageCoefficient> stageCoefficientMap= this.stagePart.getCoeffcientsMap();
 
-     // --- Add the non-stationary parts of the signal
-     for (final String stInputDataId: stageInputDataMap.keySet()) {
+     // --- Get the zero'th order non-stationary WL pred. part taking the stage zero'th
+     //    order coefficient as the Z0 (WL average).
+     double tidaPredValue= super.computeTidalPrediction(timeStampSeconds) +
+                           stageCoefficientMap.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue();
 
-        // --- Calculate the non-stationary tidal argument.
-        final double nsTidalArg= super.astroInfosFactory.
-           computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stInputDataId));
+     // --- Add the higher order(s) contribution to the WL tidal pred. signal.
+     for (final String stageCoeffId: this.constituent1DDataItems.keySet()) { // stageInputDataMap.keySet()) {
 
-        final StageInputData stageInputData= stageInputDataMap.get(stInputDataId);
+        // --- Get the non-stationary WL tidal pred. contribution for this
+        //     higher order >=1/
+        final double hoTidalValue= super.astroInfosFactory.
+           computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stageCoeffId));
 
-        final StageCoefficient stageCoefficient= stageCoefficientMap.get(stInputDataId);
+        //final StageInputData stageInputData= stageInputDataMap.get(stInputDataId);
 
-        // ---- Apply the stage calculation with the related stage part and the non-stationart tidal arg. added together
-        //      (multiply  by the time varying stage input data,note the lag time subtraction.)
-        retAcc += (stageCoefficient.getValue() + nsTidalArg) *
-                    stageInputData.getAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
+        final StageCoefficient stageCoefficient= stageCoefficientMap.get(stageCoeffId);
+
+        // --- Get the stage value for this stage coefficient using the time lag
+        //     as determined by the non-stationary tidal analysis.
+        final double stageInputDataValue= stageInputDataMap.get(stageCoeffId).
+            getAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
+
+        // ---- Apply the non-stationary calculation with the related stage value part and the
+        //      the hoTidalValue for this higher order.
+        tidaPredValue += (stageCoefficient.getValue() + hoTidalValue) * stageInputDataValue;
      }
 
      // ---
-     return retAcc + stageCoefficientMap.get(IStageIO.STAGE_JSON_D0_KEY).getValue();
+     return tidaPredValue;
   }
 
   /**
@@ -144,11 +149,11 @@ final public class NonStationary1DTidalPredFactory
 
     } catch (NullPointerException e) {
 
-      this.log.error("tcInputfilePath is null !!");
+      log.error("tcInputfilePath is null !!");
       throw new RuntimeException("NonStationary1DTidalPredFactory getNSJSONFileData");
     }
 
-    this.log.info("Start: tcInputfilePath=" + tcInputfilePath);
+    log.info("Start: tcInputfilePath=" + tcInputfilePath);
 
     //--- Get the TCF format ASCII lines in a List of Strings:
     //final List<String> jsonFileLines = ASCIIFileIO.getFileLinesAsArrayList(tcInputfilePath);
@@ -176,65 +181,142 @@ final public class NonStationary1DTidalPredFactory
     // --- TODO: add fool-proof checks on all the Json dict keys.
 
     final JsonObject channelGridPointJsonObj=
-       mainJsonTcDataInputObj.getJsonObject(IStageIO.STATION_INFO_JSON_DICT_KEY);
+       mainJsonTcDataInputObj.getJsonObject(STATION_INFO_JSON_DICT_KEY);
 
     //this.log.info("channelGridPointInfo="+channelGridPointInfo.toString());
 
     final double stationLat= channelGridPointJsonObj.
-       getJsonNumber(IStageIO.STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+       getJsonNumber(STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
 
-    this.log.info("station stationLat="+stationLat);
+    log.info("station stationLat="+stationLat);
 
     // --- Populate the this.stagePart object.
     final JsonObject stageJsonObj=
-       mainJsonTcDataInputObj.getJsonObject(IStageIO.STAGE_JSON_DICT_KEY);
+       mainJsonTcDataInputObj.getJsonObject(STAGE_JSON_DICT_KEY);
 
     this.stagePart= new Stage();
 
     // --- Populate the this.stagePart with the stage equation coefficients.
     this.stagePart.setCoeffcientsMap(stageJsonObj);
 
-    final Set stageCoefficientsIds= this.stagePart.getCoeffcientsMap().keySet();
+    //final HashMap<String,StageCoefficient>
+    final Set<String> stageCoefficientsIds=
+       this.stagePart.getCoeffcientsMap().keySet();
 
-    this.log.info("station stageCoefficientsIds="+stageCoefficientsIds.toString());
+    log.info("station stageCoefficientsIds="+stageCoefficientsIds); //.keySet().toString());
 
     // --- Populate the non-stationary tidal constituents data with the Json
     //     formatted file content.
     final JsonObject jsonTcDataInputObj=
        mainJsonTcDataInputObj.getJsonObject(FLUVIAL_TIDAL_CONSTS_JSON_DICT_KEY);
 
-    // ---  The non-stationary tidal constituents data will first be
-    //      stored in the this.tcDataMaps HasMap before doing the
-    //      related astronomic tidal calculations for them.
-    this.tcDataMaps= new HashMap<>();
+    // --- Allocate the super.tcDataMap HashMap object to store
+    //     the zero'th order non-stationary tidal constituents
+    //     data before doing the related astronomic tidal calculations
+    //      for them.
+    super.tcDataMap= new HashMap<>();
 
-    for (final String tcConstName: jsonTcDataInputObj.keySet()) {
+    // ---  Allocate this.tcDataMaps to store the order>=1 non-stationary
+    //      tidal constituents before doing the related astronomic tidal
+    //      calculations for them.
+    this.hoTcDataMaps= new HashMap<>();
 
-       this.log.info("Processing tidal const. "+tcConstName);
+    // --- Set the String keys of the this.hoTcDataMaps HashMap object,
+    for (final String stageCoefficientsId: stageCoefficientsIds) {
 
-       this.tcDataMaps.put(tcConstName, new HashMap<>());
-
-       final JsonObject jsonTcDataObj=
-          jsonTcDataInputObj.getJsonObject(tcConstName);
-
-       //this.log.info("tc const data="+jsonTcDataObj.toString());
-
-       for (final String stageCoefficientId: stageCoefficientsIds) {
-
+       // --- Must not consider the zero'th order key for the this.hoTcDataMaps object,
+       if (! stageCoefficientsId.equals(STAGE_JSON_ZEROTH_ORDER_KEY) ) {
+          this.hoTcDataMaps.put(stageCoefficientsId, new HashMap<>() );
        }
-
-       this.log.info("Done with Processing tidal const. "+tcConstName);
     }
 
+    final String jsonAmplitudeKey=
+       STAGE_JSON_KEYS_SPLIT + TIDAL_CONSTS_JSON_AMP_KEY;
+
+    final String jsonGrwPhaseLagKey=
+       STAGE_JSON_KEYS_SPLIT + TIDAL_CONSTS_JSON_PHA_KEY;
+
+    // --- Build the zero'th order amplitude key for the Jsom
+    //     formatted input.
+    final String zeroThOrderAmpKey= STAGE_JSON_ZEROTH_ORDER_KEY + jsonAmplitudeKey;
+                 //STAGE_JSON_KEYS_SPLIT + TIDAL_CONSTS_JSON_AMP_KEY;
+
+    // --- Build the zero'th order Greenwich phase lag key for the Jsom
+    //     formatted input.
+    final String zeroThOrderPhaKey= STAGE_JSON_ZEROTH_ORDER_KEY + jsonGrwPhaseLagKey;
+                // STAGE_JSON_KEYS_SPLIT + TIDAL_CONSTS_JSON_PHA_KEY;
+
+    // --- Now populate the super.tcDataMap and the this.tcDataMaps HashMap objects
+    //     with the related non-stationary tidal constituents data.
+    for (final String jsonTcConstName: jsonTcDataInputObj.keySet()) {
+
+       // --- Be sure to remove any leading and-or trailing blank
+       //     (and annoying) characters.
+       //final String tcConstName= jsonTcConstName.strip();
+       //this.log.info("Processing tidal const. "+tcConstName);
+
+       //this.tcDataMaps.put(tcConstName, new HashMap<>());
+
+       // --- Get the JsonObject for this non-stationary tidal const.
+       final JsonObject jsonTcDataObj=
+          jsonTcDataInputObj.getJsonObject(jsonTcConstName);
+ 
+       // --- Amplitude for the zero'th order of this
+       //     tidal const.
+       final double zeroThOrderAmplitude=
+          jsonTcDataObj.getJsonNumber(zeroThOrderAmpKey).doubleValue();
+
+       // ---Assuming that the Greenwich phase lag is in radians here.
+       final double zeroThOrderGrwPhaseLag=
+          jsonTcDataObj.getJsonNumber(zeroThOrderPhaKey).doubleValue();
+
+       // --- Be sure to remove any leading and-or trailing blank
+       //     (and annoying) characters.
+       final String tcConstName= jsonTcConstName.strip();
+       log.info("Processing tidal const. \""+tcConstName+"\"");
+
+       // --- Populate the super.tcDataMap object with the
+       //     zero'th order for this non-stationary tidal const.
+       super.tcDataMap.put( tcConstName,
+                            new Constituent1D(zeroThOrderAmplitude,zeroThOrderGrwPhaseLag)) ;
+
+       // --- Loop on the order >=1 stage(s) id(s) and set the inner
+       //     HashMap with the non-staionary tidal constituents info
+       //     for this location.
+       for (final String hoStageId: this.hoTcDataMaps.keySet()) {
+
+          final String hoOrderAmpKey= hoStageId + jsonAmplitudeKey;
+          final String hoOrderPhaKey= hoStageId + jsonGrwPhaseLagKey;
+
+          final double hoTcAmplitude=
+            jsonTcDataObj.getJsonNumber(hoOrderAmpKey).doubleValue();
+
+          final double hoTcGrwPhaseLag=
+            jsonTcDataObj.getJsonNumber(hoOrderPhaKey).doubleValue();
+
+          this.hoTcDataMaps.get(hoStageId).put( tcConstName,
+                                                new Constituent1D(hoTcAmplitude,hoTcGrwPhaseLag) );
+       }
+
+       log.info("Done with Processing tidal const. \""+tcConstName+"\"");
+    }
+
+    //this.log.info("super.tcDataMap.keySet="+super.tcDataMap.keySet().toString());
+    //this.log.info("\n\nsuper.tcDataMap.get(M2)="+super.tcDataMap.get("M2").toString());
+    //this.log.info("\n\nthis.hoTcDataMaps.get(CS1).get(M2)="+this.hoTcDataMaps.get("CS1").get("M2").toString());
+    //this.log.info("\n\nthis.hoTcDataMaps.get(CS2).get(M2)="+this.hoTcDataMaps.get("CS2").get("M2").toString());
+
     //this.log.debug("NonStationary1DTidalPredFactory getNSJSONFileData: done with Json.createParser");
-    this.log.info("Debug System.exit(0)");
-    System.exit(0);
+    //this.log.info("Debug System.exit(0)");
+    //System.exit(0);
 
     try {
        jsonFileInputStream.close();
     } catch (IOException e) {
        throw new RuntimeException(e);
     }
+
+    log.info("End");
 
     return this;
   }
@@ -257,27 +339,30 @@ final public class NonStationary1DTidalPredFactory
       
     } catch (NullPointerException e) {
       
-      this.log.error("NonStationary1DTidalPredFactory setAstroInfos: constNames==null !!");
+      this.log.error("setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    this.log.debug("NonStationary1DTidalPredFactory setAstroInfos: setAstroInfos : start");
+    this.log.info("setAstroInfos : start");
 
     // --- Compute the stationary astronomic information and set the stationary
     //     tidal constituents amplitudes and phases.
+    //super.setAstroInfos(STATIONARY_FOREMAN, latitudeRadians, startTimeSeconds, constNames);
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
-    
-    //int dimCount= 0;
+
+    this.log.info("setAstroInfos : after super.setAstroInfos()");
+    this.log.info("setAstroInfos : Debug exit(0)");
+    System.exit(0);
 
     // --- Set the non-stationary tidal constituents amplitudes and phases.
     //for (Constituent1DData c1DD: this.constituent1DDataItems) {
     for (final String tcMapId: this.constituent1DDataItems.keySet()) {
 
-        this.constituent1DDataItems.put(tcMapId,
-           new Constituent1DData(this.tcDataMaps.get(tcMapId),this.astroInfosFactory));
+       this.constituent1DDataItems.put(tcMapId,
+          new Constituent1DData(this.hoTcDataMaps.get(tcMapId),this.astroInfosFactory));
     }
 
-    this.log.debug("NonStationary1DTidalPredFactory setAstroInfos: end");
+    this.log.debug("setAstroInfos: end");
     
     return this;
   }

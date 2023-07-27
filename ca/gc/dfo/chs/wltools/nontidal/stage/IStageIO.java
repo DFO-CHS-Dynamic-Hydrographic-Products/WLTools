@@ -17,7 +17,8 @@ public interface IStageIO {
 
    String STAGE_JSON_DICT_KEY= "Stage";
 
-   String STAGE_JSON_D0_KEY= "CS0";
+   String STAGE_JSON_ZEROTH_ORDER_KEY= "CS0";
+   //String STAGE_JSON_D0_KEY= "CS0";
    //String STAGE_JSON_D0_KEY= "s0"; // --- The stage zero order coefficient json dict key. (WL average or Z0 in classic HA jargon)
 
    String STAGE_JSON_KEYS_SPLIT= ".";

@@ -82,10 +82,10 @@ final public class Stage implements IStage, IStageIO {
       this.coefficients= new HashMap<>();;
 
       // --- Set the zero'th order Stage coefficient
-      this.coefficients.put( STAGE_JSON_D0_KEY,
-          new StageCoefficient(stageJsonObj.getJsonNumber(IStageIO.STAGE_JSON_D0_KEY).doubleValue()) );
+      this.coefficients.put( STAGE_JSON_ZEROTH_ORDER_KEY,
+          new StageCoefficient(stageJsonObj.getJsonNumber(STAGE_JSON_ZEROTH_ORDER_KEY).doubleValue()) );
 
-      this.log.info("Zero'th order coefficient value="+this.coefficients.get(STAGE_JSON_D0_KEY).getValue());
+      this.log.info("Zero'th order coefficient value="+this.coefficients.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue());
 
       final Set<String> coefficientsIdsSet= stageJsonObj.keySet();
 
@@ -138,14 +138,14 @@ final public class Stage implements IStage, IStageIO {
   /**
    * Comments please!
    */
-   final public Map<String,StageCoefficient> getCoeffcientsMap() {
+   final public HashMap<String,StageCoefficient> getCoeffcientsMap() {
       return this.coefficients;
    }
 
   /**
    * Comments please!
    */
-   final public Map<String,StageInputData> getInputDataMap() {
+   final public HashMap<String,StageInputData> getInputDataMap() {
      return this.inputData;
   }
    //final public List<Coefficient> getCoefficients() { return this.coefficients;

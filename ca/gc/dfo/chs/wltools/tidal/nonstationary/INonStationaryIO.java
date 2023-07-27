@@ -15,12 +15,9 @@ public interface INonStationaryIO extends ITidalIO {
    
    String STAGE_TIDAL_CONSTS_JSON_DICT_KEY= "Stage+Tidal"; // --- The json dict key for the non-stationary <non defined>+tidal constituents data.
 
-   String TIDAL_CONSTS_JSON_AMP_KEYS= "amp"; // --- The json dict keys for the amplitudes values
-   String TIDAL_CONSTS_JSON_PHA_KEYS= "pha"; // --- The json dict keys for the phases (greenwich lagged) values
+   String TIDAL_CONSTS_JSON_AMP_KEY= "amp"; // --- The json dict keys for the amplitudes values
+   String TIDAL_CONSTS_JSON_PHA_KEY= "pha"; // --- The json dict keys for the phases (greenwich lagged) values
 
    //String TIDAL_CONSTS_JSON_AMP_KEYS= "CS*.amp"; // --- The json dict keys for the amplitudes values
    //String TIDAL_CONSTS_JSON_PHA_KEYS= "CS*.pha"; // --- The json dict keys for the phases (greenwich lagged) values
 }
-
-
-

@@ -36,7 +36,8 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
   /**
    * log utility
    */
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+   private final Logger log = LoggerFactory.getLogger(this.getClass());
+  //private final static Logger log = LoggerFactory.getLogger(ClassName.class);
 
   /**
    * Generic AstroInfosFactory object for astronomic arguments computations.
@@ -67,19 +68,21 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
       constNames.size();
       
     } catch (NullPointerException e) {
-      this.log.error("StationaryTidalPredFactory setAstroInfos: constNames==null !!");
+      log.error("setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    this.log.debug("StationaryTidalPredFactory setAstroInfos : start");
-    this.log.debug("StationaryTidalPredFactory setAstroInfos : method=" + method + ", latitudeRadians=" + latitudeRadians);
-    this.log.debug("StationaryTidalPredFactory setAstroInfos : startTimeSeconds dt=" + SecondsSinceEpoch.dtFmtString(startTimeSeconds, true));
-    this.log.debug("StationaryTidalPredFactory setAstroInfos : constNames=" + constNames.toString());
-    
+    log.info("setAstroInfos : start");
+    log.info("setAstroInfos : method=" + method + ", latitudeRadians=" + latitudeRadians);
+    log.info("setAstroInfos : startTimeSeconds dt=" + SecondsSinceEpoch.dtFmtString(startTimeSeconds, true));
+    log.info("setAstroInfos : constNames=" + constNames.toString());
+
     switch (method) {
-      
+
+      // --- NON_STATIONARY_FOREMAN == STATIONARY_FOREMAN at this point.
+      case NON_STATIONARY_FOREMAN:
       case STATIONARY_FOREMAN:
-        
+
         this.astroInfosFactory = new ForemanAstroInfos(latitudeRadians, startTimeSeconds, constNames);
         break;
 
@@ -93,12 +96,12 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
       
       default:
         
-        this.log.error("StationaryTidalPredFactory setAstroInfos : Invalid tidal prediction method-> " + method);
-        throw new RuntimeException("StationaryTidalPredFactory setAstroInfos");
+        //this.log.error("setAstroInfos : Invalid tidal prediction method-> " + method);
+        throw new RuntimeException("setAstroInfos : Invalid tidal prediction method-> " + method);
         //break;
     }
     
-    this.log.debug("StationaryTidalPredFactory setAstroInfos : end");
+    log.info("end");
     
     return this;
   }

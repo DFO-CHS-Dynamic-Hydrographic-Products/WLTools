@@ -126,6 +126,8 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                               final Long timeIncrSeconds,
                               final Double stationLatitudeDecimalDegrees ) {
 
+   this.log.info("WLStationPredFactory constructor: start");
+
     // ---
     if (timeIncrSeconds != null) {
        this.timeIncrSeconds= timeIncrSeconds;
@@ -150,7 +152,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
           if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.STATIONARY_TCF) {
 
-              this.log.error("WLStationPredFactory constructor: STATIONARY_FOREMAN prediction method -> Must have STATONARY_TCF for the tc input file format!");
+              this.log.error("STATIONARY_FOREMAN prediction method -> Must have STATONARY_TCF for the tc input file format!");
               throw new RuntimeException("WLStationPredFactory constructor");
           }
 
@@ -161,7 +163,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
           if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON) {
 
-              this.log.error("WLStationPredFactory constructor: NON_STATONARY_JSON prediction method -> Must have NON_STATONARY_JSON for the tc input file format!");
+              this.log.error("NON_STATONARY_JSON prediction method -> Must have NON_STATONARY_JSON for the tc input file format!");
               throw new RuntimeException("WLStationPredFactory constructor");
           }
 
@@ -173,8 +175,9 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
        //    method call
        this.getStationConstituentsData(stationId, stationTcInputFile, tcInputFileFormat);
 
-       this.log.debug("WLStationPredFactory constructor: after this.getStationConstituentsData System.exit(0)");
-       System.exit(0);
+       this.log.info("WLStationPredFactory constructor: done with this.getStationConstituentsData");
+       //this.log.info("WLStationPredFactory constructor: Debug System.exit(0)");
+       //System.exit(0);
 
        //--- MUST convert decimal degrees latitude to radians here:
        ///   MUST be used after this.getStationConstituentsData method call.
@@ -182,6 +185,11 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                                       Math.toRadians(stationLatitudeDecimalDegrees),
                                       startTimeSeconds,
                                       this.tidalPred1D.getTcNames());
+
+       this.log.info("WLStationPredFactory constructor: end");
+       this.log.info("WLStationPredFactory constructor: Debug System.exit(0)");
+       System.exit(0);
+
     } // ---
   }
   
@@ -199,7 +207,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                                                                             final String tcInputfilePath,
                                                                /*@NotNull*/ final ITidalIO.WLConstituentsInputFileFormat inputFileFormat ) {
     
-    this.log.debug("WLStationPredFactory getStationConstituentsData: start");
+    this.log.info("WLStationPredFactory getStationConstituentsData: start");
     
     try {
       stationId.length();
@@ -254,20 +262,19 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
         this.tidalPred1D.getNSJSONFileData(tcInputfilePath);
 
-        this.log.debug("WLStationPredFactory getStationConstituentsData: NON_STATONARY_JSON format: Done with reading tcInputfilePath");
-        this.log.debug("WLStationPredFactory getStationConstituentsData: Debug System.exit(0)");
-        System.exit(0);
-
+        this.log.info("NON_STATONARY_JSON format: Done with reading tcInputfilePath");
+        //this.log.info("Debug System.exit(0)");
+        //System.exit(0);
         break;
 
       default:
 
-        this.log.error("WLStationPredFactory getStationConstituentsData: Invalid file format ->" + inputFileFormat);
-        throw new RuntimeException("WLStationPredFactory getStationConstituentsData");
+        //this.log.error("Invalid file format ->" + inputFileFormat);
+        throw new RuntimeException("Invalid file format ->" + inputFileFormat);
         //break;
     } // ---- end switch block
     
-    this.log.debug("WLStationPredFactory getStationConstituentsData: : end");
+    this.log.info("WLStationPredFactory getStationConstituentsData: end");
     
     return this;
   }
