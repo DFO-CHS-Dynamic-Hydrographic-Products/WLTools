@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Generic class for astronomic informations data.
  */
-abstract public class AstroInfosFactory implements ITidal, ITidalIO {
+abstract public class AstroInfosFactory implements ITidalIO { // ITidal
 
   private final static Logger staticLog = LoggerFactory.getLogger("AstroInfosFactory");
   /**
@@ -35,9 +35,9 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    */
   private final Logger log = LoggerFactory.getLogger(this.getClass());
   /**
-   * Method to use.
+   * Method to use ( ITidal.Method.STATIONARY_FOREMAN tidal method as default.)
    */
-  protected Method method = Method.FOREMAN; //--- Foreman tidal method as default.
+  protected ITidal.Method method= ITidal.Method.STATIONARY_FOREMAN;
   /**
    * Latitude in radians of the location where the astronomic informations are defined.
    */
@@ -57,7 +57,7 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    * @param latitudeRad : Latitude in radians of the location where the astronomic informations are defined.
    */
   public AstroInfosFactory(final double latitudeRad) {
-    this(Method.FOREMAN, latitudeRad, null);
+    this(ITidal.Method.STATIONARY_FOREMAN, latitudeRad, null);
   }
   
   /**
@@ -66,8 +66,8 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    * @param secondsSinceEpoch : A SecondsSinceEpoch object which time-stamp will be the initial time-stamp of the
    *                          time reference of the astronomic informations.
    */
-  public AstroInfosFactory(/*@NotNull*/ final Method method, final double latitudeRad,
-                           final SecondsSinceEpoch secondsSinceEpoch) {
+  public AstroInfosFactory(/*@NotNull*/ final ITidal.Method method,
+                           final double latitudeRad, final SecondsSinceEpoch secondsSinceEpoch) {
     
     this();
     
@@ -99,11 +99,11 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    * @param aTidalMethod : A tidal astronomic method ID to validate.
    * @return true if the tidal astronomicmethod ID is a vlid one, false otherwise.
    */
-  private final static boolean validateAstroMethod(/*@NotNull*/ final Method aTidalMethod) {
+  private final static boolean validateAstroMethod(/*@NotNull*/ final ITidal.Method aTidalMethod) {
     
     boolean found = false;
     
-    for (final Method method : Method.values()) {
+    for (final ITidal.Method method : ITidal.Method.values()) {
       
       if (aTidalMethod == method) {
         found = true;
@@ -139,7 +139,7 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
    * @param startTimeSeconds : The initial time-stamp of the time reference of the astronomic informations. It is a
    *                         time-stamp since the epoch.
    */
-  public AstroInfosFactory(/*@NotNull*/ final Method method, final double latitudeRad, final long startTimeSeconds) {
+  public AstroInfosFactory(/*@NotNull*/ final ITidal.Method method, final double latitudeRad, final long startTimeSeconds) {
 
     this(method, latitudeRad, new SecondsSinceEpoch(startTimeSeconds));
   }
@@ -192,7 +192,7 @@ abstract public class AstroInfosFactory implements ITidal, ITidalIO {
     
     //--- Update astronomic informations only if the absolute value of updateTimeDiff is equal to
     // ASTRO_UDPATE_OFFSET_SECONDS
-    if (Math.abs(updateTimeDiff) == ASTRO_UDPATE_OFFSET_SECONDS) {
+    if (Math.abs(updateTimeDiff) == ITidal.ASTRO_UDPATE_OFFSET_SECONDS) {
       
       //--- Udpate time ref:
       this.updateTimeReference(updateTimeDiff);

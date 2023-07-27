@@ -6,6 +6,7 @@ package ca.gc.dfo.chs.wltools.tidal.stationary.astro.foreman;
  */
 
 //---
+import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.AstroInfosFactory;
@@ -68,8 +69,8 @@ abstract public class ForemanAstroInfosFactory
    */
   public ForemanAstroInfosFactory(final double latitudeRad, final long startTimeSeconds) {
     
-    super(Method.FOREMAN, latitudeRad, new SecondsSinceEpoch(startTimeSeconds));
-    
+    super(ITidal.Method.STATIONARY_FOREMAN, latitudeRad, new SecondsSinceEpoch(startTimeSeconds));
+
     this.log.debug("ForemanAstroInfosFFactory constructor : Start with latitudeRad=" + latitudeRad + ", " +
         "startTimeSeconds dt=" + SecondsSinceEpoch.dtFmtString(startTimeSeconds, true));
     
@@ -89,7 +90,7 @@ abstract public class ForemanAstroInfosFactory
   public ForemanAstroInfosFactory(final double latitudeRad,
                                   /*@NotNull @Size(min = DATE_TIME_FMT_LEN)*/ final int[] yearMonthDayHourArray) {
     
-    super(Method.FOREMAN, latitudeRad, SecondsSinceEpoch.getUTCLongSinceEpoch(yearMonthDayHourArray));
+    super(ITidal.Method.STATIONARY_FOREMAN, latitudeRad, SecondsSinceEpoch.getUTCLongSinceEpoch(yearMonthDayHourArray));
     
     this.log.debug("ForemanAstroFactory constructor : Start with argument YearMonthDayHourArray -> " + Arrays.toString(yearMonthDayHourArray));
     

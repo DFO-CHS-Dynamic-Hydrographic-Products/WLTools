@@ -45,7 +45,7 @@ final public class WLTools {
                                                                        unixTimeNow,
                                                                        endPredTime,
                                                                        900L,
-                                                                       47.5);
+                                                                       46.55);
 
       System.out.println("WLTools main end");
   }

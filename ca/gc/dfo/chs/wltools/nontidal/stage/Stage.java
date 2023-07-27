@@ -6,10 +6,19 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
  */
 
 // ---
+import java.util.Set;
 import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonValue;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
 
 // ---
 //import ca.gc.dfo.chs.wltools.util.Coefficient;
@@ -40,12 +49,12 @@ final public class Stage implements IStage, IStageIO {
   /**
    * List of Map object(s) of StageCoefficient object(s).
    */
-   protected Map<String,StageCoefficient> coefficients;
+   protected HashMap<String,StageCoefficient> coefficients;
 
   /**
    * List of Map object(s) of StageInputData object(s).
    */
-   protected Map<String,StageInputData> inputData;
+   protected HashMap<String,StageInputData> inputData;
 
   /**
    * basic constructor
@@ -58,20 +67,69 @@ final public class Stage implements IStage, IStageIO {
   /**
    * Comments please!
    */
-   public Stage(final Map<String,StageInputData> inputData,
-                final Map<String,StageCoefficient> coefficients) {
+   public Stage(final HashMap<String,StageInputData> inputData,
+                final HashMap<String,StageCoefficient> coefficients) {
 
       this.coefficients= coefficients;
       this.inputData= inputData;
    }
 
-   final public Stage setCoeffcientsMap(final Map<String,StageCoefficient> coefficients) {
+  /**
+   * Comments please!
+   */
+   final public Stage setCoeffcientsMap(/*@NotNull*/ final JsonObject stageJsonObj) {
 
-      this.coefficients= coefficients;
+      this.coefficients= new HashMap<>();;
+
+      // --- Set the zero'th order Stage coefficient
+      this.coefficients.put( STAGE_JSON_D0_KEY,
+          new StageCoefficient(stageJsonObj.getJsonNumber(IStageIO.STAGE_JSON_D0_KEY).doubleValue()) );
+
+      this.log.info("Zero'th order coefficient value="+this.coefficients.get(STAGE_JSON_D0_KEY).getValue());
+
+      final Set<String> coefficientsIdsSet= stageJsonObj.keySet();
+
+      // ---- coefficientsIdsSet.size() MUST be odd here!
+      final int nbNonZeroThOrderCoeffs= (coefficientsIdsSet.size()-1)/2;
+
+      // --- nbNonZeroThOrderCoeffs must be even here.
+      if (nbNonZeroThOrderCoeffs % 2 !=0 ) {
+         throw new RuntimeException(" nbNonZeroThOrderCoeffs % 2 !=0");
+      }
+
+      for (Integer coeffOrder= 1; coeffOrder<= nbNonZeroThOrderCoeffs; coeffOrder++) {
+
+         final String coeffOrderKey=
+            IStageIO.STAGE_JSON_DN_KEYS_BEG + coeffOrder.toString();
+
+         final String coeffFactorKey= coeffOrderKey +
+            IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNFCT_KEYS;
+
+         final String coeffHoursLagKey= coeffOrderKey +
+            IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNLAG_KEYS;
+
+          //this.log.info("coeffFactorKey="+coeffFactorKey);
+          //this.log.info("coeffHoursLagKey="+coeffHoursLagKey);
+
+          final double coeffFactorValue= stageJsonObj.getJsonNumber(coeffFactorKey).doubleValue();
+          final long   coeffHoursLagValue= stageJsonObj.getJsonNumber(coeffHoursLagKey).longValue();
+
+          this.log.info("coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
+          this.log.info("coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
+
+          // --- uncertaintu is 0.0 for now.
+          this.coefficients.put( coeffOrderKey, new StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue));
+      }
+
       return this;
    }
 
-   final public Stage setInputDataMap(final Map<String,StageInputData> inputData) {
+   //final public Stage setCoeffcientsMap(final Map<String,StageCoefficient> coefficients) {
+   //   this.coefficients= coefficients;
+   //   return this;
+   //}
+
+   final public Stage setInputDataMap(final HashMap<String,StageInputData> inputData) {
 
       this.inputData= inputData;
       return this;

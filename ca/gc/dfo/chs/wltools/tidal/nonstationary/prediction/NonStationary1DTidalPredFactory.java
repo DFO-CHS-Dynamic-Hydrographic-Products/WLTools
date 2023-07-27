@@ -13,6 +13,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageInputData;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageCoefficient;
+import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1DData;
 import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFactory;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
+import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
@@ -48,8 +50,9 @@ import org.slf4j.LoggerFactory;
  * This implements the prediction-reconstruction part of the NS_TIDE theory
  *  (Matte et al., Journal of Atmospheric and Oceanic Technology, 2013)
  */
-final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPredFactory {
-  
+final public class NonStationary1DTidalPredFactory
+   extends Stationary1DTidalPredFactory implements INonStationaryIO {
+
   /**
    * log utility.
    */
@@ -59,7 +62,7 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
    * List of Map objects of tidal constituents information for the non-stationary(river discharge and-or atmospheric)
    * for a specific location coming from a file or a DB.
    */
-  private Map<String, Map<String, Constituent1D>> tcDataMaps= null;
+  private HashMap<String, HashMap<String, Constituent1D>> tcDataMaps= null;
 
   /**
    * List of Constituent1DData objects which will be used by the non-stationary tidal prediction method.
@@ -67,7 +70,7 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
    * have Map items in one Map item of tcDataMaps list.
    */
   //private Map<String, Map<String,Constituent1DData>> constituent1DDataItems= null;
-  private Map<String,Constituent1DData> constituent1DDataItems= null;
+  private HashMap<String,Constituent1DData> constituent1DDataItems= null;
 
   /**
    * The stage equation (polynomial) object.
@@ -89,7 +92,6 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
     
     this.tcDataMaps= null;
     this.stagePart= null;
-    //this.staticStageInputData= null;
     this.constituent1DDataItems= null;
   }
   
@@ -112,8 +114,8 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
      for (final String stInputDataId: stageInputDataMap.keySet()) {
 
         // --- Calculate the non-stationary tidal argument.
-        final double nsTidalArg= super.astroInfosFactory
-           .computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stInputDataId));
+        final double nsTidalArg= super.astroInfosFactory.
+           computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stInputDataId));
 
         final StageInputData stageInputData= stageInputDataMap.get(stInputDataId);
 
@@ -152,80 +154,87 @@ final public class NonStationary1DTidalPredFactory extends Stationary1DTidalPred
     //final List<String> jsonFileLines = ASCIIFileIO.getFileLinesAsArrayList(tcInputfilePath);
     //final JsonParser tcJsonInput= Json.createParser(new FileInputStream(tcInputfilePath));
 
-    JsonObject jsonTcDataInputObj= null;
+    //JsonObject tmpJsonTcDataInputObj= null;
+    FileInputStream jsonFileInputStream= null;
 
     try {
         //final FileInputStream tcInputfilePathRdr= new FileInputStream(tcInputfilePath);
        //final JsonArray jsonTcDataInputArray= Json.createReader(new FileInputStream(tcInputfilePath)).readArray();
+       //tmpJsonTcDataInputObj= Json.createReader(new FileInputStream(tcInputfilePath)).readObject();
 
-       jsonTcDataInputObj= Json.createReader(new FileInputStream(tcInputfilePath)).readObject();
+       jsonFileInputStream= new FileInputStream(tcInputfilePath);
 
     } catch (FileNotFoundException e) {
 
-      this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
-      throw new RuntimeException("NonStationary1DTidalPredFactory getNSJSONFileData");
+       //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
+       throw new RuntimeException(e);
     }
+
+    final JsonObject mainJsonTcDataInputObj=
+       Json.createReader(jsonFileInputStream).readObject();  //tmpJsonTcDataInputObj;
 
     // --- TODO: add fool-proof checks on all the Json dict keys.
 
-    final JsonObject stageJsonObj= jsonTcDataInputObj.getJsonObject(IStageIO.STAGE_JSON_DICT_KEY);
-
-    // --- This populate procedure should be done in the Stage class itself
-    Map<String,StageCoefficient> stageCoefficients= new HashMap<>();
-
-    stageCoefficients.put( IStageIO.STAGE_JSON_D0_KEY,
-          new StageCoefficient(stageJsonObj.getJsonNumber(IStageIO.STAGE_JSON_D0_KEY).doubleValue()) );
-
-    final Set<String> coefficientsIdsSet= stageJsonObj.keySet();
-    //this.log.info("coefficientsIds="+coefficientsIds.toString());
-
-    // ---- coefficientsIdsSet.size() MUST be odd here!
-    final int nbNonZeroThOrderCoeffs= (coefficientsIdsSet.size()-1)/2;
-
-    //this.log.info("nbNonZeroThOrderCoeffs="+nbNonZeroThOrderCoeffs);
-    //this.log.info("Debug System.exit(0)");
-    //System.exit(0);
-
-    for (Integer coeffOrder= 1; coeffOrder<= nbNonZeroThOrderCoeffs; coeffOrder++) {
-
-       final String coeffOrderKey=
-          IStageIO.STAGE_JSON_DN_KEYS_BEG + coeffOrder.toString();
-
-       final String coeffFactorKey= coeffOrderKey +
-          IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNFCT_KEYS;
-
-       final String coeffHoursLagKey= coeffOrderKey +
-          IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNLAG_KEYS;
-
-       //this.log.info("coeffFactorKey="+coeffFactorKey);
-       //this.log.info("coeffHoursLagKey="+coeffHoursLagKey);
-
-       final double coeffFactorValue= stageJsonObj.getJsonNumber(coeffFactorKey).doubleValue();
-       final long   coeffHoursLagValue= stageJsonObj.getJsonNumber(coeffHoursLagKey).longValue();
-
-       this.log.info("coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
-       this.log.info("coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
-
-       // --- uncertaintu is 0.0 for now.
-       stageCoefficients.put( coeffOrderKey, new StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue));
-    }
-
-    this.stagePart= new Stage();
-
-    this.stagePart.setCoeffcientsMap(stageCoefficients);
-
     final JsonObject channelGridPointJsonObj=
-       jsonTcDataInputObj.getJsonObject(IStageIO.STATION_INFO_JSON_DICT_KEY);
+       mainJsonTcDataInputObj.getJsonObject(IStageIO.STATION_INFO_JSON_DICT_KEY);
 
     //this.log.info("channelGridPointInfo="+channelGridPointInfo.toString());
 
-    final double lat= channelGridPointJsonObj.getJsonNumber(IStageIO.STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+    final double stationLat= channelGridPointJsonObj.
+       getJsonNumber(IStageIO.STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
 
-    this.log.info("station lat="+lat);
+    this.log.info("station stationLat="+stationLat);
+
+    // --- Populate the this.stagePart object.
+    final JsonObject stageJsonObj=
+       mainJsonTcDataInputObj.getJsonObject(IStageIO.STAGE_JSON_DICT_KEY);
+
+    this.stagePart= new Stage();
+
+    // --- Populate the this.stagePart with the stage equation coefficients.
+    this.stagePart.setCoeffcientsMap(stageJsonObj);
+
+    final Set stageCoefficientsIds= this.stagePart.getCoeffcientsMap().keySet();
+
+    this.log.info("station stageCoefficientsIds="+stageCoefficientsIds.toString());
+
+    // --- Populate the non-stationary tidal constituents data with the Json
+    //     formatted file content.
+    final JsonObject jsonTcDataInputObj=
+       mainJsonTcDataInputObj.getJsonObject(FLUVIAL_TIDAL_CONSTS_JSON_DICT_KEY);
+
+    // ---  The non-stationary tidal constituents data will first be
+    //      stored in the this.tcDataMaps HasMap before doing the
+    //      related astronomic tidal calculations for them.
+    this.tcDataMaps= new HashMap<>();
+
+    for (final String tcConstName: jsonTcDataInputObj.keySet()) {
+
+       this.log.info("Processing tidal const. "+tcConstName);
+
+       this.tcDataMaps.put(tcConstName, new HashMap<>());
+
+       final JsonObject jsonTcDataObj=
+          jsonTcDataInputObj.getJsonObject(tcConstName);
+
+       //this.log.info("tc const data="+jsonTcDataObj.toString());
+
+       for (final String stageCoefficientId: stageCoefficientsIds) {
+
+       }
+
+       this.log.info("Done with Processing tidal const. "+tcConstName);
+    }
 
     //this.log.debug("NonStationary1DTidalPredFactory getNSJSONFileData: done with Json.createParser");
     this.log.info("Debug System.exit(0)");
     System.exit(0);
+
+    try {
+       jsonFileInputStream.close();
+    } catch (IOException e) {
+       throw new RuntimeException(e);
+    }
 
     return this;
   }

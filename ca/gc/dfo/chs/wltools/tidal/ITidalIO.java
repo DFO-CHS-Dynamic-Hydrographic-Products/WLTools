@@ -14,8 +14,8 @@ import ca.gc.dfo.chs.wltools.util.ITrigonometry;
 /**
  * Interface for tidal IO utilities specific constants.
  */
-public interface ITidalIO extends ITidal, ITrigonometry, ITimeMachine {
-  
+public interface ITidalIO extends ITrigonometry, ITimeMachine { // ITidal
+
   int TCF_LINE_NB_ITEMS = 11;
 
 //--- Possible output in HFD5 S-194 format for OPP needs.
