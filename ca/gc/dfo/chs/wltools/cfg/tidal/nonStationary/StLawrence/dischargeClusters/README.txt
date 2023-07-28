@@ -1,5 +1,6 @@
-The St. Lawrence discharge clusters non-stationary tidal constituents values must be
-used for the non-stationary tidal predictions with the following equations:
+The St. Lawrence discharge clusters non-stationary tidal constituents values in the 
+<cluster>/dischargeClimatoTFHA/gridPoint-NNN-TFHA.json files must be used for the
+non-stationary tidal predictions with the following equations:
 
 The stages discharges data used for the non-stationary tidal analysis was (2nd order polynomial):
 
@@ -18,3 +19,15 @@ constituents (AmpCSn, PhaCSn) summation, note that the Z0 of the TCF files is in
 it MUST not be defined in the list of AmpC0 coefficients.
 
 AmpC0 * cos(fCS0*t + phaCS0) + AmpCS1 * cos(fCS1*t + phaCS1) * log(discharge(t-CS1.lag)) + AmpCS2 * cos(fCS1*t + phaCS2) * (log(discharge(t-CS2.lag)))**2  
+
+--------------------------------------------
+<cluster>/dischargeStationsInfo.json files 
+--------------------------------------------
+
+<cluster>/dischargeStationsInfo.json files content can be used to build the climatologic discharges for all
+the grid points of this cluster.
+
+"uppStreamStnIds" : Discharge stations considered at the upstream boundary of this <cluster>.
+"downStreamStnIds": Discharge stations considered at the downstream boundary of this <cluster>.
+
+A simple spatial linear interpolation can be done for all the grid points of this <cluster>.
