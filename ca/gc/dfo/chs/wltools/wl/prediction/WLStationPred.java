@@ -7,7 +7,7 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
 
 //---
 //import java.time.Instant;
-//import java.util.HashMap;
+import java.util.HashMap;
 //import java.util.List;
 //import javax.validation.constraints.Min;
 
@@ -21,26 +21,21 @@ import org.slf4j.LoggerFactory;
 
 //---
 //---
-
 //---
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
+import ca.gc.dfo.chs.wltools.tidal.ITidal;
+import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 
 /**
  * Class for the computation of water level predictions
  */
 final public class WLStationPred extends WLStationPredFactory {
-  
-  /**
-   * static log utility.
-   */
-  //private final static Logger staticLogger= 
-  //    LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.wl" + ".WLTidalPredictions");
+
+  private final static String whoAmI="ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred";
 
   /**
    * Usual class instance log utility.
    */
-  private final Logger log= LoggerFactory.getLogger(this.getClass());
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * Default constuctor:
@@ -59,15 +54,17 @@ final public class WLStationPred extends WLStationPredFactory {
    * @param wlTContstfileFormat:    
    */
   public WLStationPred(/*@NotNull*/ final String stationId,
+                       final String stationTcInputFile,
                        /*@NotNull*/ final long startTimeSeconds,
-                       final long endTimeSeconds,
+                       /*@NotNull*/ final long endTimeSeconds,
                        final long timeIncrSeconds,
                        final double latitudeDecimalDegrees,
-                       final WLConstituentsInputFileFormat wlTContstfileFormat,
-                       final Method method,
-                       /*@NotNull*/ final Map<String, String> stageTimeVaryingData) {
+                       final ITidalIO.WLConstituentsInputFileFormat wlTContstfileFormat,
+                       final ITidal.Method method,
+                       final HashMap<String, String> stageTimeVaryingData) {
 
-     super(method, stationId, inputfileFormat, latitudeDecimalDegrees, startTimeSeconds);
+     super(method, stationId, stationTcInputFile, wlTContstfileFormat,
+           startTimeSeconds, endTimeSeconds, timeIncrSeconds, latitudeDecimalDegrees); //, stageTimeVaryingData);
     //super(Method.FOREMAN, stationId, inputfileFormat, latitudeDecimalDegrees, startTimeSeconds);
   }
   

@@ -29,11 +29,15 @@ import org.slf4j.LoggerFactory;
  * eneric class for producing 2D(i.e. two spatial components usually U,V tidal currents) tidal predictions
  */
 abstract public class Stationary2DTidalPredFactory extends StationaryTidalPredFactory {
-  
+ 
+  private final static String whoAmI=
+     "ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary2DTidalPredFactory";
+ 
   /**
    * log utility.
    */
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+
   /**
    * Map of a group of 2D tidal constituents informations coming from a file or a DB.
    */
@@ -66,16 +70,16 @@ abstract public class Stationary2DTidalPredFactory extends StationaryTidalPredFa
   final protected Stationary2DTidalPredFactory setAstroInfos(final Method method,
                                                              final double latitudeRadians,
                                                              final long startTimeSeconds,
-                                                            /*@NotNull @Size(min = 1)*/ final Set constNames) {
+                                                            /*@NotNull @Size(min = 1)*/ final Set<String> constNames) {
     
-    this.log.debug("Stationary2DTidalPredFactory setAstroInfos : start");
+    slog.debug("setAstroInfos : start");
     
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
     
     //--- TODO: implement constructor Constituent2DData(this.tcDataMap, this.astroInfosFactory)
     //this.constituent2DData= new Constituent2DData(this.tcDataMap, this.astroInfosFactory);
     
-    this.log.debug("Stationary2DTidalPredFactory setAstroInfos : end");
+    slog.debug("setAstroInfos : end");
     
     return this;
   }

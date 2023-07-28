@@ -53,10 +53,13 @@ import org.slf4j.LoggerFactory;
 final public class NonStationary1DTidalPredFactory
    extends Stationary1DTidalPredFactory implements IStageIO, INonStationaryIO {
 
+   private final static String whoAmI=
+      "ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidalPredFactory";
+
   /**
    * log utility.
    */
-  private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
+  private final Logger slog = LoggerFactory.getLogger(whoAmI);
 
   /**
    * List of HashMap objects of tidal constituents information for the non-stationary(river discharge and-or atmospheric)
@@ -149,11 +152,11 @@ final public class NonStationary1DTidalPredFactory
 
     } catch (NullPointerException e) {
 
-      log.error("tcInputfilePath is null !!");
-      throw new RuntimeException("NonStationary1DTidalPredFactory getNSJSONFileData");
+      slog.error("getNSJSONFileData: tcInputfilePath is null !!");
+      throw new RuntimeException(e);
     }
 
-    log.info("Start: tcInputfilePath=" + tcInputfilePath);
+    slog.info("getNSJSONFileData Start: tcInputfilePath=" + tcInputfilePath);
 
     //--- Get the TCF format ASCII lines in a List of Strings:
     //final List<String> jsonFileLines = ASCIIFileIO.getFileLinesAsArrayList(tcInputfilePath);
@@ -188,7 +191,7 @@ final public class NonStationary1DTidalPredFactory
     final double stationLat= channelGridPointJsonObj.
        getJsonNumber(STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
 
-    log.info("station stationLat="+stationLat);
+    slog.info("getNSJSONFileData: stationLat="+stationLat);
 
     // --- Populate the this.stagePart object.
     final JsonObject stageJsonObj=
@@ -203,7 +206,7 @@ final public class NonStationary1DTidalPredFactory
     final Set<String> stageCoefficientsIds=
        this.stagePart.getCoeffcientsMap().keySet();
 
-    log.info("station stageCoefficientsIds="+stageCoefficientsIds); //.keySet().toString());
+    slog.info("getNSJSONFileData: station stageCoefficientsIds="+stageCoefficientsIds); //.keySet().toString());
 
     // --- Populate the non-stationary tidal constituents data with the Json
     //     formatted file content.
@@ -273,7 +276,7 @@ final public class NonStationary1DTidalPredFactory
        // --- Be sure to remove any leading and-or trailing blank
        //     (and annoying) characters.
        final String tcConstName= jsonTcConstName.strip();
-       log.info("Processing tidal const. \""+tcConstName+"\"");
+       slog.info("getNSJSONFileData: Processing tidal const. \""+tcConstName+"\"");
 
        // --- Populate the super.tcDataMap object with the
        //     zero'th order for this non-stationary tidal const.
@@ -298,7 +301,7 @@ final public class NonStationary1DTidalPredFactory
                                                 new Constituent1D(hoTcAmplitude,hoTcGrwPhaseLag) );
        }
 
-       log.info("Done with Processing tidal const. \""+tcConstName+"\"");
+       slog.info("getNSJSONFileData: Done with Processing tidal const. \""+tcConstName+"\"");
     }
 
     //this.log.info("super.tcDataMap.keySet="+super.tcDataMap.keySet().toString());
@@ -316,7 +319,7 @@ final public class NonStationary1DTidalPredFactory
        throw new RuntimeException(e);
     }
 
-    log.info("End");
+    slog.info("getNSJSONFileData: End");
 
     return this;
   }
@@ -333,37 +336,48 @@ final public class NonStationary1DTidalPredFactory
   final public NonStationary1DTidalPredFactory setAstroInfos(final Method method,
                                                              final double latitudeRadians,
                                                              final long startTimeSeconds,
-                                                             /*@NotNull @Size(min = 1)*/ final Set constNames) {
+                                                             /*@NotNull @Size(min = 1)*/ final Set<String> constNames) {
     try {
       constNames.size();
       
     } catch (NullPointerException e) {
       
-      this.log.error("setAstroInfos: constNames==null !!");
+      slog.error("setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    this.log.info("setAstroInfos : start");
+    slog.info("setAstroInfos: start");
 
     // --- Compute the stationary astronomic information and set the stationary
     //     tidal constituents amplitudes and phases.
     //super.setAstroInfos(STATIONARY_FOREMAN, latitudeRadians, startTimeSeconds, constNames);
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
 
-    this.log.info("setAstroInfos : after super.setAstroInfos()");
-    this.log.info("setAstroInfos : Debug exit(0)");
-    System.exit(0);
+    slog.info("setAstroInfos: after super.setAstroInfos()");
+    //slog.info("setAstroInfos : Debug exit(0)");
+    //System.exit(0);
 
-    // --- Set the non-stationary tidal constituents amplitudes and phases.
-    //for (Constituent1DData c1DD: this.constituent1DDataItems) {
-    for (final String tcMapId: this.constituent1DDataItems.keySet()) {
+    slog.info("setAstroInfos: this.constituent1DDataItems.keySet()="+this.hoTcDataMaps.keySet().toString());
+    //slog.info("setAstroInfos : Debug exit(0)");
+    //System.exit(0);
+
+    this.constituent1DDataItems= new HashMap<>();
+
+    // --- Set the non-stationary tidal constituents amplitudes and phases for
+    //     the higher order(s) stage(s)
+    for (final String tcMapId: this.hoTcDataMaps.keySet()) { //this.constituent1DDataItems.keySet()) {
+
+       //slog.info("setAstroInfos: tcMapId="+tcMapId);
+       //slog.info("setAstroInfos:this.hoTcDataMaps.get(tcMapId)="+this.hoTcDataMaps.get(tcMapId).toString());
 
        this.constituent1DDataItems.put(tcMapId,
           new Constituent1DData(this.hoTcDataMaps.get(tcMapId),this.astroInfosFactory));
     }
 
-    this.log.debug("setAstroInfos: end");
-    
+    slog.info("setAstroInfos: end");
+    //slog.info("setAstroInfos : Debug exit(0)");
+    //System.exit(0);
+
     return this;
   }
 }

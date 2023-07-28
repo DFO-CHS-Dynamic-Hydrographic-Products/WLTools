@@ -41,10 +41,12 @@ import javax.json.JsonReader;
  */
 final public class Stage implements IStage, IStageIO {
 
+   private final static String whoAmI="ca.gc.dfo.chs.wltools.nontidal.stage.Stage";
+
   /**
    * log utility.
    */
-   private final Logger log = LoggerFactory.getLogger(this.getClass());
+   private final static Logger slog = LoggerFactory.getLogger(whoAmI);
 
   /**
    * List of Map object(s) of StageCoefficient object(s).
@@ -79,13 +81,15 @@ final public class Stage implements IStage, IStageIO {
    */
    final public Stage setCoeffcientsMap(/*@NotNull*/ final JsonObject stageJsonObj) {
 
-      this.coefficients= new HashMap<>();;
+      slog.info("setCoeffcientsMap: start");
+
+      this.coefficients= new HashMap<String,StageCoefficient>();;
 
       // --- Set the zero'th order Stage coefficient
       this.coefficients.put( STAGE_JSON_ZEROTH_ORDER_KEY,
           new StageCoefficient(stageJsonObj.getJsonNumber(STAGE_JSON_ZEROTH_ORDER_KEY).doubleValue()) );
 
-      this.log.info("Zero'th order coefficient value="+this.coefficients.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue());
+      slog.info("setCoeffcientsMap: Zero'th order coefficient value="+this.coefficients.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue());
 
       final Set<String> coefficientsIdsSet= stageJsonObj.keySet();
 
@@ -94,7 +98,7 @@ final public class Stage implements IStage, IStageIO {
 
       // --- nbNonZeroThOrderCoeffs must be even here.
       if (nbNonZeroThOrderCoeffs % 2 !=0 ) {
-         throw new RuntimeException(" nbNonZeroThOrderCoeffs % 2 !=0");
+         throw new RuntimeException("nbNonZeroThOrderCoeffs % 2 !=0");
       }
 
       for (Integer coeffOrder= 1; coeffOrder<= nbNonZeroThOrderCoeffs; coeffOrder++) {
@@ -114,12 +118,15 @@ final public class Stage implements IStage, IStageIO {
           final double coeffFactorValue= stageJsonObj.getJsonNumber(coeffFactorKey).doubleValue();
           final long   coeffHoursLagValue= stageJsonObj.getJsonNumber(coeffHoursLagKey).longValue();
 
-          this.log.info("coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
-          this.log.info("coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
+          slog.info("setCoeffcientsMap: coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
+          slog.info("setCoeffcientsMap: coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
 
           // --- uncertaintu is 0.0 for now.
-          this.coefficients.put( coeffOrderKey, new StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue));
+          this.coefficients.put( coeffOrderKey,
+                                 new StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue));
       }
+
+      slog.info("setCoeffcientsMap: end");
 
       return this;
    }

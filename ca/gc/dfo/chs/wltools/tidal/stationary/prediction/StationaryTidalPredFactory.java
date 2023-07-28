@@ -33,11 +33,13 @@ import org.slf4j.LoggerFactory;
  */
 abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
 
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.tidal.stationary.prediction.StationaryTidalPredFactory";
+
   /**
    * log utility
    */
-   private final Logger log = LoggerFactory.getLogger(this.getClass());
-  //private final static Logger log = LoggerFactory.getLogger(ClassName.class);
+   //private final Logger log = LoggerFactory.getLogger(this.getClass());
+   private final static Logger slog = LoggerFactory.getLogger(whoAmI);
 
   /**
    * Generic AstroInfosFactory object for astronomic arguments computations.
@@ -62,20 +64,20 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
   protected StationaryTidalPredFactory setAstroInfos(final Method method,
                                                      final double latitudeRadians,
                                                      final long startTimeSeconds,
-                                                      /*@NotNull @Size(min = 1)*/ final Set constNames) {
-    
+                                                      /*@NotNull @Size(min = 1)*/ final Set<String> constNames) {
+
     try {
       constNames.size();
-      
+
     } catch (NullPointerException e) {
-      log.error("setAstroInfos: constNames==null !!");
+      slog.error("setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    log.info("setAstroInfos : start");
-    log.info("setAstroInfos : method=" + method + ", latitudeRadians=" + latitudeRadians);
-    log.info("setAstroInfos : startTimeSeconds dt=" + SecondsSinceEpoch.dtFmtString(startTimeSeconds, true));
-    log.info("setAstroInfos : constNames=" + constNames.toString());
+    slog.info("setAstroInfos : start");
+    slog.info("setAstroInfos : method=" + method + ", latitudeRadians=" + latitudeRadians);
+    slog.info("setAstroInfos : startTimeSeconds dt=" + SecondsSinceEpoch.dtFmtString(startTimeSeconds, true));
+    slog.info("setAstroInfos : constNames=" + constNames.toString());
 
     switch (method) {
 
@@ -83,7 +85,7 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
       case NON_STATIONARY_FOREMAN:
       case STATIONARY_FOREMAN:
 
-        this.astroInfosFactory = new ForemanAstroInfos(latitudeRadians, startTimeSeconds, constNames);
+        this.astroInfosFactory= new ForemanAstroInfos(latitudeRadians, startTimeSeconds, constNames);
         break;
 
 //--- In case we want to test XTIDE method.
@@ -101,7 +103,7 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
         //break;
     }
     
-    log.info("end");
+    slog.info("end");
     
     return this;
   }

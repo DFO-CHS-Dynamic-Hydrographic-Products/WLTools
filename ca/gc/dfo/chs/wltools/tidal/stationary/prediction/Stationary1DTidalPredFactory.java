@@ -35,16 +35,19 @@ import org.slf4j.LoggerFactory;
  */
 //abstract 
 public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
-  
-  /**
+ 
+   private final static String whoAmI= "ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFactory";
+ 
+ /**
    * log utility.
    */
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+   private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+
 
   /**
    * Map of a group of tidal constituents informations coming from a file or a DB.
    */
-  protected Map<String, Constituent1D> tcDataMap = null;
+  protected HashMap<String, Constituent1D> tcDataMap = null;
 
   /**
    * Constituent1DData object which will be used by the tidal predictions method.
@@ -72,7 +75,7 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
   /**
    * Comments please!
    */
-  final public Set getTcNames() {
+  final public Set<String> getTcNames() {
      return this.tcDataMap.keySet();
   }
   
@@ -104,23 +107,23 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
   public Stationary1DTidalPredFactory setAstroInfos(final Method method,
                                                     final double latitudeRadians,
                                                     final long startTimeSeconds,
-                                                    /*@NotNull @Size(min = 1)*/ final Set constNames) {
+                                                    /*@NotNull @Size(min = 1)*/ final Set<String> constNames) {
     try {
       constNames.size();
       
     } catch (NullPointerException e) {
       
-      log.error("setAstroInfos: constNames==null !!");
+      slog.error("setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
     
-    log.info("setAstroInfos : start");
+    slog.info("setAstroInfos: start");
     
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
     
     this.constituent1DData= new Constituent1DData(this.tcDataMap, this.astroInfosFactory);
     
-    log.info("setAstroInfos: end");
+    slog.info("setAstroInfos: end");
     
     return this;
   }
@@ -140,11 +143,11 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
 
     } catch (NullPointerException e) {
 
-      this.log.error("WLStationPredFactory getTCFFileData: aTCFFilePath==null!!");
-      throw new RuntimeException("WLStationPredFactory getTCFFileData");
+      slog.error("getTCFFileData: aTCFFilePath==null!!");
+      throw new RuntimeException(e);
     }
 
-    this.log.debug("WLStationPredFactory getTCFFileData: Start, aTCFFilePath=" + aTCFFilePath);
+    slog.debug("getTCFFileData: Start, aTCFFilePath=" + aTCFFilePath);
 
     //--- Get the TCF format ASCII lines in a List of Strings:
     final List<String> tcfFileLines = ASCIIFileIO.getFileLinesAsArrayList(aTCFFilePath);
@@ -154,19 +157,19 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
 
     if (this.tcDataMap != null) {
 
-      this.log.warn("WLStationPredFactory getTCFFileData: this.tcDataMap!=null, need to clear it first !");
+      slog.warn("getTCFFileData: this.tcDataMap!=null, need to clear it first !");
       this.tcDataMap.clear();
 
     } else {
 
-      this.log.debug("WLStationlPredFactory getTCFFileData: Creating this.tcDataMap.");
+      slog.debug("getTCFFileData: Creating this.tcDataMap.");
       this.tcDataMap = new HashMap<String, Constituent1D>();
     }
 
     //--- Process the TCF format lines
     for (final String line : tcfFileLines) {
 
-      this.log.debug("WLStationPredFactory getTCFFileData: processing line: " + line);
+      slog.debug("getTCFFileData: processing line: " + line);
 
       //--- Split( blank spaces as delimiters) line in an array of Strings:
       final String[] lineSplit = line.trim().split("\\s+");
@@ -193,7 +196,7 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
 
         } else {
 
-          this.log.debug("WLStationPredFactory getTCFFileData: Skipping TCF file header line: " + line);
+          slog.debug("getTCFFileData: Skipping TCF file header line: " + line);
         }
 
         continue;
@@ -201,10 +204,10 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
 
       if (lineSplit.length != TCF_LINE_NB_ITEMS) {
 
-        this.log.error("WLStationPredFactory getTCFFileData: lineSplit.length=" + lineSplit.length + " !=" +
-            " TCF_LINE_NB_ITEMS=" + TCF_LINE_NB_ITEMS);
+        slog.error("getTCFFileData: lineSplit.length=" +
+                   lineSplit.length + " !=" + " TCF_LINE_NB_ITEMS=" + TCF_LINE_NB_ITEMS);
 
-        throw new RuntimeException("WLStationPredFactory getTCFFileData");
+        throw new RuntimeException("getTCFFileData");
       }
 
       final String tcName = lineSplit[0];
@@ -218,15 +221,14 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
       final Constituent1D c1d = new Constituent1D(Double.valueOf(lineSplit[TCF_AMPLITUDE_LINE_INDEX]),
           DEGREES_2_RADIANS * phaseLagDegrees);
 
-      this.log.debug("WLStationPredFactory getTCFFileData:  Setting this.tcDataMap with tidal " +
-          "constitutent ->" +
-          tcName + ", phaseLagDegrees=" + phaseLagDegrees);
+      slog.debug("getTCFFileData:  Setting this.tcDataMap with tidal " +
+                 "constitutent ->" + tcName + ", phaseLagDegrees=" + phaseLagDegrees);
 
       this.tcDataMap.put(tcName, c1d);
 
     } // --- End for loop
 
-    this.log.debug("WLStationPredFactory getTCFFileData: end, unfortunateUTCOffset in hours=" + this.unfortunateUTCOffsetSeconds / SECONDS_PER_HOUR);
+    slog.debug("getTCFFileData: end, unfortunateUTCOffset in hours=" + this.unfortunateUTCOffsetSeconds / SECONDS_PER_HOUR);
 
     return this;
   }
@@ -236,7 +238,7 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
    */
    public Stationary1DTidalPredFactory getNSJSONFileData(/*@NotNull*/ final String jsonFilePath) {
 
-      throw new RuntimeException("Stationary1DTidalPredFactory getNSJSONFileData method not implemented yet!");
+      throw new RuntimeException(whoAmI + " - getNSJSONFileData method not implemented yet!");
 
       //return this;
    }
