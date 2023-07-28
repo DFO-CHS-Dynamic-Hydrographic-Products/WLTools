@@ -6,7 +6,6 @@ The stages discharges data used for the non-stationary tidal analysis was (2nd o
 
 log(discharge(t-CS1.lag) and  (log(discharge(t-CS2lag)))**2
 
-
 Stage part only (no trigo function and no iteration):
 -----------------------------------------------------
 
@@ -27,7 +26,9 @@ AmpC0 * cos(fCS0*t + phaCS0) + AmpCS1 * cos(fCS1*t + phaCS1) * log(discharge(t-C
 <cluster>/dischargeStationsInfo.json files content can be used to build the climatologic discharges for all
 the grid points of this cluster.
 
-"uppStreamStnIds" : Discharge stations considered at the upstream boundary of this <cluster>.
-"downStreamStnIds": Discharge stations considered at the downstream boundary of this <cluster>.
+"uppStreamStnIds" : Discharge stations that are considered to be located at the upstream boundary of this <cluster>.
+"downStreamStnIds": Discharge stations that are considered to be located at the downstream boundary of this <cluster>.
 
-A simple spatial linear interpolation can be done for all the grid points of this <cluster>.
+A simple spatial linear interpolation between the cumulative discharges of the uppStreamStnIds and the downStreamStnIds 
+can be done for all the grid points of this <cluster>. The stations discharges climatologies are located in the
+WLTools/ca/gc/dfo/chs/wltools/cfg/tidal/nonStationary/StLawrence/dischargeClimatos/hourly-MoyInter_<stn id.>.csv files
