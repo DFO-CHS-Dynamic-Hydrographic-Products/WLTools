@@ -40,6 +40,9 @@ public interface IStageIO {
 
    String STATION_INFO_JSON_ZCIGLD_CONV_KEY= "zcVsIGLD"; //--- Implies that tha the preductions are referred to IGLD datum
                                                          //    WL(IGLD) - zcVsIGLD to get the ZC values
+   enum FileFormat {
+      JSON
+   };
 }
 
 

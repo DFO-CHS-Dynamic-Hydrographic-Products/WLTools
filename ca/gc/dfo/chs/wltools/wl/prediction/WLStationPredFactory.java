@@ -17,6 +17,7 @@ import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 //import ca.gc.dfo.chs.wltools.nontidal.climatology.Climatology;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
@@ -119,14 +120,17 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
    * @param timeIncrSeconds:        The time increment to use between the successive WL prediction data produced (must be a multiple of 60 seconds,default 900)
    * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station (null if the station lat is defined in the tcInputFile)
    */
-  public WLStationPredFactory(/*@NotNull*/final ITidal.Method method,
-                              /*@NOtNull*/final String stationId,
-                              /*@NotNull*/final String stationTcInputFile,
-                              /*@NotNull*/final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
+  public WLStationPredFactory(/*@NotNull*/final String stationId,
                               /*@NotNull*/final long startTimeSeconds,
                               /*@NotNull*/final long endTimeSeconds,
                               final Long timeIncrSeconds,
-                              final Double stationLatitudeDecimalDegrees ) {
+                              final Double stationLatitudeDecimalDegrees,
+                              final ITidal.Method method,
+                              final String stationTcInputFile,
+                              final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
+                              final IStage.Type stageType,
+                              final String stageInputDataFile,
+                              final IStageIO.FileFormat stageInputDataFileFormat) {
 
    slog.info("constructor: start");
 

@@ -19,16 +19,18 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
  */
 public interface IStage {
 
-   enum StageDataType {
-      DISCHARGE,
-      ATMOS,
-      DISCHARGE_AND_ATMOS
+   enum Type {
+     DISCHARGE_CFG_STATIC, // --- Stage data is "static" in time (i.e same data each year) and is defined inside the inner config DB.
+     DISCHARGE_FROM_MODEL, // --- Stage data is coming from an external model results (like ECCC DHPS or EHPS models)
+     ATMOSPHERIC, // --- Taken from an atmos. model by definition.
+     HYBRID       // --- DISCHARGE and ATMOSPHERIC
    }
 
-   enum StageDataStatus {
-      FROM_MODEL,
-      CLIMATOLOGY
-   }
+   //enum Origin {
+   //  CFG_STATIC, // --- Stage data is "static" in time (i.e same data each year) and is defined inside the inner config DB.
+   //  FROM_MODEL, // --- Stage data is coming from an external model results (like ECCC DHPS or EHPS)
+   //  HYBRID      // --- MIx of CFG_STATIC and FROM_MODEL.
+   ///}
 
    ///**
    // * evaluate the stage polynomial with the factor values provided by

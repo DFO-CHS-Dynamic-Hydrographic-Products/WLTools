@@ -9,6 +9,7 @@ package ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction;
 
 //---
 import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
+import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageInputData;
@@ -98,6 +99,14 @@ final public class NonStationary1DTidalPredFactory
     this.constituent1DDataItems= null;
   }
 
+
+  public NonStationary1DTidalPredFactory(/*NotNull*/final IStage.Type type,
+                                         final String stageInputDataFile,
+                                         final IStageIO.FileFormat stageInputDataFileFormat) {
+     this();
+
+     this.stagePart= new Stage(type,stageInputDataFile,stageInputDataFileFormat);
+  }
   /**
    * @param timeStampSeconds : A time-stamp in seconds since the epoch where we want a single tidal prediction.
    * @return The newly computed single tidal prediction in double precision.
@@ -197,7 +206,10 @@ final public class NonStationary1DTidalPredFactory
     final JsonObject stageJsonObj=
        mainJsonTcDataInputObj.getJsonObject(STAGE_JSON_DICT_KEY);
 
-    this.stagePart= new Stage();
+    //this.stagePart= new Stage();
+    if (this.stagePart == null) {
+       throw new RuntimeException("getNSJSONFileData: this.stagePart cannot be null at this point!! ");
+    }
 
     // --- Populate the this.stagePart with the stage equation coefficients.
     this.stagePart.setCoeffcientsMap(stageJsonObj);

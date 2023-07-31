@@ -69,6 +69,18 @@ final public class Stage implements IStage, IStageIO {
   /**
    * Comments please!
    */
+   public Stage(/*NotNull*/final IStage.Type type,
+                final String stageInputDataFile,
+                final IStageIO.FileFormat stageInputDataFileFormat) {
+
+     this();
+
+   }
+
+
+  /**
+   * Comments please!
+   */
    public Stage(final HashMap<String,StageInputData> inputData,
                 final HashMap<String,StageCoefficient> coefficients) {
 
