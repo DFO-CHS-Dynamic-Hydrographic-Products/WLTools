@@ -100,12 +100,14 @@ final public class NonStationary1DTidalPredFactory
   }
 
 
-  public NonStationary1DTidalPredFactory(/*NotNull*/final IStage.Type type,
+  public NonStationary1DTidalPredFactory(/*NotNull*/final String stationId,
+                                         /*NotNull*/final IStage.Type type,
                                          final String stageInputDataFile,
                                          final IStageIO.FileFormat stageInputDataFileFormat) {
      this();
 
-     this.stagePart= new Stage(type,stageInputDataFile,stageInputDataFileFormat);
+     this.stagePart= new Stage(stationId,type,stageInputDataFile,stageInputDataFileFormat);
+
   }
   /**
    * @param timeStampSeconds : A time-stamp in seconds since the epoch where we want a single tidal prediction.

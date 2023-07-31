@@ -6,24 +6,26 @@ import java.util.TimeZone;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
-final public class WLTools {
+final public class WLTools { // extends WLToolsIO {
 
    //static {
    //   System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace");
    //}
 
-   private static String mainExecDir= "";
+   //private static String mainCfgDir= "";
 
    // ---
-   final static String getMainExecDir() {
-      return mainExecDir;
-   }
+   //final static String getMainCfgDir() {
+   //   return mainCfgDir;
+   //}
 
    static public void main (String[] args) {
 
@@ -34,17 +36,27 @@ final public class WLTools {
       for (String arg: args) {
          String[] parts = arg.split("=");
          argsMap.put(parts[0], parts[1]);
-      } 
+      }
 
       for (String key: argsMap.keySet()){
          System.out.println("WLTools main argsMap key="+key);
          System.out.println("WLTools main argsMap value="+argsMap.get(key));
       }
 
-      mainExecDir = System.getProperty("user.dir");
+      //if ("--mainExecDir" not 
+
+      final String mainExecDir= System.getProperty("user.dir");
       System.out.println("WLTools main: mainExecDir= "+mainExecDir);
-      System.out.println("WLTools main: debug exit(0)");
-      System.exit(0);
+
+      //this.super(mainExecDir + "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
+     // mainCfgDir= mainExecDir + "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR;
+
+      final WLToolsIO io= new WLToolsIO(mainExecDir + "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
+
+      System.out.println("WLTools main: mainCfgDir= "+WLToolsIO.getMainCfgDir());
+
+      //System.out.println("WLTools main: debug exit(0)");
+      //System.exit(0);
 
       final String nsTCInputFile=
          "/home/gme042/slinks/fs7_isi_dfo_chs_enav/NSTide/output/TFHA/onedGridPointsClusters/Deschaillons/tmp/gridPoint-540-TFHA.json";
@@ -62,7 +74,7 @@ final public class WLTools {
 
       final long endPredTime= testStartTime + 40L*24L*3600L; //  unixTimeNow + 40L*24L*3600L
 
-      final WLStationPredFactory wlStnPrdFct= new WLStationPredFactory("Deschaillons:gridPoint-540",
+      final WLStationPredFactory wlStnPrdFct= new WLStationPredFactory("StLawrence:Deschaillons:gridPoint-540",
                                                                        testStartTime, //unixTimeNow,
                                                                        endPredTime,
                                                                        900L,

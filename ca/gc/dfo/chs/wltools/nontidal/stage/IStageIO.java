@@ -38,10 +38,14 @@ public interface IStageIO {
    String STATION_INFO_JSON_LATCOORD_KEY= "lat";
    String STATION_INFO_JSON_LONCOORD_KEY= "lon";
 
+   String STATION_INFO_JSON_FNAME_EXT= ".json";
+
    String STATION_INFO_JSON_ZCIGLD_CONV_KEY= "zcVsIGLD"; //--- Implies that tha the preductions are referred to IGLD datum
                                                          //    WL(IGLD) - zcVsIGLD to get the ZC values
+   String STATION_ID_SPLIT_CHAR= ":";
+
    enum FileFormat {
-      JSON
+     JSON
    };
 }
 

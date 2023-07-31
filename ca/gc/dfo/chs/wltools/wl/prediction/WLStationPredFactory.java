@@ -173,7 +173,12 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
               throw new RuntimeException("constructor");
           }
 
-          this.tidalPred1D= new NonStationary1DTidalPredFactory();
+          this.tidalPred1D= new
+             NonStationary1DTidalPredFactory(stationId, stageType, stageInputDataFile, stageInputDataFileFormat);
+
+          slog.info("constructor: done with new NonStationary1DTidalPredFactory()");
+          slog.info("constructor: debug System.exit(0)");
+          System.exit(0);
        }
 
        //--- Retreive WL station tidal constituents from a local disk file.

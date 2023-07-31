@@ -63,8 +63,8 @@ final public class WLStationPred extends WLStationPredFactory {
                        final ITidal.Method method,
                        final HashMap<String, String> stageTimeVaryingData) {
 
-     super(method, stationId, stationTcInputFile, wlTContstfileFormat,
-           startTimeSeconds, endTimeSeconds, timeIncrSeconds, latitudeDecimalDegrees); //, stageTimeVaryingData);
+     //super(method, stationId, stationTcInputFile, wlTContstfileFormat,
+     //      startTimeSeconds, endTimeSeconds, timeIncrSeconds, latitudeDecimalDegrees); //, stageTimeVaryingData);
     //super(Method.FOREMAN, stationId, inputfileFormat, latitudeDecimalDegrees, startTimeSeconds);
   }
   

@@ -13,15 +13,19 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// ---
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 // ---
-//import ca.gc.dfo.chs.wltools.util.Coefficient;
+import ca.gc.dfo.chs.wltools.WLToolsIO;
 
 /**
  * class for the WL stage (non-tidal) type. The WL values are calculated
@@ -62,21 +66,86 @@ final public class Stage implements IStage, IStageIO {
    * basic constructor
    */
    public Stage() {
-      this.coefficients= null;
-      this.inputData= null;
+     this.coefficients= null;
+     this.inputData= null;
    }
 
   /**
    * Comments please!
    */
-   public Stage(/*NotNull*/final IStage.Type type,
+   public Stage(/*NotNull*/final String stationId,
+                /*NotNull*/final IStage.Type type,
                 final String stageInputDataFile,
                 final IStageIO.FileFormat stageInputDataFileFormat) {
 
      this();
 
-   }
+     slog.info("Stage constructor: start");
 
+     String stageInputDataFileLocal= stageInputDataFile; // --- Could be null
+     IStageIO.FileFormat stageInputDataFileFormatLocal= stageInputDataFileFormat; // --- Could be null
+
+     if (type == IStage.Type.DISCHARGE_CFG_STATIC) {
+
+       // --- Just ignore the stageInputDataFile and the stageInputDataFileFormat here since the IStage.DISCHARGE_CFG_STATIC
+       //     implies that we take the stage input discharge data from the package internal DB which implies that the input
+       //      file format is Json
+       stageInputDataFileFormatLocal= IStageIO.FileFormat.JSON;
+
+       //--- Get the path of the stage input discharge data from the package DB using the stationId String
+       //    and the static WLToolsIO.mainCfgDir
+       final String [] stationIdStrSplit= stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
+
+       final String stationDischargeClusterDirName= stationIdStrSplit[0];
+       final String stationDischargeClusterName= stationIdStrSplit[1];
+       final String stationDischargeJsonFileName= stationIdStrSplit[2] + IStageIO.STATION_INFO_JSON_FNAME_EXT;
+
+       slog.info("Stage constructor: WLToolsIO.getMainCfgDir()="+WLToolsIO.getMainCfgDir());
+
+       //final String dischInputFileInDB= WLToolsIO.getMainCfgDir() +
+       stageInputDataFileLocal= WLToolsIO.getMainCfgDir() +
+                                WLToolsIO.PKG_CFG_TIDAL_NON_STATIONARY_DIR +
+                                stationDischargeClusterDirName +
+                                WLToolsIO.PKG_CFG_TIDAL_NON_STATIONARY_STAGE_DISCH_CLUSTERS_DIRNAME +
+                                stationDischargeClusterName +
+                                WLToolsIO.PKG_CFG_TIDAL_NON_STATIONARY_STAGE_CLIM_DISCH_DIRNAME +
+                                stationDischargeJsonFileName;
+
+       //slog.info("Stage constructor: stageInputDataFileLocal="+stageInputDataFileLocal);
+     }
+
+     ///slog.info("Stage constructor: stageInputDataFileLocal="+stageInputDataFileLocal);
+     //slog.info("Stage constructor: debug System.exit(0)");
+     //System.exit(0);
+
+     // --- TODO: implement a switch block to deal with the file formats.
+     if (stageInputDataFileFormatLocal != IStageIO.FileFormat.JSON) {
+       throw new RuntimeException("Stage constructor: Invalid input file format -> "+stageInputDataFileFormatLocal.name());
+     }
+
+     slog.info("Stage constructor: stageInputDataFileLocal="+stageInputDataFileLocal);
+
+     FileInputStream jsonFileInputStream= null;
+
+     try {
+       jsonFileInputStream= new FileInputStream(stageInputDataFileLocal);
+
+     } catch (FileNotFoundException e) {
+       throw new RuntimeException(e);
+     }
+
+     try {
+       jsonFileInputStream.close();
+
+     } catch (IOException e) {
+       throw new RuntimeException(e);
+     }
+
+     slog.info("Stage constructor: end");
+     slog.info("Stage constructor: debug System.exit(0)");
+     System.exit(0);
+
+   }
 
   /**
    * Comments please!
