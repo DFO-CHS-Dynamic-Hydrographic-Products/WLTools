@@ -31,5 +31,7 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
  */
 public interface IWLStationPred  {
 
-   long DEFAULT_TIME_INCR= 900;
+  long MIN_TIME_INCR_SECONDS= 60L;
+  long MAX_TIME_INCR_SECONDS= 3600L;
+  long DEFAULT_TIME_INCR_SECONDS= 900L;
 }

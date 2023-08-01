@@ -10,6 +10,8 @@ package ca.gc.dfo.chs.wltools.util;
  */
 public interface ITimeMachine {
 
+  String TIMESTAMP_SEP= "."; //"\\T"
+
   String CALENDAR_ZULU_TIME_ZONE = "UTC";
   /**
    * Calendar class uses milliseconds for its time-stamp.

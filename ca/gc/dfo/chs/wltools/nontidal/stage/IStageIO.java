@@ -44,6 +44,8 @@ public interface IStageIO {
                                                          //    WL(IGLD) - zcVsIGLD to get the ZC values
    String STATION_ID_SPLIT_CHAR= ":";
 
+   String CLIMATO_YEAR_PLACEHOLDER= "YYYY";
+
    enum FileFormat {
      JSON
    };

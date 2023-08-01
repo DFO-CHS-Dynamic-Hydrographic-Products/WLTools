@@ -99,7 +99,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
    */
   private String stationId = null;
 
-  protected long timeIncrSeconds= IWLStationPred.DEFAULT_TIME_INCR;
+  protected long timeIncrSeconds= IWLStationPred.DEFAULT_TIME_INCR_SECONDS;
 
   /**
    * Default constructor.
@@ -108,6 +108,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
     this.unfortunateUTCOffsetSeconds = 0L;
   }
   
+   // --- TOOO: Update the javadoc comments.
   /**
    * Specific WLStationPredFactory constructor for the tidal predictions (stationary or non-stationary).
    * @param method:                 The prediction method to use as defined in the Method object.
@@ -121,8 +122,8 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
    * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station (null if the station lat is defined in the tcInputFile)
    */
   public WLStationPredFactory(/*@NotNull*/final String stationId,
-                              /*@NotNull*/final long startTimeSeconds,
-                              /*@NotNull*/final long endTimeSeconds,
+                              /*@NotNull*/final Long startTimeSeconds,
+                              /*@NotNull*/final Long endTimeSeconds,
                               final Long timeIncrSeconds,
                               final Double stationLatitudeDecimalDegrees,
                               final ITidal.Method method,
@@ -132,11 +133,25 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                               final String stageInputDataFile,
                               final IStageIO.FileFormat stageInputDataFileFormat) {
 
-   slog.info("constructor: start");
+    slog.info("constructor: start");
+
+    if (endTimeSeconds <= startTimeSeconds) {
+      throw new RuntimeException("WLStationPredFactory constructor: Invalid startTimeSeconds="+startTimeSeconds.toString()+
+                                " and-or endTimeSeconds="+endTimeSeconds.toString()+"time stamps !");
+    }
 
     // ---
     if (timeIncrSeconds != null) {
-       this.timeIncrSeconds= timeIncrSeconds;
+
+      if ( timeIncrSeconds < IWLStationPred.MIN_TIME_INCR_SECONDS ) {
+        throw new RuntimeException("WLStationPredFactory constructor: Invalid (too small) timeIncrSeconds="+timeIncrSeconds.toString());
+      }
+
+      if( timeIncrSeconds > IWLStationPred.MAX_TIME_INCR_SECONDS ) {
+        throw new RuntimeException("WLStationPredFactory constructor: Invalid (too large) timeIncrSeconds="+timeIncrSeconds.toString());
+      }
+
+      this.timeIncrSeconds= timeIncrSeconds;
     }
 
     try {
@@ -175,7 +190,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
           this.tidalPred1D= new
              NonStationary1DTidalPredFactory(stationId, stageType,
-                                             startTimeSeconds, endTimeSeconds,
+                                             startTimeSeconds, endTimeSeconds, this.timeIncrSeconds,
                                              stageInputDataFile, stageInputDataFileFormat);
 
           slog.info("constructor: done with new NonStationary1DTidalPredFactory()");

@@ -71,18 +71,20 @@ final public class WLTools extends WLToolsIO {
 
       Calendar gcld= new GregorianCalendar().getInstance(TimeZone.getTimeZone("GMT"));
       gcld.set(GregorianCalendar.YEAR,2014);
-      gcld.set(GregorianCalendar.MONTH,1);
+      gcld.set(GregorianCalendar.MONTH,0); // --- January is month 0 in Java.
       gcld.set(GregorianCalendar.DAY_OF_MONTH,1);
       gcld.set(GregorianCalendar.HOUR_OF_DAY,0);
+      gcld.set(GregorianCalendar.MINUTE,0);
+      gcld.set(GregorianCalendar.SECOND,0);
 
-      final long testStartTime= gcld.getTimeInMillis()/1000L;
+      final Long testStartTime= gcld.getTimeInMillis()/1000L;
 
-      final long endPredTime= testStartTime + 40L*24L*3600L; //  unixTimeNow + 40L*24L*3600L
+      final Long endPredTime= testStartTime + 40L*24L*3600L; //  unixTimeNow + 40L*24L*3600L
 
       final WLStationPredFactory wlStnPrdFct= new WLStationPredFactory("StLawrence:Deschaillons:gridPoint-540",
                                                                        testStartTime, //unixTimeNow,
                                                                        endPredTime,
-                                                                       900L,
+                                                                       3600L,//900L,
                                                                        46.55,
                                                                        ITidal.Method.NON_STATIONARY_FOREMAN,
                                                                        nsTCInputFile,

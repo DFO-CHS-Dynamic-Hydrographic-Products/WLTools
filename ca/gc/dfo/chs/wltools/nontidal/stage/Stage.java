@@ -31,6 +31,7 @@ import java.util.GregorianCalendar;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 
 /**
@@ -49,9 +50,9 @@ import ca.gc.dfo.chs.wltools.util.ITimeMachine;
  * as the WL Z0 (average) of the tidal-astro part. Obviously in this case, the List<WLZE>
  * attribute has only one item.
  */
-final public class Stage implements IStage, IStageIO {
+final public class Stage extends StageIO implements IStage {//, IStageIO {
 
-   private final static String whoAmI="ca.gc.dfo.chs.wltools.nontidal.stage.Stage";
+   private final static String whoAmI= "ca.gc.dfo.chs.wltools.nontidal.stage.Stage";
 
   /**
    * log utility.
@@ -95,7 +96,11 @@ final public class Stage implements IStage, IStageIO {
      String stageInputDataFileLocal= stageInputDataFile; // --- Could be null
      IStageIO.FileFormat stageInputDataFileFormatLocal= stageInputDataFileFormat; // --- Could be null
 
+     boolean isItClimatologicInput= false;
+
      if (type == IStage.Type.DISCHARGE_CFG_STATIC) {
+
+       isItClimatologicInput= true;
 
        // --- Just ignore the stageInputDataFile and the stageInputDataFileFormat here since the IStage.DISCHARGE_CFG_STATIC
        //     implies that we take the stage input discharge data from the package internal DB which implies that the input
@@ -148,38 +153,75 @@ final public class Stage implements IStage, IStageIO {
        Json.createReader(jsonFileInputStream).readObject();
 
      // --- TODO: add fool-proof checks on all the Json dict keys.
+     final List<String> inputDataTimeStampsStrings=
+       new ArrayList<String>(mainJsonStageDataObject.keySet());
 
-     //final JsonArray stageDataJsonArray=
-     //   mainJsonStageDataInputObj.getJsonArray();
-     final List<String> climTimeStampsStrings=
-        new ArrayList<String>(mainJsonStageDataObject.keySet());
+     final String inputDataTimeStampStr0= inputDataTimeStampsStrings.get(0);
 
-     //slog.info("Stage constructor: "+ climTimeStampsStrings.toString());
+     //slog.info("Stage constructor: inputDataTimeStampStr0="+ inputDataTimeStampStr0);
 
-     final JsonObject firstStageJsonDataDict=
-        mainJsonStageDataObject.getJsonObject(climTimeStampsStrings.get(0));
+     final int inputDataTimeStampsStrLen= inputDataTimeStampStr0.length();
 
-     slog.info("Stage constructor: "+ firstStageJsonDataDict.toString());
+     //slog.info("Stage constructor: debug System.exit(0)");
+     //System.exit(0);
 
+     //final JsonObject stageJsonDataDict0=
+     //   mainJsonStageDataObject.getJsonObject(climTimeStampsStrings.get(0));
+
+     //slog.info("Stage constructor: "+ firstStageJsonDataDict.toString());
+
+     //--- timeStartSeconds, timeEndSeconds and timeIncrSeconds MUST
+     //    have been validated before we get here.
      final Long timeStartBufferForLags= timeStartSeconds -
         NUM_DAYS_BUFFER_FOR_LAGS * ITimeMachine.SECONDS_PER_DAY;
 
      final Long timeEndBufferForLags= timeEndSeconds +
         NUM_DAYS_BUFFER_FOR_LAGS * ITimeMachine.SECONDS_PER_DAY;
 
-     //for (final String climTimeStampStr: climTimeStampsStrings) {
-     //   // --- Extract the month(mm) day(dd) hour(hh) string from the
-     //   //     YYYYMMMDDhh string. The YYYY string is just a placeholder
-     //   //     that needs to be replaced by a real year integer value
-     //   //     depending on the
-     //   final String mmddhhStr=
-     //     climTimeStampStr.substring(4,climTimeStampStr.length());
-     //   slog.info("Stage constructor: mmddhhStr="+mmddhhStr);
-     //   slog.info("Stage constructor: debug System.exit(0)");
-     //   System.exit(0);
-     //
-     //}
+     // --- Check nbTimeStamps value here >> Must be at least 1
+     final int nbTimeStamps=
+       (int)((timeEndBufferForLags - timeStartBufferForLags)/timeIncrSeconds);
 
+     //List<String> tmpTimeStampsList=
+     //  new ArrayList<String>(nbTimeStamps);
+
+     Calendar gcld= new GregorianCalendar().
+       getInstance(TimeZone.getTimeZone("GMT"));
+
+     this.timeStampedInputData= new HashMap<Long,StageInputData>();
+
+     for (int tsIter= 0; tsIter< nbTimeStamps; tsIter++) {
+
+        final Long tsIterSeconds=
+          timeStartBufferForLags + tsIter*timeIncrSeconds;
+
+        // --- Need millisecs for gcld.setTimeInMillis method.
+        gcld.setTimeInMillis(tsIterSeconds*ITimeMachine.SEC_TO_MILLISEC);
+
+        //--- MUST prepend the dot character by two backslashes
+        //    to get the string split operator working properly here
+        final String [] tsIterStrSplit=
+          TimeMachine.dateTimeString( gcld, false).split("\\"+ITimeMachine.TIMESTAMP_SEP);
+
+        final String tsIterStr= tsIterStrSplit[0]+tsIterStrSplit[1];
+
+        slog.info("Stage constructor: tsIterStr="+tsIterStr);
+
+        final StageInputData stageInputData= this.getTimeStampedInputDataAt(tsIterStr,
+                                                                            mainJsonStageDataObject,
+                                                                            inputDataTimeStampsStrLen,
+                                                                            isItClimatologicInput);
+        this.timeStampedInputData.put(tsIterSeconds,stageInputData);
+
+        // --- Join the two Strings of tsIterStrSplit here.
+        //tmpTimeStampsList.add(tsIter, tsIterStrSplit[0]+tsIterStrSplit[1]);
+
+        //slog.info("Stage constructor: tmpTimeStampsList.get(0)="+tmpTimeStampsList.get(0));
+        //slog.info("Stage constructor: debug System.exit(0)");
+        //System.exit(0);
+     }
+
+     slog.info("Stage constructor: done with getting data from json input file -> "+stageInputDataFileLocal);
      slog.info("Stage constructor: debug System.exit(0)");
      System.exit(0);
 

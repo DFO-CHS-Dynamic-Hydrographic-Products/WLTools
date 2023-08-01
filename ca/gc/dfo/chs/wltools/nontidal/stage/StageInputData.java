@@ -13,7 +13,8 @@ import java.util.HashMap;
 import org.slf4j.LoggerFactory;
 
 // ---
-import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.nontidal.stage.StageDataUnit;
+//import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 
 /**
  * TODO: Add comments please!
@@ -31,7 +32,8 @@ final public class StageInputData {
    */
    //protected List<Map<Long,MeasurementCustom>> timeMappedData;
    //protected Map<Long,MeasurementCustom> timeMappedData;
-   protected HashMap<String,MeasurementCustom> dataUnits;
+   //protected HashMap<String,MeasurementCustom> dataUnits;
+   protected HashMap<String,StageDataUnit> dataUnits;
 
   /**
    * basic constructor
@@ -43,7 +45,7 @@ final public class StageInputData {
   /**
    * comments please.
    */
-   public StageInputData(final HashMap<String,MeasurementCustom> dataUnits) {
+   public StageInputData(final HashMap<String,StageDataUnit> dataUnits) {
      this.dataUnits= dataUnits;
    }
 

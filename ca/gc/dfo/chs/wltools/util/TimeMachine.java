@@ -39,15 +39,16 @@ abstract public class TimeMachine implements ITimeMachine {
 
     //--- Need to increment cld.get(Calendar.MONTH) by GRGCAL_MONTH_OFFSET== 1 to
     //    get the normal 1->12 Month convention.
-    final String dateTimeString = cld.get(Calendar.YEAR) +
+    final String dateTimeStr= Integer.toString(cld.get(Calendar.YEAR)) +
         prependZero(Integer.toString(cld.get(Calendar.MONTH) + GRGCAL_MONTH_OFFSET)) +
-        prependZero(Integer.toString(cld.get(Calendar.DAY_OF_MONTH))) + "." +
+        prependZero(Integer.toString(cld.get(Calendar.DAY_OF_MONTH))) + // + "." +
+        TIMESTAMP_SEP +
         prependZero(Integer.toString(cld.get(Calendar.HOUR_OF_DAY))) +
         prependZero(Integer.toString(cld.get(Calendar.MINUTE))) +
         prependZero(Integer.toString(cld.get(Calendar.SECOND)));
-    
+
     //--- Append time zone ID to the returned String.
-    return dateTimeString + (tz ? ":(TZ:" + cld.getTimeZone().getID() + ")" : "");
+    return dateTimeStr + (tz ? ":(TZ:" + cld.getTimeZone().getID() + ")" : "");
   }
   
   /**

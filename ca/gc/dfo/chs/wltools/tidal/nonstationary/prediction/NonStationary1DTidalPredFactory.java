@@ -104,12 +104,13 @@ final public class NonStationary1DTidalPredFactory
                                          /*NotNull*/final IStage.Type type,
                                          /*NotNull*/final Long timeStartSeconds,
                                          /*NotNull*/final Long timeEndSeconds,
+                                         /*NotNull*/final Long timeIncrSeconds,
                                          final String stageInputDataFile,
                                          final IStageIO.FileFormat stageInputDataFileFormat) {
      this();
 
      this.stagePart= new Stage(stationId,type,
-                               timeStartSeconds,timeEndSeconds,
+                               timeStartSeconds,timeEndSeconds,timeIncrSeconds,
                                stageInputDataFile,stageInputDataFileFormat);
 
   }
