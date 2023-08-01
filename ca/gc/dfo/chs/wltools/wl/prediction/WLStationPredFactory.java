@@ -174,7 +174,9 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
           }
 
           this.tidalPred1D= new
-             NonStationary1DTidalPredFactory(stationId, stageType, stageInputDataFile, stageInputDataFileFormat);
+             NonStationary1DTidalPredFactory(stationId, stageType,
+                                             startTimeSeconds, endTimeSeconds,
+                                             stageInputDataFile, stageInputDataFileFormat);
 
           slog.info("constructor: done with new NonStationary1DTidalPredFactory()");
           slog.info("constructor: debug System.exit(0)");

@@ -10,14 +10,13 @@ package ca.gc.dfo.chs.wltools;
  */
 public class WLToolsIO implements IWLToolsIO {
 
-   private static String mainCfgDir= null;
+   static private String mainCfgDir= null;
 
-   public WLToolsIO(final String mainCfgDirArg) {
-     mainCfgDir= mainCfgDirArg;
-   }
+   //public WLToolsIO(final String mainCfgDirArg) {
+   //  mainCfgDir= mainCfgDirArg;
+   //}
 
-   final protected String setMainCfgDir(final String mainCfgDirArg) {
-
+   final protected static String setMainCfgDir(final String mainCfgDirArg) {
      mainCfgDir= mainCfgDirArg;
      return mainCfgDir;
    }

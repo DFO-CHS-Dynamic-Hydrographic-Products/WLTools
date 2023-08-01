@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import org.slf4j.Logger;
+import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 
 // ---
@@ -24,8 +25,13 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import java.util.TimeZone;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 
 /**
  * class for the WL stage (non-tidal) type. The WL values are calculated
@@ -58,16 +64,17 @@ final public class Stage implements IStage, IStageIO {
    protected HashMap<String,StageCoefficient> coefficients;
 
   /**
-   * List of Map object(s) of StageInputData object(s).
+   * HashMap object(s) of time stamped StageInputData object(s).
    */
-   protected HashMap<String,StageInputData> inputData;
+   //protected HashMap<String,StageInputData> inputData;
+   protected HashMap<Long, StageInputData> timeStampedInputData;
 
   /**
    * basic constructor
    */
    public Stage() {
      this.coefficients= null;
-     this.inputData= null;
+     this.timeStampedInputData= null;
    }
 
   /**
@@ -75,6 +82,9 @@ final public class Stage implements IStage, IStageIO {
    */
    public Stage(/*NotNull*/final String stationId,
                 /*NotNull*/final IStage.Type type,
+                /*NotNull*/final Long timeStartSeconds,
+                /*NotNull*/final Long timeEndSeconds,
+                /*NotNull*/final Long timeIncrSeconds,
                 final String stageInputDataFile,
                 final IStageIO.FileFormat stageInputDataFileFormat) {
 
@@ -134,6 +144,45 @@ final public class Stage implements IStage, IStageIO {
        throw new RuntimeException(e);
      }
 
+     final JsonObject mainJsonStageDataObject=
+       Json.createReader(jsonFileInputStream).readObject();
+
+     // --- TODO: add fool-proof checks on all the Json dict keys.
+
+     //final JsonArray stageDataJsonArray=
+     //   mainJsonStageDataInputObj.getJsonArray();
+     final List<String> climTimeStampsStrings=
+        new ArrayList<String>(mainJsonStageDataObject.keySet());
+
+     //slog.info("Stage constructor: "+ climTimeStampsStrings.toString());
+
+     final JsonObject firstStageJsonDataDict=
+        mainJsonStageDataObject.getJsonObject(climTimeStampsStrings.get(0));
+
+     slog.info("Stage constructor: "+ firstStageJsonDataDict.toString());
+
+     final Long timeStartBufferForLags= timeStartSeconds -
+        NUM_DAYS_BUFFER_FOR_LAGS * ITimeMachine.SECONDS_PER_DAY;
+
+     final Long timeEndBufferForLags= timeEndSeconds +
+        NUM_DAYS_BUFFER_FOR_LAGS * ITimeMachine.SECONDS_PER_DAY;
+
+     //for (final String climTimeStampStr: climTimeStampsStrings) {
+     //   // --- Extract the month(mm) day(dd) hour(hh) string from the
+     //   //     YYYYMMMDDhh string. The YYYY string is just a placeholder
+     //   //     that needs to be replaced by a real year integer value
+     //   //     depending on the
+     //   final String mmddhhStr=
+     //     climTimeStampStr.substring(4,climTimeStampStr.length());
+     //   slog.info("Stage constructor: mmddhhStr="+mmddhhStr);
+     //   slog.info("Stage constructor: debug System.exit(0)");
+     //   System.exit(0);
+     //
+     //}
+
+     slog.info("Stage constructor: debug System.exit(0)");
+     System.exit(0);
+
      try {
        jsonFileInputStream.close();
 
@@ -150,12 +199,18 @@ final public class Stage implements IStage, IStageIO {
   /**
    * Comments please!
    */
-   public Stage(final HashMap<String,StageInputData> inputData,
-                final HashMap<String,StageCoefficient> coefficients) {
-
-      this.coefficients= coefficients;
-      this.inputData= inputData;
+   final public StageInputData getInputDataAtTimeStamp(final Long timeStampSeconds) {
+      return this.timeStampedInputData.get(timeStampSeconds);
    }
+
+  ///**
+  // */ Comments please!
+  // */
+  // public Stage(final HashMap<String,StageInputData> inputData,
+  //              final HashMap<String,StageCoefficient> coefficients) {
+  //    this.coefficients= coefficients;
+  //    this.timeStampedInputData= timeStampedInputData;
+  // }
 
   /**
    * Comments please!
@@ -217,25 +272,25 @@ final public class Stage implements IStage, IStageIO {
    //   return this;
    //}
 
-   final public Stage setInputDataMap(final HashMap<String,StageInputData> inputData) {
-
-      this.inputData= inputData;
-      return this;
-   }
+   //final public Stage setInputDataMap(final HashMap<String,StageInputData> inputData) {
+   //   this.inputData= inputData;
+   //   return this;
+   //}
 
   /**
    * Comments please!
    */
    final public HashMap<String,StageCoefficient> getCoeffcientsMap() {
-      return this.coefficients;
+     return this.coefficients;
    }
 
   /**
    * Comments please!
    */
-   final public HashMap<String,StageInputData> getInputDataMap() {
-     return this.inputData;
-  }
+   final public HashMap<Long,StageInputData> getTimeStampedInputData() {
+     return this.timeStampedInputData;
+   }
+
    //final public List<Coefficient> getCoefficients() { return this.coefficients;
    //}
 

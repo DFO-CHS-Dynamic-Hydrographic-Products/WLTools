@@ -102,11 +102,15 @@ final public class NonStationary1DTidalPredFactory
 
   public NonStationary1DTidalPredFactory(/*NotNull*/final String stationId,
                                          /*NotNull*/final IStage.Type type,
+                                         /*NotNull*/final Long timeStartSeconds,
+                                         /*NotNull*/final Long timeEndSeconds,
                                          final String stageInputDataFile,
                                          final IStageIO.FileFormat stageInputDataFileFormat) {
      this();
 
-     this.stagePart= new Stage(stationId,type,stageInputDataFile,stageInputDataFileFormat);
+     this.stagePart= new Stage(stationId,type,
+                               timeStartSeconds,timeEndSeconds,
+                               stageInputDataFile,stageInputDataFileFormat);
 
   }
   /**
@@ -116,8 +120,15 @@ final public class NonStationary1DTidalPredFactory
   @Override
   final public double computeTidalPrediction(final long timeStampSeconds) {
 
-     final Map<String,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
-     final Map<String,StageCoefficient> stageCoefficientMap= this.stagePart.getCoeffcientsMap();
+     //final Map<String,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
+     //final HashMap<Long,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
+
+     final HashMap<String,StageCoefficient> stageCoefficientMap= this.stagePart.getCoeffcientsMap();
+
+     //final HashMap<String,MeasurementCustom> stageInputDataMap=
+     final HashMap<Long,StageInputData> stageInputTimeStampedData= this.stagePart.getTimeStampedInputData();
+
+       //getInputDataAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
 
      // --- Get the zero'th order non-stationary WL pred. part taking the stage zero'th
      //    order coefficient as the Z0 (WL average).
@@ -135,15 +146,20 @@ final public class NonStationary1DTidalPredFactory
         //final StageInputData stageInputData= stageInputDataMap.get(stInputDataId);
 
         final StageCoefficient stageCoefficient= stageCoefficientMap.get(stageCoeffId);
+        final double stageCoefficientValue= stageCoefficient.getValue();
 
         // --- Get the stage value for this stage coefficient using the time lag
         //     as determined by the non-stationary tidal analysis.
-        final double stageInputDataValue= stageInputDataMap.get(stageCoeffId).
-            getAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
+        //final double stageInputDataValue= stageInputDataMap.get(stageCoeffId).
+        //    getAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
+        final StageInputData stageInputData=
+          stageInputTimeStampedData.get(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
+
+        final double stageInputDataValue= stageInputData.getValueForCoeff(stageCoeffId); //.getDataUnitValue();
 
         // ---- Apply the non-stationary calculation with the related stage value part and the
         //      the hoTidalValue for this higher order.
-        tidaPredValue += (stageCoefficient.getValue() + hoTidalValue) * stageInputDataValue;
+        tidaPredValue += (stageCoefficientValue + hoTidalValue) * stageInputDataValue ; /// stageInputDataValue;
      }
 
      // ---

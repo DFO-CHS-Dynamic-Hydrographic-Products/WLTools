@@ -19,6 +19,10 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
  */
 public interface IStage {
 
+   // --- Defined a default buffer in days to be able to deal
+   //     with stage data lags
+   int NUM_DAYS_BUFFER_FOR_LAGS= 15;
+
    enum Type {
      DISCHARGE_CFG_STATIC, // --- Stage data is "static" in time (i.e same data each year) and is defined inside the inner config DB.
      DISCHARGE_FROM_MODEL, // --- Stage data is coming from an external model results (like ECCC DHPS or EHPS models)

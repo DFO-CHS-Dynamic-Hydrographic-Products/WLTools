@@ -14,7 +14,7 @@ import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
-final public class WLTools { // extends WLToolsIO {
+final public class WLTools extends WLToolsIO {
 
    //static {
    //   System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace");
@@ -38,20 +38,25 @@ final public class WLTools { // extends WLToolsIO {
          argsMap.put(parts[0], parts[1]);
       }
 
-      for (String key: argsMap.keySet()){
-         System.out.println("WLTools main argsMap key="+key);
-         System.out.println("WLTools main argsMap value="+argsMap.get(key));
-      }
+      //for (String key: argsMap.keySet()){
+      //   System.out.println("WLTools main argsMap key="+key);
+      //   System.out.println("WLTools main argsMap value="+argsMap.get(key));
+      //}
 
-      //if ("--mainExecDir" not 
+      //if ("--mainExecDir" not
+      final String binDir= argsMap.get("--binDir");
 
-      final String mainExecDir= System.getProperty("user.dir");
-      System.out.println("WLTools main: mainExecDir= "+mainExecDir);
+      //final String mainExecDir= System.getProperty("user.dir");
+      System.out.println("WLTools main: binDir= "+binDir);
+
+      //System.out.println("WLTools main: debug exit(0)");
+      //System.exit(0);
 
       //this.super(mainExecDir + "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
      // mainCfgDir= mainExecDir + "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR;
 
-      final WLToolsIO io= new WLToolsIO(mainExecDir + "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
+      //final WLToolsIO io= new WLToolsIO(mainExecDir + "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
+      WLToolsIO.setMainCfgDir(binDir+ "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
 
       System.out.println("WLTools main: mainCfgDir= "+WLToolsIO.getMainCfgDir());
 

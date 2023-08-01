@@ -9,6 +9,7 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
 import java.util.Map;
 import java.util.List;
 import org.slf4j.Logger;
+import java.util.HashMap;
 import org.slf4j.LoggerFactory;
 
 // ---
@@ -22,33 +23,52 @@ final public class StageInputData {
   /**
    * static log utility
    */
-   private final Logger log = LoggerFactory.getLogger(this.getClass());
+   //private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
-   * List of time (seconds since epoch) mapped MeasurementCustom objects.
+   * HashMap of MeasurementCustom objects to hold the stage input data
+   * for one time stamp
    */
    //protected List<Map<Long,MeasurementCustom>> timeMappedData;
-   protected Map<Long,MeasurementCustom> timeMappedData;
+   //protected Map<Long,MeasurementCustom> timeMappedData;
+   protected HashMap<String,MeasurementCustom> dataUnits;
 
   /**
    * basic constructor
    */
    public StageInputData() {
-      this.timeMappedData= null;
+      this.dataUnits= null;
    }
 
   /**
-   * constructor taking a List<Coefficient> arg.
+   * comments please.
    */
-   //public StageInputData(final List<Map<Long,MeasurementCustom>> timeMappedData) {
-   public StageInputData(final Map<Long,MeasurementCustom> timeMappedData) {
-      this.timeMappedData= timeMappedData;
+   public StageInputData(final HashMap<String,MeasurementCustom> dataUnits) {
+     this.dataUnits= dataUnits;
    }
 
+   //final public MeasurementCustom get(final String coefficientId) {
+   //  return this.dataUnits.get(coefficientId);
+   //}
+
   /**
-   * comments please!
+    * comments please.
+    */
+   //final public HashMap<String,MeasurementCustom> getDataUnits() {
+   //  return this.dataUnits;
+   //}
+
+  /**
+   * comments please.
    */
-   final public double getAtTimeStamp(final long timeStampSeconds) {
-      return this.timeMappedData.get(timeStampSeconds).getValue();
+   final public double getValueForCoeff(final String coefficientId) {
+     return this.dataUnits.get(coefficientId).getValue();
    }
+
+  ///**
+  // * comments please!
+  // */
+  // final public double getAtTimeStamp(final long timeStampSeconds) {
+  //    return this.timeMappedData.get(timeStampSeconds).getValue();
+  // }
 }
