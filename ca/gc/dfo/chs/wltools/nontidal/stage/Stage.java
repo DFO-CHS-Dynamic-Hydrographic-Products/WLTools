@@ -270,7 +270,8 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
       this.coefficients.put( STAGE_JSON_ZEROTH_ORDER_KEY,
           new StageCoefficient(stageJsonObj.getJsonNumber(STAGE_JSON_ZEROTH_ORDER_KEY).doubleValue()) );
 
-      slog.info("setCoeffcientsMap: Zero'th order coefficient value="+this.coefficients.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue());
+      slog.info("setCoeffcientsMap: Zero'th order coefficient value="+
+                this.coefficients.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue());
 
       final Set<String> coefficientsIdsSet= stageJsonObj.keySet();
 
@@ -302,8 +303,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
           slog.info("setCoeffcientsMap: coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
           slog.info("setCoeffcientsMap: coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
 
+          // --- stage data lags are defined in hours in the input file.
           final StageCoefficient stageCoefficient= new
-            StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue*ITimeMachine.SECONDS_PER_DAY);
+            StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue*ITimeMachine.SECONDS_PER_HOUR);
 
           // --- uncertaintu is 0.0 for now.
           this.coefficients.put( coeffOrderKey,stageCoefficient);
