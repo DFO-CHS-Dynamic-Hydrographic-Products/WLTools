@@ -123,18 +123,24 @@ final public class NonStationary1DTidalPredFactory
 
      //final Map<String,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
      //final HashMap<Long,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
+     //slog.info("computeTidalPrediction: start, timeStampSeconds="+timeStampSeconds);
 
      final HashMap<String,StageCoefficient> stageCoefficientMap= this.stagePart.getCoeffcientsMap();
 
      //final HashMap<String,MeasurementCustom> stageInputDataMap=
      final HashMap<Long,StageInputData> stageInputTimeStampedData= this.stagePart.getTimeStampedInputData();
 
+     //slog.info("computeTidalPrediction: aft. getting stage objects.");
+
        //getInputDataAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
 
      // --- Get the zero'th order non-stationary WL pred. part taking the stage zero'th
      //    order coefficient as the Z0 (WL average).
-     double tidaPredValue= super.computeTidalPrediction(timeStampSeconds) +
-                           stageCoefficientMap.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue();
+     double tidalPredValue= super.
+       computeTidalPrediction(timeStampSeconds) +
+          stageCoefficientMap.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue();
+
+     //slog.info("computeTidalPrediction: aft. getting stationary tidalPredValue="+tidalPredValue);
 
      // --- Add the higher order(s) contribution to the WL tidal pred. signal.
      for (final String stageCoeffId: this.constituent1DDataItems.keySet()) { // stageInputDataMap.keySet()) {
@@ -143,11 +149,16 @@ final public class NonStationary1DTidalPredFactory
         //     higher order >=1/
         final double hoTidalValue= super.astroInfosFactory.
            computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stageCoeffId));
+        
+        //slog.info("computeTidalPrediction: aft. getting non-stationary hoTidalValue="+hoTidalValue);
 
         //final StageInputData stageInputData= stageInputDataMap.get(stInputDataId);
 
         final StageCoefficient stageCoefficient= stageCoefficientMap.get(stageCoeffId);
         final double stageCoefficientValue= stageCoefficient.getValue();
+
+        //slog.info("computeTidalPrediction: aft. getting stageCoefficientValue="+stageCoefficientValue);
+        //slog.info("computeTidalPrediction: aft. getting stageCoefficientValue, stageCoefficient.getTimeLagSeconds()="+stageCoefficient.getTimeLagSeconds());
 
         // --- Get the stage value for this stage coefficient using the time lag
         //     as determined by the non-stationary tidal analysis.
@@ -156,15 +167,22 @@ final public class NonStationary1DTidalPredFactory
         final StageInputData stageInputData=
           stageInputTimeStampedData.get(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
 
+        //slog.info("computeTidalPrediction: aft. getting stageInputData="+stageInputData.toString());
+        //slog.info("computeTidalPrediction: aft. getting stageInputData, stageCoeffId="+stageCoeffId);
+
         final double stageInputDataValue= stageInputData.getValueForCoeff(stageCoeffId); //.getDataUnitValue();
+
+        //slog.info("computeTidalPrediction: aft. getting stageInputDataValue="+stageInputDataValue);
 
         // ---- Apply the non-stationary calculation with the related stage value part and the
         //      the hoTidalValue for this higher order.
-        tidaPredValue += (stageCoefficientValue + hoTidalValue) * stageInputDataValue ; /// stageInputDataValue;
+        tidalPredValue += (stageCoefficientValue + hoTidalValue) * stageInputDataValue ; /// stageInputDataValue;
      }
 
+     //slog.info("computeTidalPrediction: end");
+
      // ---
-     return tidaPredValue;
+     return tidalPredValue;
   }
 
   /**

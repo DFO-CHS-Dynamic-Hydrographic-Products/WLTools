@@ -38,6 +38,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 
 //import javax.validation.constraints.Min;
@@ -99,13 +100,19 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
    */
   private String stationId = null;
 
+  protected long startTimeSeconds= IWLStationPred.TIME_NOT_DEFINED;
+  protected long endTimeSeconds= IWLStationPred.TIME_NOT_DEFINED;
+
   protected long timeIncrSeconds= IWLStationPred.DEFAULT_TIME_INCR_SECONDS;
+
+  protected boolean predictionReady= false;
 
   /**
    * Default constructor.
    */
   public WLStationPredFactory() {
-    this.unfortunateUTCOffsetSeconds = 0L;
+     this.predictionReady= false;
+    //this.unfortunateUTCOffsetSeconds = 0L;
   }
   
    // --- TOOO: Update the javadoc comments.
@@ -133,12 +140,18 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                               final String stageInputDataFile,
                               final IStageIO.FileFormat stageInputDataFileFormat) {
 
-    slog.info("constructor: start");
+    slog.info("constructor: start, stationId="+stationId);
 
+    this.stationId= stationId;
+
+    // --- Validate the start and end times
     if (endTimeSeconds <= startTimeSeconds) {
       throw new RuntimeException("WLStationPredFactory constructor: Invalid startTimeSeconds="+startTimeSeconds.toString()+
                                 " and-or endTimeSeconds="+endTimeSeconds.toString()+"time stamps !");
     }
+
+    this.startTimeSeconds= startTimeSeconds;
+    this.endTimeSeconds= endTimeSeconds;
 
     // ---
     if (timeIncrSeconds != null) {
@@ -189,13 +202,13 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
           }
 
           this.tidalPred1D= new
-             NonStationary1DTidalPredFactory(stationId, stageType,
-                                             startTimeSeconds, endTimeSeconds, this.timeIncrSeconds,
+             NonStationary1DTidalPredFactory(this.stationId, stageType,
+                                             this.startTimeSeconds, this.endTimeSeconds, this.timeIncrSeconds,
                                              stageInputDataFile, stageInputDataFileFormat);
 
           slog.info("constructor: done with new NonStationary1DTidalPredFactory()");
-          slog.info("constructor: debug System.exit(0)");
-          System.exit(0);
+          //slog.info("constructor: debug System.exit(0)");
+          //System.exit(0);
        }
 
        //--- Retreive WL station tidal constituents from a local disk file.
@@ -213,6 +226,8 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                                       Math.toRadians(stationLatitudeDecimalDegrees),
                                       startTimeSeconds,
                                       this.tidalPred1D.getTcNames());
+
+       this.predictionReady= true;
 
        slog.info("constructor: end");
        //slog.info("constructor: Debug System.exit(0)");
@@ -234,9 +249,8 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
   final public WLStationPredFactory getStationConstituentsData(/*@NotNull*/ final String stationId,
                                                                             final String tcInputfilePath,
                                                                /*@NotNull*/ final ITidalIO.WLConstituentsInputFileFormat inputFileFormat ) {
-    
     slog.info("getStationConstituentsData: start");
-    
+
     try {
       stationId.length();
       
@@ -290,7 +304,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
         this.tidalPred1D.getNSJSONFileData(tcInputfilePath);
 
-        slog.info("NON_STATIONARY_JSON format: Done with reading tcInputfilePath");
+        slog.info("getStationConstituentsData: NON_STATIONARY_JSON format: Done with reading tcInputfilePath");
         //this.log.info("Debug System.exit(0)");
         //System.exit(0);
         break;
@@ -298,13 +312,55 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
       default:
 
         //this.log.error("Invalid file format ->" + inputFileFormat);
-        throw new RuntimeException("Invalid file format ->" + inputFileFormat);
+        throw new RuntimeException("getStationConstituentsData: Invalid file format ->" + inputFileFormat);
         //break;
     } // ---- end switch block
     
     slog.info("getStationConstituentsData: end");
     
     return this;
+  }
+
+  /**
+    *
+    */
+  public final List<MeasurementCustom> getTidalPredictionsForStation() {
+
+    final String mmi="getTidalPredictionsForStation: ";
+
+    slog.info(mmi+"start, getting tidal predictions for station -> "+this.stationId);
+
+    if (!predictionReady) {
+      throw new RuntimeException(mmi+"not ready for predictions calculations!");
+    }
+
+    List<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
+
+    // --- Check nbTimeStamps value here >> Must be at least 1
+    final int nbTimeStamps=
+      (int)((this.endTimeSeconds - this.startTimeSeconds)/this.timeIncrSeconds);
+
+    for (long tsIter= 0; tsIter< nbTimeStamps; tsIter++) {
+
+      final long timeStampSeconds=
+        this.startTimeSeconds + tsIter*this.timeIncrSeconds;
+
+      slog.info(mmi+"timeStampSeconds="+timeStampSeconds);
+
+      final double wlPrediction= this.tidalPred1D.computeTidalPrediction(timeStampSeconds);
+
+      //slog.info(mmi+"wlPrediction="+wlPrediction);
+
+      //if (tsIter==11){
+      //  slog.info(mmi+"debug System.exit(0)");
+      //  System.exit(0);
+      //}
+    }
+
+    slog.info(mmi+"done with tidal predictions for station -> "+this.stationId);
+    slog.info(mmi+"getTidalPredictions: end");
+
+    return retList;
   }
 
   /**

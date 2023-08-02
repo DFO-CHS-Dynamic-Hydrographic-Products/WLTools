@@ -105,6 +105,8 @@ final public class WLTools extends WLToolsIO {
                                                                        null // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
                                                                        );
 
+      wlStnPrdFct.getTidalPredictionsForStation();
+
       System.out.println("WLTools main end");
   }
 }

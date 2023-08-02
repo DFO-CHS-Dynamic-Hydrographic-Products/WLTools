@@ -64,6 +64,10 @@ final public class StageInputData {
    * comments please.
    */
    final public double getValueForCoeff(final String coefficientId) {
+
+     //System.out.println("getValueForCoeff: coefficientId="+coefficientId);
+     //System.out.println("this.dataUnits.get(coefficientId)="+this.dataUnits.get(coefficientId).toString());
+
      return this.dataUnits.get(coefficientId).getValue();
    }
 
