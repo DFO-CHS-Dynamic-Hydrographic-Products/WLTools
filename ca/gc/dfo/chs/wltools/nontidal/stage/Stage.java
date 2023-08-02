@@ -190,6 +190,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      this.timeStampedInputData= new HashMap<Long,StageInputData>();
 
+     // --- TODO: Implement temporal interpolation when the stage input data
+     //     time increments are larger than the time increment wanted for the
+     //     predictions.
      for (int tsIter= 0; tsIter< nbTimeStamps; tsIter++) {
 
         final Long tsIterSeconds=
@@ -222,8 +225,8 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      }
 
      slog.info("Stage constructor: done with getting data from json input file -> "+stageInputDataFileLocal);
-     slog.info("Stage constructor: debug System.exit(0)");
-     System.exit(0);
+     //slog.info("Stage constructor: debug System.exit(0)");
+     //System.exit(0);
 
      try {
        jsonFileInputStream.close();
@@ -233,8 +236,8 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      }
 
      slog.info("Stage constructor: end");
-     slog.info("Stage constructor: debug System.exit(0)");
-     System.exit(0);
+     //slog.info("Stage constructor: debug System.exit(0)");
+     //System.exit(0);
 
    }
 
@@ -242,7 +245,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
    * Comments please!
    */
    final public StageInputData getInputDataAtTimeStamp(final Long timeStampSeconds) {
-      return this.timeStampedInputData.get(timeStampSeconds);
+     return this.timeStampedInputData.get(timeStampSeconds);
    }
 
   ///**
@@ -299,9 +302,11 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
           slog.info("setCoeffcientsMap: coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
           slog.info("setCoeffcientsMap: coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
 
+          final StageCoefficient stageCoefficient= new
+            StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue*ITimeMachine.SECONDS_PER_DAY);
+
           // --- uncertaintu is 0.0 for now.
-          this.coefficients.put( coeffOrderKey,
-                                 new StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue));
+          this.coefficients.put( coeffOrderKey,stageCoefficient);
       }
 
       slog.info("setCoeffcientsMap: end");
