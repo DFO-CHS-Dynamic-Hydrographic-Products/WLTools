@@ -36,8 +36,8 @@ final public class WLTools extends WLToolsIO {
       Map<String, String> argsMap = new HashMap<>();
 
       for (String arg: args) {
-         String[] parts = arg.split("=");
-         argsMap.put(parts[0], parts[1]);
+        String[] parts = arg.split("=");
+        argsMap.put(parts[0], parts[1]);
       }
 
       //for (String key: argsMap.keySet()){
@@ -81,8 +81,8 @@ final public class WLTools extends WLToolsIO {
       final long unixTimeNow = System.currentTimeMillis() / 1000L;
 
       Calendar gcld= new GregorianCalendar().getInstance(TimeZone.getTimeZone("GMT"));
-      gcld.set(GregorianCalendar.YEAR,2014);
-      gcld.set(GregorianCalendar.MONTH,0); // --- January is month 0 in Java.
+      gcld.set(GregorianCalendar.YEAR, 2014); //2023); //2014);
+      gcld.set(GregorianCalendar.MONTH, 0); //7); //0); // --- January is month 0 in Java.
       gcld.set(GregorianCalendar.DAY_OF_MONTH,1);
       gcld.set(GregorianCalendar.HOUR_OF_DAY,0);
       gcld.set(GregorianCalendar.MINUTE,0);

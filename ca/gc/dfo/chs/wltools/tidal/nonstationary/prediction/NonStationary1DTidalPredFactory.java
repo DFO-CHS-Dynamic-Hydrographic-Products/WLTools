@@ -127,6 +127,10 @@ final public class NonStationary1DTidalPredFactory
 
      final HashMap<String,StageCoefficient> stageCoefficientMap= this.stagePart.getCoeffcientsMap();
 
+     //slog.info("computeTidalPrediction: stageCoefficientMap="+stageCoefficientMap.toString());
+     //slog.info("computeTidalPrediction: debug System.exit(0)");
+     //System.exit(0);
+
      //final HashMap<String,MeasurementCustom> stageInputDataMap=
      final HashMap<Long,StageInputData> stageInputTimeStampedData= this.stagePart.getTimeStampedInputData();
 

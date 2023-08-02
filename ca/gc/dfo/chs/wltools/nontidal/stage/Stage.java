@@ -70,6 +70,8 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
    //protected HashMap<String,StageInputData> inputData;
    protected HashMap<Long, StageInputData> timeStampedInputData;
 
+   protected Set<String> timeStampedInputDataCoeffIdsCheck;
+
   /**
    * basic constructor
    */
@@ -165,10 +167,17 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      //slog.info("Stage constructor: debug System.exit(0)");
      //System.exit(0);
 
-     //final JsonObject stageJsonDataDict0=
-     //   mainJsonStageDataObject.getJsonObject(climTimeStampsStrings.get(0));
+     final JsonObject stageJsonDataDict0=
+       mainJsonStageDataObject.getJsonObject(inputDataTimeStampStr0);//climTimeStampsStrings.get(0));
 
-     //slog.info("Stage constructor: "+ firstStageJsonDataDict.toString());
+     //slog.info("Stage constructor: "+ stageJsonDataDict0.toString());
+
+     this.timeStampedInputDataCoeffIdsCheck= stageJsonDataDict0.keySet();
+
+     slog.info("Stage constructor: this.coefficientsIdsCheck="+
+               this.timeStampedInputDataCoeffIdsCheck.toString());
+     //slog.info("Stage constructor: debug System.exit(0)");
+     //System.exit(0);
 
      //--- timeStartSeconds, timeEndSeconds and timeIncrSeconds MUST
      //    have been validated before we get here.
@@ -203,8 +212,8 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
         //--- MUST prepend the dot character by two backslashes
         //    to get the string split operator working properly here
-        final String [] tsIterStrSplit=
-          TimeMachine.dateTimeString( gcld, false).split("\\"+ITimeMachine.TIMESTAMP_SEP);
+        final String [] tsIterStrSplit= TimeMachine.
+          dateTimeString( gcld, false).split("\\"+ITimeMachine.TIMESTAMP_SEP);
 
         final String tsIterStr= tsIterStrSplit[0]+tsIterStrSplit[1];
 
@@ -213,7 +222,14 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
         final StageInputData stageInputData= this.getTimeStampedInputDataAt(tsIterStr,
                                                                             mainJsonStageDataObject,
                                                                             inputDataTimeStampsStrLen,
-                                                                            isItClimatologicInput);
+                                                                            isItClimatologicInput,
+                                                                            false);
+        if (stageInputData==null){
+          slog.info("Stage constructor: missing input data for tsIterStr="+tsIterStr);
+          slog.info("Stage constructor: debug System.exit(0)");
+          System.exit(0);
+        }
+
         this.timeStampedInputData.put(tsIterSeconds,stageInputData);
 
         // --- Join the two Strings of tsIterStrSplit here.
@@ -227,6 +243,8 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      slog.info("Stage constructor: done with getting data from json input file -> "+stageInputDataFileLocal);
      //slog.info("Stage constructor: debug System.exit(0)");
      //System.exit(0);
+
+     // --- Check if we need to do time interpolation for the stage data.
 
      try {
        jsonFileInputStream.close();
@@ -262,7 +280,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
    */
    final public Stage setCoeffcientsMap(/*@NotNull*/ final JsonObject stageJsonObj) {
 
-      slog.info("setCoeffcientsMap: start");
+      final String mmi= "setCoeffcientsMap: ";
+
+      slog.info(mmi+"start");
 
       this.coefficients= new HashMap<String,StageCoefficient>();;
 
@@ -270,7 +290,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
       this.coefficients.put( STAGE_JSON_ZEROTH_ORDER_KEY,
           new StageCoefficient(stageJsonObj.getJsonNumber(STAGE_JSON_ZEROTH_ORDER_KEY).doubleValue()) );
 
-      slog.info("setCoeffcientsMap: Zero'th order coefficient value="+
+      slog.info(mmi+"Zero'th order coefficient value="+
                 this.coefficients.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue());
 
       final Set<String> coefficientsIdsSet= stageJsonObj.keySet();
@@ -280,38 +300,59 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
       // --- nbNonZeroThOrderCoeffs must be even here.
       if (nbNonZeroThOrderCoeffs % 2 !=0 ) {
-         throw new RuntimeException("nbNonZeroThOrderCoeffs % 2 !=0");
+         throw new RuntimeException(mmi+"nbNonZeroThOrderCoeffs % 2 !=0");
       }
 
+      // ---
       for (Integer coeffOrder= 1; coeffOrder<= nbNonZeroThOrderCoeffs; coeffOrder++) {
 
          final String coeffOrderKey=
-            IStageIO.STAGE_JSON_DN_KEYS_BEG + coeffOrder.toString();
+           IStageIO.STAGE_JSON_DN_KEYS_BEG + coeffOrder.toString();
 
          final String coeffFactorKey= coeffOrderKey +
-            IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNFCT_KEYS;
+           IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNFCT_KEYS;
 
          final String coeffHoursLagKey= coeffOrderKey +
-            IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNLAG_KEYS;
+           IStageIO.STAGE_JSON_KEYS_SPLIT + IStageIO.STAGE_JSON_DNLAG_KEYS;
 
-          //this.log.info("coeffFactorKey="+coeffFactorKey);
-          //this.log.info("coeffHoursLagKey="+coeffHoursLagKey);
+          //slog.info("coeffFactorKey="+coeffFactorKey);
+          //slog.info("coeffHoursLagKey="+coeffHoursLagKey);
 
-          final double coeffFactorValue= stageJsonObj.getJsonNumber(coeffFactorKey).doubleValue();
-          final long   coeffHoursLagValue= stageJsonObj.getJsonNumber(coeffHoursLagKey).longValue();
+          final double coeffFactorValue=
+            stageJsonObj.getJsonNumber(coeffFactorKey).doubleValue();
 
-          slog.info("setCoeffcientsMap: coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
-          slog.info("setCoeffcientsMap: coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
+          final long coeffHoursLagValue=
+            stageJsonObj.getJsonNumber(coeffHoursLagKey).longValue();
+
+          //slog.info("setCoeffcientsMap: coeffFactorKey="+coeffFactorKey+", coeffFactorValue="+coeffFactorValue);
+          //slog.info("setCoeffcientsMap: coeffHoursLagKey="+coeffHoursLagKey+",coeffHoursLagValue="+coeffHoursLagValue);
 
           // --- stage data lags are defined in hours in the input file.
           final StageCoefficient stageCoefficient= new
             StageCoefficient(coeffFactorValue, 0.0, coeffHoursLagValue*ITimeMachine.SECONDS_PER_HOUR);
 
           // --- uncertaintu is 0.0 for now.
-          this.coefficients.put( coeffOrderKey,stageCoefficient);
+          this.coefficients.put( coeffOrderKey, stageCoefficient);
       }
 
-      slog.info("setCoeffcientsMap: end");
+      final Set<String> checkThisCoeffsIdsSet= this.coefficients.keySet();
+
+      // --- Need to check for cofficients ids. conststency with
+      //     the time varying stage input data:
+      for (final String coeffIdCheck: this.timeStampedInputDataCoeffIdsCheck) {
+
+        if ( !checkThisCoeffsIdsSet.contains(coeffIdCheck) ) {
+          throw new RuntimeException(mmi+"Inconsistency between non-stationary tidal stage coefficients ids. and time varying stage input data coefficient name ids. !!");
+        }
+      }
+
+      slog.info(mmi+"coefficientsIds are consistent with time varying input stage data");
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);
+
+      slog.info(mmi+"end");
+      //slog.info("setCoeffcientsMap: debug System.exit(0)");
+      //System.exit(0);
 
       return this;
    }

@@ -345,16 +345,16 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
       final long timeStampSeconds=
         this.startTimeSeconds + tsIter*this.timeIncrSeconds;
 
-      slog.info(mmi+"timeStampSeconds="+timeStampSeconds);
+      //slog.info(mmi+"timeStampSeconds="+timeStampSeconds);
 
       final double wlPrediction= this.tidalPred1D.computeTidalPrediction(timeStampSeconds);
 
-      //slog.info(mmi+"wlPrediction="+wlPrediction);
+      slog.info(mmi+"wlPrediction="+wlPrediction);
 
-      //if (tsIter==11){
-      //  slog.info(mmi+"debug System.exit(0)");
-      //  System.exit(0);
-      //}
+      if (tsIter==23){
+        slog.info(mmi+"debug System.exit(0)");
+        System.exit(0);
+      }
     }
 
     slog.info(mmi+"done with tidal predictions for station -> "+this.stationId);

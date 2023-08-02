@@ -43,13 +43,13 @@ public class StageIO implements IStageIO {
    final protected StageInputData getTimeStampedInputDataAt(/*NotNull*/final String tsStr,
                                                             /*NotNull*/final JsonObject mainJsonStageDataObject,
                                                             /*NotNull*/final int inputDataTimeStampsStrLen,
-                                                            /*NotNull*/final boolean isItClimatologicInput) {
+                                                            /*NotNull*/final boolean isItClimatologicInput,
+                                                            /*NotNull*/final boolean checkForMissingData ) {
+     final String mmi= "getTimeStampedInputDataAt: ";
 
-     //StageInputData stageInputDataRet= new StageInputData();
-
-     slog.info("getTimeStampedInputDataAt: start, tsStr="+tsStr+
-               ", inputDataTimeStampsStrLen="+inputDataTimeStampsStrLen+
-               ", isItClimatologicInput="+isItClimatologicInput);
+     //slog.info(mmi+"start, tsStr="+tsStr+
+     //          ", inputDataTimeStampsStrLen="+inputDataTimeStampsStrLen+
+     //          ", isItClimatologicInput="+isItClimatologicInput);
 
      // --- inputDataTimeStampsStrLen MUST obviously be > 0 here
      String localTsStr= new String(tsStr).substring(0,inputDataTimeStampsStrLen);
@@ -61,43 +61,61 @@ public class StageIO implements IStageIO {
      //     characters from the localTsStr.
      if (isItClimatologicInput) {
 
-       localTsStr= CLIMATO_YEAR_PLACEHOLDER +
-         tsStr.substring(CLIMATO_YEAR_PLACEHOLDER.length(),localTsStr.length());
+       localTsStr= CLIMATO_YEAR_PLACEHOLDER + tsStr.
+          substring(CLIMATO_YEAR_PLACEHOLDER.length(),localTsStr.length());
      }
 
-     slog.info("getTimeStampedInputDataAt: localTsStr aft if="+localTsStr);
+     //slog.info(mmi+"localTsStr aft if="+localTsStr);
 
-     final JsonObject tmpInputDataDict= mainJsonStageDataObject.getJsonObject(localTsStr);
+     final JsonObject tmpInputDataDict=
+       mainJsonStageDataObject.getJsonObject(localTsStr);
 
-     if (tmpInputDataDict == null) {
-       throw new RuntimeException("getTimeStampedInputDataAt: tmpInputDataDict == null !!, timestamp string ->"+localTsStr+" not found in JsonObject");
+     // --- Could have to check for missing data.
+     if (checkForMissingData && tmpInputDataDict == null) {
+
+       throw new RuntimeException(mmi+
+                                  "tmpInputDataDict == null !!, timestamp string ->"+
+                                  localTsStr+" not found in JsonObject");
      }
 
-     final Set<String> stageInputDataCoeffIds= tmpInputDataDict.keySet();
+     // --- Return null if we do not need to
+     //     check for missing data and if
+     //     tmpInputDataDict is itself null
+     //     (which means that the input data
+     //      is missing to this timestamp
+     StageInputData stageInputDataRet= null;
 
-     //slog.info("getTimeStampedInputDataAt: inputDataDict="+tmpInputDataDict.toString());
-     //slog.info("getTimeStampedInputDataAt: stageInputDataCoeffIds="+stageInputDataCoeffIds.toString());
+     // ---
+     if (tmpInputDataDict != null) {
 
-     final HashMap<String,StageDataUnit>
-       stageInputDataUnits= new HashMap<String,StageDataUnit>();
+       final Set<String> stageInputDataCoeffIds= tmpInputDataDict.keySet();
 
-     for (final String stageDataCoeffId: stageInputDataCoeffIds) {
+       //slog.info("getTimeStampedInputDataAt: inputDataDict="+tmpInputDataDict.toString());
+       //slog.info("getTimeStampedInputDataAt: stageInputDataCoeffIds="+stageInputDataCoeffIds.toString());
 
-       final double stageValue= tmpInputDataDict.
-          getJsonNumber(stageDataCoeffId).doubleValue();
+       final HashMap<String,StageDataUnit>
+         stageInputDataUnits= new HashMap<String,StageDataUnit>();
 
-       //slog.info("getTimeStampedInputDataAt: debug stageDataCoeffId="+stageDataCoeffId);
-       //slog.info("getTimeStampedInputDataAt: debug stageValue="+stageValue);
-       //slog.info("getTimeStampedInputDataAt: debug System.exit(0)");
-       //System.exit(0);
+       for (final String stageDataCoeffId: stageInputDataCoeffIds) {
 
-       stageInputDataUnits.put( stageDataCoeffId,
-                                new StageDataUnit(stageValue,0.0));
+         final double stageValue= tmpInputDataDict.
+           getJsonNumber(stageDataCoeffId).doubleValue();
+
+         //slog.info("getTimeStampedInputDataAt: debug stageDataCoeffId="+stageDataCoeffId);
+         //slog.info("getTimeStampedInputDataAt: debug stageValue="+stageValue);
+         //slog.info("getTimeStampedInputDataAt: debug System.exit(0)");
+         //System.exit(0);
+
+         stageInputDataUnits.put( stageDataCoeffId,
+                                  new StageDataUnit(stageValue,0.0));
+       }
+
+       // --- Create the StageInputData that will be returned with
+       //     the stageInputDataUnits HashMap<String,StageDataUnit> object
+       stageInputDataRet= new StageInputData(stageInputDataUnits);
      }
 
-     StageInputData stageInputDataRet= new StageInputData(stageInputDataUnits);
-
-     slog.info("getTimeStampedInputDataAt: end");
+     //slog.info(mmi+"end");
      //slog.info("getTimeStampedInputDataAt: debug System.exit(0)");
      //System.exit(0);
 
