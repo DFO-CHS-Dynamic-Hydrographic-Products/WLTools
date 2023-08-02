@@ -1,9 +1,11 @@
 //import javax.json;
+import java.io.File;
 import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
 import java.util.Calendar;
+import java.net.URISyntaxException;
 import java.util.GregorianCalendar;
 
 import ca.gc.dfo.chs.wltools.WLToolsIO;
@@ -44,11 +46,20 @@ final public class WLTools extends WLToolsIO {
       //}
 
       //if ("--mainExecDir" not
-      final String binDir= argsMap.get("--binDir");
+      //final String binDir= argsMap.get("--binDir");
 
       //final String mainExecDir= System.getProperty("user.dir");
-      System.out.println("WLTools main: binDir= "+binDir);
+      //System.out.println("WLTools main: binDir= "+binDir);
 
+      File binDir= null;
+
+      try {
+         binDir= new File(WLTools.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+      } catch (URISyntaxException e) {
+         throw new RuntimeException(e);
+      }
+
+      System.out.println("WLTools main: binDir="+binDir);
       //System.out.println("WLTools main: debug exit(0)");
       //System.exit(0);
 
@@ -81,7 +92,7 @@ final public class WLTools extends WLToolsIO {
 
       final Long endPredTime= testStartTime + 40L*24L*3600L; //  unixTimeNow + 40L*24L*3600L
 
-      final WLStationPredFactory wlStnPrdFct= new WLStationPredFactory("StLawrence:Deschaillons:gridPoint-540",
+      final WLStationPredFactory wlStnPrdFct= new WLStationPredFactory("StLawrence:Deschaillons:gridPoint-540-SCD",
                                                                        testStartTime, //unixTimeNow,
                                                                        endPredTime,
                                                                        3600L,//900L,
