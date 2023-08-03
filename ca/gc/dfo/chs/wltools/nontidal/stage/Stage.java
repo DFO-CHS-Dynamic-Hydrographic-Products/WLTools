@@ -13,6 +13,9 @@ import org.slf4j.Logger;
 import java.util.TreeSet;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.NavigableSet;
+import java.util.LinkedHashMap;
 import org.slf4j.LoggerFactory;
 
 // ---
@@ -140,7 +143,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      // --- TODO: implement a switch block to deal with the file formats.
      if (stageInputDataFileFormatLocal != IStageIO.FileFormat.JSON) {
-       throw new RuntimeException(mmi+"Invalid input file format -> "+stageInputDataFileFormatLocal.name());
+
+       throw new RuntimeException(mmi+"Invalid input file format -> "+
+                                  stageInputDataFileFormatLocal.name());
      }
 
      slog.info(mmi+"stageInputDataFileLocal="+stageInputDataFileLocal);
@@ -205,9 +210,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      this.timeStampedInputData= new HashMap<Long,StageInputData>();
 
-     //boolean needTimeInterp= false;
-     HashMap<Long,StageInputData>
-       validInputDataForTimeInterp= new HashMap<Long,StageInputData>();
+     // --- local LinkedHashMap to store the valid stage input data.
+     LinkedHashMap<Long,StageInputData>
+       validInputDataForTimeInterp= new LinkedHashMap<Long,StageInputData>();
 
      // --- TODO: Implement temporal interpolation when the stage input data
      //     time increments are larger than the time increment wanted for the
@@ -267,12 +272,44 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
         //System.exit(1);
      }
 
-     final TreeSet<Long> validInputTimeStamps= new
-       TreeSet(validInputDataForTimeInterp.keySet());
+     // --- Extract the valid time stamps from the validInputDataForTimeInterp
+     //     LinkedHashMap (hoping that the increasing order is still there)
+     final NavigableSet<Long> validInputTimeStamps= new
+       TreeSet((Collection<Long>)validInputDataForTimeInterp.keySet());
 
-     //slog.info(mmi+"validInputTimeStamps[0]="+validInputTimeStamps[0]);
-     //slog.info(mmi+"validInputTimeStamps[1]="+validInputTimeStamps[1]);
-     slog.info(mmi+"validInputTimeStamps="+validInputTimeStamps.toString());
+     // --- We should have the 1st (smaller) time stamp as the
+     //     first item in validInputTimeStamps
+     final Long timeStampSeconds0= validInputTimeStamps.first();
+
+     // --- Get all the other time stamps after the first.
+     final NavigableSet<Long> remainingTimeStamps=
+       validInputTimeStamps.tailSet(timeStampSeconds0,false);
+
+     // --- Extract the second time stamp after the first.
+     final Long timeStampSeconds1= remainingTimeStamps.first();
+
+     final Long inputDataTimeIncr= timeStampSeconds1 - timeStampSeconds0;
+
+     slog.info(mmi+"inputDataTimeIncr="+inputDataTimeIncr);
+
+     Long prevTimeStampSeconds= timeStampSeconds0;
+
+     // Verify that the input data time stamps are consistent
+     // in terms of time increments.
+     for ( final Long timeStampCheck: remainingTimeStamps ) {
+
+       if ( (timeStampCheck-prevTimeStampSeconds) != inputDataTimeIncr) {
+         throw new RuntimeException(mmi+"time increment inconsistency found in input data time stamps !!");
+       }
+
+       prevTimeStampSeconds= timeStampCheck;
+     }
+
+     slog.info(mmi+"Input data time stamps are consistent in terms of time increments");
+     //slog.info(mmi+"timeStampSeconds0="+timeStampSeconds0);
+     //slog.info(mmi+"timeStampSeconds1="+timeStampSeconds1);
+     //slog.info(mmi+"inputDataTimeIncr="+inputDataTimeIncr);
+
      slog.info(mmi+"debug System.exit(0)");
      System.exit(0);
 
