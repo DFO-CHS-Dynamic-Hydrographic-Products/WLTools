@@ -208,11 +208,19 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      Calendar gcld= new GregorianCalendar().
        getInstance(TimeZone.getTimeZone("GMT"));
 
+     // --- Create the HashMap<Long,StageInputData> object
+     //     that will store all the input data for the
+     //     non-stationary tidal predictions
      this.timeStampedInputData= new HashMap<Long,StageInputData>();
+
+     // ---
+     LinkedHashMap<Long,Long> previousValidTimeStamps= new LinkedHashMap<Long,Long>();
 
      // --- local LinkedHashMap to store the valid stage input data.
      LinkedHashMap<Long,StageInputData>
        validInputDataForTimeInterp= new LinkedHashMap<Long,StageInputData>();
+
+     Long previousValidTimeStamp= null;
 
      // --- TODO: Implement temporal interpolation when the stage input data
      //     time increments are larger than the time increment wanted for the
@@ -232,7 +240,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
         final String tsIterStr= tsIterStrSplit[0]+tsIterStrSplit[1];
 
-        slog.info(mmi+"tsIterStr="+tsIterStr);
+        //slog.info(mmi+"tsIterStr="+tsIterStr);
 
         final StageInputData stageInputData= this.getTimeStampedInputDataAt(tsIterStr,
                                                                             mainJsonStageDataObject,
@@ -247,12 +255,20 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
         //// --- Keep the non-null stageInputData) in the local
         ////     validInputDataForTimeInterp Map to use it for
         ////     missing data time interpolation later in this method
-        if (stageInputData !=null){
+        if (stageInputData != null){
+
           validInputDataForTimeInterp.put(tsIterSeconds,stageInputData);
+          previousValidTimeStamp= tsIterSeconds;
+
         } else {
-          slog.info(mmi+"missing input data for tsIterStr="+tsIterStr);
-        ////  //slog.info("Stage constructor: debug System.exit(0)");
-        ////     //System.exit(0);
+
+          //slog.info(mmi+"missing input data for tsIterStr="+tsIterStr);
+
+          previousValidTimeStamps.put(tsIterSeconds,previousValidTimeStamp);
+
+          //slog.info("Stage constructor: tsIterSeconds="+tsIterSeconds+", previousValidTimeStamp="+previousValidTimeStamp);
+          //slog.info("Stage constructor: debug System.exit(0)");
+          //System.exit(0);
         }
      }
 
@@ -294,8 +310,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      Long prevTimeStampSeconds= timeStampSeconds0;
 
-     // Verify that the input data time stamps are consistent
-     // in terms of time increments.
+     // ---  Verify that the input data time stamps are
+     //      consistent in terms of time increments in
+     //      increasing order.
      for ( final Long timeStampCheck: remainingTimeStamps ) {
 
        if ( (timeStampCheck-prevTimeStampSeconds) != inputDataTimeIncr) {
@@ -310,8 +327,78 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      //slog.info(mmi+"timeStampSeconds1="+timeStampSeconds1);
      //slog.info(mmi+"inputDataTimeIncr="+inputDataTimeIncr);
 
-     slog.info(mmi+"debug System.exit(0)");
-     System.exit(0);
+     if (previousValidTimeStamps.size() > 0) {
+
+        slog.info(mmi+"Need to do time interpolation for stage input data");
+
+        // --- Use a final timeInterpFactor instead of applying
+        //     the same division operation (which is costly) in the following loop.
+        final double timeInterpFactor= 1.0/(double)inputDataTimeIncr;
+
+        for (final Long missingDataTimeStamp: previousValidTimeStamps.keySet()) {
+
+           final Long prevValidDataTimeStamp= previousValidTimeStamps.get(missingDataTimeStamp);
+
+           final Long nextValidDataTimeStamp= prevValidDataTimeStamp + inputDataTimeIncr;
+
+           //slog.info(mmi+"missingDataTimeStamp="+missingDataTimeStamp+
+           //              ", prevValidDataTimeStamp="+prevValidDataTimeStamp+
+           //              ", nextValidDataTimeStamp="+nextValidDataTimeStamp);
+
+           final double prevTimeInterpWeight= 1.0 -
+             timeInterpFactor * (missingDataTimeStamp-prevValidDataTimeStamp);
+
+           //slog.info(mmi+"prevTimeInterpWeight="+prevTimeInterpWeight);
+           //slog.info(mmi+"debug System.exit(0)");
+           //System.exit(0);
+
+           final StageInputData prevStageInputData=
+              this.timeStampedInputData.get(prevValidDataTimeStamp);
+
+           final StageInputData nextStageInputData=
+              this.timeStampedInputData.get(nextValidDataTimeStamp);
+
+           final HashMap<String,StageDataUnit>
+              stageInputDataUnits= new HashMap<String,StageDataUnit>();
+
+           for (final String stageDataCoeffId: prevStageInputData.getCoefficientIds()) {
+
+              final double prevValidDataValue=
+                prevStageInputData.getValueForCoeff(stageDataCoeffId);
+
+              final double nextValidDataValue=
+                nextStageInputData.getValueForCoeff(stageDataCoeffId);
+
+              final double timeInterpValue= prevTimeInterpWeight *
+                 prevValidDataValue + (1.0 -prevTimeInterpWeight) * nextValidDataValue;
+
+              //slog.info(mmi+"stageDataCoeffId="+stageDataCoeffId+", prevValidDataValue="+prevValidDataValue);
+              //slog.info(mmi+"stageDataCoeffId="+stageDataCoeffId+", nextValidDataValue="+nextValidDataValue);
+              //slog.info(mmi+"stageDataCoeffId="+stageDataCoeffId+", timeInterpValue="+timeInterpValue);
+              //slog.info(mmi+"debug System.exit(0)");
+              //System.exit(0);
+
+              // --- Create the new StageDataUnit for this interpolated stage coefficient
+              stageInputDataUnits.put(stageDataCoeffId,
+                                      new StageDataUnit(timeInterpValue,0.0));
+           }
+
+           // --- Create and add the new StageInputData object with its time interpolated data
+           //     with the other StageInputData objects in this.timeStampedInputData
+           this.timeStampedInputData.put(missingDataTimeStamp,
+                                         new StageInputData(stageInputDataUnits));
+
+           //final StageInputData interpStageInputData= new HashMap<String,>;
+
+           //slog.info(mmi+"debug System.exit(0)");
+           //System.exit(0);
+        }
+
+        slog.info(mmi+"Done with time interpolation for stage input data");
+     }
+
+     //slog.info(mmi+"debug System.exit(0)");
+     //System.exit(0);
 
      // --- Check if we need to do time interpolation for the stage data.
      //for (final Long tsIterSeconds: this.timeStampedInputData.keySet()) {
@@ -329,8 +416,8 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      }
 
      slog.info(mmi+"end");
-     slog.info(mmi+"debug System.exit(0)");
-     System.exit(0);
+     //slog.info(mmi+"debug System.exit(0)");
+     //System.exit(0);
    }
 
   /**

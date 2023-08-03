@@ -13,6 +13,7 @@ import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 //import ca.gc.dfo.chs.wltools.util.ITrigonometry;
 //import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
+import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
@@ -55,7 +56,7 @@ import org.slf4j.LoggerFactory;
 //abstract
 public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
 
-   private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
+   private final static String whoAmI= "WLStationPredFactory: ";//"ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
 
   /**
    * Usual log utility.
@@ -334,9 +335,10 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
       throw new RuntimeException(mmi+"not ready for predictions calculations!");
     }
 
-    List<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
+    ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
 
     // --- Check nbTimeStamps value here >> Must be at least 1
+    //     and this.endTimeSeconds - this.startTimeSeconds > this.timeIncrSeconds
     final int nbTimeStamps=
       (int)((this.endTimeSeconds - this.startTimeSeconds)/this.timeIncrSeconds);
 
@@ -347,14 +349,26 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
       //slog.info(mmi+"timeStampSeconds="+timeStampSeconds);
 
-      final double wlPrediction= this.tidalPred1D.computeTidalPrediction(timeStampSeconds);
+      final double wlPrediction=
+        this.tidalPred1D.computeTidalPrediction(timeStampSeconds);
 
-      slog.info(mmi+"wlPrediction="+wlPrediction);
+      //slog.info(mmi+"wlPrediction="+wlPrediction);
 
-      if (tsIter==23){
-        slog.info(mmi+"debug System.exit(0)");
-        System.exit(0);
-      }
+      //final Instant instant= Instant.ofEpochSecond(timeStampSeconds);
+
+      //slog.info(mmi+"instant.toString()="+instant.toString());
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);
+
+      //final MeasurementCustom tmpMC= new
+      //  MeasurementCustom( Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0 );
+
+      retList.add(new MeasurementCustom(Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0));
+
+      //if (tsIter==47){
+      //  slog.info(mmi+"debug System.exit(0)");
+      //  System.exit(0);
+      //}
     }
 
     slog.info(mmi+"done with tidal predictions for station -> "+this.stationId);

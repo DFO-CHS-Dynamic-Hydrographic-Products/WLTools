@@ -95,7 +95,7 @@ final public class WLTools extends WLToolsIO {
       final WLStationPredFactory wlStnPrdFct= new WLStationPredFactory("StLawrence:Deschaillons:gridPoint-540-SCD",
                                                                        testStartTime, //unixTimeNow,
                                                                        endPredTime,
-                                                                       900L, //3600L,//900L,
+                                                                       900L,//180L, //900L, //3600L,//900L,
                                                                        46.55,
                                                                        ITidal.Method.NON_STATIONARY_FOREMAN,
                                                                        nsTCInputFile,

@@ -6,6 +6,7 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
  */
 
 // ---
+import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ final public class StageInputData {
    * basic constructor
    */
    public StageInputData() {
-      this.dataUnits= null;
+     this.dataUnits= null;
    }
 
   /**
@@ -59,6 +60,13 @@ final public class StageInputData {
    //final public HashMap<String,MeasurementCustom> getDataUnits() {
    //  return this.dataUnits;
    //}
+
+  /**
+   * comments please.
+   */
+   final public Set<String> getCoefficientIds() {
+     return this.dataUnits.keySet();
+   }
 
   /**
    * comments please.
