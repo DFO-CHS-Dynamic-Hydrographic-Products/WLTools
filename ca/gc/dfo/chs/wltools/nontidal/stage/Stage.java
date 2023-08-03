@@ -9,8 +9,9 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
-import java.util.HashMap;
 import org.slf4j.Logger;
+import java.util.TreeSet;
+import java.util.HashMap;
 import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 
@@ -93,7 +94,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      this();
 
-     slog.info("Stage constructor: start");
+     final String mmi= "Stage class main constructor: ";
+
+     slog.info(mmi+"Sstart");
 
      String stageInputDataFileLocal= stageInputDataFile; // --- Could be null
      IStageIO.FileFormat stageInputDataFileFormatLocal= stageInputDataFileFormat; // --- Could be null
@@ -117,7 +120,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
        final String stationDischargeClusterName= stationIdStrSplit[1];
        final String stationDischargeJsonFileName= stationIdStrSplit[2] + IStageIO.STATION_INFO_JSON_FNAME_EXT;
 
-       slog.info("Stage constructor: WLToolsIO.getMainCfgDir()="+WLToolsIO.getMainCfgDir());
+       slog.info(mmi+"WLToolsIO.getMainCfgDir()="+WLToolsIO.getMainCfgDir());
 
        //final String dischInputFileInDB= WLToolsIO.getMainCfgDir() +
        stageInputDataFileLocal= WLToolsIO.getMainCfgDir() +
@@ -137,26 +140,27 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      // --- TODO: implement a switch block to deal with the file formats.
      if (stageInputDataFileFormatLocal != IStageIO.FileFormat.JSON) {
-       throw new RuntimeException("Stage constructor: Invalid input file format -> "+stageInputDataFileFormatLocal.name());
+       throw new RuntimeException(mmi+"Invalid input file format -> "+stageInputDataFileFormatLocal.name());
      }
 
-     slog.info("Stage constructor: stageInputDataFileLocal="+stageInputDataFileLocal);
+     slog.info(mmi+"stageInputDataFileLocal="+stageInputDataFileLocal);
 
      FileInputStream jsonFileInputStream= null;
 
      try {
-       jsonFileInputStream= new FileInputStream(stageInputDataFileLocal);
+       jsonFileInputStream= new
+         FileInputStream(stageInputDataFileLocal);
 
      } catch (FileNotFoundException e) {
-       throw new RuntimeException(e);
+       throw new RuntimeException(mmi+e);
      }
 
      final JsonObject mainJsonStageDataObject=
        Json.createReader(jsonFileInputStream).readObject();
 
      // --- TODO: add fool-proof checks on all the Json dict keys.
-     final List<String> inputDataTimeStampsStrings=
-       new ArrayList<String>(mainJsonStageDataObject.keySet());
+     final List<String> inputDataTimeStampsStrings= new
+       ArrayList<String>(mainJsonStageDataObject.keySet());
 
      final String inputDataTimeStampStr0= inputDataTimeStampsStrings.get(0);
 
@@ -174,7 +178,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      this.timeStampedInputDataCoeffIdsCheck= stageJsonDataDict0.keySet();
 
-     slog.info("Stage constructor: this.coefficientsIdsCheck="+
+     slog.info(mmi+"this.coefficientsIdsCheck="+
                this.timeStampedInputDataCoeffIdsCheck.toString());
      //slog.info("Stage constructor: debug System.exit(0)");
      //System.exit(0);
@@ -194,15 +198,21 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      //List<String> tmpTimeStampsList=
      //  new ArrayList<String>(nbTimeStamps);
 
+     // TODO: Use Instant here instead of Calendar
+     // https://github.com/DFO-CHS-Dynamic-Hydrographic-Products/WLTools/issues/15
      Calendar gcld= new GregorianCalendar().
        getInstance(TimeZone.getTimeZone("GMT"));
 
      this.timeStampedInputData= new HashMap<Long,StageInputData>();
 
+     //boolean needTimeInterp= false;
+     HashMap<Long,StageInputData>
+       validInputDataForTimeInterp= new HashMap<Long,StageInputData>();
+
      // --- TODO: Implement temporal interpolation when the stage input data
      //     time increments are larger than the time increment wanted for the
      //     predictions.
-     for (int tsIter= 0; tsIter< nbTimeStamps; tsIter++) {
+     for (int tsIter= 0; tsIter<= nbTimeStamps; tsIter++) {
 
         final Long tsIterSeconds=
           timeStartBufferForLags + tsIter*timeIncrSeconds;
@@ -217,46 +227,73 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
         final String tsIterStr= tsIterStrSplit[0]+tsIterStrSplit[1];
 
-        slog.info("Stage constructor: tsIterStr="+tsIterStr);
+        slog.info(mmi+"tsIterStr="+tsIterStr);
 
         final StageInputData stageInputData= this.getTimeStampedInputDataAt(tsIterStr,
                                                                             mainJsonStageDataObject,
                                                                             inputDataTimeStampsStrLen,
                                                                             isItClimatologicInput,
                                                                             false);
-        if (stageInputData==null){
-          slog.info("Stage constructor: missing input data for tsIterStr="+tsIterStr);
-          slog.info("Stage constructor: debug System.exit(0)");
-          System.exit(0);
-        }
-
+        // --- stageInputData could be null but ww put it in the
+        //     this.timeStampedInputData Map to signal that it needs
+        //     to be created later in this method using linear time interpoilation
         this.timeStampedInputData.put(tsIterSeconds,stageInputData);
 
-        // --- Join the two Strings of tsIterStrSplit here.
-        //tmpTimeStampsList.add(tsIter, tsIterStrSplit[0]+tsIterStrSplit[1]);
-
-        //slog.info("Stage constructor: tmpTimeStampsList.get(0)="+tmpTimeStampsList.get(0));
-        //slog.info("Stage constructor: debug System.exit(0)");
-        //System.exit(0);
+        //// --- Keep the non-null stageInputData) in the local
+        ////     validInputDataForTimeInterp Map to use it for
+        ////     missing data time interpolation later in this method
+        if (stageInputData !=null){
+          validInputDataForTimeInterp.put(tsIterSeconds,stageInputData);
+        } else {
+          slog.info(mmi+"missing input data for tsIterStr="+tsIterStr);
+        ////  //slog.info("Stage constructor: debug System.exit(0)");
+        ////     //System.exit(0);
+        }
      }
 
-     slog.info("Stage constructor: done with getting data from json input file -> "+stageInputDataFileLocal);
+     slog.info(mmi+"done with getting data from json input file -> "+stageInputDataFileLocal);
      //slog.info("Stage constructor: debug System.exit(0)");
      //System.exit(0);
 
+     // --- Need to have at least the 1st and last StageInputData objects
+     //     being valid (i.e. not null)
+     if ( this.timeStampedInputData.get(timeStartBufferForLags) == null ) {
+       throw new RuntimeException(mmi+" this.timeStampedInputData.get(timeStartBufferForLags) == null !!");
+        //System.exit(1);
+     }
+
+     if ( this.timeStampedInputData.get(timeEndBufferForLags) == null ) {
+       throw new RuntimeException(mmi+" this.timeStampedInputData.get(timeEndBufferForLags) == null !!");
+        //System.exit(1);
+     }
+
+     final TreeSet<Long> validInputTimeStamps= new
+       TreeSet(validInputDataForTimeInterp.keySet());
+
+     //slog.info(mmi+"validInputTimeStamps[0]="+validInputTimeStamps[0]);
+     //slog.info(mmi+"validInputTimeStamps[1]="+validInputTimeStamps[1]);
+     slog.info(mmi+"validInputTimeStamps="+validInputTimeStamps.toString());
+     slog.info(mmi+"debug System.exit(0)");
+     System.exit(0);
+
      // --- Check if we need to do time interpolation for the stage data.
+     //for (final Long tsIterSeconds: this.timeStampedInputData.keySet()) {
+     //   final StageInputData checkStageInputData= this.timeStampedInputData.get(tsIterSeconds);
+     //   if (checkStageInputData == null) {
+     //   }
+     //   final StageInputData previousValidStageInputData= this.timeStampedInputData.get(tsIterSeconds)
+     //}
 
      try {
        jsonFileInputStream.close();
 
      } catch (IOException e) {
-       throw new RuntimeException(e);
+       throw new RuntimeException(mmi+e);
      }
 
-     slog.info("Stage constructor: end");
-     //slog.info("Stage constructor: debug System.exit(0)");
-     //System.exit(0);
-
+     slog.info(mmi+"end");
+     slog.info(mmi+"debug System.exit(0)");
+     System.exit(0);
    }
 
   /**
