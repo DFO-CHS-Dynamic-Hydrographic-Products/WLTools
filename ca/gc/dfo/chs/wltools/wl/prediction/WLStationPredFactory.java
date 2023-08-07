@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 //abstract
 public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
 
-   private final static String whoAmI= "WLStationPredFactory: ";//"ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
+   private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory: ";//"ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
 
   /**
    * Usual log utility.
@@ -142,7 +142,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                               final String stageInputDataFile,
                               final IStageIO.FileFormat stageInputDataFileFormat) {
 
-    final String mmi="ca.gc.dfo.chs.wltools.wl.prediction."+whoAmI+" constructor: ";
+    final String mmi="constructor: ";
 
     slog.info(mmi+"start, stationId="+stationId);
 
@@ -208,25 +208,25 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
           if (stationTcInputFileLocal == null) {
 
-              final String [] stationIdSplit=
-                this.stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
+            final String [] stationIdSplit=
+              this.stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
 
-              if (stationIdSplit.length != 3) {
-                 throw new RuntimeException(mmi+"ERROR: stationIdSplit.length != 3 !!");
-              }
+            if (stationIdSplit.length != 3) {
+              throw new RuntimeException(mmi+"ERROR: stationIdSplit.length != 3 !!");
+            }
 
-              final String regionIdInfo= stationIdSplit[0];
-              final String subRegionIdInfo= stationIdSplit[1];
-              final String stationIdSpec= stationIdSplit[2];
+            final String regionIdInfo= stationIdSplit[0];
+            final String subRegionIdInfo= stationIdSplit[1];
+            final String stationIdSpec= stationIdSplit[2];
 
-              // --- Build the path of the non-stationaty tidel consts. file inside the
-              //     inner cfg DB.
-              stationTcInputFileLocal= WLToolsIO.getMainCfgDir()+
-                "/tidal/nonStationary/"+regionIdInfo+"/dischargeClusters/"+subRegionIdInfo+"/dischargeClimatoTFHA/"+
-                stationIdSpec+INonStationaryIO.STATION_TIDAL_CONSTS_FNAME_SUFFIX+IStageIO.STATION_INFO_JSON_FNAME_EXT;
+            // --- Build the path of the non-stationaty tidel consts. file inside the
+            //     inner cfg DB.
+            stationTcInputFileLocal= WLToolsIO.getMainCfgDir()+
+              "/tidal/nonStationary/"+regionIdInfo+"/dischargeClusters/"+subRegionIdInfo+"/dischargeClimatoTFHA/"+
+              stationIdSpec+INonStationaryIO.STATION_TIDAL_CONSTS_FNAME_SUFFIX+IStageIO.STATION_INFO_JSON_FNAME_EXT;
           }
 
-          slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
+          //slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
           //slog.info(mmi+"Debug System.exit(0)");
           //System.exit(0);
 
@@ -236,9 +236,11 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                                              stageInputDataFile, stageInputDataFileFormat);
 
           slog.info(mmi+"done with new NonStationary1DTidalPredFactory()");
-          slog.info(mmi+"debug System.exit(0)");
-          System.exit(0);
+          //slog.info(mmi+"debug System.exit(0)");
+          //System.exit(0);
        }
+
+       slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
 
        //--- Retreive WL station tidal constituents from a local disk file.
        //    It MUST be used before the following this.1DTidalPred.setAstroInfos
@@ -259,8 +261,8 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
        this.predictionReady= true;
 
        slog.info(mmi+"end");
-       slog.info(mmi+"Debug System.exit(0)");
-       System.exit(0);
+       //slog.info(mmi+"Debug System.exit(0)");
+       //System.exit(0);
 
     } // ---
   }

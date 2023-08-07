@@ -42,17 +42,6 @@ final public class WLTools extends WLToolsIO {
         argsMap.put(parts[0], parts[1]);
       }
 
-      //for (String key: argsMap.keySet()){
-      //   System.out.println("WLTools main argsMap key="+key);
-      //   System.out.println("WLTools main argsMap value="+argsMap.get(key));
-      //}
-
-      //if ("--mainExecDir" not
-      //final String binDir= argsMap.get("--binDir");
-
-      //final String mainExecDir= System.getProperty("user.dir");
-      //System.out.println("WLTools main: binDir= "+binDir);
-
       final Set<String> argsMapKeySet= argsMap.keySet();
 
       if (!argsMapKeySet.contains("--stationPredType")) {
@@ -62,18 +51,18 @@ final public class WLTools extends WLToolsIO {
       final String stationPredType= argsMap.get("--stationPredType" );
 
       if (!stationPredType.equals("TIDAL:"+ITidal.Method.NON_STATIONARY_FOREMAN.name())) {
-         throw new RuntimeException("WLTools main: Only TIDAL:"+
-                                    ITidal.Method.NON_STATIONARY_FOREMAN.name()+" prediction method allowed for now!!");
+        throw new RuntimeException("WLTools main: Only TIDAL:"+
+                                   ITidal.Method.NON_STATIONARY_FOREMAN.name()+" prediction method allowed for now!!");
       }
 
       if (!argsMapKeySet.contains("--stationIdInfo")) {
-        throw new RuntimeException("WLTools main: Need to have the mandatory prediction location info option: --stationIdInfo" );
+        throw new RuntimeException("WLTools main: Must have the mandatory prediction location info option: --stationIdInfo" );
       }
 
       final String stationIdInfo= argsMap.get("--stationIdInfo" );
 
       System.out.println("WLTools main: stationPredType="+stationPredType);
-      //System.out.println("WLTools main: stationIdInfo="+stationIdInfo);
+      System.out.println("WLTools main: stationIdInfo="+stationIdInfo);
       //System.out.println("WLTools main: debug System.exit(0)");
       //System.exit(0);
 
@@ -124,19 +113,82 @@ final public class WLTools extends WLToolsIO {
      //final String stationIdInfo=
       //   stationPredInfo+IStageIO.STATION_DISCHARGE_INPUT_FNAME_SUFFIX;
 
-      final WLStationPredFactory wlStnPrdFct= new WLStationPredFactory(stationIdInfo,//"StLawrence:Deschaillons:gridPoint-540-SCD",
-                                                                       testStartTime, //unixTimeNow,
-                                                                       endPredTime,
-                                                                       180L,//180L, //900L, //3600L,//900L,
-                                                                       46.55,
-                                                                       ITidal.Method.NON_STATIONARY_FOREMAN,
-                                                                       null, //nsTCInputFile,
-                                                                       ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                                                        IStage.Type.DISCHARGE_CFG_STATIC,
-                                                                       null, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB
-                                                                       null // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
-                                                                       );
+      WLStationPredFactory wlStnPrdFct= null;
 
-      //}
+      final String [] stationPredTypeSplit=
+        stationPredType.split(IStageIO.STATION_ID_SPLIT_CHAR);
+
+      final String mainPredType= stationPredTypeSplit[0];
+
+      if ( mainPredType.equals("TIDAL") ) {
+
+        /// --- Tidal pred. method is ITidal.Method.NON_STATIONARY_FOREMAN by default.
+        ITidal.Method tidalMethod= ITidal.Method.NON_STATIONARY_FOREMAN;
+
+        final String specTidalMethod= stationPredTypeSplit[1];
+
+        if (specTidalMethod.equals(ITidal.Method.STATIONARY_FOREMAN.name())) {
+
+           //tidalMethod= ITidal.Method.STATIONARY_FOREMAN;
+
+           throw new RuntimeException("WLTools main:The"+
+                                      ITidal.Method.STATIONARY_FOREMAN.name()+
+                                      " tidal prediction method is not allowed for now!!");
+        }
+
+        IStage.Type stageType= IStage.Type.DISCHARGE_CFG_STATIC;
+
+        if (tidalMethod == ITidal.Method.NON_STATIONARY_FOREMAN) {
+
+          if (!argsMapKeySet.contains("--stageType")) {
+
+            throw new RuntimeException("WLTools main: Must have the --stageType option defined if tidal method is"+
+                                       ITidal.Method.NON_STATIONARY_FOREMAN.name()+ " !!");
+          }
+
+          final String stageTypeCheck= argsMap.get("--stageType");
+
+          if (stageTypeCheck.equals(IStage.Type.DISCHARGE_FROM_MODEL.name())) {
+            stageType= IStage.Type.DISCHARGE_FROM_MODEL;
+          }
+
+          if (stageType != IStage.Type.DISCHARGE_CFG_STATIC) {
+            throw new RuntimeException("WLTools main: Only "+
+                                       IStage.Type.DISCHARGE_CFG_STATIC.name()+ " stage type allowed for now !!");
+          }
+        }
+
+        if (!argsMapKeySet.contains("--tidalConstsInputFileFormat")) {
+          throw new RuntimeException("WLTools main: Must have the --tidalConstsInputFileFormat option defined if mainPredType == TIDAL !!");
+        }
+
+        final String tidalConstsInputFileFormat= argsMap.get("--tidalConstsInputFileFormat");
+
+        if (!tidalConstsInputFileFormat.
+               equals(ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name())) {
+
+          throw new RuntimeException("WLTools main: Only the:"+
+                                      ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name()+
+                                     " tidal prediction input file format allowed for now!!");
+        }
+
+        final ITidalIO.WLConstituentsInputFileFormat
+          tidalConstsInputFileFmt= ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON;
+
+        wlStnPrdFct= new WLStationPredFactory(stationIdInfo,//"StLawrence:Deschaillons:gridPoint-540-SCD",
+                                              testStartTime, //unixTimeNow,
+                                              endPredTime,
+                                              180L,//180L, //900L, //3600L,//900L,
+                                              46.55,
+                                              tidalMethod, //ITidal.Method.NON_STATIONARY_FOREMAN,
+                                              null, //nsTCInputFile,
+                                              tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                                                        IStage.Type.DISCHARGE_CFG_STATIC,
+                                              stageType, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB
+                                              null, // --- Stage input data file
+                                              null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
+                                             );
+
+      }
 
       wlStnPrdFct.getTidalPredictionsForStation();
 

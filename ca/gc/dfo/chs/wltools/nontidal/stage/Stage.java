@@ -97,9 +97,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      this();
 
-     final String mmi= whoAmI+" constructor: ";
+     final String mmi= " constructor: ";
 
-     slog.info(mmi+"Start, stationId="+stationId);
+     slog.info(mmi+"Start, stationId="+stationId+", type="+type);
 
      String stageInputDataFileLocal= stageInputDataFile; // --- Could be null
 
@@ -145,9 +145,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
        //slog.info("Stage constructor: stageInputDataFileLocal="+stageInputDataFileLocal);
      }
 
-     slog.info(mmi+"stageInputDataFileLocal="+stageInputDataFileLocal);
-     slog.info(mmi+"debug System.exit(0)");
-     System.exit(0);
+     //slog.info(mmi+"stageInputDataFileLocal="+stageInputDataFileLocal);
+     //slog.info(mmi+"debug System.exit(0)");
+     //System.exit(0);
 
      // --- TODO: implement a switch block to deal with the file formats.
      if (stageInputDataFileFormatLocal != IStageIO.FileFormat.JSON) {
@@ -426,6 +426,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      }
 
      slog.info(mmi+"end");
+
      //slog.info(mmi+"debug System.exit(0)");
      //System.exit(0);
    }
