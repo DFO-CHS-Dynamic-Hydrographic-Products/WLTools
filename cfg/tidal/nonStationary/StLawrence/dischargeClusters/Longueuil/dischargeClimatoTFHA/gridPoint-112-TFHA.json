@@ -5,11 +5,11 @@
       "zcVsIGLD": 4.56
    },
    "Stage": {
-      "s0": 5.424392105867055,
-      "s1.factor": -3.807914945120523,
-      "s1.hoursLag": 7,
-      "s2.factor": 0.41583956643682807,
-      "s2.hoursLag": 6
+      "CS0": 5.424392105867055,
+      "CS1.factor": -3.807914945120523,
+      "CS1.hoursLag": 7,
+      "CS2.factor": 0.41583956643682807,
+      "CS2.hoursLag": 6
    },
    "Fluvial+Tidal": {
       "SIG1": {
