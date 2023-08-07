@@ -115,7 +115,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
      this.predictionReady= false;
     //this.unfortunateUTCOffsetSeconds = 0L;
   }
-  
+
    // --- TOOO: Update the javadoc comments.
   /**
    * Specific WLStationPredFactory constructor for the tidal predictions (stationary or non-stationary).
@@ -170,9 +170,8 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
     try {
       stationId.length();
-      
     } catch (NullPointerException e) {
-      
+
       slog.error("constructor: stationId==null !!");
       throw new RuntimeException(e);
     }
@@ -180,7 +179,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
     //--- To avoid SNAFU mix-up between WL stations data:
     this.stationId = stationId;
 
-    // --- 
+    // ---
     if ( method == ITidal.Method.STATIONARY_FOREMAN || method == ITidal.Method.NON_STATIONARY_FOREMAN) {
 
        if ( method == ITidal.Method.STATIONARY_FOREMAN ) {
@@ -236,7 +235,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
     } // ---
   }
-  
+
   /**
    * Extract tidal constituents data for a SINECO station from a local disk file.
    *
@@ -254,24 +253,23 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
     try {
       stationId.length();
-      
     } catch (NullPointerException e) {
-      
+
       slog.error("getStationConstituentsData: stationId==null !!");
       throw new RuntimeException(e);
     }
-    
+
     try {
       inputFileFormat.ordinal();
-      
+
     } catch (NullPointerException e) {
-      
+
       slog.error("getStationConstituentsData: inputFileFormat==null !!");
       throw new RuntimeException(e);
     }
-    
+
     switch (inputFileFormat) {
-      
+
       case STATIONARY_TCF:
 
         String tcfFilePath= ITidalIO.TCF_DATA_DIR + stationId + ITidalIO.TCF_DATA_FILE_EXT;
@@ -286,8 +284,8 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
         //--- Extract tidal constituents data from a classic legacy DFO TCF ASCII file.
         //    We use chained method call to be able to set this.unfortunateUTCOffsetSeconds (if any)
-        this.unfortunateUTCOffsetSeconds= this.tidalPred1D
-                .getTCFFileData(tcfFilePath).getUnfortunateUTCOffsetSeconds();
+        this.unfortunateUTCOffsetSeconds= this.tidalPred1D.
+          getTCFFileData(tcfFilePath).getUnfortunateUTCOffsetSeconds();
 
         slog.debug("getStationConstituentsData: Done with reading TCF format file: "+tcfFilePath);
         slog.debug("getStationConstituentsData: Debug System.exit(0)");
@@ -316,9 +314,9 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
         throw new RuntimeException("getStationConstituentsData: Invalid file format ->" + inputFileFormat);
         //break;
     } // ---- end switch block
-    
+
     slog.info("getStationConstituentsData: end");
-    
+
     return this;
   }
 
@@ -342,6 +340,8 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
     final int nbTimeStamps=
       (int)((this.endTimeSeconds - this.startTimeSeconds)/this.timeIncrSeconds);
 
+    slog.info(mmi+"this.timeIncrSeconds="+this.timeIncrSeconds);
+
     for (long tsIter= 0; tsIter< nbTimeStamps; tsIter++) {
 
       final long timeStampSeconds=
@@ -352,7 +352,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
       final double wlPrediction=
         this.tidalPred1D.computeTidalPrediction(timeStampSeconds);
 
-      //slog.info(mmi+"wlPrediction="+wlPrediction);
+      //slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
 
       //final Instant instant= Instant.ofEpochSecond(timeStampSeconds);
 

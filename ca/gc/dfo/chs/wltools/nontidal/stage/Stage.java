@@ -291,7 +291,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
      // --- Extract the valid time stamps from the validInputDataForTimeInterp
      //     LinkedHashMap (hoping that the increasing order is still there)
      final NavigableSet<Long> validInputTimeStamps= new
-       TreeSet((Collection<Long>)validInputDataForTimeInterp.keySet());
+       TreeSet<Long>(validInputDataForTimeInterp.keySet());
+
+       //TreeSet((Collection<Long>)validInputDataForTimeInterp.keySet());
 
      // --- We should have the 1st (smaller) time stamp as the
      //     first item in validInputTimeStamps

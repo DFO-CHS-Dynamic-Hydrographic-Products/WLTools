@@ -5,12 +5,12 @@ package ca.gc.dfo.chs.wltools.nontidal.stage;
  * @author Gilles Mercier (DFO-CHS-ENAV-DHP)
  */
 
-import ca.gc.dfo.chs.wltools.util.Coefficient;
+import ca.gc.dfo.chs.wltools.nontidal.stage.StageDataUnit;
 
 /**
  * Comments please!
  */
-final public class StageCoefficient extends Coefficient {
+final public class StageCoefficient extends StageDataUnit {
 
    /**
     * Comments please!
@@ -21,7 +21,7 @@ final public class StageCoefficient extends Coefficient {
     * Comments please!
     */
    public StageCoefficient() {
-      this.timeLagSeconds= 0L;
+     this.timeLagSeconds= 0L;
    }
 
    /**

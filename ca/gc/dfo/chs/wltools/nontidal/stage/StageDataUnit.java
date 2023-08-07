@@ -30,6 +30,18 @@ public class StageDataUnit {
    private Double value;
    private Double uncertainty;
 
+   /**
+    * comments please!
+    */
+   public StageDataUnit() {
+
+     this.value=
+       this.uncertainty= 0.0;
+   }
+
+   /**
+    * comments please!
+    */
    public StageDataUnit(final Double value,final Double uncertainty) {
 
      this.value= value;
