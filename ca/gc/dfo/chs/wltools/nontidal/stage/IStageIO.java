@@ -46,6 +46,8 @@ public interface IStageIO {
 
    String CLIMATO_YEAR_PLACEHOLDER= "YYYY";
 
+   String STATION_DISCHARGE_INPUT_FNAME_SUFFIX= "-SCD";
+
    enum FileFormat {
      JSON
    };

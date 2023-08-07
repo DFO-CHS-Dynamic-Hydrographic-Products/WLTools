@@ -97,11 +97,12 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
      this();
 
-     final String mmi= "Stage class main constructor: ";
+     final String mmi= whoAmI+" constructor: ";
 
-     slog.info(mmi+"Sstart");
+     slog.info(mmi+"Start, stationId="+stationId);
 
      String stageInputDataFileLocal= stageInputDataFile; // --- Could be null
+
      IStageIO.FileFormat stageInputDataFileFormatLocal= stageInputDataFileFormat; // --- Could be null
 
      boolean isItClimatologicInput= false;
@@ -117,13 +118,20 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
        //--- Get the path of the stage input discharge data from the package DB using the stationId String
        //    and the static WLToolsIO.mainCfgDir
-       final String [] stationIdStrSplit= stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
+       final String [] stationIdStrSplit=
+         stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
+
+       if (stationIdStrSplit.length != 3) {
+         throw new RuntimeException(mmi+"ERROR: stationIdStrSplit.length != 3 !!");
+       }
 
        final String stationDischargeClusterDirName= stationIdStrSplit[0];
        final String stationDischargeClusterName= stationIdStrSplit[1];
-       final String stationDischargeJsonFileName= stationIdStrSplit[2] + IStageIO.STATION_INFO_JSON_FNAME_EXT;
 
-       slog.info(mmi+"WLToolsIO.getMainCfgDir()="+WLToolsIO.getMainCfgDir());
+       final String stationDischargeJsonFileName= stationIdStrSplit[2] +
+         IStageIO.STATION_DISCHARGE_INPUT_FNAME_SUFFIX + IStageIO.STATION_INFO_JSON_FNAME_EXT;
+
+       //slog.info(mmi+"WLToolsIO.getMainCfgDir()="+WLToolsIO.getMainCfgDir());
 
        //final String dischInputFileInDB= WLToolsIO.getMainCfgDir() +
        stageInputDataFileLocal= WLToolsIO.getMainCfgDir() +
@@ -137,9 +145,9 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
        //slog.info("Stage constructor: stageInputDataFileLocal="+stageInputDataFileLocal);
      }
 
-     ///slog.info("Stage constructor: stageInputDataFileLocal="+stageInputDataFileLocal);
-     //slog.info("Stage constructor: debug System.exit(0)");
-     //System.exit(0);
+     slog.info(mmi+"stageInputDataFileLocal="+stageInputDataFileLocal);
+     slog.info(mmi+"debug System.exit(0)");
+     System.exit(0);
 
      // --- TODO: implement a switch block to deal with the file formats.
      if (stageInputDataFileFormatLocal != IStageIO.FileFormat.JSON) {

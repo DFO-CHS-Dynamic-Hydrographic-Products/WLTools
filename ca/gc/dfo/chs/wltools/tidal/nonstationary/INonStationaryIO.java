@@ -10,9 +10,11 @@ import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 // ---
 public interface INonStationaryIO extends ITidalIO {
 
+   String STATION_TIDAL_CONSTS_FNAME_SUFFIX= "-TFHA";
+
    String ATMOS_TIDAL_CONSTS_JSON_DICT_KEY= "Atmos+Tidal";     // --- The json dict key for the non-stationary atmos+tidal constituents data.
    String FLUVIAL_TIDAL_CONSTS_JSON_DICT_KEY= "Fluvial+Tidal"; // --- The json dict key for the non-stationary fluvial+tidal constituents data.
-   
+
    String STAGE_TIDAL_CONSTS_JSON_DICT_KEY= "Stage+Tidal"; // --- The json dict key for the non-stationary <non defined>+tidal constituents data.
 
    String TIDAL_CONSTS_JSON_AMP_KEY= "amp"; // --- The json dict keys for the amplitudes values
