@@ -17,6 +17,7 @@ public interface ITimeMachine {
    * Calendar class uses milliseconds for its time-stamp.
    */
   long SEC_TO_MILLISEC = 1000L;
+  //double MILLISEC_TO_SEC = 1.0/SEC_TO_MILLISEC;
 
   /**
    * Indice of the seconds data in an { YYYY, MM, DD, hh, mm, ss } time-stamp arrays length

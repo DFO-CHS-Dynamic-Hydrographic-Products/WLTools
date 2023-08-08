@@ -132,18 +132,19 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
    * @param timeIncrSeconds:        The time increment to use between the successive WL prediction data produced (must be a multiple of 60 seconds,default 900)
    * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station (null if the station lat is defined in the tcInputFile)
    */
-  public WLStationPredFactory(/*@NotNull*/final String stationId,
-                              /*@NotNull*/final Long startTimeSeconds,
-                              /*@NotNull*/final Long endTimeSeconds,
-                              final Long timeIncrSeconds,
-                              final ITidal.Method method,
-                              final String stationTcInputFile,
-                              final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
-                              final IStage.Type stageType,
-                              final String stageInputDataFile,
-                              final IStageIO.FileFormat stageInputDataFileFormat) {
+  //public WLStationPredFactory(/*@NotNull*/final String stationId,
+  protected WLStationPredFactory configure(/*@NotNull*/final String stationId,
+                                           /*@NotNull*/final Long startTimeSeconds,
+                                           /*@NotNull*/final Long endTimeSeconds,
+                                           final Long timeIncrSeconds,
+                                           final ITidal.Method method,
+                                           final String stationTcInputFile,
+                                           final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
+                                           final IStage.Type stageType,
+                                           final String stageInputDataFile,
+                                           final IStageIO.FileFormat stageInputDataFileFormat) {
 
-    final String mmi="constructor: ";
+    final String mmi="configure: ";
 
     slog.info(mmi+"start, stationId="+stationId);
 
@@ -258,14 +259,17 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                                       Math.toRadians(this.latitudeInDecDegrees),
                                       startTimeSeconds,
                                       this.tidalPred1D.getTcNames());
+       //this.predictionReady= true;
 
-       this.predictionReady= true;
+    } // --- ITidal method prediction typw
 
-       slog.info(mmi+"end");
-       //slog.info(mmi+"Debug System.exit(0)");
-       //System.exit(0);
+    this.predictionReady= true;
 
-    } // ---
+    slog.info(mmi+"end");
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    return this;
   }
 
   /**
@@ -368,9 +372,9 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
   /**
     *
     */
-  public final List<MeasurementCustom> getTidalPredictionsForStation() {
+  public final List<MeasurementCustom> getAllPredictions() { //getTidalPredictionsForStation() {
 
-    final String mmi="getTidalPredictionsForStation: ";
+    final String mmi="getAllPredictions: ";
 
     slog.info(mmi+"start, getting tidal predictions for station -> "+this.stationId);
 
