@@ -42,10 +42,6 @@ import javax.json.JsonReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//---
-//---
-//---
-
 /**
  * River-discharge and-or atmospheric influenced (a.k.a. non-stationary) tidal prediction object.
  * This implements the prediction-reconstruction part of the NS_TIDE theory
@@ -55,7 +51,7 @@ final public class NonStationary1DTidalPredFactory
    extends Stationary1DTidalPredFactory implements IStageIO, INonStationaryIO {
 
    private final static String whoAmI=
-      "ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidalPredFactory";
+     "ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidalPredFactory";
 
   /**
    * log utility.
@@ -125,14 +121,16 @@ final public class NonStationary1DTidalPredFactory
      //final HashMap<Long,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
      //slog.info("computeTidalPrediction: start, timeStampSeconds="+timeStampSeconds);
 
-     final HashMap<String,StageCoefficient> stageCoefficientMap= this.stagePart.getCoeffcientsMap();
+     final HashMap<String,StageCoefficient>
+       stageCoefficientMap= this.stagePart.getCoeffcientsMap();
 
      //slog.info("computeTidalPrediction: stageCoefficientMap="+stageCoefficientMap.toString());
      //slog.info("computeTidalPrediction: debug System.exit(0)");
      //System.exit(0);
 
      //final HashMap<String,MeasurementCustom> stageInputDataMap=
-     final HashMap<Long,StageInputData> stageInputTimeStampedData= this.stagePart.getTimeStampedInputData();
+     final HashMap<Long,StageInputData>
+       stageInputTimeStampedData= this.stagePart.getTimeStampedInputData();
 
      //slog.info("computeTidalPrediction: aft. getting stage objects.");
 
@@ -152,8 +150,8 @@ final public class NonStationary1DTidalPredFactory
         // --- Get the non-stationary WL tidal pred. contribution for this
         //     higher order >=1/
         final double hoTidalValue= super.astroInfosFactory.
-           computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stageCoeffId));
-        
+          computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stageCoeffId));
+
         //slog.info("computeTidalPrediction: aft. getting non-stationary hoTidalValue="+hoTidalValue);
 
         //final StageInputData stageInputData= stageInputDataMap.get(stInputDataId);
@@ -174,7 +172,8 @@ final public class NonStationary1DTidalPredFactory
         //slog.info("computeTidalPrediction: aft. getting stageInputData="+stageInputData.toString());
         //slog.info("computeTidalPrediction: aft. getting stageInputData, stageCoeffId="+stageCoeffId);
 
-        final double stageInputDataValue= stageInputData.getValueForCoeff(stageCoeffId); //.getDataUnitValue();
+        final double stageInputDataValue=
+          stageInputData.getValueForCoeff(stageCoeffId); //.getDataUnitValue();
 
         //slog.info("computeTidalPrediction: aft. getting stageInputDataValue="+stageInputDataValue);
 
@@ -192,9 +191,10 @@ final public class NonStationary1DTidalPredFactory
   /**
    * Comments please!
    */
-  final public NonStationary1DTidalPredFactory getNSJSONFileData(/*@NotNull*/ final String tcInputfilePath) {
+  //final public NonStationary1DTidalPredFactory
+  final public Double getNSJSONFileData(/*@NotNull*/ final String tcInputfilePath) {
 
-    //System.out.println("NonStationary1DTidalPredFactory getNSJSONFileData: start");
+    final String mmi= "getNSJSONFileData: ";
 
     //--- Deal with possible null tcInputfilePath String:
     try {
@@ -202,11 +202,11 @@ final public class NonStationary1DTidalPredFactory
 
     } catch (NullPointerException e) {
 
-      slog.error("getNSJSONFileData: tcInputfilePath is null !!");
+      slog.error(mmi+"tcInputfilePath is null !!");
       throw new RuntimeException(e);
     }
 
-    slog.info("getNSJSONFileData Start: tcInputfilePath=" + tcInputfilePath);
+    slog.info(mmi+"start: tcInputfilePath=" + tcInputfilePath);
 
     //--- Get the TCF format ASCII lines in a List of Strings:
     //final List<String> jsonFileLines = ASCIIFileIO.getFileLinesAsArrayList(tcInputfilePath);
@@ -238,18 +238,18 @@ final public class NonStationary1DTidalPredFactory
 
     //this.log.info("channelGridPointInfo="+channelGridPointInfo.toString());
 
-    final double stationLat= channelGridPointJsonObj.
-       getJsonNumber(STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+    final double stnLatInDecDeg= channelGridPointJsonObj.
+      getJsonNumber(STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
 
-    slog.info("getNSJSONFileData: stationLat="+stationLat);
+    slog.info(mmi+"stnLatInDecDeg="+stnLatInDecDeg);
 
     // --- Populate the this.stagePart object.
     final JsonObject stageJsonObj=
-       mainJsonTcDataInputObj.getJsonObject(STAGE_JSON_DICT_KEY);
+      mainJsonTcDataInputObj.getJsonObject(STAGE_JSON_DICT_KEY);
 
     //this.stagePart= new Stage();
     if (this.stagePart == null) {
-       throw new RuntimeException("getNSJSONFileData: this.stagePart cannot be null at this point!! ");
+      throw new RuntimeException(mmi+"this.stagePart object cannot be null at this point!! ");
     }
 
     // --- Populate the this.stagePart with the stage equation coefficients.
@@ -257,14 +257,14 @@ final public class NonStationary1DTidalPredFactory
 
     //final HashMap<String,StageCoefficient>
     final Set<String> stageCoefficientsIds=
-       this.stagePart.getCoeffcientsMap().keySet();
+      this.stagePart.getCoeffcientsMap().keySet();
 
-    slog.info("getNSJSONFileData: station stageCoefficientsIds="+stageCoefficientsIds); //.keySet().toString());
+    slog.info(mmi+"station stageCoefficientsIds="+stageCoefficientsIds); //.keySet().toString());
 
     // --- Populate the non-stationary tidal constituents data with the Json
     //     formatted file content.
     final JsonObject jsonTcDataInputObj=
-       mainJsonTcDataInputObj.getJsonObject(FLUVIAL_TIDAL_CONSTS_JSON_DICT_KEY);
+      mainJsonTcDataInputObj.getJsonObject(FLUVIAL_TIDAL_CONSTS_JSON_DICT_KEY);
 
     // --- Allocate the super.tcDataMap HashMap object to store
     //     the zero'th order non-stationary tidal constituents
@@ -316,7 +316,7 @@ final public class NonStationary1DTidalPredFactory
        // --- Get the JsonObject for this non-stationary tidal const.
        final JsonObject jsonTcDataObj=
           jsonTcDataInputObj.getJsonObject(jsonTcConstName);
- 
+
        // --- Amplitude for the zero'th order of this
        //     tidal const.
        final double zeroThOrderAmplitude=
@@ -329,7 +329,8 @@ final public class NonStationary1DTidalPredFactory
        // --- Be sure to remove any leading and-or trailing blank
        //     (and annoying) characters.
        final String tcConstName= jsonTcConstName.strip();
-       slog.info("getNSJSONFileData: Processing tidal const. \""+tcConstName+"\"");
+
+       slog.info(mmi+"Processing tidal const. \""+tcConstName+"\"");
 
        // --- Populate the super.tcDataMap object with the
        //     zero'th order for this non-stationary tidal const.
@@ -354,17 +355,8 @@ final public class NonStationary1DTidalPredFactory
                                                 new Constituent1D(hoTcAmplitude,hoTcGrwPhaseLag) );
        }
 
-       slog.info("getNSJSONFileData: Done with Processing tidal const. \""+tcConstName+"\"");
+       slog.info(mmi+"Done with Processing tidal const. \""+tcConstName+"\"");
     }
-
-    //this.log.info("super.tcDataMap.keySet="+super.tcDataMap.keySet().toString());
-    //this.log.info("\n\nsuper.tcDataMap.get(M2)="+super.tcDataMap.get("M2").toString());
-    //this.log.info("\n\nthis.hoTcDataMaps.get(CS1).get(M2)="+this.hoTcDataMaps.get("CS1").get("M2").toString());
-    //this.log.info("\n\nthis.hoTcDataMaps.get(CS2).get(M2)="+this.hoTcDataMaps.get("CS2").get("M2").toString());
-
-    //this.log.debug("NonStationary1DTidalPredFactory getNSJSONFileData: done with Json.createParser");
-    //this.log.info("Debug System.exit(0)");
-    //System.exit(0);
 
     try {
        jsonFileInputStream.close();
@@ -372,9 +364,12 @@ final public class NonStationary1DTidalPredFactory
        throw new RuntimeException(e);
     }
 
-    slog.info("getNSJSONFileData: End");
+    slog.info(mmi+"end");
 
-    return this;
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    return stnLatInDecDeg; // this;
   }
 
   /**

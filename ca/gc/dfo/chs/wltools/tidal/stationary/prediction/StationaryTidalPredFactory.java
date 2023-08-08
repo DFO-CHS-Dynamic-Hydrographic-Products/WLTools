@@ -117,11 +117,13 @@ abstract public class StationaryTidalPredFactory implements ITidal, ITidalIO {
   /**
    * Comments please!
    */
-  abstract public StationaryTidalPredFactory getTCFFileData(/*@NotNull*/ final String tcfFilePath);
+  //abstract public StationaryTidalPredFactory
+  abstract public Double getTCFFileData(/*@NotNull*/ final String tcfFilePath);
 
   /**
    * Comments please!
    */
-  abstract public StationaryTidalPredFactory getNSJSONFileData(/*@NotNull*/ final String jsonFilePath);
+  //abstract public StationaryTidalPredFactory
+  abstract public Double getNSJSONFileData(/*@NotNull*/ final String jsonFilePath);
 
 }

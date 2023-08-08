@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.net.URISyntaxException;
 import java.util.GregorianCalendar;
 
+// ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
@@ -179,7 +180,7 @@ final public class WLTools extends WLToolsIO {
                                               testStartTime, //unixTimeNow,
                                               endPredTime,
                                               180L,//180L, //900L, //3600L,//900L,
-                                              46.55,
+                                              //46.55,
                                               tidalMethod, //ITidal.Method.NON_STATIONARY_FOREMAN,
                                               null, //nsTCInputFile,
                                               tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                                                        IStage.Type.DISCHARGE_CFG_STATIC,

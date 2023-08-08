@@ -57,13 +57,14 @@ import org.slf4j.LoggerFactory;
 //abstract
 public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
 
-   private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory: ";//"ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
+  private final static String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory: ";//"ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
 
   /**
    * Usual log utility.
    */
 
-  private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * unfortunateUTCOffsetSeconds: The WL tidal constituents could(unfortunately) be defined for local time zones
@@ -86,7 +87,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
    * Classic astronomic-harmonic (a.k.a. stationary) tidal prediction object.
    * This implements the prediction-reconstruction part of M. Foreman's tidal
    * package theory and related code.
-   */ 
+   */
   //protected Stationary1DTidalPredFactory stationaryTidalPred= null;
    protected Stationary1DTidalPredFactory tidalPred1D= null;
 
@@ -100,12 +101,14 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
   /**
    * Keep the station ID to avoid WL tidal predictions data mix-up between two WL stations data:
    */
-  private String stationId = null;
+  private String stationId= null;
 
   protected long startTimeSeconds= IWLStationPred.TIME_NOT_DEFINED;
   protected long endTimeSeconds= IWLStationPred.TIME_NOT_DEFINED;
 
   protected long timeIncrSeconds= IWLStationPred.DEFAULT_TIME_INCR_SECONDS;
+
+  protected Double latitudeInDecDegrees= null;
 
   protected boolean predictionReady= false;
 
@@ -113,7 +116,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
    * Default constructor.
    */
   public WLStationPredFactory() {
-     this.predictionReady= false;
+    this.predictionReady= false;
     //this.unfortunateUTCOffsetSeconds = 0L;
   }
 
@@ -124,7 +127,6 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
    * @param stationId               The WL station id. where we want to produce predictions.
    * @param tcInputFile             A tidal consts. input data file for the station.
    * @param tcInputFileFormat:      Tidal consts. input file format to use.
-   * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station.
    * @param startTimeSeconds:       The start time(in seconds since the epoch) for the astronomic arguments computations.
    * @param endTimeSeconds:         The end time(in seconds since the epoch) for the prediction data produced.
    * @param timeIncrSeconds:        The time increment to use between the successive WL prediction data produced (must be a multiple of 60 seconds,default 900)
@@ -134,7 +136,6 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
                               /*@NotNull*/final Long startTimeSeconds,
                               /*@NotNull*/final Long endTimeSeconds,
                               final Long timeIncrSeconds,
-                              final Double stationLatitudeDecimalDegrees,
                               final ITidal.Method method,
                               final String stationTcInputFile,
                               final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
@@ -254,7 +255,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
        //--- MUST convert decimal degrees latitude to radians here:
        ///   MUST be used after this.getStationConstituentsData method call.
        this.tidalPred1D.setAstroInfos(method,
-                                      Math.toRadians(stationLatitudeDecimalDegrees),
+                                      Math.toRadians(this.latitudeInDecDegrees),
                                       startTimeSeconds,
                                       this.tidalPred1D.getTcNames());
 
@@ -280,13 +281,15 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
   final public WLStationPredFactory getStationConstituentsData(/*@NotNull*/ final String stationId,
                                                                             final String tcInputfilePath,
                                                                /*@NotNull*/ final ITidalIO.WLConstituentsInputFileFormat inputFileFormat ) {
-    slog.info("getStationConstituentsData: start");
+    final String mmi="getStationConstituentsData: ";
+
+    slog.info(mmi+"start");
 
     try {
       stationId.length();
     } catch (NullPointerException e) {
 
-      slog.error("getStationConstituentsData: stationId==null !!");
+      slog.error(mmi+"stationId==null !!");
       throw new RuntimeException(e);
     }
 
@@ -295,7 +298,7 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
 
     } catch (NullPointerException e) {
 
-      slog.error("getStationConstituentsData: inputFileFormat==null !!");
+      slog.error(mmi+"inputFileFormat==null !!");
       throw new RuntimeException(e);
     }
 
@@ -306,35 +309,41 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
         String tcfFilePath= ITidalIO.TCF_DATA_DIR + stationId + ITidalIO.TCF_DATA_FILE_EXT;
 
         if (tcInputfilePath != null) {
-           tcfFilePath= tcInputfilePath;
+          tcfFilePath= tcInputfilePath;
         } //else {
           // final String tcfFilePath= ITidalIO.TCF_DATA_DIR + stationId + ITidalIO.TCF_DATA_FILE_EXT;
           //}
 
-        slog.info("getStationConstituentsData: reading TCF format file: "+tcfFilePath);
+        slog.info(mmi+"reading TCF format file: "+tcfFilePath);
 
-        //--- Extract tidal constituents data from a classic legacy DFO TCF ASCII file.
-        //    We use chained method call to be able to set this.unfortunateUTCOffsetSeconds (if any)
-        this.unfortunateUTCOffsetSeconds= this.tidalPred1D.
-          getTCFFileData(tcfFilePath).getUnfortunateUTCOffsetSeconds();
+        //--- Extract tidal constituents data from a classic legacy DFO TCF ASCII file
+        //    getTCFFileData also returns the station latitude in decinaul degrees
+        this.latitudeInDecDegrees=
+          this.tidalPred1D.getTCFFileData(tcfFilePath);
 
-        slog.debug("getStationConstituentsData: Done with reading TCF format file: "+tcfFilePath);
-        slog.debug("getStationConstituentsData: Debug System.exit(0)");
+        // --- Get the unfortunateUTCOffsetSeconds (if any)
+        this.unfortunateUTCOffsetSeconds=
+          this.tidalPred1D.getUnfortunateUTCOffsetSeconds();
+
+        slog.debug(mmi+"Done with reading TCF format file: "+tcfFilePath);
+        slog.debug(mmi+"Debug System.exit(0)");
         System.exit(0);
         break;
 
       case NON_STATIONARY_JSON:
 
         if (tcInputfilePath == null) {
-           slog.error("getStationConstituentsData: NON_STATIONARY_JSON input file format: tcInputfilePath cannot be null !!");
-           throw new RuntimeException("WLStationPredFactory getStationConstituentsData");
+
+          slog.error(mmi+"NON_STATIONARY_JSON input file format: tcInputfilePath cannot be null !!");
+          throw new RuntimeException(mmi);
         }
 
-        slog.debug("getStationConstituentsData: reading NON_STATIONARY_JSON tc input file: "+tcInputfilePath);
+        slog.debug(mmi+"Reading NON_STATIONARY_JSON tc input file: "+tcInputfilePath);
 
-        this.tidalPred1D.getNSJSONFileData(tcInputfilePath);
+        this.latitudeInDecDegrees=
+          this.tidalPred1D.getNSJSONFileData(tcInputfilePath);
 
-        slog.info("getStationConstituentsData: NON_STATIONARY_JSON format: Done with reading tcInputfilePath");
+        slog.info(mmi+"Done with reading tcInputfilePath");
         //this.log.info("Debug System.exit(0)");
         //System.exit(0);
         break;
@@ -342,11 +351,16 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
       default:
 
         //this.log.error("Invalid file format ->" + inputFileFormat);
-        throw new RuntimeException("getStationConstituentsData: Invalid file format ->" + inputFileFormat);
+        throw new RuntimeException(mmi+"Invalid file format ->" + inputFileFormat);
         //break;
     } // ---- end switch block
 
-    slog.info("getStationConstituentsData: end");
+    slog.info(mmi+"this.latitudeInDecDegrees="+this.latitudeInDecDegrees);
+
+    slog.info(mmi+"end");
+
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     return this;
   }

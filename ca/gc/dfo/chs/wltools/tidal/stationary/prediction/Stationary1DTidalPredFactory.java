@@ -33,15 +33,16 @@ import org.slf4j.LoggerFactory;
 /**
  * Generic class for producing 1D(i.e. only one spatial component) tidal predictions
  */
-//abstract 
+//abstract
 public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
- 
-   private final static String whoAmI= "ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFactory";
- 
+
+   private final static String whoAmI=
+     "ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFactory";
+
  /**
    * log utility.
    */
-   private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
 
   /**
@@ -65,9 +66,9 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
    * Default constructor.
    */
   public Stationary1DTidalPredFactory() {
-    
+
     super();
-    
+
     this.tcDataMap = null;
     this.constituent1DData = null;
   }
@@ -76,9 +77,9 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
    * Comments please!
    */
   final public Set<String> getTcNames() {
-     return this.tcDataMap.keySet();
+    return this.tcDataMap.keySet();
   }
-  
+
   /**
    * @param timeStampSeconds : A time-stamp in seconds since the epoch where we want a single tidal prediction.
    * @return The newly computed single tidal prediction in double precision.
@@ -92,7 +93,7 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
    *
    */
   final public long getUnfortunateUTCOffsetSeconds() {
-     return this.unfortunateUTCOffsetSeconds;
+    return this.unfortunateUTCOffsetSeconds;
   }
 
   /**
@@ -108,23 +109,25 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
                                                     final double latitudeRadians,
                                                     final long startTimeSeconds,
                                                     /*@NotNull @Size(min = 1)*/ final Set<String> constNames) {
+    final String mmi= "setAstroInfos: ";
+
     try {
       constNames.size();
-      
+
     } catch (NullPointerException e) {
-      
-      slog.error("setAstroInfos: constNames==null !!");
+
+      slog.error(mmi+"constNames==null !!");
       throw new RuntimeException(e);
     }
-    
-    slog.info("setAstroInfos: start");
-    
+
+    slog.info(mmi+"start");
+
     super.setAstroInfos(method, latitudeRadians, startTimeSeconds, constNames);
-    
+
     this.constituent1DData= new Constituent1DData(this.tcDataMap, this.astroInfosFactory);
-    
-    slog.info("setAstroInfos: end");
-    
+
+    slog.info(mmi+"end");
+
     return this;
   }
 
@@ -135,7 +138,12 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
    * @return The current WLStationTidalPredictionsFactory object (this).
    */
   //@NotNull
-  final public Stationary1DTidalPredFactory getTCFFileData(/*@NotNull*/ final String aTCFFilePath) {
+  //final public Stationary1DTidalPredFactory
+  final public Double getTCFFileData(/*@NotNull*/ final String aTCFFilePath) {
+
+     final String mmi= "getTCFFileData: ";
+
+     Double latitudeInDecDegrees= null;
 
     //--- Deal with possible null aTCFFilePath String:
     try {
@@ -143,11 +151,11 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
 
     } catch (NullPointerException e) {
 
-      slog.error("getTCFFileData: aTCFFilePath==null!!");
+      slog.info(mmi+"aTCFFilePath==null!!");
       throw new RuntimeException(e);
     }
 
-    slog.debug("getTCFFileData: Start, aTCFFilePath=" + aTCFFilePath);
+    slog.info(mmi+"start, aTCFFilePath=" + aTCFFilePath);
 
     //--- Get the TCF format ASCII lines in a List of Strings:
     final List<String> tcfFileLines = ASCIIFileIO.getFileLinesAsArrayList(aTCFFilePath);
@@ -157,19 +165,19 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
 
     if (this.tcDataMap != null) {
 
-      slog.warn("getTCFFileData: this.tcDataMap!=null, need to clear it first !");
+      slog.info(mmi+"this.tcDataMap!=null, need to clear it first !");
       this.tcDataMap.clear();
 
     } else {
 
-      slog.debug("getTCFFileData: Creating this.tcDataMap.");
+      slog.info(mmi+"Creating this.tcDataMap.");
       this.tcDataMap = new HashMap<String, Constituent1D>();
     }
 
     //--- Process the TCF format lines
     for (final String line : tcfFileLines) {
 
-      slog.debug("getTCFFileData: processing line: " + line);
+      slog.info(mmi+"processing line: " + line);
 
       //--- Split( blank spaces as delimiters) line in an array of Strings:
       final String[] lineSplit = line.trim().split("\\s+");
@@ -189,14 +197,14 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
 
           final long offset = Long.parseLong(offsetString.substring(1));
 
-          this.unfortunateUTCOffsetSeconds = SECONDS_PER_HOUR * (offsetSignString.equals("+") ? offset : -offset);
+          this.unfortunateUTCOffsetSeconds=
+            SECONDS_PER_HOUR * (offsetSignString.equals("+") ? offset : -offset);
 
           //this.log.debug("WLStationTidalPredictionsFactory getTCFFileData: getTCFData:
           // unfortunateUTCOffset="+unfortunateUTCOffset);
 
         } else {
-
-          slog.debug("getTCFFileData: Skipping TCF file header line: " + line);
+          slog.info(mmi+"Skipping TCF file header line: " + line);
         }
 
         continue;
@@ -204,10 +212,10 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
 
       if (lineSplit.length != TCF_LINE_NB_ITEMS) {
 
-        slog.error("getTCFFileData: lineSplit.length=" +
+        slog.info(mmi+"lineSplit.length=" +
                    lineSplit.length + " !=" + " TCF_LINE_NB_ITEMS=" + TCF_LINE_NB_ITEMS);
 
-        throw new RuntimeException("getTCFFileData");
+        throw new RuntimeException(mmi);
       }
 
       final String tcName = lineSplit[0];
@@ -221,22 +229,31 @@ public class Stationary1DTidalPredFactory extends StationaryTidalPredFactory {
       final Constituent1D c1d = new Constituent1D(Double.valueOf(lineSplit[TCF_AMPLITUDE_LINE_INDEX]),
           DEGREES_2_RADIANS * phaseLagDegrees);
 
-      slog.debug("getTCFFileData:  Setting this.tcDataMap with tidal " +
+      slog.info(mmi+"Setting this.tcDataMap with tidal " +
                  "constitutent ->" + tcName + ", phaseLagDegrees=" + phaseLagDegrees);
 
       this.tcDataMap.put(tcName, c1d);
 
     } // --- End for loop
 
-    slog.debug("getTCFFileData: end, unfortunateUTCOffset in hours=" + this.unfortunateUTCOffsetSeconds / SECONDS_PER_HOUR);
+    slog.info(mmi+"end, unfortunateUTCOffset in hours=" +
+                  this.unfortunateUTCOffsetSeconds / SECONDS_PER_HOUR);
 
-    return this;
+    slog.info(mmi+"latitudeInDecDegrees="+latitudeInDecDegrees);
+    slog.info(mmi+"latitude reading from TCF file not implemented yet!!");
+    slog.info(mmi+"Debug System.exit(1)");
+    System.exit(1);
+
+    slog.info(mmi+"end");
+
+    return latitudeInDecDegrees;  //this;
   }
 
   /**
    * Comments please!
    */
-   public Stationary1DTidalPredFactory getNSJSONFileData(/*@NotNull*/ final String jsonFilePath) {
+   //public Stationary1DTidalPredFactory
+   public Double getNSJSONFileData(/*@NotNull*/ final String jsonFilePath) {
 
       throw new RuntimeException(whoAmI + " - getNSJSONFileData method not implemented yet!");
 
