@@ -54,8 +54,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Class WLTidalPredictionsFactory acts as abstract base class for water levels tidal predictions:
  */
-//abstract
-public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
+abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory: ";//"ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
@@ -370,9 +369,9 @@ public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, I
   }
 
   /**
-    *
+    * comments please
     */
-  public final List<MeasurementCustom> getAllPredictions() { //getTidalPredictionsForStation() {
+  public List<MeasurementCustom> getAllPredictions() { //getTidalPredictionsForStation() {
 
     final String mmi="getAllPredictions: ";
 

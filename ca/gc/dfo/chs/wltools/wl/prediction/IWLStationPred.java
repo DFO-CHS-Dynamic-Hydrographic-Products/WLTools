@@ -5,6 +5,11 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
  * Created by Gilles Mercier on 2018-01-10.
  */
 
+import java.util.List;
+
+// ---
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+
 //---
 //import java.time.Instant;
 //import java.util.HashMap;
@@ -39,4 +44,6 @@ public interface IWLStationPred  {
 
   long DEFAULT_DAYS_DURATION_IN_FUTURE= 40L;
   long MAX_DAYS_DURATION_IN_FUTURE= 90L;
+
+  abstract public List<MeasurementCustom> getAllPredictions();
 }
