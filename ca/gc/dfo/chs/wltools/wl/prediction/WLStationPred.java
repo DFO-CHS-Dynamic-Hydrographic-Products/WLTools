@@ -7,6 +7,7 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
 
 //---
 import java.util.Set;
+import java.util.List;
 import org.slf4j.Logger;
 import java.time.Instant;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
@@ -197,19 +199,18 @@ final public class WLStationPred extends WLStationPredFactory {
       final ITidalIO.WLConstituentsInputFileFormat
         tidalConstsInputFileFmt= ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON;
 
-      // ---
-      //WLStationPredFactory(stationIdInfo,
-      this.configure(stationIdInfo,
-                     startTimeSeconds, //testStartTime, //unixTimeNow,
-                     endTimeSeconds,//endPredTime,
-                     timeIncrInSeconds,//180L,//180L, //900L, //3600L,//900L,
-                     tidalMethod, //ITidal.Method.NON_STATIONARY_FOREMAN,
-                     null, //nsTCInputFile,
-                     tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                        >
-                     stageType, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB
-                     null, // --- Stage input data file
-                     null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
-                     );
+      // --- Specific configuration for a tidal prediction.
+      super.configure(stationIdInfo,
+                      startTimeSeconds, //testStartTime, //unixTimeNow,
+                      endTimeSeconds,//endPredTime,
+                      timeIncrInSeconds,//180L,//180L, //900L, //3600L,//900L,
+                      tidalMethod, //ITidal.Method.NON_STATIONARY_FOREMAN,
+                      null, //nsTCInputFile,
+                      tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                        >
+                      stageType, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB
+                      null, // --- Stage input data file
+                      null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
+                      );
 
     }
 
@@ -217,6 +218,14 @@ final public class WLStationPred extends WLStationPredFactory {
 
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
+  }
+
+
+  /**
+   * comments please!
+   */
+  final public List<MeasurementCustom> getAllPredictions() {
+    return super.getAllPredictions();
   }
 
 //  /**
