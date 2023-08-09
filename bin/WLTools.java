@@ -32,43 +32,73 @@ final public class WLTools extends WLToolsIO {
    //   return mainCfgDir;
    //}
 
-   static public void main (String[] args) {
+  static public void main (String[] args) {
 
-      System.out.println("WLTools main start");
+    final String mmi= "WLTools main: ";
 
-      //--- tmp File object to be used to automagically determine the directory
-      //    where the main program class is located.
-      File binDir= null;
+    System.out.println(mmi+"start");
 
-      try {
+    //--- tmp File object to be used to automagically determine the directory
+    //    where the main program class is located.
+    File binDir= null;
 
-         binDir= new File(WLTools.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    try {
 
-      } catch (URISyntaxException e) {
-         throw new RuntimeException(e);
-      }
+      binDir= new File(WLTools.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
-      System.out.println("WLTools main: binDir="+binDir);
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
 
-      WLToolsIO.setMainCfgDir(binDir+ "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
+    System.out.println(mmi+"binDir="+binDir);
 
-      System.out.println("WLTools main: mainCfgDir= "+WLToolsIO.getMainCfgDir());
+    // --- TODO: add an option arg. to define the mainCfgDir
+    WLToolsIO.setMainCfgDir(binDir+ "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
 
-      // --- Now get the --<option name>=<option value> from the args
-      HashMap<String, String> argsMap = new HashMap<>();
+    System.out.println(mmi+"mainCfgDir= "+WLToolsIO.getMainCfgDir());
 
-      for (String arg: args) {
-        String[] parts = arg.split("=");
-        argsMap.put(parts[0], parts[1]);
-      }
+    // --- Now get the --<option name>=<option value> from the args
+    HashMap<String, String> argsMap = new HashMap<>();
+
+    for (String arg: args) {
+      String[] parts = arg.split("=");
+      argsMap.put(parts[0], parts[1]);
+    }
+
+    if (!argsMap.keySet().contains("--tool")) {
+      throw new RuntimeException(mmi+"Must have the --tool=<prediction OR analysis> option defined !!");
+    }
+
+    final String tool= argsMap.get("--tool");
+
+    if ( !tool.equals("prediction") && !tool.equals("analysis") ) {
+      throw new RuntimeException(mmi+"Invalid tool -> "+tool+" !!, must be prediction OR analysis");
+    }
+
+    if (tool.equals("analysis")) {
+      throw new RuntimeException(mmi+"Sorry! the analysis part is not ready to be used !!");
+    }
+
+    System.out.println(mmi+"Will use tool -> "+tool);
+
+    //WLStationPred wlStationPred= null;
+
+    if (tool.equals("prediction")) {
+
+      System.out.println(mmi+"Doing WL predictions for a station or grid point.");
 
       final WLStationPred wlStationPred= new WLStationPred(argsMap); //.parseArgsOptions(argsMap);
 
       //System.out.println("WLTools main: debug System.exit(0)");
-      //System.exit(0);
+        //System.exit(0);
 
       wlStationPred.getAllPredictions();
 
-      System.out.println("WLTools main end");
+      //wlStationPred.writeResults(IWLStationPred.OutputFormat.JSON)
+
+      System.out.println(mmi+"Done with WL predictions at a station or grid point.");
+    }
+
+    System.out.println(mmi+"end");
   }
 }
