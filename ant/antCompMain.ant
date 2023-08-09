@@ -1,0 +1,7 @@
+<project>
+<javac
+    srcdir="../"
+    destdir="../bin">
+    <include name="WLTools.java" />
+</javac>
+</project>

@@ -1,0 +1,7 @@
+<project>
+<javac
+    srcdir="../ca"
+    destdir="/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/JavaLib">
+    <include name="**/*.java" />
+</javac>
+</project>
