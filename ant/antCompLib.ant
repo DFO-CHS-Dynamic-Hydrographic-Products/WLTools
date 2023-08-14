@@ -1,7 +1,7 @@
 <project>
 <javac
     srcdir="../ca"
-    destdir="/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib">
+    destdir="../lib">
     <include name="**/*.java" />
 </javac>
 </project>
