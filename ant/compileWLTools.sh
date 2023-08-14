@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- Modify according to the context.
-javaClassesMainDestDir=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/JavaLib
+javaClassesMainDestDir=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib
 javaCodeBaseMainDir=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools
 
 export CLASSPATH=${javaClassesMainDestDir}:${javaCodeBaseMainDir}:${CLASSPATH}
