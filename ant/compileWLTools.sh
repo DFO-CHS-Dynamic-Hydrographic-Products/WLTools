@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- Modify according to the code location context.
-javaCodeBaseMainDir=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools
+javaCodeBaseMainDir=../
 javaClassesMainDestDir=${javaCodeBaseMainDir}/lib
 
 export CLASSPATH=${javaClassesMainDestDir}:${javaCodeBaseMainDir}:${CLASSPATH}
