@@ -1,0 +1,20 @@
+{
+  "15520": {"HRName": "Jetee-1"},
+  "15540": {"HRName": "Frontenac"},
+  "15660": {"HRName": "Varennes"},
+  "15780": {"HRName": "Contrecoeur(IOC)"},
+  "15680": {"HRName": "Lanoraie"},
+  "15930": {"HRName": "Sorel"},
+  "15930": {"HRName": "Lac Saint-Pierre"},
+  "03365": {"HRName": "Port-Saint-Francois"},
+  "03360": {"HRName": "Trois-Rivieres"},
+  "03353": {"HRName": "Becancour"},
+  "03345": {"HRName": "Batiscan"},
+  "03335": {"HRName": "Deschaillons-sur-Saint-Laurent"},
+  "03300": {"HRName": "Portneuf"},
+  "03280": {"HRName": "Neuville"},
+  "03248": {"HRName": "Vieux-Quebec"},
+  "03110": {"HRName": "Saint-Laurent I.O."},
+  "03100": {"HRName": "Saint-Francois I.O."},
+  "03057": {"HRName": "Saint-Joseph-de-la-Rive"}
+}
