@@ -10,12 +10,14 @@ import java.net.URISyntaxException;
 //import java.util.GregorianCalendar;
 
 // ---
+import ca.gc.dfo.chs.wltools.IWLTools;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
@@ -65,27 +67,41 @@ final public class WLTools extends WLToolsIO {
       argsMap.put(parts[0], parts[1]);
     }
 
+    //final [] String toolsIds= {  };
+
     if (!argsMap.keySet().contains("--tool")) {
-      throw new RuntimeException(mmi+"Must have the --tool=<prediction OR analysis> option defined !!");
+      throw new RuntimeException(mmi+"Must have one of the --tool="+IWLTools.Box.prediction.name()+" OR --tool="+
+                                 IWLTools.Box.adjustment.name()+" OR --tool="+IWLTools.Box.analysis.name()+" option defined !!");
     }
 
     final String tool= argsMap.get("--tool");
 
-    if ( !tool.equals("prediction") && !tool.equals("analysis") ) {
-      throw new RuntimeException(mmi+"Invalid tool -> "+tool+" !!, must be prediction OR analysis");
+    // --- Validate the tool (Check if we have it in our IWLTools.Box enum)
+    if ( !tool.equals(IWLTools.Box.prediction.name()) &&
+         !tool.equals(IWLTools.Box.adjustment.name()) &&
+         !tool.equals(IWLTools.Box.analysis.name()) ) {
+
+      throw new RuntimeException(mmi+"Invalid tool -> "+tool+
+                                 " !!, must be "+ IWLTools.Box.prediction.name()+" OR "+
+                                 IWLTools.Box.adjustment.name()+" OR "+IWLTools.Box.analysis.name());
     }
 
-    if (tool.equals("analysis")) {
-      throw new RuntimeException(mmi+"Sorry! the analysis part is not ready to be used !!");
+    //if (tool.equals("analysis")) {
+    if (tool.equals(IWLTools.Box.analysis.name())) {
+
+      throw new RuntimeException(mmi+"Sorry! the "+
+                                 IWLTools.Box.analysis.name()+" part is not ready to be used !!");
     }
 
     System.out.println(mmi+"Will use tool -> "+tool);
 
     //WLStationPred wlStationPred= null;
 
-    if (tool.equals("prediction")) {
+    //if (tool.equals("prediction")) {
+    if (tool.equals(IWLTools.Box.prediction.name())) {
 
-      System.out.println(mmi+"Doing WL predictions for a station or grid point.");
+      System.out.println(mmi+"Doing WL "+
+                         IWLTools.Box.prediction.name()+" for a station or grid point.");
 
       final WLStationPred wlStationPred= new WLStationPred(argsMap); //.parseArgsOptions(argsMap);
 
@@ -96,8 +112,22 @@ final public class WLTools extends WLToolsIO {
 
       //wlStationPred.writeResults(IWLStationPred.OutputFormat.JSON)
 
-      System.out.println(mmi+"Done with WL predictions at a station or grid point.");
+      System.out.println(mmi+"Done with WL  "+
+                         IWLTools.Box.prediction.name()+" at a station or grid point.");
     }
+
+    //if (tool.equals("adjustment")) {
+    if (tool.equals(IWLTools.Box.adjustment.name())) {
+
+       System.out.println(mmi+"Doing WL spatial or single station forecast or prediction"+
+                         IWLTools.Box.adjustment.name()+" using the more recently validated WLO TG data");
+
+       final WLAdjustment wlAdjust= new WLAdjustment(argsMap);
+
+       System.out.println(mmi+"Debug System.exit(0)");
+       System.exit(0);
+
+     }
 
     System.out.println(mmi+"end");
   }

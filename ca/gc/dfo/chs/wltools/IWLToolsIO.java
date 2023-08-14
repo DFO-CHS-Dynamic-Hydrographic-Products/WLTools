@@ -2,11 +2,7 @@
 package ca.gc.dfo.chs.wltools;
 
 /**
- *
- */
-
-/**
- * Generic interface for WLTools family of interfaces amd classes.
+ * Comments please!
  */
 public interface IWLToolsIO {
 
