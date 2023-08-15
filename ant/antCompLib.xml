@@ -1,0 +1,7 @@
+<project>
+<javac
+    srcdir="../ca"
+    destdir="../lib">
+    <include name="**/*.java" />
+</javac>
+</project>
