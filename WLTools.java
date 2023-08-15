@@ -21,6 +21,9 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
+/**
+ * Comments please!
+ */
 final public class WLTools extends WLToolsIO {
 
    //static {
@@ -60,9 +63,9 @@ final public class WLTools extends WLToolsIO {
     System.out.println(mmi+"mainCfgDir= "+WLToolsIO.getMainCfgDir());
 
     // --- Now get the --<option name>=<option value> from the args
-    HashMap<String, String> argsMap = new HashMap<>();
+    HashMap<String, String> argsMap = new HashMap<String,String>();
 
-    for (String arg: args) {
+    for (final String arg: args) {
       String[] parts = arg.split("=");
       argsMap.put(parts[0], parts[1]);
     }
@@ -70,20 +73,21 @@ final public class WLTools extends WLToolsIO {
     //final [] String toolsIds= {  };
 
     if (!argsMap.keySet().contains("--tool")) {
-      throw new RuntimeException(mmi+"Must have one of the --tool="+IWLTools.Box.prediction.name()+" OR --tool="+
-                                 IWLTools.Box.adjustment.name()+" OR --tool="+IWLTools.Box.analysis.name()+" option defined !!");
+
+      throw new RuntimeException(mmi+"Must have one of the --tool="+
+                                 IWLTools.Box.prediction.name()+" OR --tool="+
+                                 IWLTools.Box.adjustment.name()+" OR --tool="+
+                                 IWLTools.Box.analysis.name()+" OR --tool="+
+                                 IWLTools.Box.merge.name()+" option defined !!");
     }
 
     final String tool= argsMap.get("--tool");
 
     // --- Validate the tool (Check if we have it in our IWLTools.Box enum)
-    if ( !tool.equals(IWLTools.Box.prediction.name()) &&
-         !tool.equals(IWLTools.Box.adjustment.name()) &&
-         !tool.equals(IWLTools.Box.analysis.name()) ) {
+    if (!IWLTools.BoxContent.contains(tool)) {
 
       throw new RuntimeException(mmi+"Invalid tool -> "+tool+
-                                 " !!, must be "+ IWLTools.Box.prediction.name()+" OR "+
-                                 IWLTools.Box.adjustment.name()+" OR "+IWLTools.Box.analysis.name());
+                                 " !!, must be one of "+IWLTools.BoxContent.toString());
     }
 
     //if (tool.equals("analysis")) {
@@ -119,8 +123,8 @@ final public class WLTools extends WLToolsIO {
     //if (tool.equals("adjustment")) {
     if (tool.equals(IWLTools.Box.adjustment.name())) {
 
-       System.out.println(mmi+"Doing WL spatial or single station forecast or prediction"+
-                         IWLTools.Box.adjustment.name()+" using the more recently validated WLO TG data");
+       System.out.println(mmi+"Doing WL forecast or prediction"+
+                          IWLTools.Box.adjustment.name()+" using the more recently validated CHS WLO TG data");
 
        final WLAdjustment wlAdjust= new WLAdjustment(argsMap);
 

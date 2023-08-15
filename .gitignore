@@ -1,3 +1,5 @@
 ./tmp
-./lib/ca
+./bin
+./lib/ca/
+./lib/as/
 

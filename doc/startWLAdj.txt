@@ -1,0 +1,5 @@
+time java WLTools \
+--tool=adjustment \
+--adjType=SINGLE_LOCATION \
+--inputDataType=ECCC_H2D2:NETCDF #IWLS:JSON
+
