@@ -1,20 +1,37 @@
 {
-  "15520": {"HRName": "Jetee-1"},
-  "15540": {"HRName": "Frontenac"},
-  "15660": {"HRName": "Varennes"},
-  "15780": {"HRName": "Contrecoeur(IOC)"},
-  "15680": {"HRName": "Lanoraie"},
-  "15930": {"HRName": "Sorel"},
-  "15930": {"HRName": "Lac Saint-Pierre"},
-  "03365": {"HRName": "Port-Saint-Francois"},
-  "03360": {"HRName": "Trois-Rivieres"},
-  "03353": {"HRName": "Becancour"},
-  "03345": {"HRName": "Batiscan"},
-  "03335": {"HRName": "Deschaillons-sur-Saint-Laurent"},
-  "03300": {"HRName": "Portneuf"},
-  "03280": {"HRName": "Neuville"},
-  "03248": {"HRName": "Vieux-Quebec"},
-  "03110": {"HRName": "Saint-Laurent I.O."},
-  "03100": {"HRName": "Saint-Francois I.O."},
-  "03057": {"HRName": "Saint-Joseph-de-la-Rive"}
+  "15520": {"HRName": "Jetee-1", "lat": 45.5035, "lon": -73.552528 },
+
+  "15540": {"HRName": "Montreal rue Frontenac", "lat": 45.528667, "lon": -73.5425 },
+
+  "15660": {"HRName": "Varennes", "lat": 45.684306, "lon": -73.443694  } ,
+
+  "15780": {"HRName": "Contrecoeur(IOC)", "lat": 45.832667, "lon": -73.283167 },
+
+  "15680": {"HRName": "Lanoraie", "lat": 45.959167, "lon": -73.214444 },
+
+  "15930": {"HRName": "Sorel", "lat": 45.959167, "lon": 45.959167},
+
+  "15930": {"HRName": "Lac Saint-Pierre", "lat": 45.959167, "lon": -73.214444 },
+
+  "03365": {"HRName": "Port-Saint-Francois", "lat": 46.272556, "lon": -72.619306 },
+
+  "03360": {"HRName": "Trois-Rivieres", "lat": 46.3405, "lon": -72.539167 },
+
+  "03353": {"HRName": "Becancour", "lat": 46.400333, "lon": -72.3795 },
+
+  "03345": {"HRName": "Batiscan", "lat": 46.500333, "lon": -72.245833 },
+
+  "03335": {"HRName": "Deschaillons-sur-Saint-Laurent", "lat": 46.561033, "lon": -72.106222 },
+
+  "03300": {"HRName": "Portneuf", "lat": 46.681167, "lon": -71.877167 },
+
+  "03280": {"HRName": "Neuville", "lat": 46.6965, "lon": -71.572833 },
+
+  "03248": {"HRName": "Vieux-Quebec", "lat": 46.811111, "lon": -71.20175 },
+
+  "03110": {"HRName": "Saint-Laurent I.O.", "lat": 46.85816667, "lon": -71.00333333 },
+
+  "03100": {"HRName": "Saint-Francois I.O.", "lat": 46.9965, "lon": -70.808167 },
+
+  "03057": {"HRName": "Saint-Joseph-de-la-Rive", "lat": 47.448833, "lon": -70.3655 }
 }
