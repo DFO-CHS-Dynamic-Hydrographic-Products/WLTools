@@ -210,7 +210,7 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
           if (stationTcInputFileLocal == null) {
 
             final String [] stationIdSplit=
-              this.stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
+              this.stationId.split(IStageIO.LOCATION_ID_SPLIT_CHAR);
 
             if (stationIdSplit.length != 3) {
               throw new RuntimeException(mmi+"ERROR: stationIdSplit.length != 3 !!");
@@ -224,7 +224,7 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
             //     inner cfg DB.
             stationTcInputFileLocal= WLToolsIO.getMainCfgDir()+
               "/tidal/nonStationary/"+regionIdInfo+"/dischargeClusters/"+subRegionIdInfo+"/dischargeClimatoTFHA/"+
-              stationIdSpec+INonStationaryIO.STATION_TIDAL_CONSTS_FNAME_SUFFIX+IStageIO.STATION_INFO_JSON_FNAME_EXT;
+              stationIdSpec+INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX+IStageIO.LOCATION_INFO_JSON_FNAME_EXT;
           }
 
           //slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);

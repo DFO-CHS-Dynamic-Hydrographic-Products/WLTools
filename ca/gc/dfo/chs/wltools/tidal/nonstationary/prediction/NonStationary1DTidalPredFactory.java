@@ -234,12 +234,12 @@ final public class NonStationary1DTidalPredFactory
     // --- TODO: add fool-proof checks on all the Json dict keys.
 
     final JsonObject channelGridPointJsonObj=
-       mainJsonTcDataInputObj.getJsonObject(STATION_INFO_JSON_DICT_KEY);
+       mainJsonTcDataInputObj.getJsonObject(LOCATION_INFO_JSON_DICT_KEY);
 
     //this.log.info("channelGridPointInfo="+channelGridPointInfo.toString());
 
     final double stnLatInDecDeg= channelGridPointJsonObj.
-      getJsonNumber(STATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+      getJsonNumber(LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
 
     slog.info(mmi+"stnLatInDecDeg="+stnLatInDecDeg);
 
@@ -282,7 +282,7 @@ final public class NonStationary1DTidalPredFactory
 
        // --- Must not consider the zero'th order key for the this.hoTcDataMaps object,
        if (! stageCoefficientsId.equals(STAGE_JSON_ZEROTH_ORDER_KEY) ) {
-          this.hoTcDataMaps.put(stageCoefficientsId, new HashMap<>() );
+         this.hoTcDataMaps.put(stageCoefficientsId, new HashMap<>() );
        }
     }
 
@@ -387,13 +387,13 @@ final public class NonStationary1DTidalPredFactory
                                                              /*@NotNull @Size(min = 1)*/ final Set<String> constNames) {
     try {
       constNames.size();
-      
+
     } catch (NullPointerException e) {
-      
+
       slog.error("setAstroInfos: constNames==null !!");
       throw new RuntimeException(e);
     }
-    
+
     slog.info("setAstroInfos: start");
 
     // --- Compute the stationary astronomic information and set the stationary

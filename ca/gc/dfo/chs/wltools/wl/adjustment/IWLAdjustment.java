@@ -10,12 +10,14 @@ import java.util.Set;
 public interface IWLAdjustment {
 
   enum Type {
-    SPATIAL_LINEAR,  // ---
-    SINGLE_LOCATION  // ---
+    IWLS,             // --- Implies direct use of IWLS TG station WLO and WLP data, no spatial interpolation
+    MODEL_NEAREST_NEIGHBOR, // --- Implies use of WLF data coming from a model OR some WLP data to interpolate on the desired location
+    MODEL_BARYCENTRIC   // --- Implies usr of WLF data coming from a FEM nodel(like H2D2 family OR even NEMO native grid WLF data)
   }
 
-  String [] allowedTypesDef= { Type.SINGLE_LOCATION.name(),
-                               Type.SPATIAL_LINEAR.name() };
+  String [] allowedTypesDef= { Type.IWLS.name(),
+                               Type.MODEL_NEAREST_NEIGHBOR.name(),
+                               Type.MODEL_BARYCENTRIC.name() };
 
   Set<String> allowedTypes= Set.of(allowedTypesDef);
 }

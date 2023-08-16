@@ -135,7 +135,7 @@ final public class WLStationPred extends WLStationPredFactory {
     //WLStationPredFactory wlStnPrdFct= null;
 
     final String [] stationPredTypeSplit=
-      stationPredType.split(IStageIO.STATION_ID_SPLIT_CHAR);
+      stationPredType.split(IStageIO.LOCATION_ID_SPLIT_CHAR);
 
     final String mainPredType= stationPredTypeSplit[0];
 

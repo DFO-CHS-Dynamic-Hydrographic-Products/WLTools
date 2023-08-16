@@ -11,6 +11,16 @@ public interface IWLAdjustmentIO {
 
   String INPUT_DATA_FMT_SPLIT_CHAR= ":";
 
+  enum LocationType {
+    WDS,
+    IWLS
+  }
+
+  String [] LOCATION_TYPES_DEF= { LocationType.WDS.name(),
+                                  LocationType.IWLS.name() };
+
+  Set<String> allowedLocationTypes= Set.of(LOCATION_TYPES_DEF);
+
   enum InputDataType {
     ECCC_H2D2, //:NETCDF,
     //H2D2:ASCII,

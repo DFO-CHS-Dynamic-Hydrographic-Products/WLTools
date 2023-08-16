@@ -119,7 +119,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
        //--- Get the path of the stage input discharge data from the package DB using the stationId String
        //    and the static WLToolsIO.mainCfgDir
        final String [] stationIdStrSplit=
-         stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
+         stationId.split(IStageIO.LOCATION_ID_SPLIT_CHAR);
 
        if (stationIdStrSplit.length != 3) {
          throw new RuntimeException(mmi+"ERROR: stationIdStrSplit.length != 3 !!");
@@ -129,7 +129,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
        final String stationDischargeClusterName= stationIdStrSplit[1];
 
        final String stationDischargeJsonFileName= stationIdStrSplit[2] +
-         IStageIO.STATION_DISCHARGE_INPUT_FNAME_SUFFIX + IStageIO.STATION_INFO_JSON_FNAME_EXT;
+         IStageIO.LOCATION_DISCHARGE_INPUT_FNAME_SUFFIX + IStageIO.LOCATION_INFO_JSON_FNAME_EXT;
 
        //slog.info(mmi+"WLToolsIO.getMainCfgDir()="+WLToolsIO.getMainCfgDir());
 
