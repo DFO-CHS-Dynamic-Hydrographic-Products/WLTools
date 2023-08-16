@@ -39,8 +39,6 @@ public interface IStageIO {
    String LOCATION_INFO_JSON_LONCOORD_KEY= "lon";
 
    String LOCATION_INFO_JSON_FNAME_EXT= ".json";
-
-   String LOCATION_INFO_JSON_ZCIGLD_CONV_KEY= "zcVsIGLD"; //--- Implies that tha the preductions are referred to IGLD datum
                                                          //    WL(IGLD) - zcVsIGLD to get the ZC values
    String LOCATION_ID_SPLIT_CHAR= ":";
 
@@ -48,6 +46,8 @@ public interface IStageIO {
 
    String LOCATION_DISCHARGE_INPUT_FNAME_SUFFIX= "-SCD";
 
+   String LOCATION_INFO_JSON_ZCIGLD_CONV_KEY= "zcVsIGLD"; //--- Implies that tha the preductions are referred to IGLD datum
+                                                          //    WL(IGLD) - zcVsIGLD to get the ZC values
    enum FileFormat {
      JSON
    };

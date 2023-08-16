@@ -10,9 +10,16 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonValue;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
@@ -30,8 +37,12 @@ final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment 
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  private ArrayList<WLMeasurement> wlOriginalData= null;
-  private ArrayList<WLMeasurement> wlAdjustedData= null;
+  //private double adjZCVsVDatum= 0.0;  // --- Subtract from the WL data to get the local ZC value OR add to WL data to have defined w.r. to its global vertical datum)
+  //private double adjLocationLatitude= 0.0;
+  //private double adJlocationLongitude= 0.0;
+
+  //private ArrayList<WLMeasurement> wlOriginalData= null;
+  //private ArrayList<WLMeasurement> wlAdjustedData= null;
 
   /**
    * Comments please!
@@ -40,8 +51,8 @@ final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment 
 
     super();
 
-    this.wlOriginalData=
-      this.wlAdjustedData= null;
+    //this.wlOriginalData=
+    //  this.wlAdjustedData= null;
   }
 
   /**
@@ -140,9 +151,23 @@ final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment 
 
       slog.info(mmi+"wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
-      final Map<String,String> wdsLocationInfoMap=
-        this.getWDSLocationIdInfo( wdsLocationIdInfoFile);
+      final JsonObject wdsLocationInfoJsonObj=
+        this.getWDSLocationIdInfo( wdsLocationIdInfoFile );
+
+      this.adjLocationZCVsVDatum= wdsLocationInfoJsonObj.
+        getJsonNumber(StageIO.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
+
+      this.adjLocationLatitude= wdsLocationInfoJsonObj.
+        getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+
+      this.adjLocationLongitude= wdsLocationInfoJsonObj.
+        getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
+
+      slog.info(mmi+"WDS adjustment location IGLD to ZC conversion value="+this.adjLocationZCVsVDatum);
+      slog.info(mmi+"WDS adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
     }
+
+    slog.info(mmi+"Test dist. rad="+Trigonometry.getDistanceInRadians(-73.552528,45.5035,-73.5425,45.528667));
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);

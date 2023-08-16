@@ -7,6 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ import javax.json.JsonReader;
 // ---
 import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
+import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
@@ -39,16 +41,34 @@ public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  protected double adjLocationLatitude= 0.0;
+  protected double adjLocationLongitude= 0.0;
+  protected double adjLocationZCVsVDatum= 0.0;
+
+  protected ArrayList<WLMeasurement> locationOriginalData= null;
+  protected ArrayList<WLMeasurement> locationAdjustedData= null;
+
+  protected Map<String, ArrayList<WLMeasurement>> nearestObsData= null;
+
   /**
    * Comments please!
    */
   public WLAdjustmentIO() {
+
+    this.adjLocationZCVsVDatum=
+      this.adjLocationLatitude=
+        this.adjLocationLongitude= 0.0;
+
+    this.locationOriginalData=
+      this.locationAdjustedData= null;
+
+    this.nearestObsData= null;
   }
 
   //public WLAdjustmentIO() {
   //}
 
-  final static Map<String,String> getWDSLocationIdInfo( /*@NotNull*/ final String wdsLocationIdInfoFile) {
+  final static JsonObject getWDSLocationIdInfo( /*@NotNull*/ final String wdsLocationIdInfoFile) {
 
     final String mmi= "getWDSLocationIdInfo: ";
 
@@ -69,29 +89,26 @@ public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     FileInputStream jsonFileInputStream= null;
 
     try {
-
        jsonFileInputStream= new FileInputStream(wdsLocationIdInfoFile);
 
     } catch (FileNotFoundException e) {
        throw new RuntimeException(mmi+"e");
     }
 
-
-    final JsonObject mainJsonTcDataInputObj=
-       Json.createReader(jsonFileInputStream).readObject();  //tmpJsonTcDataInputObj;
+    final JsonObject mainJsonTcDataInputObj= Json.
+      createReader(jsonFileInputStream).readObject();  //tmpJsonTcDataInputObj;
 
     // --- TODO: add fool-proof checks on all the Json dict keys.
 
-    final JsonObject channelGridPointJsonObj=
-       mainJsonTcDataInputObj.getJsonObject(IStageIO.LOCATION_INFO_JSON_DICT_KEY);
-
+    final JsonObject wdsLocationIdInfoJsonObj=
+      mainJsonTcDataInputObj.getJsonObject(IStageIO.LOCATION_INFO_JSON_DICT_KEY);
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
-    return wdsLocationIdInfo;
+    return wdsLocationIdInfoJsonObj;
   }
 }
 
