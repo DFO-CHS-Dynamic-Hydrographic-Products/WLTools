@@ -24,6 +24,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
+//import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO.InputDataType;
 
 /**
  * Comments please!
@@ -56,16 +57,56 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
    */
   public WLAdjustmentType(/*NotNull*/ final HashMap<String,String> argsMap) {
 
+    super(argsMap);
+
     final String mmi=
       "WLAdjustmentType(final HashMap<String,String> mainProgramOptions) constructor: ";
 
     slog.info(mmi+"start");
 
-    //final Set<String> argsMapKeySet= argsMap.keySet();
+    if (!this.argsMapKeySet.contains("--locationIdInfo")) {
+      throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
+    }
+
+    this.locationIdInfo= argsMap.get("--locationIdInfo");
+
+    if (!this.argsMapKeySet.contains("--inputDataType")) {
+      throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
+    }
+
+    final String [] inputDataTypeFmtSplit= argsMap.
+      get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+    final String checkInputDataType= inputDataTypeFmtSplit[0];
+    final String checkInputDataFormat= inputDataTypeFmtSplit[1];
+
+    if (!IWLAdjustmentIO.allowedInputDataTypes.contains(checkInputDataType)) {
+      throw new RuntimeException(mmi+"Invalid input data type -> "+checkInputDataType+
+                                 " ! must be one of -> "+IWLAdjustmentIO.allowedInputDataTypes.toString());
+    }
+
+    this.inputDataType= IWLAdjustmentIO.
+      InputDataType.valueOf(checkInputDataType);
+
+    final Set<String> allowedInputFormats=
+      InputDataTypesFormats.get(this.inputDataType.name());
+
+    if (!allowedInputFormats.contains(checkInputDataFormat)) {
+      throw new RuntimeException(mmi+"Invalid input data format ->"+checkInputDataFormat+" for input data type -> "+
+                                 this.inputDataType.name()+" ! must be one of -> "+allowedInputFormats.toString());
+    }
+
+    this.inputDataFormat= IWLAdjustmentIO.
+      InputDataTypesFormatsDef.valueOf(checkInputDataFormat);
+
+    slog.info(mmi+"Will use input data type -> "+this.inputDataType.name()+
+              " with input data format -> "+this.inputDataFormat.name());
+
+    slog.info(mmi+"end");
+
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    slog.info(mmi+"end");
   }
 
   ///**

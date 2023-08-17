@@ -1,6 +1,6 @@
 time java WLTools \
 --tool=adjustment \
+--locationAdjType=WDS \
 --inputDataType=ECCC_H2D2:NETCDF \
---locationAdjType=MODEL_NEAREST_NEIGHBOR \
---locationIdInfo=WDS:tidal/nonStationary/StLawrence/dischargeClusters/Deschaillons/dischargeClimatoTFHA/gridPoint-540-TFHA.json
+--locationIdInfo=tidal/nonStationary/StLawrence/dischargeClusters/Deschaillons/dischargeClimatoTFHA/gridPoint-540-TFHA.json
 

@@ -94,70 +94,28 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
     }
 
     //slog.info(mmi+"Will use WL location adjustment type "+locationAdjType);
-
-    if (!argsMapKeySet.contains("--inputDataType")) {
-      throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
-    }
-
-    final String [] inputDataTypeFmtSplit= argsMap.
-      get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
-
-    final String inputDataType= inputDataTypeFmtSplit[0];
-    final String inputDataFormat= inputDataTypeFmtSplit[1];
-
-    if (!IWLAdjustmentIO.allowedInputDataTypes.contains(inputDataType)) {
-      throw new RuntimeException(mmi+"Invalid input data type -> "+inputDataType+
-                                 " ! must be one of -> "+IWLAdjustmentIO.allowedInputDataTypes.toString());
-    }
-
-    final Set<String> allowedInputFormats=
-      IWLAdjustmentIO.InputDataTypesFormats.get(inputDataType);
-
-    if (!allowedInputFormats.contains(inputDataFormat)) {
-      throw new RuntimeException(mmi+"Invalid input data format ->"+inputDataFormat+
-                                 " for input data type -> "+inputDataType+" ! must be one of -> "+allowedInputFormats.toString());
-    }
-
-    if (!argsMapKeySet.contains("--locationIdInfo")) {
-      throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
-    }
-
-    final String locationIdInfo= argsMap.get("--locationIdInfo");
-
-    //final String [] locationIdInfoSplit=
-    //  locationIdInfo.split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
-
-    //final String checkLocationType= locationIdInfoSplit[0];
-
-    //if (!IWLAdjustmentIO.allowedLocationTypes.contains(checkLocationType)) {
-    //  throw new RuntimeException(mmi+"Invalid WL adjustement location type -> "+checkLocationType+
-    //                             " !, must be one of -> "+IWLAdjustmentIO.allowedLocationTypes.toString());
+    //if (!argsMapKeySet.contains("--locationIdInfo")) {
+    //  throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
     //}
-
-    //if (checkLocationType.equals(IWLAdjustmentIO.LocationType.IWLS.name())) {
-    //  throw new RuntimeException(mmi+" Sorry! WL adjustement location type -> "+
-    //                             checkLocationType+" not ready to be used for now !");
-    //}
+    //final String locationIdInfo= argsMap.get("--locationIdInfo");
 
     slog.info(mmi+"Will use WL adjustment type "+adjType);
 
-    slog.info(mmi+"Will use input data type -> "+
-              inputDataType+" with input data format -> "+inputDataFormat);
+    //slog.info(mmi+"Will use input data type -> "+
+    //          inputDataType+" with input data format -> "+inputDataFormat);
 
-    slog.info(mmi+"Will use location Id info  -> "+locationIdInfo);
+    //slog.info(mmi+"Will use location Id info  -> "+locationIdInfo);
 
     if (adjType.equals(IWLAdjustment.Type.WDS.name())) {
 
       slog.info(mmi+"Doing WDS type WL adjustment setup");
 
       //this.adjType=IWLAdjustment.Type.WDS;
+      //final String wdsLocationIdInfoFile=
+      //  WLToolsIO.getMainCfgDir() + "/"+ locationIdInfo;
+      //slog.info(mmi+"wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
-      final String wdsLocationIdInfoFile=
-        WLToolsIO.getMainCfgDir() + "/"+ locationIdInfo;
-
-      slog.info(mmi+"wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
-
-      this.adjInstance= new WLAdjustmentWDS(wdsLocationIdInfoFile);
+      this.adjInstance= new WLAdjustmentWDS(argsMap); //wdsLocationIdInfoFile);
 
       slog.info(mmi+"Done with WDS type WL adjustment setup");
 

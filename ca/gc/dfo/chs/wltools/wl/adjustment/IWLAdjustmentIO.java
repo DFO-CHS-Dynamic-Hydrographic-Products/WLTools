@@ -9,6 +9,10 @@ import java.util.Map;
  */
 public interface IWLAdjustmentIO {
 
+  String WDS_TIDE_GAUGES_INFO_FNAME= "wdsDfoTGs.json";
+
+  String TIDE_GAUGES_INFO_FOLDER_NAME= "tideGaugeInfo";
+
   String INPUT_DATA_FMT_SPLIT_CHAR= ":";
 
   //enum LocationType {
@@ -39,6 +43,8 @@ public interface IWLAdjustmentIO {
 
   String [] IWLS_INPUT_FMTS= { InputDataTypesFormatsDef.JSON.name() };
 
+  // --- TODO: Use the InputDataTypesFormatsDef enum objects as keys to this
+  //     InputDataTypesFormats Map instead of the related Strings ??
   Map< String, Set<String> > InputDataTypesFormats= Map.of(
     InputDataType.ECCC_H2D2.name(), Set.of(ECCC_H2D2_INPUT_FMTS),
     InputDataType.IWLS.name()     , Set.of(IWLS_INPUT_FMTS)

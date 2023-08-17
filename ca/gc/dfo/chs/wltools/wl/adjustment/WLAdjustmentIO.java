@@ -44,6 +44,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
   //protected IWLAdjustmentIO.LocationType locationType= null;
 
+  protected Set<String> argsMapKeySet= null; //argsMap.keySet();
+
+  protected String locationIdInfo= null;
+
+  protected InputDataType inputDataType= null;
+  protected InputDataTypesFormatsDef inputDataFormat= null;
+
   protected double adjLocationLatitude= 0.0;
   protected double adjLocationLongitude= 0.0;
   protected double adjLocationZCVsVDatum= 0.0;
@@ -58,6 +65,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
    */
   public WLAdjustmentIO() {
 
+    this.argsMapKeySet= null;
+
+    this.locationIdInfo= null;
+
+    this.inputDataType= null;
+    this.inputDataFormat= null;
+
     this.adjLocationZCVsVDatum=
       this.adjLocationLatitude=
         this.adjLocationLongitude= 0.0;
@@ -68,9 +82,17 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     this.nearestObsData= null;
   }
 
-  //public WLAdjustmentIO() {
-  //}
+  /**
+   * Comments please!
+   */
+  public WLAdjustmentIO(/*@NotNull*/ final Map<String,String> argsMap) {
 
+    this.argsMapKeySet= argsMap.keySet();
+  }
+
+  /**
+   * Comments please!
+   */
   final static JsonObject getWDSLocationIdInfo( /*@NotNull*/ final String wdsLocationIdInfoFile) {
 
     final String mmi= "getWDSLocationIdInfo: ";
@@ -105,6 +127,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     final JsonObject wdsLocationIdInfoJsonObj=
       mainJsonTcDataInputObj.getJsonObject(IStageIO.LOCATION_INFO_JSON_DICT_KEY);
+
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     slog.info(mmi+"end");
 

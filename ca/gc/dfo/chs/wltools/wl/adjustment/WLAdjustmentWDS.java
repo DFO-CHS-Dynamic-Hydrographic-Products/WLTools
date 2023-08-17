@@ -4,10 +4,16 @@ package ca.gc.dfo.chs.wltools.wl.adjustment;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
-import org.slf4j.Logger;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.TreeSet;
+import java.util.SortedSet;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.NavigableSet;
+//import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.json.Json;
@@ -15,6 +21,10 @@ import javax.json.JsonArray;
 import javax.json.JsonValue;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
@@ -51,11 +61,16 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     //  this.wlAdjustedData= null;
   }
 
-  public WLAdjustmentWDS(/*@NotNull*/ final String wdsLocationIdInfoFile) {
+  public WLAdjustmentWDS(/*@NotNull*/ final HashMap<String,String> argsMap) { // final String wdsLocationIdInfoFile) {
 
-    final String mmi= "WLAdjustmentWDS(final String wdsLocationIdInfoFile) constructor ";
+    super(argsMap);
 
-    slog.info(mmi+"start: wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
+    final String mmi= "WLAdjustmentWDS(final Map<String,String> argsMap) constructor ";
+
+    slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
+
+    final String wdsLocationIdInfoFile=
+        WLToolsIO.getMainCfgDir() + "/" + this.locationIdInfo;
 
     final JsonObject wdsLocationInfoJsonObj=
       this.getWDSLocationIdInfo( wdsLocationIdInfoFile );
@@ -71,6 +86,94 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
 
     slog.info(mmi+"WDS adjustment location IGLD to ZC conversion value="+this.adjLocationZCVsVDatum);
     slog.info(mmi+"WDS adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
+
+    // --- Now find the two nearest CHS tide gauges from this WDS grid point location
+    final String wdsTideGaugesInfoFile= WLToolsIO.getMainCfgDir() +
+      "/" + IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + "/" + IWLAdjustmentIO.WDS_TIDE_GAUGES_INFO_FNAME;
+
+    slog.info(mmi+"wdsTideGaugesInfoFile="+wdsTideGaugesInfoFile);
+
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(wdsTideGaugesInfoFile);
+
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(mmi+"e");
+    }
+
+    final JsonObject mainJsonMapObj= Json.
+      createReader(jsonFileInputStream).readObject();
+
+    //double minDistRad= Double.MAX_VALUE;
+
+    // String [] twoNearestTideGaugesIds= {null, null};
+    Map<Double,String> tmpDistCheck= new HashMap<Double,String>();
+
+    final Set<String> tgStrNumIdKeysSet= mainJsonMapObj.keySet();
+
+    // --- Loop on the tide gauges json info objects.
+    for (final String tgStrNumId: tgStrNumIdKeysSet) {
+
+      //slog.info(mmi+"Checkin with tgStrNumId="+tgStrNumId);
+
+      final JsonObject tgInfoJsonObj=
+        mainJsonMapObj.getJsonObject(tgStrNumId);
+
+      final double tgLatitude= tgInfoJsonObj.
+        getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+
+      final double tgLongitude= tgInfoJsonObj.
+        getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
+
+      final double tgDistRad= Trigonometry.
+        getDistanceInRadians(tgLongitude, tgLatitude, this.adjLocationLongitude, this.adjLocationLatitude);
+
+      tmpDistCheck.put(tgDistRad,tgStrNumId); //(tgStrNumId,tgDistRad);
+
+      //slog.info(mmi+"tgStrNumId="+tgStrNumId+", tgDistRad="+tgDistRad);
+    }
+
+    // --- Use the SortedSet class to automagically sort the distances used
+    //     as kays in the tmpDistCheck Map
+    SortedSet<Double> sortedTGDistRad= new TreeSet<Double>(tmpDistCheck.keySet());
+
+    // --- Convert the SortedSet to an array of Double objects.
+    final Object [] sortedTGDistRadArray= sortedTGDistRad.toArray();
+
+    final Double firstNearestDistRadForTG= (Double) sortedTGDistRadArray[0]; //sortedTGDistRad.first();
+    final Double secondNearestDistRadForTG= (Double) sortedTGDistRadArray[1];
+    final Double thirdNearestDistRadForTG= (Double) sortedTGDistRadArray[2];
+      //sortedTGDistRad.tailSet(firstNearestDistRadForTG).first();
+
+    //slog.info(mmi+"sortedTGDistRad="+sortedTGDistRad.toString());
+    slog.info(mmi+"firstNearestDistRadForTG="+firstNearestDistRadForTG);
+    slog.info(mmi+"secondNearestDistRadForTG="+secondNearestDistRadForTG);
+    slog.info(mmi+"thirdNearestDistRadForTG="+thirdNearestDistRadForTG);
+
+    final String firstNearestTGStrId= tmpDistCheck.get(firstNearestDistRadForTG);
+    final String secondNearestTGStrId= tmpDistCheck.get(secondNearestDistRadForTG);
+    final String thirdNearestTGStrId= tmpDistCheck.get(thirdNearestDistRadForTG);
+
+    slog.info(mmi+"firstNearestTGStrId="+firstNearestTGStrId);
+    slog.info(mmi+"secondNearestTGStrId="+secondNearestTGStrId);
+    slog.info(mmi+"thirdNearestTGStrId="+thirdNearestTGStrId);
+
+    // --- We must have one TG location that is upstream from the WDS location
+    //     and the other TG location that is downstream from the WDS location.
+    //     This means that we keep the first nearest TG and select the other
+    //     TG from the remaining two that has its longitude difference from the
+    //     WDS location being of the opposite sign compared to the longitude
+    //     difference of the first nearest TG from the WDS location.
+
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
+
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     slog.info(mmi+"end");
 
