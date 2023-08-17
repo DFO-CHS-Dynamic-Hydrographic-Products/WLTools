@@ -20,14 +20,17 @@ import javax.json.JsonReader;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentWDS;
+import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentType;
 
 /**
  * Comments please!
  */
-final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment { //, extends IWLAdjustmentIO {//, IWLAdjustmentIO { //extends <>
+final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustmentIO
 
   private final static String whoAmI=
      "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustment";
@@ -37,12 +40,9 @@ final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment 
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  //private double adjZCVsVDatum= 0.0;  // --- Subtract from the WL data to get the local ZC value OR add to WL data to have defined w.r. to its global vertical datum)
-  //private double adjLocationLatitude= 0.0;
-  //private double adJlocationLongitude= 0.0;
+  //private IWLAdjustment.Type adjType= null;
 
-  //private ArrayList<WLMeasurement> wlOriginalData= null;
-  //private ArrayList<WLMeasurement> wlAdjustedData= null;
+  private IWLAdjustmentType adjInstance= null;
 
   /**
    * Comments please!
@@ -67,32 +67,35 @@ final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment 
 
     final Set<String> argsMapKeySet= argsMap.keySet();
 
-    if (!argsMapKeySet.contains("--locationAdjType")) {
-
-      throw new RuntimeException(mmi+"Must have the mandatory option: --locationAdjType defined !!");
+    if (!argsMapKeySet.contains("--adjType")) {
+      throw new RuntimeException(mmi+"Must have the mandatory option: --adjType defined !!");
     }
 
-    final String locationAdjType= argsMap.get("--locationAdjType");
+    final String adjType= argsMap.get("--adjType");
 
-    if (!IWLAdjustment.allowedTypes.contains(locationAdjType)) {
-      throw new RuntimeException(mmi+"Invalid WL location adjustment type -> "+locationAdjType+
+    if (!IWLAdjustment.allowedTypes.contains(adjType)) {
+      throw new RuntimeException(mmi+"Invalid WL adjustment type -> "+adjType+
                                  " ! Must be one of -> "+IWLAdjustment.allowedTypes.toString());
     }
 
-    if (locationAdjType.equals(Type.IWLS.name())) {
-      throw new RuntimeException(mmi+"The WL location adjustment type "+
-                                 Type.IWLS.name()+" is not yet ready to be used !!");
+    //if (locationAdjType.equals(Type.IWLS.name())) {
+    //  throw new RuntimeException(mmi+"The WL location adjustment type "+
+    //                             Type.IWLS.name()+" is not yet ready to be used !!");
+    //}
+
+    if (adjType.equals(Type.MODEL_BARYCENTRIC.name())) {
+      throw new RuntimeException(mmi+"The WL adjustment type "+
+                                 Type.MODEL_BARYCENTRIC.name()+" is not yet ready to be used !!");
     }
 
-    if (locationAdjType.equals(Type.MODEL_BARYCENTRIC.name())) {
-      throw new RuntimeException(mmi+"The WL location adjustment type "+
-                                 Type.MODEL_BARYCENTRIC.name()+" is not yet ready to be used !!");
+    if (adjType.equals(Type.MODEL_NEAREST_NEIGHBOR.name())) {
+      throw new RuntimeException(mmi+"The WL adjustment type "+
+                                 Type.MODEL_NEAREST_NEIGHBOR.name()+" is not yet ready to be used !!");
     }
 
     //slog.info(mmi+"Will use WL location adjustment type "+locationAdjType);
 
     if (!argsMapKeySet.contains("--inputDataType")) {
-
       throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
     }
 
@@ -111,8 +114,8 @@ final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment 
       IWLAdjustmentIO.InputDataTypesFormats.get(inputDataType);
 
     if (!allowedInputFormats.contains(inputDataFormat)) {
-       throw new RuntimeException(mmi+"Invalid input data format ->"+inputDataFormat+
-                                  " for input data type -> "+inputDataType+" ! must be one of -> "+allowedInputFormats.toString());
+      throw new RuntimeException(mmi+"Invalid input data format ->"+inputDataFormat+
+                                 " for input data type -> "+inputDataType+" ! must be one of -> "+allowedInputFormats.toString());
     }
 
     if (!argsMapKeySet.contains("--locationIdInfo")) {
@@ -121,53 +124,46 @@ final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment 
 
     final String locationIdInfo= argsMap.get("--locationIdInfo");
 
-    final String [] locationIdInfoSplit=
-      locationIdInfo.split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+    //final String [] locationIdInfoSplit=
+    //  locationIdInfo.split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    final String locationType= locationIdInfoSplit[0];
+    //final String checkLocationType= locationIdInfoSplit[0];
 
-    if (!IWLAdjustmentIO.allowedLocationTypes.contains(locationType)) {
+    //if (!IWLAdjustmentIO.allowedLocationTypes.contains(checkLocationType)) {
+    //  throw new RuntimeException(mmi+"Invalid WL adjustement location type -> "+checkLocationType+
+    //                             " !, must be one of -> "+IWLAdjustmentIO.allowedLocationTypes.toString());
+    //}
 
-       throw new RuntimeException(mmi+"Invalid WL adjustement location type -> "+locationType+
-                                  " !, must be one of -> "+IWLAdjustmentIO.allowedLocationTypes.toString());
-    }
+    //if (checkLocationType.equals(IWLAdjustmentIO.LocationType.IWLS.name())) {
+    //  throw new RuntimeException(mmi+" Sorry! WL adjustement location type -> "+
+    //                             checkLocationType+" not ready to be used for now !");
+    //}
 
-    if (locationType.equals(IWLAdjustmentIO.LocationType.IWLS.name())) {
-      throw new RuntimeException(mmi+" Sorry! WL adjustement location type -> "+
-                                 locationType+" not ready to be used for now !");
-    }
-
-    slog.info(mmi+"Will use WL location adjustment type "+locationAdjType);
+    slog.info(mmi+"Will use WL adjustment type "+adjType);
 
     slog.info(mmi+"Will use input data type -> "+
               inputDataType+" with input data format -> "+inputDataFormat);
 
     slog.info(mmi+"Will use location Id info  -> "+locationIdInfo);
 
-    if (locationType.equals(IWLAdjustmentIO.LocationType.WDS.name())) {
+    if (adjType.equals(IWLAdjustment.Type.WDS.name())) {
+
+      slog.info(mmi+"Doing WDS type WL adjustment setup");
+
+      //this.adjType=IWLAdjustment.Type.WDS;
 
       final String wdsLocationIdInfoFile=
-        WLToolsIO.getMainCfgDir()+"/"+locationIdInfoSplit[1];
+        WLToolsIO.getMainCfgDir() + "/"+ locationIdInfo;
 
       slog.info(mmi+"wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
-      final JsonObject wdsLocationInfoJsonObj=
-        this.getWDSLocationIdInfo( wdsLocationIdInfoFile );
+      this.adjInstance= new WLAdjustmentWDS(wdsLocationIdInfoFile);
 
-      this.adjLocationZCVsVDatum= wdsLocationInfoJsonObj.
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
+      slog.info(mmi+"Done with WDS type WL adjustment setup");
 
-      this.adjLocationLatitude= wdsLocationInfoJsonObj.
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
-
-      this.adjLocationLongitude= wdsLocationInfoJsonObj.
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
-
-      slog.info(mmi+"WDS adjustment location IGLD to ZC conversion value="+this.adjLocationZCVsVDatum);
-      slog.info(mmi+"WDS adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
     }
 
-    slog.info(mmi+"Test dist. rad="+Trigonometry.getDistanceInRadians(-73.552528,45.5035,-73.5425,45.528667));
+    //slog.info(mmi+"Test dist. rad="+Trigonometry.getDistanceInRadians(-73.552528,45.5035,-73.5425,45.528667));
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
@@ -175,5 +171,16 @@ final public class WLAdjustment extends WLAdjustmentIO implements IWLAdjustment 
     slog.info(mmi+"end");
   }
 
+  /**
+   * Comments please.
+   */
+  final public List<MeasurementCustom> getAdjustment() {
+
+    //final String mmi= "getAdjustment: ";
+    //List<MeasurementCustom> adjustmentRet= null;
+    ///slog.info(mmi+"start: this.adjType.name()="+this.adjType.name());
+
+    return this.adjInstance.getAdjustment();
+  }
 }
 

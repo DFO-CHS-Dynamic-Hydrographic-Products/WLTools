@@ -19,7 +19,7 @@ import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
-import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
+//import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
 /**
  * Comments please!
@@ -112,7 +112,7 @@ final public class WLTools extends WLToolsIO {
       //System.out.println("WLTools main: debug System.exit(0)");
         //System.exit(0);
 
-      wlStationPred.getAllPredictions();
+      wlStationPred.getAllPredictions(); //.writeResults(IWLStationPred.OutputFormat.JSON)
 
       //wlStationPred.writeResults(IWLStationPred.OutputFormat.JSON)
 
@@ -127,6 +127,8 @@ final public class WLTools extends WLToolsIO {
                           IWLTools.Box.adjustment.name()+" using the more recently validated CHS WLO TG data");
 
        final WLAdjustment wlAdjust= new WLAdjustment(argsMap);
+
+       wlAdjust.getAdjustment(); //.writeResult(finak string outFile); //
 
        System.out.println(mmi+"Debug System.exit(0)");
        System.exit(0);

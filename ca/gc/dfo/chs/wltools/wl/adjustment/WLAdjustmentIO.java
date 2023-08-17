@@ -24,6 +24,7 @@ import javax.json.JsonReader;
 import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
@@ -31,7 +32,7 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 /**
  * Comments please!
  */
-public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
+abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
   private final static String whoAmI=
      "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO";
@@ -41,12 +42,14 @@ public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  //protected IWLAdjustmentIO.LocationType locationType= null;
+
   protected double adjLocationLatitude= 0.0;
   protected double adjLocationLongitude= 0.0;
   protected double adjLocationZCVsVDatum= 0.0;
 
   protected ArrayList<WLMeasurement> locationOriginalData= null;
-  protected ArrayList<WLMeasurement> locationAdjustedData= null;
+  protected ArrayList<MeasurementCustom> locationAdjustedData= null;
 
   protected Map<String, ArrayList<WLMeasurement>> nearestObsData= null;
 
@@ -59,8 +62,8 @@ public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       this.adjLocationLatitude=
         this.adjLocationLongitude= 0.0;
 
-    this.locationOriginalData=
-      this.locationAdjustedData= null;
+    this.locationOriginalData= null;
+    this.locationAdjustedData= null;
 
     this.nearestObsData= null;
   }

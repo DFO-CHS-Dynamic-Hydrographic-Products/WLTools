@@ -10,15 +10,19 @@ import java.util.Set;
 public interface IWLAdjustment {
 
   enum Type {
-    IWLS,             // --- Implies direct use of IWLS TG station WLO and WLP data, no spatial interpolation
-    MODEL_NEAREST_NEIGHBOR, // --- Implies use of WLF data coming from a model OR some WLP data to interpolate on the desired location
+    WDS, // --- Implies using WLF data coming from a fluvial-tidal model in a river or estuary and two-points WLF errors linear interpolation adjusments
+    MODEL_NEAREST_NEIGHBOR, // --- Implies use of WLF data coming from a model OR some WLP data to interpolate on the desired location using near. neigh. interp
     MODEL_BARYCENTRIC   // --- Implies usr of WLF data coming from a FEM nodel(like H2D2 family OR even NEMO native grid WLF data)
   }
 
-  String [] allowedTypesDef= { Type.IWLS.name(),
+  String [] allowedTypesDef= { Type.WDS.name(),
                                Type.MODEL_NEAREST_NEIGHBOR.name(),
                                Type.MODEL_BARYCENTRIC.name() };
 
   Set<String> allowedTypes= Set.of(allowedTypesDef);
-}
 
+  //enum Target {
+  //  WDSFluvial //,
+  //  // WDSOceanic
+  //}
+}
