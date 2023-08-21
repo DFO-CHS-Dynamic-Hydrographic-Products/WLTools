@@ -159,12 +159,35 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     slog.info(mmi+"secondNearestTGStrId="+secondNearestTGStrId);
     slog.info(mmi+"thirdNearestTGStrId="+thirdNearestTGStrId);
 
-    // --- We must have one TG location that is upstream from the WDS location
-    //     and the other TG location that is downstream from the WDS location.
-    //     This means that we keep the first nearest TG and select the other
-    //     TG from the remaining two that has its longitude difference from the
-    //     WDS location being of the opposite sign compared to the longitude
-    //     difference of the first nearest TG from the WDS location.
+    // --- This is not needed anymore, we will use the WLO data of the
+    //     three nearest TGs by default with interpolation weigths calculated
+    //     with the respective distances in radians.
+    //// --- We must have one TG location that is upstream from the WDS location
+    ////     and the other TG location that is downstream from the WDS location.
+    ////     This means that we keep the first nearest TG and select the other
+    ////     TG from the remaining two that has its longitude difference from the
+    ////     WDS location being of the opposite sign compared to the longitude
+    ////     difference of the first nearest TG from the WDS location.
+    ////     NOTE: If the first nearest TG does not have enough valid WLO data
+    ////     to use for the adjustments then we will use the other two
+    ////     as the for the WLF adjustements (assuming that those other
+    ////     two TGs have valid WLO data??)
+    // final JsonObject firstNearestTGJsonObj=
+    //   mainJsonMapObj.getJsonObject(firstNearestTGStrId);
+    //final double firstNearestTGLongDiff= this.adjLocationLongitude -
+    //  firstNearestTGJsonObj.getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
+    //slog.info(mmi+"firstNearestTGLongDiff="+firstNearestTGLongDiff);
+
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
+
+    // --- Now get the coordinates of:
+    //     1). The nearest input data grid point from the WDS location
+    //     2). The nearest input data grid point from the three nearest TG locations.
+
+    final String firstInputDataFile= this.inputDataFilesPaths.get(0);
+
+    slog.info(mmi+"firstInputDataFile="+firstInputDataFile);
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);

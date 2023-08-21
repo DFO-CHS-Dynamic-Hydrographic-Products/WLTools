@@ -62,6 +62,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
   protected Map<String, ArrayList<WLMeasurement>> nearestObsData= null;
 
+  protected List<String> inputDataFilesPaths= null;
+
   /**
    * Comments please!
    */

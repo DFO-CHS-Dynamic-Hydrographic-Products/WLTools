@@ -19,6 +19,7 @@ import javax.json.JsonReader;
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
@@ -108,12 +109,30 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
          throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataFiles defined !!");
        }
 
+       final String inputDataFilesPathsDef= argsMap.get("--inputDataFiles");
+
+       slog.info(mmi+"inputDataFilesPathsDef="+inputDataFilesPathsDef);
+
+       // --- Here the --inputDataFiles value must be the path of an ASCII file that defines the
+       //     complete paths of the input data files themselves (the number of input files can be
+       //     a large as 5000 so we cannot pass all their paths the arguments)
+       this.inputDataFilesPaths= ASCIIFileIO.getFileLinesAsArrayList(inputDataFilesPathsDef);
+
+       slog.info(mmi+"Will use "+this.inputDataFilesPaths.size()+" input files");
+
+       //final String firstInputFile= this.inputDataFilesPaths.get(0);
+       //slog.info(mmi+"Getting the grid points informatio
+       //for (final String inputFilePath: this.inputDataFilesPaths) {
+       //   slog.info(mmi+"Processing inputFilePath="+inputFilePath);
+       //   slog.info(mmi+"Debug System.exit(0)");
+       //   System.exit(0);
+       //}
     }
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
   }
 
