@@ -46,6 +46,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
   protected Set<String> argsMapKeySet= null; //argsMap.keySet();
 
+  protected IWLAdjustment.Type adjType= null;
+
   protected String locationIdInfo= null;
 
   protected InputDataType inputDataType= null;
@@ -85,7 +87,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  public WLAdjustmentIO(/*@NotNull*/ final Map<String,String> argsMap) {
+  public WLAdjustmentIO(/*@NotNull*/ final WLAdjustment.Type adjType, /*@NotNull*/ final Map<String,String> argsMap) {
+
+    final String mmi= "WLAdjustmentIO(final WLAdjustment.Type adjType,final Map<String,String> argsMap) construtor : ";
+
+    this.adjType= adjType;
+
+    slog.info(mmi+"this.adjType="+this.adjType.name());
 
     this.argsMapKeySet= argsMap.keySet();
   }

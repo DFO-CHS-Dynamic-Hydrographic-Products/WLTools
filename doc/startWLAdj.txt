@@ -1,6 +1,9 @@
+H2D2WLNCDFFiles=$(find /home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2NetCdf/operDir2023081706 -name CMC_shop_slfe_surface_Forecast_*.nc | sort)
+
 time java WLTools \
 --tool=adjustment \
---locationAdjType=WDS \
+--adjType=WDS \
 --inputDataType=ECCC_H2D2:NETCDF \
+--inputDataFiles=${H2D2WLNCDFFiles} \
 --locationIdInfo=tidal/nonStationary/StLawrence/dischargeClusters/Deschaillons/dischargeClimatoTFHA/gridPoint-540-TFHA.json
 

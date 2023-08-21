@@ -55,12 +55,12 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
   /**
    * Parse the main program arguments using a constructor.
    */
-  public WLAdjustmentType(/*NotNull*/ final HashMap<String,String> argsMap) {
+  public WLAdjustmentType(/*NotNull*/ final WLAdjustment.Type adjType, /*NotNull*/ final HashMap<String,String> argsMap) {
 
-    super(argsMap);
+    super(adjType, argsMap);
 
     final String mmi=
-      "WLAdjustmentType(final HashMap<String,String> mainProgramOptions) constructor: ";
+      "WLAdjustmentType( final WLAdjustment.Type adjType, final HashMap<String,String> mainProgramOptions) constructor: ";
 
     slog.info(mmi+"start");
 
@@ -70,42 +70,50 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
     this.locationIdInfo= argsMap.get("--locationIdInfo");
 
-    if (!this.argsMapKeySet.contains("--inputDataType")) {
-      throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
-    }
+    if (this.adjType != IWLAdjustment.Type. IWLS_WLO_QC) {
 
-    final String [] inputDataTypeFmtSplit= argsMap.
-      get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+      if (!this.argsMapKeySet.contains("--inputDataType")) {
+        throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
+      }
 
-    final String checkInputDataType= inputDataTypeFmtSplit[0];
-    final String checkInputDataFormat= inputDataTypeFmtSplit[1];
+      final String [] inputDataTypeFmtSplit= argsMap.
+        get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    if (!IWLAdjustmentIO.allowedInputDataTypes.contains(checkInputDataType)) {
-      throw new RuntimeException(mmi+"Invalid input data type -> "+checkInputDataType+
+      final String checkInputDataType= inputDataTypeFmtSplit[0];
+      final String checkInputDataFormat= inputDataTypeFmtSplit[1];
+
+      if (!IWLAdjustmentIO.allowedInputDataTypes.contains(checkInputDataType)) {
+        throw new RuntimeException(mmi+"Invalid input data type -> "+checkInputDataType+
                                  " ! must be one of -> "+IWLAdjustmentIO.allowedInputDataTypes.toString());
-    }
+      }
 
-    this.inputDataType= IWLAdjustmentIO.
-      InputDataType.valueOf(checkInputDataType);
+      this.inputDataType= IWLAdjustmentIO.
+        InputDataType.valueOf(checkInputDataType);
 
-    final Set<String> allowedInputFormats=
-      InputDataTypesFormats.get(this.inputDataType.name());
+      final Set<String> allowedInputFormats=
+        InputDataTypesFormats.get(this.inputDataType.name());
 
-    if (!allowedInputFormats.contains(checkInputDataFormat)) {
-      throw new RuntimeException(mmi+"Invalid input data format ->"+checkInputDataFormat+" for input data type -> "+
+      if (!allowedInputFormats.contains(checkInputDataFormat)) {
+        throw new RuntimeException(mmi+"Invalid input data format ->"+checkInputDataFormat+" for input data type -> "+
                                  this.inputDataType.name()+" ! must be one of -> "+allowedInputFormats.toString());
+      }
+
+      this.inputDataFormat= IWLAdjustmentIO.
+        InputDataTypesFormatsDef.valueOf(checkInputDataFormat);
+
+      slog.info(mmi+"Will use input data type -> "+this.inputDataType.name()+
+                " with input data format -> "+this.inputDataFormat.name());
+
+       if (!this.argsMapKeySet.contains("--inputDataFiles")) {
+         throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataFiles defined !!");
+       }
+
     }
-
-    this.inputDataFormat= IWLAdjustmentIO.
-      InputDataTypesFormatsDef.valueOf(checkInputDataFormat);
-
-    slog.info(mmi+"Will use input data type -> "+this.inputDataType.name()+
-              " with input data format -> "+this.inputDataFormat.name());
 
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
   }
 

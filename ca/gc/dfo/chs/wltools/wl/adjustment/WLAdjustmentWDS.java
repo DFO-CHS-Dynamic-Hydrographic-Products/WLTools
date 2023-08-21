@@ -63,9 +63,9 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
 
   public WLAdjustmentWDS(/*@NotNull*/ final HashMap<String,String> argsMap) { // final String wdsLocationIdInfoFile) {
 
-    super(argsMap);
+    super(IWLAdjustment.Type.WDS,argsMap);
 
-    final String mmi= "WLAdjustmentWDS(final Map<String,String> argsMap) constructor ";
+    final String mmi= "WLAdjustmentWDS(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
 
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 

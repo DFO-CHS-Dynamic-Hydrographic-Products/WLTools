@@ -78,10 +78,10 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
                                  " ! Must be one of -> "+IWLAdjustment.allowedTypes.toString());
     }
 
-    //if (locationAdjType.equals(Type.IWLS.name())) {
-    //  throw new RuntimeException(mmi+"The WL location adjustment type "+
-    //                             Type.IWLS.name()+" is not yet ready to be used !!");
-    //}
+    if (adjType.equals(Type.IWLS_WLO_QC.name())) {
+      throw new RuntimeException(mmi+"The WL location adjustment type "+
+                                Type.IWLS_WLO_QC.name()+" is not yet ready to be used !!");
+    }
 
     if (adjType.equals(Type.MODEL_BARYCENTRIC.name())) {
       throw new RuntimeException(mmi+"The WL adjustment type "+
