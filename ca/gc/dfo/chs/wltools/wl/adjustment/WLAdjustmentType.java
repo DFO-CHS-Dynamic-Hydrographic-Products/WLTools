@@ -71,7 +71,7 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
     this.locationIdInfo= argsMap.get("--locationIdInfo");
 
-    if (this.adjType != IWLAdjustment.Type. IWLS_WLO_QC) {
+    if (this.adjType != IWLAdjustment.Type.IWLS_WLO_QC) {
 
       if (!this.argsMapKeySet.contains("--inputDataType")) {
         throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
