@@ -23,6 +23,7 @@ import javax.json.JsonReader;
 // ---
 import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
+import as.hdfql.HDFqlConstants;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -104,21 +105,60 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final Map<Integer,HBCoords> getH2D2NCDFGridPointsCoords(/*@NotNull*/ final String firstInputDataFile) {
+  final Map<Integer,HBCoords> getH2D2NCDFGridPointsCoords(/*@NotNull*/ final String h2d2NCDFInputDataFile) {
 
     final String mmi= "getH2D2NCDFGridPointsCoords: ";
 
+    slog.info(mmi+"start: h2d2NCDFInputDataFile=" + h2d2NCDFInputDataFile);
+
     //--- Deal with possible null tcInputfilePath String: if @NotNull not used
     try {
-      firstInputDataFile.length();
+      h2d2NCDFInputDataFile.length();
 
     } catch (NullPointerException e) {
 
-      slog.error(mmi+"firstInputDataFile is null !!");
+      slog.error(mmi+"h2d2NCDFInputDataFile is null !!");
       throw new RuntimeException(mmi+e);
     }
 
     Map<Integer,HBCoords> h2d2NCDFGridPointsCoords= null;
+
+    final int openStatus= HDFql.execute("USE READONLY FILE " + h2d2NCDFInputDataFile +"; SHOW USE FILE");
+
+    //slog.info(mmi+"openStatus="+openStatus);
+
+    if (openStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+" HDFql.execute() open file error return value="+openStatus);
+    }
+
+    //final String showUseFileRet= HDFql.execute("SHOW USE FILE");
+    //slog.info(mmi+"showUseFileRet="+showUseFileRet);
+
+    final String [] nodesLLCoordsDsetIds= ECCC_H2D2_COORDS_DSETS_NAMES.
+      get(ECCC_H2D2_WLF_NAMES.SURFACEN).split(INPUT_DATA_FMT_SPLIT_CHAR);
+
+    final String nodesLonCoordsDsetId= nodesLLCoordsDsetIds[0];
+    final String nodesLatCoordsDsetId= nodesLLCoordsDsetIds[1];
+
+    final String [] edgesLLCoordsDsetIds= ECCC_H2D2_COORDS_DSETS_NAMES.
+      get(ECCC_H2D2_WLF_NAMES.SURFACEE).split(INPUT_DATA_FMT_SPLIT_CHAR);
+
+    final String edgesLonCoordsDsetId= edgesLLCoordsDsetIds[0];
+    final String edgesLatCoordsDsetId= edgesLLCoordsDsetIds[1];
+
+     //HDFql.execute("SELECT FROM "+ECCC_H2D2_COORDS_DSETS_NAMES.ECCC_H2D2_WLF_NAMES.SURFACEN
+
+    final int closeStatus= HDFql.execute("CLOSE FILE "+h2d2NCDFInputDataFile);
+
+    //slog.info(mmi+"closeStatus="+closeStatus);
+
+    if (closeStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+" HDFql.execute() close file error return value="+closeStatus);
+    }
+
+    slog.info(mmi+"end");
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     return h2d2NCDFGridPointsCoords;
   }

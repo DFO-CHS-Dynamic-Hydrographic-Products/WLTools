@@ -200,11 +200,11 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     if (this.inputDataType == IWLAdjustmentIO.InputDataType.ECCC_H2D2 &&
         this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
 
-       slog.info(mmi+" Getting inputDataType -> "+this.inputDataType.name()+
-                     " grid point coordinates in "+this.inputDataFormat.name()+" file format");
+      slog.info(mmi+" Getting inputDataType -> "+this.inputDataType.name()+
+                    " grid point coordinates in "+this.inputDataFormat.name()+" file format");
 
-       final Map<Integer,HBCoords> mdlGrdPtsCoordinates= //null;
-        this.getH2D2NCDFGridPointsCoords(firstInputDataFile);
+      mdlGrdPtsCoordinates= this.
+        getH2D2NCDFGridPointsCoords(firstInputDataFile);
 
     } else {
        throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name()+

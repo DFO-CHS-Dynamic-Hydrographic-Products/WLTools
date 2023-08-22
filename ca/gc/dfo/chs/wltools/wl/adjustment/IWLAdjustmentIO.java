@@ -59,9 +59,9 @@ public interface IWLAdjustmentIO {
 
   // --- Define the names of the coordinates datasets names that are used by the ECCC_H2D2
   //     two different WLF datasets.
-  Map<String,String> ECCC_H2D2_COORDS_DSETS_NAMES= Map.of(
-    ECCC_H2D2_WLF_NAMES.SURFACEN.name(), "St_Lawrence_River_node_lon:St_Lawrence_River_node_lat",
-    ECCC_H2D2_WLF_NAMES.SURFACEE.name(), "St_Lawrence_River_edge_lon:St_Lawrence_River_edge_lat"
+  Map<ECCC_H2D2_WLF_NAMES,String> ECCC_H2D2_COORDS_DSETS_NAMES= Map.of(
+    ECCC_H2D2_WLF_NAMES.SURFACEN, "St_Lawrence_River_node_lon:St_Lawrence_River_node_lat",
+    ECCC_H2D2_WLF_NAMES.SURFACEE, "St_Lawrence_River_edge_lon:St_Lawrence_River_edge_lat"
   );
 
 }
