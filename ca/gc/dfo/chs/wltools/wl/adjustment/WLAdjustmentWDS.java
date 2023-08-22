@@ -11,11 +11,13 @@ import java.util.SortedSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.NavigableSet;
+//import java.awt.geom.Point2D; //.Double;
 //import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//---
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
@@ -28,6 +30,7 @@ import java.io.FileNotFoundException;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -47,6 +50,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
    * Usual class static log utility.
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
+
 
   //private IWLAdjustment.Type adjType= null;
 
@@ -177,17 +181,35 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     //final double firstNearestTGLongDiff= this.adjLocationLongitude -
     //  firstNearestTGJsonObj.getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
     //slog.info(mmi+"firstNearestTGLongDiff="+firstNearestTGLongDiff);
-
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- Now get the coordinates of:
-    //     1). The nearest input data grid point from the WDS location
-    //     2). The nearest input data grid point from the three nearest TG locations.
+    //     1). The nearest model input data grid point from the WDS location
+    //     2). The nearest model input data grid point from the three nearest TG locations.
 
     final String firstInputDataFile= this.inputDataFilesPaths.get(0);
 
     slog.info(mmi+"firstInputDataFile="+firstInputDataFile);
+
+    Map<Integer,HBCoords> mdlGrdPtsCoordinates= null;
+
+    slog.info(mmi+"this.inputDataFormat="+this.inputDataFormat.name());
+
+    // --- TODO: replace this if-else block by a switch-case block ??
+    if (this.inputDataType == IWLAdjustmentIO.InputDataType.ECCC_H2D2 &&
+        this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
+
+       slog.info(mmi+" Getting inputDataType -> "+this.inputDataType.name()+
+                     " grid point coordinates in "+this.inputDataFormat.name()+" file format");
+
+       final Map<Integer,HBCoords> mdlGrdPtsCoordinates= //null;
+        this.getH2D2NCDFGridPointsCoords(firstInputDataFile);
+
+    } else {
+       throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name()+
+                                  " versus inputDataFormat -> "+this.inputDataFormat.name()+" combination!");
+    }
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
@@ -195,7 +217,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     try {
       jsonFileInputStream.close();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(mmi+e);
     }
 
     slog.info(mmi+"end");

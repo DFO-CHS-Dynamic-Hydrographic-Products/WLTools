@@ -23,6 +23,7 @@ import javax.json.JsonReader;
 // ---
 import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
+import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
@@ -103,6 +104,28 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
+  final Map<Integer,HBCoords> getH2D2NCDFGridPointsCoords(/*@NotNull*/ final String firstInputDataFile) {
+
+    final String mmi= "getH2D2NCDFGridPointsCoords: ";
+
+    //--- Deal with possible null tcInputfilePath String: if @NotNull not used
+    try {
+      firstInputDataFile.length();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"firstInputDataFile is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    Map<Integer,HBCoords> h2d2NCDFGridPointsCoords= null;
+
+    return h2d2NCDFGridPointsCoords;
+  }
+
+  /**
+   * Comments please!
+   */
   final static JsonObject getWDSLocationIdInfo( /*@NotNull*/ final String wdsLocationIdInfoFile) {
 
     final String mmi= "getWDSLocationIdInfo: ";
@@ -116,7 +139,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     } catch (NullPointerException e) {
 
       slog.error(mmi+"wdsLocationIdInfoFile is null !!");
-      throw new RuntimeException(e);
+      throw new RuntimeException(mmi+e);
     }
 
     slog.info(mmi+"start: wdsLocationIdInfoFile=" + wdsLocationIdInfoFile);

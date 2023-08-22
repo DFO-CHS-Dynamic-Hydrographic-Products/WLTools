@@ -1,13 +1,17 @@
-package ca.gc.dfo.chs.util;
+package ca.gc.dfo.chs.wltools.util;
 
-import ca.gc.dfo.chs.util.HBGeom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+// ---
+import ca.gc.dfo.chs.wltools.util.IHBGeom;
 
 // --- NOTE: This is a temporary Home Brew (HB) code that should
 //     be replaced by either a class from java.awt.geom or a class
 //     from the jts code https://github.com/locationtech/jts.
 //     BUT we only need this class for now and it could probably
 //     be overkill to use jts or the GDAL java wrappers.
-public final class HBCoords implements HBGeom {
+public final class HBCoords implements IHBGeom {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.util.HBCoords";
@@ -23,7 +27,7 @@ public final class HBCoords implements HBGeom {
 
   public HBCoords() {
     this.latitude=
-      this.longitude= HBGeom.UNDEFINED_COORD;
+      this.longitude= IHBGeom.UNDEFINED_COORD;
   }
 
   public HBCoords(final double latitude, final double longitude) {
@@ -31,11 +35,11 @@ public final class HBCoords implements HBGeom {
     this.longitude= longitude;
   }
 
-  public final getLatitude() {
+  public final double getLatitude() {
     return this.latitude;
   }
 
-  public final getLongitude() {
+  public final double getLongitude() {
     return this.longitude;
   }
 
