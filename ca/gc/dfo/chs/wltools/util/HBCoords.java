@@ -22,25 +22,47 @@ public final class HBCoords implements IHBGeom {
   private final Logger log = LoggerFactory.getLogger(whoAmI);
 
   // --- Only EPSG:4326 normally.
-  protected double latitude;
-  protected double longitude;
+  //protected double latitude;
+  //protected double longitude;
+
+  protected double [] llCoords= {UNDEFINED_COORD,UNDEFINED_COORD};
 
   public HBCoords() {
-    this.latitude=
-      this.longitude= IHBGeom.UNDEFINED_COORD;
+
+    this.llCoords[LON_IDX]=
+      this.llCoords[LAT_IDX]= UNDEFINED_COORD;
+
+    //this.latitude=
+    //  this.longitude= IHBGeom.UNDEFINED_COORD;
   }
 
-  public HBCoords(final double latitude, final double longitude) {
-    this.latitude= latitude;
-    this.longitude= longitude;
+  public HBCoords(final double longitude, final double latitude) {
+
+    this.llCoords[LAT_IDX]= latitude;
+    this.llCoords[LON_IDX]= longitude;
+    //this.latitude= latitude;
+    //this.longitude= longitude;
   }
 
   public final double getLatitude() {
-    return this.latitude;
+    return this.llCoords[LAT_IDX];
   }
 
   public final double getLongitude() {
-    return this.longitude;
+    return this.llCoords[LON_IDX];
   }
 
+  public final void setLatitude(final double latitude) {
+    this.llCoords[LAT_IDX]= latitude;
+  }
+
+  public final void setLongitude(final double longitude) {
+    this.llCoords[LON_IDX]= longitude;
+  }
+
+  public final void setLonOrLat(final int lonOrLatIndex, final double latOrLon) {
+
+    // --- No fool-proof check here, need performance.
+    this.llCoords[lonOrLatIndex]= latOrLon;
+  }
 }

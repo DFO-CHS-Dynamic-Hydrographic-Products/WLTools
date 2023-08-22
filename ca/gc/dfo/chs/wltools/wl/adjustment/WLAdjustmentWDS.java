@@ -74,7 +74,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
     final String wdsLocationIdInfoFile=
-        WLToolsIO.getMainCfgDir() + "/" + this.locationIdInfo;
+      WLToolsIO.getMainCfgDir() + "/" + this.locationIdInfo;
 
     final JsonObject wdsLocationInfoJsonObj=
       this.getWDSLocationIdInfo( wdsLocationIdInfoFile );
@@ -140,7 +140,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
 
     // --- Use the SortedSet class to automagically sort the distances used
     //     as kays in the tmpDistCheck Map
-    SortedSet<Double> sortedTGDistRad= new TreeSet<Double>(tmpDistCheck.keySet());
+    final SortedSet<Double> sortedTGDistRad= new TreeSet<Double>(tmpDistCheck.keySet());
 
     // --- Convert the SortedSet to an array of Double objects.
     final Object [] sortedTGDistRadArray= sortedTGDistRad.toArray();
@@ -162,6 +162,42 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     slog.info(mmi+"firstNearestTGStrId="+firstNearestTGStrId);
     slog.info(mmi+"secondNearestTGStrId="+secondNearestTGStrId);
     slog.info(mmi+"thirdNearestTGStrId="+thirdNearestTGStrId);
+
+    // --- Instantiate the this.nearestObsData Map
+    this.nearestObsData= new HashMap<String, ArrayList<WLMeasurement>>();
+
+    //--- And initialize it with the 3 nearest TG location and null
+    //    ArrayList<WLMeasurement> object for now (the ArrayList<WLMeasurement>
+    //    objects will be populated later
+    this.nearestObsData.put(firstNearestTGStrId, null);
+    this.nearestObsData.put(secondNearestTGStrId, null);
+    this.nearestObsData.put(thirdNearestTGStrId, null);
+
+    // --- Now store the nearest tide gauges coordinates
+    //     in the local nearestsTGCoords map for subsequent
+    //     usage.
+    final Map<String, HBCoords> nearestsTGCoords= new HashMap<String, HBCoords>();
+
+    for (final String tgCoordId: nearestsTGCoords.keySet()) {
+
+      final JsonObject tgCoordJsonObj= mainJsonMapObj.getJsonObject(tgCoordId);
+
+      final double tgLon= tgCoordJsonObj.
+        getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+
+      final double tgLat= tgCoordJsonObj.
+        getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+
+      nearestsTGCoords.put(tgCoordId, new HBCoords(tgLon,tgLat) );
+    }
+
+    // --- We can close the Json file now
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(mmi+e);
+    }
+
 
     // --- This is not needed anymore, we will use the WLO data of the
     //     three nearest TGs by default with interpolation weigths calculated
@@ -192,7 +228,8 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
 
     slog.info(mmi+"firstInputDataFile="+firstInputDataFile);
 
-    Map<Integer,HBCoords> mdlGrdPtsCoordinates= null;
+    //Map<Integer,HBCoords> mdlGrdPtsCoordinates= null;
+    ArrayList<HBCoords> mdlGrdPtsCoordinates= null;
 
     slog.info(mmi+"this.inputDataFormat="+this.inputDataFormat.name());
 
@@ -211,13 +248,38 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
                                   " versus inputDataFormat -> "+this.inputDataFormat.name()+" combination!");
     }
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    // --- Now locate the nearest H2D2 model grid points from the
+    //     3 nearest tide gauges.
+    //for (int modelGridPointIdx= 0; modelGridPointIdx< mdlGrdPtsCoordinates.size(); modelGridPointIdx++) ;
+    //
+    //  final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
 
-    try {
-      jsonFileInputStream.close();
-    } catch (IOException e) {
-      throw new RuntimeException(mmi+e);
+    for (final String tgCoordId: nearestsTGCoords.keySet()) {
+
+      slog.info(mmi+" Searching for the nearest H2D2 model grid point from the TG:"+tgCoordId);
+
+      final HBCoords tgHBCoords= nearestsTGCoords.get(tgCoordId);
+
+      final double tgLat= tgHBCoords.getLatitude();
+      final double tgLon= tgHBCoords.getLongitude();
+
+      int nearestModelGridPointIndex= -1;
+
+      double minDist= Double.MAX_VALUE;
+
+      for (int modelGridPointIdx= 0;
+           modelGridPointIdx< mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
+
+        final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+
+        final double checkDist= Trigonometry.
+          getDistanceInRadians(tgLon,tgLat,mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+
+        if (checkDist < minDist) {
+          minDist= checkDist;
+          nearestModelGridPointIndex= modelGridPointIdx;
+        }
+      }
     }
 
     slog.info(mmi+"end");

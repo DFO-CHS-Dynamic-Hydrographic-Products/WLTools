@@ -12,7 +12,6 @@ if [ ${?} -ne 0 ];
 then
   echo "ant -buildfile ${javaCodeBaseMainDir}/ant/antCompLib.xml FAILED!!"
   exit 1
-
 fi
 
 ant -buildfile ${javaCodeBaseMainDir}/ant/antCompHDFql.xml
@@ -21,9 +20,7 @@ if [ ${?} -ne 0 ];
 then
   echo "ant -buildfile ${javaCodeBaseMainDir}/ant/antCompHDFql.xml FAILED!!"
   exit 1
-
 fi
-
 
 ant -buildfile ${javaCodeBaseMainDir}/ant/antCompMain.xml
 
