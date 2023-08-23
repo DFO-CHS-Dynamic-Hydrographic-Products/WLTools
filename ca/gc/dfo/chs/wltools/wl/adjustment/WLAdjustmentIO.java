@@ -51,6 +51,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
   protected IWLAdjustment.Type adjType= null;
 
+  protected String locationId= null;
   protected String locationIdInfo= null;
 
   protected InputDataType inputDataType= null;
@@ -75,7 +76,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     this.argsMapKeySet= null;
 
-    this.locationIdInfo= null;
+    this.locationId=
+      this.locationIdInfo= null;
 
     this.inputDataType= null;
     this.inputDataFormat= null;

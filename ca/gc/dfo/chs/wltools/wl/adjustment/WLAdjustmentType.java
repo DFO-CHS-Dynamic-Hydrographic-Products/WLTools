@@ -1,6 +1,7 @@
 package ca.gc.dfo.chs.wltools.wl.adjustment;
 
 //---
+import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
@@ -69,7 +70,11 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
       throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
     }
 
+    // --- Get only the base name of the 
     this.locationIdInfo= argsMap.get("--locationIdInfo");
+
+    // --- Get only the base name of the this.locationIdInfo file.
+    this.locationId= new File(this.locationIdInfo).getName();
 
     if (this.adjType != IWLAdjustment.Type.IWLS_WLO_QC) {
 

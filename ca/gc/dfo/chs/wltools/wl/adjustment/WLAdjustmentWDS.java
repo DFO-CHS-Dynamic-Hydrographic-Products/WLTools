@@ -1,6 +1,7 @@
 package ca.gc.dfo.chs.wltools.wl.adjustment;
 
 //---
+import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
@@ -226,18 +227,36 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
                                   " versus inputDataFormat -> "+this.inputDataFormat.name()+" combination!");
     }
 
+    // --- Locate the nearest model grid point from the WDS location.
+    int nearestMdlGpIndex= -1;
     double minDist= Double.MAX_VALUE;
 
-    // --- Locate the nearest model grid point from the WDS location.
     for (int modelGridPointIdx= 0;
              modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
 
-        final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+      final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
 
-        final double checkDist= Trigonometry.
-          getDistanceInRadians(this.adjLocationLongitude, this.adjLocationLatitude,
-                               mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+      final double checkDist= Trigonometry.
+        getDistanceInRadians(this.adjLocationLongitude, this.adjLocationLatitude,
+                              mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+
+       if (checkDist < minDist) {
+         minDist= checkDist;
+         nearestMdlGpIndex= modelGridPointIdx;
+       }
     }
+
+    final String ftmp= new File(this.locationIdInfo).getName();
+
+    slog.info(mmi+"nearestMdlGpIndex="+nearestMdlGpIndex+
+              " for the WDS location="+ this.locationId);
+
+    // --- Extract all the WL forecast data from the model at this nearestMdlGpIndex
+
+    this.nearestModelData= new HashMap<String, ArrayList<WLMeasurement>>();
+
+    //this.nearestModelData.add(this.locationIdInfo,
+    //                          this.getH2D2WLForecastData(this.inputDataFilesPaths));
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
@@ -255,7 +274,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
 
       int nearestModelGridPointIndex= -1;
 
-      double minDist= Double.MAX_VALUE;
+      double mdlGpMinDist= Double.MAX_VALUE;
 
       for (int modelGridPointIdx= 0;
                modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
@@ -265,8 +284,8 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
         final double checkDist= Trigonometry.
           getDistanceInRadians(tgLon,tgLat,mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
 
-        if (checkDist < minDist) {
-          minDist= checkDist;
+        if (checkDist < mdlGpMinDist) {
+          mdlGpMinDist= checkDist;
           nearestModelGridPointIndex= modelGridPointIdx;
         }
       }
