@@ -198,28 +198,6 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
       throw new RuntimeException(mmi+e);
     }
 
-
-    // --- This is not needed anymore, we will use the WLO data of the
-    //     three nearest TGs by default with interpolation weigths calculated
-    //     with the respective distances in radians.
-    //// --- We must have one TG location that is upstream from the WDS location
-    ////     and the other TG location that is downstream from the WDS location.
-    ////     This means that we keep the first nearest TG and select the other
-    ////     TG from the remaining two that has its longitude difference from the
-    ////     WDS location being of the opposite sign compared to the longitude
-    ////     difference of the first nearest TG from the WDS location.
-    ////     NOTE: If the first nearest TG does not have enough valid WLO data
-    ////     to use for the adjustments then we will use the other two
-    ////     as the for the WLF adjustements (assuming that those other
-    ////     two TGs have valid WLO data??)
-    // final JsonObject firstNearestTGJsonObj=
-    //   mainJsonMapObj.getJsonObject(firstNearestTGStrId);
-    //final double firstNearestTGLongDiff= this.adjLocationLongitude -
-    //  firstNearestTGJsonObj.getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
-    //slog.info(mmi+"firstNearestTGLongDiff="+firstNearestTGLongDiff);
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
-
     // --- Now get the coordinates of:
     //     1). The nearest model input data grid point from the WDS location
     //     2). The nearest model input data grid point from the three nearest TG locations.
@@ -248,12 +226,24 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
                                   " versus inputDataFormat -> "+this.inputDataFormat.name()+" combination!");
     }
 
-    // --- Now locate the nearest H2D2 model grid points from the
-    //     3 nearest tide gauges.
-    //for (int modelGridPointIdx= 0; modelGridPointIdx< mdlGrdPtsCoordinates.size(); modelGridPointIdx++) ;
-    //
-    //  final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+    double minDist= Double.MAX_VALUE;
 
+    // --- Locate the nearest model grid point from the WDS location.
+    for (int modelGridPointIdx= 0;
+             modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
+
+        final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+
+        final double checkDist= Trigonometry.
+          getDistanceInRadians(this.adjLocationLongitude, this.adjLocationLatitude,
+                               mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+    }
+
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
+
+    // --- Now locate the 3 nearest H2D2 model grid points from the
+    //     3 nearest tide gauges (one tide gauge => one model grid point).
     for (final String tgCoordId: nearestsTGCoords.keySet()) {
 
       slog.info(mmi+" Searching for the nearest H2D2 model grid point from the TG:"+tgCoordId);
@@ -268,7 +258,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
       double minDist= Double.MAX_VALUE;
 
       for (int modelGridPointIdx= 0;
-           modelGridPointIdx< mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
+               modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
 
         final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
 
