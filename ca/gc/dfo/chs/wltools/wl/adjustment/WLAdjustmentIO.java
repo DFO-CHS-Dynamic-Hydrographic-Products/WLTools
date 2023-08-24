@@ -27,6 +27,7 @@ import as.hdfql.HDFqlConstants;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
@@ -67,7 +68,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected Map<String, ArrayList<WLMeasurement>> nearestObsData= null;
   protected Map<String, ArrayList<WLMeasurement>> nearestModelData= null;
 
-  protected List<String> inputDataFilesPaths= null;
+  protected List<String> modelInputDataFiles= null;
 
   /**
    * Comments please!
@@ -91,6 +92,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     this.nearestObsData=
       this.nearestModelData= null;
+
+    this.modelInputDataFiles= null;
   }
 
   /**
@@ -284,6 +287,150 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     //System.exit(0);
 
     return h2d2NCDFGridPointsCoords;
+  }
+
+  /**
+   * Comments please!
+   */
+  final void getH2D2NearestGPNCDFWLData(/*@NotNull@*/ final Map<String, HBCoords> nearestsTGCoords ) {
+
+    final String mmi= "getH2D2NearestGPNCDFWLData: ";
+
+    slog.info(mmi+"start");
+
+    if (this.modelInputDataFiles == null) {
+      throw new RuntimeException(mmi+"this.modelInputDataFiles cannot be null at this point!!");
+    }
+
+    if (this.locationId == null) {
+      throw new RuntimeException(mmi+"this.locationId cannot be null at this point!!");
+    }
+
+    // --- Now get the coordinates of:
+    //     1). The nearest H2D2 model input data grid point from the WDS location
+    //     2). The nearest H2D2 model input data grid point from the three nearest TG locations.
+    final String firstInputDataFile= this.modelInputDataFiles.get(0);
+
+    slog.info(mmi+"firstInputDataFile="+firstInputDataFile);
+
+    // ---
+    final ArrayList<HBCoords> mdlGrdPtsCoordinates=
+      this.getH2D2NCDFGridPointsCoords(firstInputDataFile);
+
+    // --- Now locate the nearest H2D2 model grid point from the WDS location.
+    int nearestMdlGpIndex= -1;
+    double minDist= Double.MAX_VALUE;
+
+    for (int modelGridPointIdx= 0;
+             modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
+
+      final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+
+      final double checkDist= Trigonometry.
+        getDistanceInRadians(this.adjLocationLongitude, this.adjLocationLatitude,
+                             mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+
+       if (checkDist < minDist) {
+         minDist= checkDist;
+         nearestMdlGpIndex= modelGridPointIdx;
+       }
+    }
+
+    slog.info(mmi+"nearestMdlGpIndex="+nearestMdlGpIndex+
+              " for the WDS location="+ this.locationId);
+
+    //final HBCoords mdlGridPointHBCoordsCheck= mdlGrdPtsCoordinates.get(nearestMdlGpIndex);
+    //slog.info(mmi+"this.adjLocationLongitude="+this.adjLocationLongitude);
+    //slog.info(mmi+"this.adjLocationLatitude="+this.adjLocationLatitude);
+    //slog.info(mmi+"mdlGridPointHBCoordsCheck lon="+mdlGridPointHBCoordsCheck.getLongitude());
+    //slog.info(mmi+"mdlGridPointHBCoordsCheck lat="+mdlGridPointHBCoordsCheck.getLatitude());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    this.nearestModelData= new HashMap<String, ArrayList<WLMeasurement>>();
+
+    this.nearestModelData.put(this.locationId,
+                              this.getH2D2WLForecastData(nearestMdlGpIndex));
+
+    // --- Now locate the 3 nearest H2D2 model grid points from the
+    //     3 nearest tide gauges (one tide gauge => one model grid point).
+    //     and get the related H2D2 WL data.
+    for (final String tgCoordId: nearestsTGCoords.keySet()) {
+
+      slog.info(mmi+"Searching for the nearest H2D2 model grid point from the TG:"+tgCoordId);
+
+      final HBCoords tgHBCoords= nearestsTGCoords.get(tgCoordId);
+
+      final double tgLat= tgHBCoords.getLatitude();
+      final double tgLon= tgHBCoords.getLongitude();
+
+      //slog.info(mmi+"tgLon="+tgLon);
+      //slog.info(mmi+"tgLat="+tgLat);
+
+      int nearestModelGridPointIndex= -1;
+      double mdlGpMinDist= Double.MAX_VALUE;
+
+      for (int modelGridPointIdx= 0;
+               modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
+
+        final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+
+        final double checkDist= Trigonometry.
+          getDistanceInRadians(tgLon,tgLat,mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+
+        //slog.info(mmi+"mdlGridPointHBCoords.getLongitude()="+mdlGridPointHBCoords.getLongitude());
+        //slog.info(mmi+"mdlGridPointHBCoords.getLatitude()="+mdlGridPointHBCoords.getLatitude());
+        //slog.info(mmi+"checkDist="+checkDist);
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
+
+        if (checkDist < mdlGpMinDist) {
+          mdlGpMinDist= checkDist;
+          nearestModelGridPointIndex= modelGridPointIdx;
+        }
+      }
+
+      slog.info(mmi+"nearestModelGridPointIndex="+
+                nearestModelGridPointIndex+" for tide gauge -> "+tgCoordId);
+
+      final HBCoords mdlGridPointHBCoordsCheck= mdlGrdPtsCoordinates.get(nearestModelGridPointIndex);
+      slog.info(mmi+"tgLon="+tgLon);
+      slog.info(mmi+"tgLat="+tgLat);
+      slog.info(mmi+"mdlGridPointHBCoordsCheck.getLongitude()="+mdlGridPointHBCoordsCheck.getLongitude());
+      slog.info(mmi+"mdlGridPointHBCoordsCheck.getLatitude()="+mdlGridPointHBCoordsCheck.getLatitude());
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+      this.nearestModelData.put(tgCoordId,
+                                this.getH2D2WLForecastData(nearestModelGridPointIndex));
+    }
+
+    slog.info(mmi+"end");
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
+
+  }
+
+  /**
+   * Comments please!
+   */
+  final ArrayList<WLMeasurement> getH2D2WLForecastData(final int nearestMdlGpIndex) {
+
+     final String mmi= "getH2D2WLForecastData: ";
+
+     slog.info(mmi+"start");
+
+     if (this.modelInputDataFiles == null) {
+        throw new RuntimeException(mmi+"this.modelInputDataFiles cannot be null at this point!!");
+     }
+
+     ArrayList<WLMeasurement> retList= null;
+
+     //for (final String 
+
+     slog.info(mmi+"end");
+
+     return retList;
   }
 
   /**

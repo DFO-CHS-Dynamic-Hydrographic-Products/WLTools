@@ -70,7 +70,8 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
 
     super(IWLAdjustment.Type.WDS,argsMap);
 
-    final String mmi= "WLAdjustmentWDS(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
+    final String mmi=
+      "WLAdjustmentWDS(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
 
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
@@ -179,18 +180,22 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     //     usage.
     final Map<String, HBCoords> nearestsTGCoords= new HashMap<String, HBCoords>();
 
-    for (final String tgCoordId: nearestsTGCoords.keySet()) {
+    for (final String tgCoordId: this.nearestObsData.keySet()) {
 
       final JsonObject tgCoordJsonObj= mainJsonMapObj.getJsonObject(tgCoordId);
 
       final double tgLon= tgCoordJsonObj.
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+        getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
 
       final double tgLat= tgCoordJsonObj.
         getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
 
       nearestsTGCoords.put(tgCoordId, new HBCoords(tgLon,tgLat) );
     }
+
+    slog.info(mmi+"nearestsTGCoords keys="+nearestsTGCoords.keySet().toString());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- We can close the Json file now
     try {
@@ -199,97 +204,77 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
       throw new RuntimeException(mmi+e);
     }
 
-    // --- Now get the coordinates of:
-    //     1). The nearest model input data grid point from the WDS location
-    //     2). The nearest model input data grid point from the three nearest TG locations.
+    //// --- Now get the coordinates of:
+    ////     1). The nearest model input data grid point from the WDS location
+    ////     2). The nearest model input data grid point from the three nearest TG locations.
+    //final String firstInputDataFile= this.modelInputDataFiles.get(0);
+    //slog.info(mmi+"firstInputDataFile="+firstInputDataFile);
 
-    final String firstInputDataFile= this.inputDataFilesPaths.get(0);
+    ////Map<Integer,HBCoords> mdlGrdPtsCoordinates= null;
+    //ArrayList<HBCoords> mdlGrdPtsCoordinates= null;
 
-    slog.info(mmi+"firstInputDataFile="+firstInputDataFile);
-
-    //Map<Integer,HBCoords> mdlGrdPtsCoordinates= null;
-    ArrayList<HBCoords> mdlGrdPtsCoordinates= null;
-
-    slog.info(mmi+"this.inputDataFormat="+this.inputDataFormat.name());
+    slog.info(mmi+" Getting inputDataType -> "+this.inputDataType.name()+
+              " using the "+this.inputDataFormat.name()+" file format");
 
     // --- TODO: replace this if-else block by a switch-case block ??
-    if (this.inputDataType == IWLAdjustmentIO.InputDataType.ECCC_H2D2 &&
-        this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
+    if (this.inputDataType == IWLAdjustmentIO.InputDataType.ECCC_H2D2) {
 
-      slog.info(mmi+" Getting inputDataType -> "+this.inputDataType.name()+
-                    " grid point coordinates in "+this.inputDataFormat.name()+" file format");
+      if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
+        this.getH2D2NearestGPNCDFWLData(nearestsTGCoords);
 
-      mdlGrdPtsCoordinates= this.
-        getH2D2NCDFGridPointsCoords(firstInputDataFile);
+      } else {
+        throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+" !!");
+      }
 
     } else {
-       throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name()+
-                                  " versus inputDataFormat -> "+this.inputDataFormat.name()+" combination!");
+      throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name());
     }
 
-    // --- Locate the nearest model grid point from the WDS location.
-    int nearestMdlGpIndex= -1;
-    double minDist= Double.MAX_VALUE;
-
-    for (int modelGridPointIdx= 0;
-             modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
-
-      final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
-
-      final double checkDist= Trigonometry.
-        getDistanceInRadians(this.adjLocationLongitude, this.adjLocationLatitude,
-                              mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
-
-       if (checkDist < minDist) {
-         minDist= checkDist;
-         nearestMdlGpIndex= modelGridPointIdx;
-       }
-    }
-
-    final String ftmp= new File(this.locationIdInfo).getName();
-
-    slog.info(mmi+"nearestMdlGpIndex="+nearestMdlGpIndex+
-              " for the WDS location="+ this.locationId);
+    //// --- Locate the nearest model grid point from the WDS location.
+    //int nearestMdlGpIndex= -1;
+    //double minDist= Double.MAX_VALUE;
+    ///for (int modelGridPointIdx= 0;
+    //         modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
+    //  final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+    //  final double checkDist= Trigonometry.
+    //    getDistanceInRadians(this.adjLocationLongitude, this.adjLocationLatitude,
+    //                          mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+    //   if (checkDist < minDist) {
+    //     minDist= checkDist;
+    //     nearestMdlGpIndex= modelGridPointIdx;
+    //   }
+    //}
+    //final String ftmp= new File(this.locationIdInfo).getName();
+    //slog.info(mmi+"nearestMdlGpIndex="+nearestMdlGpIndex+
+    //          " for the WDS location="+ this.locationId);
 
     // --- Extract all the WL forecast data from the model at this nearestMdlGpIndex
+    //this.nearestModelData= new HashMap<String, ArrayList<WLMeasurement>>();
+    //this.nearestModelData.put(this.locationId,
+    //                          this.getH2D2WLForecastData(nearestMdlGpIndex));
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
-    this.nearestModelData= new HashMap<String, ArrayList<WLMeasurement>>();
-
-    //this.nearestModelData.add(this.locationIdInfo,
-    //                          this.getH2D2WLForecastData(this.inputDataFilesPaths));
-
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
-
-    // --- Now locate the 3 nearest H2D2 model grid points from the
-    //     3 nearest tide gauges (one tide gauge => one model grid point).
-    for (final String tgCoordId: nearestsTGCoords.keySet()) {
-
-      slog.info(mmi+" Searching for the nearest H2D2 model grid point from the TG:"+tgCoordId);
-
-      final HBCoords tgHBCoords= nearestsTGCoords.get(tgCoordId);
-
-      final double tgLat= tgHBCoords.getLatitude();
-      final double tgLon= tgHBCoords.getLongitude();
-
-      int nearestModelGridPointIndex= -1;
-
-      double mdlGpMinDist= Double.MAX_VALUE;
-
-      for (int modelGridPointIdx= 0;
-               modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
-
-        final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
-
-        final double checkDist= Trigonometry.
-          getDistanceInRadians(tgLon,tgLat,mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
-
-        if (checkDist < mdlGpMinDist) {
-          mdlGpMinDist= checkDist;
-          nearestModelGridPointIndex= modelGridPointIdx;
-        }
-      }
-    }
+    //// --- Now locate the 3 nearest H2D2 model grid points from the
+    ////     3 nearest tide gauges (one tide gauge => one model grid point).
+    //for (final String tgCoordId: nearestsTGCoords.keySet()) {
+    //  slog.info(mmi+" Searching for the nearest H2D2 model grid point from the TG:"+tgCoordId);
+    //  final HBCoords tgHBCoords= nearestsTGCoords.get(tgCoordId);
+    //  final double tgLat= tgHBCoords.getLatitude();
+    //  final double tgLon= tgHBCoords.getLongitude();
+    //  int nearestModelGridPointIndex= -1;
+    //  double mdlGpMinDist= Double.MAX_VALUE;
+    //  for (int modelGridPointIdx= 0;
+    //           modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
+    //    final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+    //    final double checkDist= Trigonometry.
+    //      getDistanceInRadians(tgLon,tgLat,mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+    //    if (checkDist < mdlGpMinDist) {
+    //      mdlGpMinDist= checkDist;
+    //      nearestModelGridPointIndex= modelGridPointIdx;
+    //    }
+    //  }
+    //}
 
     slog.info(mmi+"end");
 

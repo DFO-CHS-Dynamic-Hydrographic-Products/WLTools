@@ -5,6 +5,6 @@ time java WLTools \
 --tool=adjustment \
 --adjType=WDS \
 --inputDataType=ECCC_H2D2:NETCDF \
---inputDataFiles=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2NetCdf/filesPaths.txt \
+--modelInputDataFiles=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2NetCdf/filesPaths.txt \
 --locationIdInfo=tidal/nonStationary/StLawrence/dischargeClusters/Deschaillons/dischargeClimatoTFHA/gridPoint-540-TFHA.json
 

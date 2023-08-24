@@ -34,7 +34,7 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdjustmentType { // implements IWLAdjustment {
 
   private final static String whoAmI=
-     "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType";
+    "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType";
 
  /**
    * Usual class static log utility.
@@ -70,7 +70,7 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
       throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
     }
 
-    // --- Get only the base name of the 
+    // --- Get only the base name of the
     this.locationIdInfo= argsMap.get("--locationIdInfo");
 
     // --- Get only the base name of the this.locationIdInfo file.
@@ -110,20 +110,21 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
       slog.info(mmi+"Will use input data type -> "+this.inputDataType.name()+
                 " with input data format -> "+this.inputDataFormat.name());
 
-       if (!this.argsMapKeySet.contains("--inputDataFiles")) {
-         throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataFiles defined !!");
+       if (!this.argsMapKeySet.contains("--modelInputDataFiles")) {
+         throw new RuntimeException(mmi+"Must have the mandatory option: --modelInputDataFiles defined !!");
        }
 
-       final String inputDataFilesPathsDef= argsMap.get("--inputDataFiles");
+       final String inputDataFilesPathsDef= argsMap.get("--modelInputDataFiles");
 
        slog.info(mmi+"inputDataFilesPathsDef="+inputDataFilesPathsDef);
 
-       // --- Here the --inputDataFiles value must be the path of an ASCII file that defines the
-       //     complete paths of the input data files themselves (the number of input files can be
-       //     a large as 5000 so we cannot pass all their paths the arguments)
-       this.inputDataFilesPaths= ASCIIFileIO.getFileLinesAsArrayList(inputDataFilesPathsDef);
+       // --- Here the inputDataFilesPathsDef value must be the path of an ASCII file that defines the
+       //     complete paths of all the input data files themselves (the number of input files can be
+       //     a large as 5000 so we cannot pass all their paths in the arguments)
+       this.modelInputDataFiles=
+         ASCIIFileIO.getFileLinesAsArrayList(inputDataFilesPathsDef);
 
-       slog.info(mmi+"Will use "+this.inputDataFilesPaths.size()+" input files");
+       slog.info(mmi+"Will use "+this.modelInputDataFiles.size()+" model input data files");
 
        //final String firstInputFile= this.inputDataFilesPaths.get(0);
        //slog.info(mmi+"Getting the grid points informatio
