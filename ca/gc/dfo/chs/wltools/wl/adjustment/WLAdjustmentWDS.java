@@ -165,8 +165,9 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     slog.info(mmi+"secondNearestTGStrId="+secondNearestTGStrId);
     slog.info(mmi+"thirdNearestTGStrId="+thirdNearestTGStrId);
 
-    // --- Instantiate the this.nearestObsData Map
-    this.nearestObsData= new HashMap<String, ArrayList<WLMeasurement>>();
+    // --- Instantiate the this.nearestObsData Map for subsequent usage
+    //this.nearestObsData= new HashMap<String, ArrayList<WLMeasurement>>();
+    this.nearestObsData= new HashMap<String, ArrayList<MeasurementCustom>>();
 
     //--- And initialize it with the 3 nearest TG location and null
     //    ArrayList<WLMeasurement> object for now (the ArrayList<WLMeasurement>

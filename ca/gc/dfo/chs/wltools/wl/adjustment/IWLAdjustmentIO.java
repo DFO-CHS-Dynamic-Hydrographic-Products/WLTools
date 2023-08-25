@@ -57,12 +57,16 @@ public interface IWLAdjustmentIO {
     SURFACEE  //--- WLF values on FEM edges (egdes that connect the triangle vertices)
   }
 
+  String ECCC_H2D2_TIME_ATTR_NAME= "Time";
+
   // --- Define the names of the coordinates datasets names that are used by the ECCC_H2D2
   //     two different WLF datasets.
   Map<ECCC_H2D2_WLF_NAMES,String> ECCC_H2D2_COORDS_DSETS_NAMES= Map.of(
     ECCC_H2D2_WLF_NAMES.SURFACEN, "St_Lawrence_River_node_lon:St_Lawrence_River_node_lat",
     ECCC_H2D2_WLF_NAMES.SURFACEE, "St_Lawrence_River_edge_lon:St_Lawrence_River_edge_lat"
   );
+
+ 
 
 }
 

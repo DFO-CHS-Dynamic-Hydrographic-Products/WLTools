@@ -1,19 +1,7 @@
 //package ca.gc.dfo.iwls.fmservice.modeling.wl;
 package ca.gc.dfo.chs.wltools.wl;
 
-/**
- *
- */
-
-//---
-
-/**
- * ca.gc.dfo.chs.wltools.util.MeasurementCustom;
- * abstract wrapper class that mimics the official IWLS ca.gc.dfo.iwls.timeseries.MeasurementCustom class.
- * This is a placeholder of the same name and we use it to be able to use elsewhere the wltools code
- * developped alongside the IWLS code base. We will then be able to switch back quickly to the official
- * IWLS package MeasurementCustom class usage if needed.
- */
+// ---
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 
@@ -27,18 +15,15 @@ import org.slf4j.LoggerFactory;
 //import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Size;
 
-import java.time.Instant;
 import java.util.List;
+import java.time.Instant;
 
-//---
-//---
-//---
 
 /**
  * abstract wrapper class for the official IWLS package Measurement class.
  */
 abstract public class WLMeasurement implements IWLMeasurement {
-  
+
   /**
    * private logger utility.
    */
@@ -51,13 +36,13 @@ abstract public class WLMeasurement implements IWLMeasurement {
    * The wrapped Measurement object(which is only a reference, no new object creation)
    */
   protected MeasurementCustom measurement = null;
-  
+
   public WLMeasurement() {
-    
+
     this.trackIndex = 0;
     this.measurement = null;
   }
-  
+
   /**
    * @param measurement :  The wrapped Measurement object.
    */
