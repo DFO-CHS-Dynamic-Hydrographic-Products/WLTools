@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 
+// ---
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
@@ -100,7 +101,7 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
         InputDataTypesFormats.get(this.inputDataType.name());
 
       if (!allowedInputFormats.contains(checkInputDataFormat)) {
-        throw new RuntimeException(mmi+"Invalid input data format ->"+checkInputDataFormat+" for input data type -> "+
+        throw new RuntimeException(mmi+"Invalid input data format -> "+checkInputDataFormat+" for input data type -> "+
                                  this.inputDataType.name()+" ! must be one of -> "+allowedInputFormats.toString());
       }
 
@@ -110,24 +111,31 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
       slog.info(mmi+"Will use input data type -> "+this.inputDataType.name()+
                 " with input data format -> "+this.inputDataFormat.name());
 
-       if (!this.argsMapKeySet.contains("--modelInputDataFiles")) {
-         throw new RuntimeException(mmi+"Must have the mandatory option: --modelInputDataFiles defined !!");
+       if (!this.argsMapKeySet.contains("--modelInputDataDef")) {
+         throw new RuntimeException(mmi+"Must have the mandatory option: --modelInputDataDef defined !!");
        }
 
-       final String inputDataFilesPathsDef= argsMap.get("--modelInputDataFiles");
+       // --- NOTE: --modelInputDataDef=<path> <path> could be the path of an ASCII file that contains
+       //           all the needed model input data itself (eg. H2D2 WL probes forecast data) OR the
+       //           path of an ASCII file that defines all the paths to the model WL forecast input data
+       //           files that are needed (e.g. H2D2 NetCDF file).
+       this.modelInputDataDef= argsMap.get("--modelInputDataDef");
 
-       slog.info(mmi+"inputDataFilesPathsDef="+inputDataFilesPathsDef);
+       slog.info(mmi+"this.modelInputDataDef="+this.modelInputDataDef);
+       //slog.info(mmi+"Debug System.exit(0)");
+       //System.exit(0);
 
+       //final String inputDataFilesPathsDef= argsMap.get("--modelInputDataDef");
+       //slog.info(mmi+"inputDataFilesPathsDef="+inputDataFilesPathsDef);
        // --- Here the inputDataFilesPathsDef value must be the path of an ASCII file that defines the
        //     complete paths of all the input data files themselves (the number of input files can be
        //     a large as 5000 so we cannot pass all their paths in the arguments)
-       this.modelInputDataFiles=
-         ASCIIFileIO.getFileLinesAsArrayList(inputDataFilesPathsDef);
-
-       slog.info(mmi+"Will use "+this.modelInputDataFiles.size()+" model input data files");
+       //this.modelInputDataFiles=
+       //  ASCIIFileIO.getFileLinesAsArrayList(inputDataFilesPathsDef);
+       //slog.info(mmi+"Will use "+this.modelInputDataFiles.size()+" model input data files");
 
        //final String firstInputFile= this.inputDataFilesPaths.get(0);
-       //slog.info(mmi+"Getting the grid points informatio
+       //slog.info(mmi+"Getting the grid points information
        //for (final String inputFilePath: this.inputDataFilesPaths) {
        //   slog.info(mmi+"Processing inputFilePath="+inputFilePath);
        //   slog.info(mmi+"Debug System.exit(0)");

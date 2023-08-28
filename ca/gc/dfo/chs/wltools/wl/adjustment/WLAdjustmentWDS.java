@@ -79,7 +79,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
       WLToolsIO.getMainCfgDir() + "/" + this.locationIdInfo;
 
     final JsonObject wdsLocationInfoJsonObj=
-      this.getWDSLocationIdInfo( wdsLocationIdInfoFile );
+      this.getWDSJsonLocationIdInfo( wdsLocationIdInfoFile );
 
     this.adjLocationZCVsVDatum= wdsLocationInfoJsonObj.
       getJsonNumber(StageIO.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
@@ -181,17 +181,24 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     //     usage.
     final Map<String, HBCoords> nearestsTGCoords= new HashMap<String, HBCoords>();
 
-    for (final String tgCoordId: this.nearestObsData.keySet()) {
+    // --- Also need to get the ECCC TG location string id. from the Json file
+    final Map<String, String> nearestsTGEcccIds= new HashMap<String, String>();
 
-      final JsonObject tgCoordJsonObj= mainJsonMapObj.getJsonObject(tgCoordId);
+    for (final String chsTGId: this.nearestObsData.keySet()) {
 
-      final double tgLon= tgCoordJsonObj.
+      final JsonObject chsTGJsonObj= mainJsonMapObj.getJsonObject(chsTGId);
+
+      final double tgLon= chsTGJsonObj.
         getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
 
-      final double tgLat= tgCoordJsonObj.
+      final double tgLat= chsTGJsonObj.
         getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
 
-      nearestsTGCoords.put(tgCoordId, new HBCoords(tgLon,tgLat) );
+      nearestsTGCoords.put(chsTGId, new HBCoords(tgLon,tgLat) );
+
+      //--- Get the TG ECCC string id.
+      nearestsTGEcccIds.put(chsTGId, chsTGJsonObj.getString(TIDE_GAUGES_INFO_ECCC_IDS_KEY));
+
     }
 
     slog.info(mmi+"nearestsTGCoords keys="+nearestsTGCoords.keySet().toString());
@@ -220,12 +227,20 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     // --- TODO: replace this if-else block by a switch-case block ??
     if (this.inputDataType == IWLAdjustmentIO.InputDataType.ECCC_H2D2) {
 
-      if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
-        this.getH2D2NearestGPNCDFWLData(nearestsTGCoords);
+      if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.ASCII) {
+
+        this.getH2D2ASCIIWLFProbesData(nearestsTGCoords, nearestsTGEcccIds);
 
       } else {
         throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+" !!");
       }
+
+      //if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
+      //  this.getH2D2NearestGPNCDFWLData(nearestsTGCoords);
+      //
+      //} else {
+      //  throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+" !!");
+      //}
 
     } else {
       throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name());

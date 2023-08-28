@@ -5,10 +5,13 @@ import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
-import org.slf4j.Logger;
+import java.util.Arrays;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.ArrayList;
+//import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // ---
@@ -23,12 +26,14 @@ import javax.json.JsonValue;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+
 // ---
 import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
+import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -75,7 +80,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected Map<String, ArrayList<MeasurementCustom>> nearestObsData= null;
   protected Map<String, ArrayList<MeasurementCustom>> nearestModelData= null;
 
-  protected List<String> modelInputDataFiles= null;
+  protected String modelInputDataDef= null;
+  //protected List<String> modelInputDataFiles= null;
 
   /**
    * Comments please!
@@ -100,7 +106,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     this.nearestObsData=
       this.nearestModelData= null;
 
-    this.modelInputDataFiles= null;
+    this.modelInputDataDef= null;
+    //this.modelInputDataFiles= null;
   }
 
   /**
@@ -120,507 +127,102 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final ArrayList<HBCoords> getH2D2NCDFGridPointsCoords(/*@NotNull*/ final String h2d2NCDFInputDataFile) {
+  final void getH2D2ASCIIWLFProbesData(/*@NotNull*/ Map<String, HBCoords> nearestsTGCoords,
+                                       /*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
 
-    final String mmi= "getH2D2NCDFGridPointsCoords: ";
+    final String mmi= "getH2D2ASCIIWLProbesData: ";
 
-    slog.info(mmi+"start: h2d2NCDFInputDataFile=" + h2d2NCDFInputDataFile);
+    final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
 
-    //--- Deal with possible null tcInputfilePath String: if @NotNull not used
-    try {
-      h2d2NCDFInputDataFile.length();
+    slog.info(mmi+"start: nearestsTGCoordsIds="+nearestsTGCoordsIds.toString());
 
-    } catch (NullPointerException e) {
+    slog.info(mmi+"this.modelInputDataDef="+this.modelInputDataDef);
 
-      slog.error(mmi+"h2d2NCDFInputDataFile is null !!");
-      throw new RuntimeException(mmi+e);
+    //--- Create the this.nearestModelData object to store the H2D2 ASCII WL
+    //      forecast data
+    this.nearestModelData= new HashMap<String, ArrayList<MeasurementCustom>>();
+
+    final List<String> H2D2ASCIIWLFProbesData=
+      ASCIIFileIO.getFileLinesAsArrayList(this.modelInputDataDef);
+
+    // --- Extract-split the header line that defines the H2D2 WL probes used
+    //    (ECCC_IDS)
+    final String [] headerLineSplit=
+      H2D2ASCIIWLFProbesData.get(0).split(H2D2_ASCII_FMT_FLINE_SPLIT);
+
+    final List<String> headerLineList= Arrays.asList(headerLineSplit); //stream(headerLineSplit).collect(Collectors.toSet());
+
+    HashMap<String,Integer> tgDataColumnIndices= new HashMap<String,Integer>();
+
+    for (final String chsTGId: nearestsTGCoordsIds) {
+      //slog.info(mmi+"chsTGId="+chsTGId+", ecccId="+nearestsTGEcccIds.get(chsTGId));
+
+      final String ecccTGId= nearestsTGEcccIds.get(chsTGId);
+
+      tgDataColumnIndices.put(chsTGId,headerLineList.indexOf(ecccTGId));
+
+      slog.info(mmi+"CHS TG:"+chsTGId+", ECCC TG Id:"+ecccTGId+
+               " H2D2 data line index is="+tgDataColumnIndices.get(chsTGId));
+
+      // --- Create the Map entry for this CHS TG.
+      this.nearestModelData.put(chsTGId, new ArrayList<MeasurementCustom>() );
     }
 
-    //Map<Integer,HBCoords> h2d2NCDFGridPointsCoords= null;
+    // --- Get the column index of the timestamp.
+    final int timeStampColumnIndex=
+      headerLineList.indexOf(H2D2_ASCII_FMT_TIMESTAMP_KEY);
 
-    final int openStatus= HDFql.
-      execute("USE READONLY FILE "+h2d2NCDFInputDataFile);
-
-    //slog.info(mmi+"openStatus="+openStatus);
-
-    if (openStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+" HDFql.execute() open "+h2d2NCDFInputDataFile+
-                                 " file error return value="+openStatus);
-    }
-
-    //final String showUseFileRet= HDFql.execute("SHOW USE FILE");
-    //slog.info(mmi+"showUseFileRet="+showUseFileRet);
-
-    final String [] nodesLLCoordsDSetIds= ECCC_H2D2_COORDS_DSETS_NAMES.
-      get(ECCC_H2D2_WLF_NAMES.SURFACEN).split(INPUT_DATA_FMT_SPLIT_CHAR);
-
-    final String nodesLonCoordsDSetId= nodesLLCoordsDSetIds[IHBGeom.LON_IDX];
-    final String nodesLatCoordsDSetId= nodesLLCoordsDSetIds[IHBGeom.LAT_IDX];
-
-    final String [] edgesLLCoordsDSetIds= ECCC_H2D2_COORDS_DSETS_NAMES.
-      get(ECCC_H2D2_WLF_NAMES.SURFACEE).split(INPUT_DATA_FMT_SPLIT_CHAR);
-
-    final String edgesLonCoordsDSetId= edgesLLCoordsDSetIds[IHBGeom.LON_IDX];
-    final String edgesLatCoordsDSetId= edgesLLCoordsDSetIds[IHBGeom.LAT_IDX];
-
-    final String [] nodesCoordsDSetIds= { nodesLonCoordsDSetId, nodesLatCoordsDSetId };
-    final String [] edgesCoordsDSetIds= { edgesLonCoordsDSetId, edgesLatCoordsDSetId };
-
-    final int nodesLatSelectStatus= HDFql.execute("SELECT FROM "+nodesCoordsDSetIds[IHBGeom.LAT_IDX]);
-
-    if (nodesLatSelectStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+" HDFql.execute() select for"+
-                                 nodesCoordsDSetIds[IHBGeom.LAT_IDX]+" error return value="+nodesLatSelectStatus);
-    }
-
-    final int nodesLonSelectStatus= HDFql.execute("SELECT FROM "+nodesCoordsDSetIds[IHBGeom.LON_IDX]);
-
-    if (nodesLonSelectStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+" HDFql.execute() select for"+
-                                 nodesCoordsDSetIds[IHBGeom.LON_IDX]+" error return value="+nodesLonSelectStatus);
-    }
-
-    final int howManyNodes= HDFql.cursorGetCount();
-
-    final int edgesLatSelectStatus= HDFql.execute("SELECT FROM "+edgesCoordsDSetIds[IHBGeom.LAT_IDX]);
-
-    if (edgesLatSelectStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+" HDFql.execute() select for"+
-                                 edgesCoordsDSetIds[IHBGeom.LAT_IDX]+" error return value="+edgesLatSelectStatus);
-    }
-
-    final int edgesLonSelectStatus= HDFql.execute("SELECT FROM "+edgesCoordsDSetIds[IHBGeom.LON_IDX]);
-
-    if (edgesLonSelectStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+" HDFql.execute() select for"+
-                                 edgesCoordsDSetIds[IHBGeom.LON_IDX]+" error return value="+edgesLonSelectStatus);
-    }
-
-    final int howManyEdges= HDFql.cursorGetCount();
-
-    slog.info(mmi+"howManyNodes="+howManyNodes);
-    slog.info(mmi+"howManyEdges="+howManyEdges);
-
-    final int howManyGridPoints= howManyNodes+howManyEdges;
-
-    slog.info(mmi+"howManyGridPoints="+howManyGridPoints);
-
-    ArrayList<HBCoords> h2d2NodesNCDFGridPointsCoords= new ArrayList<HBCoords>();
-    ArrayList<HBCoords> h2d2EdgesNCDFGridPointsCoords= new ArrayList<HBCoords>();
-
-    // --- Initialize with undefined HBCoords objects
-    for (int gridPointIdx= 0; gridPointIdx< howManyNodes; gridPointIdx++) {
-      h2d2NodesNCDFGridPointsCoords.add(gridPointIdx, new HBCoords() );
-    }
-
-    // --- Initialize with undefined HBCoords objects
-    for (int gridPointIdx= 0; gridPointIdx< howManyEdges; gridPointIdx++) {
-      h2d2EdgesNCDFGridPointsCoords.add(gridPointIdx, new HBCoords() );
-    }
-
-    // --- Process nodes first
-    for(int llIdx=0; llIdx <= IHBGeom.LAT_IDX; llIdx++) {
-
-      slog.info(mmi+"Processing H2D2 nodes NetCDF coordinates dataset -> "+nodesCoordsDSetIds[llIdx]);
-
-      HDFql.execute("SELECT FROM "+nodesCoordsDSetIds[llIdx]);
-
-      for (int dSetValueIdx= 0; dSetValueIdx < howManyNodes; dSetValueIdx++) {
-
-        HDFql.cursorNext();
-        //final double llValue= HDFql.cursorGetDouble();
-        //slog.info(mmi+"llValue 0="+llValue);
-
-        h2d2NodesNCDFGridPointsCoords.
-          get(dSetValueIdx).setLonOrLat(llIdx,HDFql.cursorGetDouble());
-
-        //slog.info(mmi+"Debug System.exit(0)");
-        //System.exit(0);
-
-      }
-    }
-
-    // --- Process edges now
-    for(int llIdx=0; llIdx <= IHBGeom.LAT_IDX; llIdx++) {
-
-      slog.info(mmi+"Processing H2D2 edges NetCDF coordinates dataset -> "+edgesCoordsDSetIds[llIdx]);
-
-      HDFql.execute("SELECT FROM "+edgesCoordsDSetIds[llIdx]);
-
-      for (int dSetValueIdx= 0; dSetValueIdx < howManyEdges; dSetValueIdx++) {
-
-        HDFql.cursorNext();
-        //final double llValue= HDFql.cursorGetDouble();
-        //slog.info(mmi+"llValue 0="+llValue);
-
-        h2d2EdgesNCDFGridPointsCoords.
-          get(dSetValueIdx).setLonOrLat(llIdx,HDFql.cursorGetDouble());
-
-        //slog.info(mmi+"Debug System.exit(0)");
-        //System.exit(0);
-
-      }
-    }
-
-
-    final int closeStatus= HDFql.execute("CLOSE FILE "+h2d2NCDFInputDataFile);
-
-    //slog.info(mmi+"closeStatus="+closeStatus);
-
-    if (closeStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+" HDFql.execute() close file error return value="+closeStatus);
-    }
-
-
-    // --- Create the ArrayList<HBCoords> that will contain all the
-    //     model coordinates from FEM grid (triangles) nodes and edges
-    //     with the h2d2NodesNCDFGridPointsCoords
-    ArrayList<HBCoords> h2d2NCDFGridPointsCoords= new
-      ArrayList<HBCoords>(h2d2NodesNCDFGridPointsCoords);
-
-    // --- Add the h2d2EdgesNCDFGridPointsCoords ArrayList<HBCoords> to
-    //     the h2d2NCDFGridPointsCoords (at its end)
-    h2d2NCDFGridPointsCoords.addAll(h2d2EdgesNCDFGridPointsCoords);
-
-    //final HBCoords checkAllN0= h2d2NCDFGridPointsCoords.get(0);
-   // slog.info(mmi+"checkAllN0 lon="+checkAllN0.getLongitude());
-   // slog.info(mmi+"checkAllN0 lat="+checkAllN0.getLatitude());
-
-    //final HBCoords checkAllE0= h2d2NCDFGridPointsCoords.get(howManyNodes);
-    //slog.info(mmi+"checkAllE0 lon="+checkAllE0.getLongitude());
-    //slog.info(mmi+"checkAllE0 lat="+checkAllE0.getLatitude());
-
-    //final HBCoords checkAllEE= h2d2NCDFGridPointsCoords.get(howManyGridPoints-1);
-    //slog.info(mmi+"checkAllEE lon="+checkAllEE.getLongitude());
-    //slog.info(mmi+"checkAllEE lat="+checkAllEE.getLatitude());
-
-    slog.info(mmi+"end");
-
+    //slog.info(mmi+"timeStampColumnIndex="+timeStampColumnIndex);
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    return h2d2NCDFGridPointsCoords;
-  }
-
-  /**
-   * Comments please!
-   */
-  final void getH2D2NearestGPNCDFWLData(/*@NotNull@*/ final Map<String, HBCoords> nearestsTGCoords ) {
-
-    final String mmi= "getH2D2NearestGPNCDFWLData: ";
-
-    slog.info(mmi+"start");
-
-    if (this.modelInputDataFiles == null) {
-      throw new RuntimeException(mmi+"this.modelInputDataFiles cannot be null at this point!!");
-    }
-
-    if (this.locationId == null) {
-      throw new RuntimeException(mmi+"this.locationId cannot be null at this point!!");
-    }
-
-    // --- Now get the coordinates of:
-    //     1). The nearest H2D2 model input data grid point from the WDS location
-    //     2). The nearest H2D2 model input data grid point from the three nearest TG locations.
-    final String firstInputDataFile= this.modelInputDataFiles.get(0);
-
-    slog.info(mmi+"firstInputDataFile="+firstInputDataFile);
+    // --- Need to get rid of the file lines < H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX
+    final List<String> relevantDataLines= H2D2ASCIIWLFProbesData.
+      subList(H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX, H2D2ASCIIWLFProbesData.size());
 
     // ---
-    final ArrayList<HBCoords> mdlGrdPtsCoordinates=
-      this.getH2D2NCDFGridPointsCoords(firstInputDataFile);
+    for (final String inputDataLine: relevantDataLines ) {
 
-    // --- Now locate the nearest H2D2 model grid point from the WDS location.
-    int nearestMdlGpIndex= -1;
-    double minDist= Double.MAX_VALUE;
+       //slog.info(mmi+"inputDataLine="+inputDataLine);
 
-    for (int modelGridPointIdx= 0;
-             modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
+       final String [] inputDataLineSplit=
+         inputDataLine.split(H2D2_ASCII_FMT_FLINE_SPLIT);
 
-      final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
+       final Instant timeStampInstant= Instant.
+         ofEpochSecond(Long.parseLong(inputDataLineSplit[timeStampColumnIndex]));
 
-      final double checkDist= Trigonometry.
-        getDistanceInRadians(this.adjLocationLongitude, this.adjLocationLatitude,
-                             mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
+       //this.nearestModelData.
 
-       if (checkDist < minDist) {
-         minDist= checkDist;
-         nearestMdlGpIndex= modelGridPointIdx;
+       for (final String chsTGId: nearestsTGCoordsIds) {
+
+         final double tgWLFValue=
+           Double.parseDouble(inputDataLineSplit[tgDataColumnIndices.get(chsTGId)]);
+
+         //slog.info(mmi+"timeStampSeconds="+timeStampSeconds+", tgWLValue="+tgWLValue);
+         //--- Store the H2D2 WLF value for this CHS TG for this timestamp.
+         this.nearestModelData.get(chsTGId).
+           add( new MeasurementCustom(timeStampInstant,tgWLFValue,0.0) );
        }
+
+       //slog.info(mmi+"Debug System.exit(0)");
+       //System.exit(0);
     }
 
-    slog.info(mmi+"nearestMdlGpIndex="+nearestMdlGpIndex+
-              " for the WDS location="+ this.locationId);
+    final int nbTimeStamps= this.nearestModelData.
+      get(nearestsTGCoordsIds.toArray()[0]).size();
 
-    //final HBCoords mdlGridPointHBCoordsCheck= mdlGrdPtsCoordinates.get(nearestMdlGpIndex);
-    //slog.info(mmi+"this.adjLocationLongitude="+this.adjLocationLongitude);
-    //slog.info(mmi+"this.adjLocationLatitude="+this.adjLocationLatitude);
-    //slog.info(mmi+"mdlGridPointHBCoordsCheck lon="+mdlGridPointHBCoordsCheck.getLongitude());
-    //slog.info(mmi+"mdlGridPointHBCoordsCheck lat="+mdlGridPointHBCoordsCheck.getLatitude());
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
-
-    //this.nearestModelData= new HashMap<String, ArrayList<WLMeasurement>>();
-    //this.nearestModelData.put(this.locationId,
-    //                          this.getH2D2WLForecastData(nearestMdlGpIndex));
-
-    Map<String,Integer> nearestModelDataInfo= new HashMap<String,Integer>();
-
-    nearestModelDataInfo.put(this.locationId,nearestMdlGpIndex);
-
-    // --- Now locate the 3 nearest H2D2 model grid points from the
-    //     3 nearest tide gauges (one tide gauge => one model grid point).
-    //     and get the related H2D2 WL data.
-    for (final String tgCoordId: nearestsTGCoords.keySet()) {
-
-      slog.info(mmi+"Searching for the nearest H2D2 model grid point from the TG:"+tgCoordId);
-
-      final HBCoords tgHBCoords= nearestsTGCoords.get(tgCoordId);
-
-      final double tgLat= tgHBCoords.getLatitude();
-      final double tgLon= tgHBCoords.getLongitude();
-
-      //slog.info(mmi+"tgLon="+tgLon);
-      //slog.info(mmi+"tgLat="+tgLat);
-
-      int nearestModelGridPointIndex= -1;
-      double mdlGpMinDist= Double.MAX_VALUE;
-
-      for (int modelGridPointIdx= 0;
-               modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
-
-        final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
-
-        final double checkDist= Trigonometry.getDistanceInRadians( tgLon, tgLat,
-          mdlGridPointHBCoords.getLongitude(), mdlGridPointHBCoords.getLatitude() );
-
-        //slog.info(mmi+"mdlGridPointHBCoords.getLongitude()="+mdlGridPointHBCoords.getLongitude());
-        //slog.info(mmi+"mdlGridPointHBCoords.getLatitude()="+mdlGridPointHBCoords.getLatitude());
-        //slog.info(mmi+"checkDist="+checkDist);
-        //slog.info(mmi+"Debug System.exit(0)");
-        //System.exit(0);
-
-        if (checkDist < mdlGpMinDist) {
-          mdlGpMinDist= checkDist;
-          nearestModelGridPointIndex= modelGridPointIdx;
-        }
-      }
-
-      slog.info(mmi+"nearestModelGridPointIndex="+
-                nearestModelGridPointIndex+" for tide gauge -> "+tgCoordId);
-
-      //final HBCoords mdlGridPointHBCoordsCheck= mdlGrdPtsCoordinates.get(nearestModelGridPointIndex);
-      //slog.info(mmi+"tgLon="+tgLon);
-      //slog.info(mmi+"tgLat="+tgLat);
-      //slog.info(mmi+"mdlGridPointHBCoordsCheck.getLongitude()="+mdlGridPointHBCoordsCheck.getLongitude());
-      //slog.info(mmi+"mdlGridPointHBCoordsCheck.getLatitude()="+mdlGridPointHBCoordsCheck.getLatitude());
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-
-      //this.nearestModelData.put(tgCoordId,
-      //                          this.getH2D2WLForecastData(nearestModelGridPointIndex));
-
-      nearestModelDataInfo.put(tgCoordId,nearestModelGridPointIndex);
-    }
-
-    this.getH2D2WLForecastData(nearestModelDataInfo);
+    slog.info(mmi+"nbTimeStamps="+nbTimeStamps);
 
     slog.info(mmi+"end");
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
-
   }
 
   /**
    * Comments please!
    */
-  //final ArrayList<WLMeasurement>
-  final void getH2D2WLForecastData(/*@NotNull*/ final Map<String,Integer> nearestModelDataInfo) {
-
-    final String mmi= "getH2D2WLForecastData: ";
-
-    slog.info(mmi+"start");
-
-    if (this.modelInputDataFiles == null) {
-      throw new RuntimeException(mmi+"this.modelInputDataFiles cannot be null at this point!!");
-    }
-
-    //--- Create the this.nearestModelData HashMap
-    this.nearestModelData= new HashMap<String,ArrayList<MeasurementCustom>>();
-
-    // --- Intialize each interpolation location wanted with empty
-    //     ArrayList<MeasurementCustom> objects .
-    for (final String locationStrId: nearestModelDataInfo.keySet()) {
-      //this.nearestModelData.put(locationStrId, new ArrayList<WLMeasurement>() );
-      this.nearestModelData.put(locationStrId, new ArrayList<MeasurementCustom>() );
-    }
-
-    Map<Instant,String> relevantInputFiles= new HashMap<Instant,String>();
-
-    //--- Keep only the files that are more recent for a given timestamp
-    for (final String h2d2NCDFInputDataFile: this.modelInputDataFiles) {
-
-      slog.info(mmi+" Processing h2d2NCDFInputDataFile -> "+h2d2NCDFInputDataFile);
-
-      final String [] fNameTmp= ((new File(h2d2NCDFInputDataFile).getName()).split("\\.")[0]).split("_");
-
-      //slog.info(mmi+"fNameTmp 0="+fNameTmp[0]);
-      //slog.info(mmi+"fNameTmp="+fNameTmp.toString());
-      //slog.info(mmi+" new File(h2d2NCDFInputDataFile).getName()="+ new File(h2d2NCDFInputDataFile).getName());
-
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-
-      final String YYYYMMDDhh= fNameTmp[5];
-      final String hhmmFut= fNameTmp[6];
-
-      //final int openStatus= HDFql.
-      //  execute("USE READONLY FILE "+h2d2NCDFInputDataFile);
-
-      //if (openStatus != HDFqlConstants.SUCCESS) {
-      //  throw new RuntimeException(mmi+" HDFql.execute() open file -> "+
-      //                             h2d2NCDFInputDataFile+" error return value="+openStatus);
-      //}
-
-      //HDFql.execute("SELECT FROM "+ECCC_H2D2_TIME_ATTR_NAME);
-
-      //final int checkTimeIntType = HDFql.cursorGetDataType();
-
-      //slog.info(mmi+"checkTimeIntType="+checkTimeIntType);
-
-      long timeStampSeconds= 0;
-
-      //HDFql.cursorNext();
-
-      //if (checkTimeIntType == HDFqlConstants.INT) {
-      //
-      //  //slog.warn(mmi+"checkTimeIntType == HDFqlConstants.INT !! converting time integer to long integer");
-      //
-      //  timeStampSeconds= (long)HDFql.cursorGetInt();
-      //
-      //} else if (checkTimeIntType == HDFqlConstants.BIGINT) {
-      //
-      //  //slog.info(mmi+"checkTimeIntType == HDFqlConstants.BIGINT, we are happy!!");
-      //
-      //  timeStampSeconds= HDFql.cursorGetBigint();
-      //}
-
-      //slog.info(mmi+"timeStampSeconds="+timeStampSeconds);
-
-      //final Instant timeStampInstant= Instant.ofEpochSecond(timeStampSeconds);
-
-      //relevantInputFiles.put(timeStampInstant,h2d2NCDFInputDataFile);
-
-      //final int closeStatus= HDFql.
-      //  execute("CLOSE FILE "+h2d2NCDFInputDataFile);
-
-      //if (closeStatus != HDFqlConstants.SUCCESS) {
-      //  throw new RuntimeException(mmi+" HDFql.execute() close file -> "+
-      //                             h2d2NCDFInputDataFile+" error return value="+closeStatus);
-      //}
-    }
-
-    slog.info(mmi+"relevantInputFiles.size()="+relevantInputFiles.size());
-
-    //final Set<String> checkFiles= (Set<String>)relevantInputFiles.values();
-    //slog.info(mmi+"checkFiles="+checkFiles.toString());
-
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
-
-    for (final Instant timeStampInstant: relevantInputFiles.keySet()) {
-
-      final String h2d2NCDFInputDataFile= relevantInputFiles.get(timeStampInstant);
-
-      //slog.info(mmi+"h2d2NCDFInputDataFile="+h2d2NCDFInputDataFile);
-
-      final int openStatus= HDFql.
-        execute("USE READONLY FILE "+h2d2NCDFInputDataFile);
-
-      if (openStatus != HDFqlConstants.SUCCESS) {
-        throw new RuntimeException(mmi+" HDFql.execute() open file -> "+
-                                   h2d2NCDFInputDataFile+" error return value="+openStatus);
-      }
-
-      // --- Recall that the H2D2 WL data is separated in two different datasets
-      //      SURFACEN(nodes) and SURFACEE (edges)
-
-      // --- MUST process nodes first as for the coordinates
-      ArrayList<Double> h2d2WLNodesData= new ArrayList<Double>();
-
-      // --- MUST process nodes first as for the coordinates
-      HDFql.execute("SELECT FROM "+ECCC_H2D2_WLF_NAMES.SURFACEN.name());
-
-      final int howManyNodes= HDFql.cursorGetCount();
-
-      // --- Loop on the nodes WL data
-      for (int dSetValueIdx= 0; dSetValueIdx < howManyNodes; dSetValueIdx++) {
-
-        HDFql.cursorNext();
-        h2d2WLNodesData.add(HDFql.cursorGetDouble());
-
-        //slog.info(mmi+"Debug System.exit(0)");
-        //System.exit(0);
-      }
-
-      ArrayList<Double> h2d2WLEdgesData= new ArrayList<Double>();
-
-      HDFql.execute("SELECT FROM "+ECCC_H2D2_WLF_NAMES.SURFACEE.name());
-
-      final int howManyEdges= HDFql.cursorGetCount();
-
-      // --- Loop on the edges WL data
-      //     TODO: Add a generic method to do that
-      for (int dSetValueIdx= 0; dSetValueIdx < howManyEdges; dSetValueIdx++) {
-
-        HDFql.cursorNext();
-        h2d2WLEdgesData.add(HDFql.cursorGetDouble());
-      }
-
-      // --- Put nodes and edges WL data in just one ArrayList<Double> object
-      ArrayList<Double> h2d2WLData= new ArrayList<Double>(h2d2WLNodesData);
-
-      h2d2WLData.addAll(h2d2WLEdgesData);
-
-      //final MeasurementCustom measCstm= new
-      //   MeasurementCustom(Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0)
-
-      for (final String locationStrId: nearestModelDataInfo.keySet()) {
-
-        final int nearestModelGridPoint= nearestModelDataInfo.get(locationStrId);
-
-        //HDFql.cursor_absolute(nearestModelGridPoint);
-
-        final MeasurementCustom measCstm= new
-          MeasurementCustom(timeStampInstant, h2d2WLData.get(nearestModelGridPoint), 0.0);
-
-        this.nearestModelData.get(locationStrId).add( measCstm );//new WLMeasurement(measCstm) );
-      }
-
-      final int closeStatus= HDFql.
-        execute("CLOSE FILE "+h2d2NCDFInputDataFile);
-
-      if (closeStatus != HDFqlConstants.SUCCESS) {
-        throw new RuntimeException(mmi+" HDFql.execute() close file -> "+
-                                   h2d2NCDFInputDataFile+" error return value="+closeStatus);
-      }
-
-      //slog.info(mmi+" Done with h2d2NCDFInputDataFile -> "+h2d2NCDFInputDataFile);
-    }
-
-    slog.info(mmi+"end");
-
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
-
-    //return retList;
-  }
-
-  /**
-   * Comments please!
-   */
-  final static JsonObject getWDSLocationIdInfo( /*@NotNull*/ final String wdsLocationIdInfoFile) {
+  final static JsonObject getWDSJsonLocationIdInfo( /*@NotNull*/ final String wdsLocationIdInfoFile) {
 
     final String mmi= "getWDSLocationIdInfo: ";
 
@@ -669,4 +271,3 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     return wdsLocationIdInfoJsonObj;
   }
 }
-

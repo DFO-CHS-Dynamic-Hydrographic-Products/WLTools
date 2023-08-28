@@ -4,7 +4,6 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 time java WLTools \
 --tool=adjustment \
 --adjType=WDS \
---inputDataType=ECCC_H2D2:NETCDF \
---modelInputDataFiles=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2NetCdf/filesPaths.txt \
+--inputDataType=ECCC_H2D2:ASCII \
+--modelInputDataDef=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2ASCII/2023081706_SLFE_NMM.csv \
 --locationIdInfo=tidal/nonStationary/StLawrence/dischargeClusters/Deschaillons/dischargeClimatoTFHA/gridPoint-540-TFHA.json
-
