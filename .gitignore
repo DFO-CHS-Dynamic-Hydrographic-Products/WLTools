@@ -1,3 +1,6 @@
+*.class
+*.back
+*.orig
 ./tmp
 ./bin
 ./lib/ca/
