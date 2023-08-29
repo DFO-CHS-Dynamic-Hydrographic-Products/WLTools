@@ -168,7 +168,30 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       this.nearestModelData.put(chsTGId, new ArrayList<MeasurementCustom>() );
     }
 
-    // --- Get the column index of the timestamp.
+    // --- Get the forecast zero'th hour timestamp to discard the analysis
+    //     (a.k.a nowcast) WL data part. Need to use the input file name
+    //      to do so.
+    final String zerothHourYYYYMMDDhh= new
+      File(this.modelInputDataDef).getName().split(H2D2_ASCII_FMT_FNAME_SPLITSTR)[0];
+
+    slog.info(mmi+"zerothHourYYYYMMDDhh="+zerothHourYYYYMMDDhh);
+
+    final String zerothHourISO8601= zerothHourYYYYMMDDhh.substring(0,4)  + "-" +
+                                    zerothHourYYYYMMDDhh.substring(4,6)  + "-" +
+                                    zerothHourYYYYMMDDhh.substring(6,8)  + "T" +
+                                    zerothHourYYYYMMDDhh.substring(8,10) + ":00:00Z"; //.000Z";
+
+    slog.info(mmi+"zerothHourISO8601="+zerothHourISO8601);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    final Instant zerothHourInstant= Instant.parse(zerothHourISO8601);
+
+    //slog.info(mmi+"zerothHourInstant check="+zerothHourInstant.toString());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    // --- Get the column index of the timestamps in the ASCII file.
     final int timeStampColumnIndex=
       headerLineList.indexOf(H2D2_ASCII_FMT_TIMESTAMP_KEY);
 
@@ -191,7 +214,14 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
        final Instant timeStampInstant= Instant.
          ofEpochSecond(Long.parseLong(inputDataLineSplit[timeStampColumnIndex]));
 
-       //this.nearestModelData.
+       // --- Discard analysis-nowcast WL data (i.e. for timestamps smaller than zerothHourInstant)
+       if (timeStampInstant.compareTo(zerothHourInstant) < 0 ) {
+         //slog.info(mmi+"Skipping nowcast data at timestamp: "+timeStampInstant.toString());
+         //slog.info(mmi+"Debug System.exit(0)");
+         //System.exit(0);
+
+         continue;
+       }
 
        for (final String chsTGId: nearestsTGCoordsIds) {
 

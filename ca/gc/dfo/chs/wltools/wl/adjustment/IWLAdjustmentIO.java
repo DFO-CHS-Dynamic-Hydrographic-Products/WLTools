@@ -75,5 +75,7 @@ public interface IWLAdjustmentIO {
    String H2D2_ASCII_FMT_FLINE_SPLIT= ",";
 
    String H2D2_ASCII_FMT_TIMESTAMP_KEY= "epoch";
+
+   String H2D2_ASCII_FMT_FNAME_SPLITSTR= "_";
 }
 
