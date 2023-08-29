@@ -19,6 +19,7 @@ import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
+import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
 /**
@@ -112,7 +113,9 @@ final public class WLTools extends WLToolsIO {
       //System.out.println("WLTools main: debug System.exit(0)");
         //System.exit(0);
 
-      wlStationPred.getAllPredictions(); //.writeResults(IWLStationPred.OutputFormat.JSON)
+      wlStationPred.getAllPredictions();
+
+      wlStationPred.writeIfNeeded(IWLStationPred.OutputFormats.JSON); //.writeResults(IWLStationPred.OutputFormat.JSON)
 
       //wlStationPred.writeResults(IWLStationPred.OutputFormat.JSON)
 
@@ -130,8 +133,8 @@ final public class WLTools extends WLToolsIO {
 
        wlAdjust.getAdjustment(); //.writeResult(finak string outFile); //
 
-       System.out.println(mmi+"Debug System.exit(0)");
-       System.exit(0);
+       //System.out.println(mmi+"Debug System.exit(0)");
+       //System.exit(0);
 
      }
 

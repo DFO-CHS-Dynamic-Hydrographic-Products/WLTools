@@ -111,13 +111,26 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
 
   protected boolean predictionReady= false;
 
+  protected List<MeasurementCustom> predictionData= null;
+
+  //protected String outputDirectory= false;
+
   /**
    * Default constructor.
    */
   public WLStationPredFactory() {
     this.predictionReady= false;
+    this.predictionData= null;
     //this.unfortunateUTCOffsetSeconds = 0L;
   }
+
+  /**
+   * comments please!
+   */
+  public List<MeasurementCustom> getPredictionData() {
+    return this.predictionData; //= super.getAllPredictions();
+  }
+
 
    // --- TOOO: Update the javadoc comments.
   /**
@@ -132,16 +145,16 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
    * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station (null if the station lat is defined in the tcInputFile)
    */
   //public WLStationPredFactory(/*@NotNull*/final String stationId,
-  protected WLStationPredFactory configure(/*@NotNull*/final String stationId,
-                                           /*@NotNull*/final Long startTimeSeconds,
-                                           /*@NotNull*/final Long endTimeSeconds,
-                                           final Long timeIncrSeconds,
-                                           final ITidal.Method method,
-                                           final String stationTcInputFile,
-                                           final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
-                                           final IStage.Type stageType,
-                                           final String stageInputDataFile,
-                                           final IStageIO.FileFormat stageInputDataFileFormat) {
+  protected WLStationPredFactory configureTidalPred(/*@NotNull*/final String stationId,
+                                                    /*@NotNull*/final Long startTimeSeconds,
+                                                    /*@NotNull*/final Long endTimeSeconds,
+                                                    final Long timeIncrSeconds,
+                                                    final ITidal.Method method,
+                                                    final String stationTcInputFile,
+                                                    final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
+                                                    final IStage.Type stageType,
+                                                    final String stageInputDataFile,
+                                                    final IStageIO.FileFormat stageInputDataFileFormat) {
 
     final String mmi="configure: ";
 
@@ -371,9 +384,27 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
   /**
     * comments please
     */
-  public List<MeasurementCustom> getAllPredictions() { //getTidalPredictionsForStation() {
+  public IWLStationPred getAllPredictions() {
 
-    final String mmi="getAllPredictions: ";
+    final String mmi= "getAllPredictions: ";
+
+    if (this.tidalPred1D != null) {
+      this.getAllTidalPredictions();
+
+    } else {
+       throw new RuntimeException(mmi+"Sorry! Only the tidal predictions type is available for now!");
+    }
+
+    return this;
+  }
+
+  /**
+    * comments please
+    */
+  //public List<MeasurementCustom> getAllPredictions() { //getTidalPredictionsForStation() {
+  public IWLStationPred getAllTidalPredictions() {
+
+    final String mmi="getAllTidalPredictions: ";
 
     slog.info(mmi+"start, getting tidal predictions for station -> "+this.stationId);
 
@@ -381,7 +412,8 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
       throw new RuntimeException(mmi+"not ready for predictions calculations!");
     }
 
-    ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
+    //ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
+    this.predictionData= new ArrayList<MeasurementCustom>();
 
     // --- Check nbTimeStamps value here >> Must be at least 1
     //     and this.endTimeSeconds - this.startTimeSeconds > this.timeIncrSeconds
@@ -411,19 +443,21 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
       //final MeasurementCustom tmpMC= new
       //  MeasurementCustom( Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0 );
 
-      retList.add(new MeasurementCustom(Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0));
+      //retList.
+      this.predictionData.add(new MeasurementCustom(Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0));
 
-      if (tsIter<=47){
-        slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
+      //if (tsIter<=47){
+      //  slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
       //  slog.info(mmi+"debug System.exit(0)");
       //  System.exit(0);
-      }
+      //}
     }
 
     slog.info(mmi+"done with tidal predictions for station -> "+this.stationId);
-    slog.info(mmi+"getTidalPredictions: end");
+    slog.info(mmi+"end");
 
-    return retList;
+     return this;
+    //return retList;
   }
 
   /**

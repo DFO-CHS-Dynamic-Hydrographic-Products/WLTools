@@ -14,6 +14,14 @@ import java.util.HashMap;
 import org.slf4j.LoggerFactory;
 //import javax.validation.constraints.NotNull;
 
+// ---
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonValue;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+// ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
@@ -37,11 +45,20 @@ final public class WLStationPred extends WLStationPredFactory {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  
+
+  private String outputDirectory= null;
+
+  private List<MeasurementCustom> predictionData= null;
+
   /**
    * Default constuctor:
    */
   public WLStationPred() {
     super();
+
+    this.outputDirectory= null;
+    this.predictionData= null;
   }
 
  /**
@@ -69,6 +86,14 @@ final public class WLStationPred extends WLStationPredFactory {
     final Instant startTimeInstant= Instant.parse(startTimeISOFormat); // ("2014-01-01T00:00:00Z");
 
     final long startTimeSeconds= startTimeInstant.toEpochMilli() / ITimeMachine.SEC_TO_MILLISEC;
+
+    if (argsMapKeySet.contains("--outputDirectory")) {
+
+      this.outputDirectory= argsMap.get("--outputDirectory");
+
+      slog.info(mmi+"Will use this.outputDirectory="+
+                this.outputDirectory+" to write prediction results");
+    }
 
     long predDurationInDays= IWLStationPred.DEFAULT_DAYS_DURATION_IN_FUTURE;
 
@@ -200,17 +225,17 @@ final public class WLStationPred extends WLStationPredFactory {
         tidalConstsInputFileFmt= ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON;
 
       // --- Specific configuration for a tidal prediction.
-      super.configure(stationIdInfo,
-                      startTimeSeconds, //testStartTime, //unixTimeNow,
-                      endTimeSeconds,//endPredTime,
-                      timeIncrInSeconds,//180L,//180L, //900L, //3600L,//900L,
-                      tidalMethod, //ITidal.Method.NON_STATIONARY_FOREMAN,
-                      null, //nsTCInputFile,
-                      tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                        >
-                      stageType, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB
-                      null, // --- Stage input data file
-                      null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
-                      );
+      super.configureTidalPred(stationIdInfo,
+                               startTimeSeconds, //testStartTime, //unixTimeNow,
+                               endTimeSeconds,//endPredTime,
+                               timeIncrInSeconds,//180L,//180L, //900L, //3600L,//900L,
+                               tidalMethod, //ITidal.Method.NON_STATIONARY_FOREMAN,
+                               null, //nsTCInputFile,
+                               tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                        >
+                               stageType, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB
+                               null, // --- Stage input data file
+                               null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
+                              );
 
     }
 
@@ -220,12 +245,50 @@ final public class WLStationPred extends WLStationPredFactory {
     //System.exit(0);
   }
 
+  /**
+   * comments please!
+   */
+  final public List<MeasurementCustom> getPredictionData() {
+    return super.getPredictionData(); //= super.getAllPredictions();
+  }
 
   /**
    * comments please!
    */
-  final public List<MeasurementCustom> getAllPredictions() {
+  final public IWLStationPred getAllPredictions() {
+    //this.predictionData= super.getAllPredictions();
     return super.getAllPredictions();
+  }
+
+  /**
+   * comments please!
+   */
+  final public void writeIfNeeded(/*@NotNull*/ IWLStationPred.OutputFormats outputFormat) {
+
+    final String mmi= "writeIfNeeded: ";
+
+    slog.info(mmi+"start: this.outputDirectory="+this.outputDirectory);
+
+    if (this.outputDirectory != null) {
+
+      if (! IWLStationPred.allowedOutputFormats.contains(outputFormat.name())) {
+        throw new RuntimeException(mmi+"Invalid output file format -> "+outputFormat.name());
+      }
+
+      //final String outputFile= this.outputDirectory + File.separator + ;
+
+      slog.info(mmi+"Writing prediction results in "+this.outputDirectory+
+                " using "+ outputFormat.name()+" output file format");
+
+      //for(final MeasurementCustom mc: this.predictionData) {
+      //}
+
+    }
+
+    slog.info(mmi+"end");
+
+    slog.info(mmi+"debug System.exit(0)");
+    System.exit(0);
   }
 
 //  /**

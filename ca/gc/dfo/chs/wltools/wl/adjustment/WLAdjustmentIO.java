@@ -1,6 +1,7 @@
 package ca.gc.dfo.chs.wltools.wl.adjustment;
 
 //---
+//import java.sql;
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 // ---
+//import javax.sql;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;

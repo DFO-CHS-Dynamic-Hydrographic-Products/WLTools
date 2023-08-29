@@ -5,27 +5,12 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
  * Created by Gilles Mercier on 2018-01-10.
  */
 
+import java.util.Set;
 import java.util.List;
 
 // ---
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-
-//---
-//import java.time.Instant;
-//import java.util.HashMap;
-//import java.util.List;
-//import javax.validation.constraints.Min;
-
-//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-//import ca.gc.dfo.iwls.station.Station;
-
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-
-//import javax.validation.constraints.NotNull;
-
-//---
-//---
+import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 
 //---
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
@@ -45,5 +30,19 @@ public interface IWLStationPred  {
   long DEFAULT_DAYS_DURATION_IN_FUTURE= 40L;
   long MAX_DAYS_DURATION_IN_FUTURE= 90L;
 
-  abstract public List<MeasurementCustom> getAllPredictions();
+  //enum Type {
+  //}
+
+  enum OutputFormats {
+    JSON //,
+    //CSV
+  }
+
+  String [] allowedOutputFormatsDef= { OutputFormats.JSON.name() }; //, OutputFormats.CSV.name() };
+
+  Set<String> allowedOutputFormats= Set.of(allowedOutputFormatsDef);
+
+  //abstract public List<MeasurementCustom> getAllPredictions();
+  abstract public IWLStationPred getAllPredictions();
+  abstract public List<MeasurementCustom> getPredictionData();
 }
