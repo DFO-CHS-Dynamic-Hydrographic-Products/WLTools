@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Class WLTidalPredictionsFactory acts as abstract base class for water levels tidal predictions:
  */
-abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
+abstract public class WLStationPredFactory extends WLStationPredIO implements IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory: ";//"ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
@@ -97,10 +97,12 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
    */
   //protected NonStationary1DTidalPredFactory nonStationaryTidalPred= null;
 
+  // ---  TODO: change stationId to locationId since we can also produce tidal
+  //            predicitions at locations that are not TG per se.
   /**
-   * Keep the station ID to avoid WL tidal predictions data mix-up between two WL stations data:
+   *  comments please!
    */
-  private String stationId= null;
+  protected String stationId= null;
 
   protected long startTimeSeconds= IWLStationPred.TIME_NOT_DEFINED;
   protected long endTimeSeconds= IWLStationPred.TIME_NOT_DEFINED;
@@ -111,8 +113,7 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
 
   protected boolean predictionReady= false;
 
-  protected List<MeasurementCustom> predictionData= null;
-
+  //protected List<MeasurementCustom> predictionData= null;
   //protected String outputDirectory= false;
 
   /**

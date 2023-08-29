@@ -30,6 +30,7 @@ import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
+import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
 /**
@@ -45,11 +46,8 @@ final public class WLStationPred extends WLStationPredFactory {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  
-
-  private String outputDirectory= null;
-
-  private List<MeasurementCustom> predictionData= null;
+  //private String outputDirectory= null;
+  //private List<MeasurementCustom> predictionData= null;
 
   /**
    * Default constuctor:
@@ -143,8 +141,9 @@ final public class WLStationPred extends WLStationPredFactory {
 
     final String stationPredType= argsMap.get("--stationPredType" );
 
-    if (!stationPredType.equals("TIDAL:"+ITidal.Method.NON_STATIONARY_FOREMAN.name())) {
-      throw new RuntimeException(mmi+"Only TIDAL:"+
+    if (!stationPredType.equals(IWLStationPred.Type.TIDAL.name()+":"+ITidal.Method.NON_STATIONARY_FOREMAN.name())) {
+
+      throw new RuntimeException(mmi+"Only "+IWLStationPred.Type.TIDAL.name()+":"+
                                  ITidal.Method.NON_STATIONARY_FOREMAN.name()+" prediction method allowed for now!!");
     }
 
@@ -164,7 +163,7 @@ final public class WLStationPred extends WLStationPredFactory {
 
     final String mainPredType= stationPredTypeSplit[0];
 
-    if ( mainPredType.equals("TIDAL") ) {
+    if ( mainPredType.equals(IWLStationPred.Type.TIDAL.name())) { //  ("TIDAL") ) {
 
       // --- Tidal pred. method is ITidal.Method.NON_STATIONARY_FOREMAN by default.
       ITidal.Method tidalMethod= ITidal.Method.NON_STATIONARY_FOREMAN;
@@ -256,14 +255,13 @@ final public class WLStationPred extends WLStationPredFactory {
    * comments please!
    */
   final public IWLStationPred getAllPredictions() {
-    //this.predictionData= super.getAllPredictions();
     return super.getAllPredictions();
   }
 
   /**
    * comments please!
    */
-  final public void writeIfNeeded(/*@NotNull*/ IWLStationPred.OutputFormats outputFormat) {
+  final public void writeIfNeeded(/*@NotNull*/ IWLStationPredIO.OutputFormats outputFormat) {
 
     final String mmi= "writeIfNeeded: ";
 
@@ -271,7 +269,7 @@ final public class WLStationPred extends WLStationPredFactory {
 
     if (this.outputDirectory != null) {
 
-      if (! IWLStationPred.allowedOutputFormats.contains(outputFormat.name())) {
+      if (!IWLStationPredIO.allowedOutputFormats.contains(outputFormat.name())) {
         throw new RuntimeException(mmi+"Invalid output file format -> "+outputFormat.name());
       }
 
@@ -280,9 +278,11 @@ final public class WLStationPred extends WLStationPredFactory {
       slog.info(mmi+"Writing prediction results in "+this.outputDirectory+
                 " using "+ outputFormat.name()+" output file format");
 
-      //for(final MeasurementCustom mc: this.predictionData) {
-      //}
+      if ( outputFormat.name().
+              equals(IWLStationPredIO.OutputFormats.JSON.name()) ) {
 
+         this.writeJSONOutputFile(this.stationId);
+      }
     }
 
     slog.info(mmi+"end");

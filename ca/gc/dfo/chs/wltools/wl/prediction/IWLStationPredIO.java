@@ -10,7 +10,7 @@ import java.util.List;
 
 // ---
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
+//import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 
 //---
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
@@ -19,25 +19,18 @@ import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 /**
  * Class for the computation of water level predictions
  */
-public interface IWLStationPred  {
+public interface IWLStationPredIO  {
 
-  long TIME_NOT_DEFINED= -1L;
+  String JSON_FEXT= ".json";
 
-  long MIN_TIME_INCR_SECONDS= 60L;
-  long MAX_TIME_INCR_SECONDS= 3600L;
-  long DEFAULT_TIME_INCR_SECONDS= 180L;//900L;
-
-  long DEFAULT_DAYS_DURATION_IN_FUTURE= 40L;
-  long MAX_DAYS_DURATION_IN_FUTURE= 90L;
-
-  enum Type {
-    TIDAL,
-    CLIMATOLOGY
+  enum OutputFormats {
+    JSON //,
+    //CSV
   }
 
-  String [] allowedTypesDef= { Type.TIDAL.name(), Type.CLIMATOLOGY.name() };
+  String [] allowedOutputFormatsDef= { OutputFormats.JSON.name() }; //, OutputFormats.CSV.name() };
 
-  Set<String> allowedTypes= Set.of(allowedTypesDef);
+  Set<String> allowedOutputFormats= Set.of(allowedOutputFormatsDef);
 
   //abstract public List<MeasurementCustom> getAllPredictions();
   abstract public IWLStationPred getAllPredictions();

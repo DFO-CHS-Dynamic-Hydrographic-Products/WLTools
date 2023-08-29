@@ -19,7 +19,7 @@ import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
-import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
+import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
 /**
@@ -50,7 +50,8 @@ final public class WLTools extends WLToolsIO {
 
     try {
 
-      binDir= new File(WLTools.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+      binDir= new File(WLTools.class.
+        getProtectionDomain().getCodeSource().getLocation().toURI());
 
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
@@ -115,7 +116,7 @@ final public class WLTools extends WLToolsIO {
 
       wlStationPred.getAllPredictions();
 
-      wlStationPred.writeIfNeeded(IWLStationPred.OutputFormats.JSON); //.writeResults(IWLStationPred.OutputFormat.JSON)
+      wlStationPred.writeIfNeeded(IWLStationPredIO.OutputFormats.JSON); //.writeResults(IWLStationPred.OutputFormat.JSON)
 
       //wlStationPred.writeResults(IWLStationPred.OutputFormat.JSON)
 
