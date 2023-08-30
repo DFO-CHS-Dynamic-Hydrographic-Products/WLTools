@@ -5,13 +5,22 @@ import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.Arrays;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.TreeSet;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.SortedSet;
 import java.util.ArrayList;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.NavigableSet;
+//import java.util.stream.Stream;
+import java.nio.file.DirectoryStream;
+//import java.nio.file.PathMatcher;
+//import java.nio.file.FileSystems;
+
 //import java.awt.geom.Point2D; //.Double;
 //import java.util.concurrent.ConcurrentHashMap;
 
@@ -76,7 +85,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
     final String wdsLocationIdInfoFile=
-      WLToolsIO.getMainCfgDir() + "/" + this.locationIdInfo;
+      WLToolsIO.getMainCfgDir() + File.separator + this.locationIdInfo;
 
     final JsonObject wdsLocationInfoJsonObj=
       this.getWDSJsonLocationIdInfo( wdsLocationIdInfoFile );
@@ -94,8 +103,8 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     slog.info(mmi+"WDS adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
 
     // --- Now find the two nearest CHS tide gauges from this WDS grid point location
-    final String wdsTideGaugesInfoFile= WLToolsIO.getMainCfgDir() +
-      "/" + IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + "/" + IWLAdjustmentIO.WDS_TIDE_GAUGES_INFO_FNAME;
+    final String wdsTideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
+      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + IWLAdjustmentIO.WDS_TIDE_GAUGES_INFO_FNAME;
 
     slog.info(mmi+"wdsTideGaugesInfoFile="+wdsTideGaugesInfoFile);
 
@@ -246,51 +255,55 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
       throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name());
     }
 
-    //// --- Locate the nearest model grid point from the WDS location.
-    //int nearestMdlGpIndex= -1;
-    //double minDist= Double.MAX_VALUE;
-    ///for (int modelGridPointIdx= 0;
-    //         modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
-    //  final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
-    //  final double checkDist= Trigonometry.
-    //    getDistanceInRadians(this.adjLocationLongitude, this.adjLocationLatitude,
-    //                          mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
-    //   if (checkDist < minDist) {
-    //     minDist= checkDist;
-    //     nearestMdlGpIndex= modelGridPointIdx;
-    //   }
-    //}
-    //final String ftmp= new File(this.locationIdInfo).getName();
-    //slog.info(mmi+"nearestMdlGpIndex="+nearestMdlGpIndex+
-    //          " for the WDS location="+ this.locationId);
+    // --- Now find the 3 nearest WDS grid points from the 3 neareast TG locations
+    //     to apply the IWLS-FMS algo to their NS_TIDE predictions and merge the results with the
+    //     model WLF signal before interpolating their predictions errors (past: WLO, future: WLF)
+    //     to the WDS location to add it to its NS_TIDE prediction
 
-    // --- Extract all the WL forecast data from the model at this nearestMdlGpIndex
-    //this.nearestModelData= new HashMap<String, ArrayList<WLMeasurement>>();
-    //this.nearestModelData.put(this.locationId,
-    //                          this.getH2D2WLForecastData(nearestMdlGpIndex));
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    // --- Split the this.locationIdInfo to use the resulting String array to build
+    //     the path to the main discharges cluster directory
+    final String [] locationIdInfoSplit= this.locationIdInfo.split(File.separator);
 
-    //// --- Now locate the 3 nearest H2D2 model grid points from the
-    ////     3 nearest tide gauges (one tide gauge => one model grid point).
-    //for (final String tgCoordId: nearestsTGCoords.keySet()) {
-    //  slog.info(mmi+" Searching for the nearest H2D2 model grid point from the TG:"+tgCoordId);
-    //  final HBCoords tgHBCoords= nearestsTGCoords.get(tgCoordId);
-    //  final double tgLat= tgHBCoords.getLatitude();
-    //  final double tgLon= tgHBCoords.getLongitude();
-    //  int nearestModelGridPointIndex= -1;
-    //  double mdlGpMinDist= Double.MAX_VALUE;
-    //  for (int modelGridPointIdx= 0;
-    //           modelGridPointIdx < mdlGrdPtsCoordinates.size(); modelGridPointIdx++) {
-    //    final HBCoords mdlGridPointHBCoords= mdlGrdPtsCoordinates.get(modelGridPointIdx);
-    //    final double checkDist= Trigonometry.
-    //      getDistanceInRadians(tgLon,tgLat,mdlGridPointHBCoords.getLongitude(),mdlGridPointHBCoords.getLatitude());
-    //    if (checkDist < mdlGpMinDist) {
-    //      mdlGpMinDist= checkDist;
-    //      nearestModelGridPointIndex= modelGridPointIdx;
-    //    }
-    //  }
-    //}
+    // --- Build the path to the main discharges cluster directory where to find all the
+    //     WDS grid points definition.
+    final String mainDischargeClustersDir= WLToolsIO.getMainCfgDir() +
+      File.separator + String.join(File.separator,Arrays.copyOfRange(locationIdInfoSplit,0,4));
+
+    slog.info(mmi+"mainDischargeClustersDir="+mainDischargeClustersDir);
+
+    // --- Now we need to read all WDS grid points location json info files.
+    //     that are located in the subdirectories under the mainDischargeClustersDir
+    DirectoryStream<Path> mainDischargeClustersSubDirs= null;
+
+    try {
+      mainDischargeClustersSubDirs=
+        Files.newDirectoryStream(Paths.get(mainDischargeClustersDir));
+    } catch (IOException e) {
+      throw new RuntimeException(mmi+e);
+    }
+
+    // --- Iterate on all the disharges clusters subdirectories to find
+    //     all the WDS grid points json info files
+    for(final Path clusterSubDir: mainDischargeClustersSubDirs) {
+
+      final String tfhaSubDir= clusterSubDir + File.separator + "dischargeClimatoTFHA";
+
+      DirectoryStream<Path> clusterDirGpInfoFiles= null;
+
+      try {
+        clusterDirGpInfoFiles=
+          Files.newDirectoryStream(Paths.get(tfhaSubDir));
+      } catch (IOException e) {
+        throw new RuntimeException(mmi+e);
+      }
+
+      for (final Path jsonInfoFile: clusterDirGpInfoFiles) {
+        slog.info(mmi+"jsonInfoFile="+jsonInfoFile.toString());
+
+        slog.info(mmi+"Debug System.exit(0)");
+        System.exit(0);
+      }
+    }
 
     slog.info(mmi+"end");
 

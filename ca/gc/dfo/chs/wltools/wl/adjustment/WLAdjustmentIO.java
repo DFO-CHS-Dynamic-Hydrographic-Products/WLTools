@@ -243,12 +243,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     final int nbTimeStamps= this.nearestModelData.
       get(nearestsTGCoordsIds.toArray()[0]).size();
 
-    slog.info(mmi+"nbTimeStamps="+nbTimeStamps);
+    slog.info(mmi+"model results nbTimeStamps="+nbTimeStamps);
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
   }
 
   /**

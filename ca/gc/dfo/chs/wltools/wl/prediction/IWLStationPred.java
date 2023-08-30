@@ -16,8 +16,11 @@ import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
 
+
+// --- TODO: Change class name from IWLStationPred to IWLLocationPred
 /**
- * Class for the computation of water level predictions
+ * Class for the computation of water level predictions at a
+ * specific location (tide gauge or model grid point).
  */
 public interface IWLStationPred  {
 
@@ -27,9 +30,11 @@ public interface IWLStationPred  {
   long MAX_TIME_INCR_SECONDS= 3600L;
   long DEFAULT_TIME_INCR_SECONDS= 180L;//900L;
 
+  long DEFAULT_DAYS_DURATION_IN_PAST= 20L;
   long DEFAULT_DAYS_DURATION_IN_FUTURE= 40L;
-  long MAX_DAYS_DURATION_IN_FUTURE= 90L;
+  long MAX_DAYS_DURATION= 120L;
 
+  // --- Define prediction types
   enum Type {
     TIDAL,
     CLIMATOLOGY

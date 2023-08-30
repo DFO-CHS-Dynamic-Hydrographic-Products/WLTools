@@ -99,11 +99,11 @@ final public class WLStationPred extends WLStationPredFactory {
       predDurationInDays= Long.parseLong(argsMap.get("--predDurationInDays"));
     }
 
-    if (predDurationInDays > IWLStationPred.MAX_DAYS_DURATION_IN_FUTURE) {
+    if (predDurationInDays > IWLStationPred.MAX_DAYS_DURATION) {
 
       throw new RuntimeException(mmi+"predDurationInDays -> "+predDurationInDays+
                                  " is larger than IWLStationPred.MAX_DAYS_DURATION_IN_FUTURE -> "+
-                                 IWLStationPred.MAX_DAYS_DURATION_IN_FUTURE);
+                                 IWLStationPred.MAX_DAYS_DURATION);
     }
 
     final long endTimeSeconds= startTimeSeconds +
