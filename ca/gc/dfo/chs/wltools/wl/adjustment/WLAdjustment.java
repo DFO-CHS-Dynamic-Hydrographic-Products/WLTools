@@ -24,7 +24,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
-import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentWDS;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentType;
 
 /**
@@ -106,18 +106,18 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
 
     //slog.info(mmi+"Will use location Id info  -> "+locationIdInfo);
 
-    if (adjType.equals(IWLAdjustment.Type.WDS.name())) {
+    if (adjType.equals(IWLAdjustment.Type.Spine.name())) {
 
-      slog.info(mmi+"Doing WDS type WL adjustment setup");
+      slog.info(mmi+"Doing Spine type WL adjustment setup");
 
       //this.adjType=IWLAdjustment.Type.WDS;
       //final String wdsLocationIdInfoFile=
       //  WLToolsIO.getMainCfgDir() + "/"+ locationIdInfo;
       //slog.info(mmi+"wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
-      this.adjInstance= new WLAdjustmentWDS(argsMap); //wdsLocationIdInfoFile);
+      this.adjInstance= new WLAdjustmentSpine(argsMap); //wdsLocationIdInfoFile);
 
-      slog.info(mmi+"Done with WDS type WL adjustment setup");
+      slog.info(mmi+"Done with Spine type WL adjustment setup");
 
     }
 

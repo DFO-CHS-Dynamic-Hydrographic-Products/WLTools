@@ -51,23 +51,33 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 /**
  * Comments please!
  */
-final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLAdjustment {
+final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IWLAdjustment {
 
   private final static String whoAmI=
-     "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentWDS";
+     "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine";
 
  /**
    * Usual class static log utility.
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  // --- To store the HBCoords objects of all the spine cluster locations that
+  //    are relevant for the WL adjustment at a given spine location.
+  //private Map<String, Map<String,HBCoords>> relevantSpineClustersInfo= null;
+
+  // --- To store The NS_TIDE WL predictions at the Spine locations that are
+  //     the nearest to the tide gauges locations used for the adjustments.
+  private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsPred= null;
+
+  // --- To store The NS_TIDE WL predictions at the Spine target location
+  private List<MeasurementCustom> spineLocationPred= null;
 
   //private IWLAdjustment.Type adjType= null;
 
   /**
    * Comments please!
    */
-  public WLAdjustmentWDS() {
+  public WLAdjustmentSpine() {
 
     super();
 
@@ -75,43 +85,53 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     //  this.wlAdjustedData= null;
   }
 
-  public WLAdjustmentWDS(/*@NotNull*/ final HashMap<String,String> argsMap) { // final String wdsLocationIdInfoFile) {
+  public WLAdjustmentSpine(/*@NotNull*/ final HashMap<String,String> argsMap) { // final String wdsLocationIdInfoFile) {
 
-    super(IWLAdjustment.Type.WDS,argsMap);
+    super(IWLAdjustment.Type.Spine,argsMap);
 
     final String mmi=
-      "WLAdjustmentWDS(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
+      "WLAdjustmentSpine(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
+
+    if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
+      throw new RuntimeException(mmi+"Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
+    }
 
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
-    final String wdsLocationIdInfoFile=
+    final String spineLocationIdInfoFile=
       WLToolsIO.getMainCfgDir() + File.separator + this.locationIdInfo;
 
-    final JsonObject wdsLocationInfoJsonObj=
-      this.getWDSJsonLocationIdInfo( wdsLocationIdInfoFile );
+    final JsonObject spineLocationInfoJsonObj=
+      this.getSpineJsonLocationIdInfo( spineLocationIdInfoFile );
 
-    this.adjLocationZCVsVDatum= wdsLocationInfoJsonObj.
+    this.adjLocationZCVsVDatum= spineLocationInfoJsonObj.
       getJsonNumber(StageIO.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
-    this.adjLocationLatitude= wdsLocationInfoJsonObj.
+    this.adjLocationLatitude= spineLocationInfoJsonObj.
       getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
 
-    this.adjLocationLongitude= wdsLocationInfoJsonObj.
+    this.adjLocationLongitude= spineLocationInfoJsonObj.
       getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
 
-    slog.info(mmi+"WDS adjustment location IGLD to ZC conversion value="+this.adjLocationZCVsVDatum);
-    slog.info(mmi+"WDS adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
+    //this.relevantSpineClustersInfo= new HashMap<String, Map<String,HBCoords>>();
+
+    slog.info(mmi+"Spine adjustment location IGLD to ZC conversion value="+this.adjLocationZCVsVDatum);
+    slog.info(mmi+"Spine adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
+
+    final String tideGaugeDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
 
     // --- Now find the two nearest CHS tide gauges from this WDS grid point location
-    final String wdsTideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
-      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + IWLAdjustmentIO.WDS_TIDE_GAUGES_INFO_FNAME;
+    final String spineTideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
+      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;// IWLAdjustmentIO.SPINE_TIDE_GAUGES_INFO_FNAME;
 
-    slog.info(mmi+"wdsTideGaugesInfoFile="+wdsTideGaugesInfoFile);
+    slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     FileInputStream jsonFileInputStream= null;
 
     try {
-      jsonFileInputStream= new FileInputStream(wdsTideGaugesInfoFile);
+      jsonFileInputStream= new FileInputStream(spineTideGaugesInfoFile);
 
     } catch (FileNotFoundException e) {
       throw new RuntimeException(mmi+"e");
@@ -191,7 +211,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     final Map<String, HBCoords> nearestsTGCoords= new HashMap<String, HBCoords>();
 
     // --- Also need to get the ECCC TG location string id. from the Json file
-    final Map<String, String> nearestsTGEcccIds= new HashMap<String, String>();
+    //final Map<String, String> nearestsTGEcccIds= new HashMap<String, String>();
 
     for (final String chsTGId: this.nearestObsData.keySet()) {
 
@@ -206,20 +226,12 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
       nearestsTGCoords.put(chsTGId, new HBCoords(tgLon,tgLat) );
 
       //--- Get the TG ECCC string id.
-      nearestsTGEcccIds.put(chsTGId, chsTGJsonObj.getString(TIDE_GAUGES_INFO_ECCC_IDS_KEY));
-
+      //nearestsTGEcccIds.put(chsTGId, chsTGJsonObj.getString(TIDE_GAUGES_INFO_ECCC_IDS_KEY));
     }
 
     slog.info(mmi+"nearestsTGCoords keys="+nearestsTGCoords.keySet().toString());
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
-
-    // --- We can close the Json file now
-    try {
-      jsonFileInputStream.close();
-    } catch (IOException e) {
-      throw new RuntimeException(mmi+e);
-    }
 
     //// --- Now get the coordinates of:
     ////     1). The nearest model input data grid point from the WDS location
@@ -238,10 +250,13 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
 
       if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.ASCII) {
 
-        this.getH2D2ASCIIWLFProbesData(nearestsTGCoords, nearestsTGEcccIds);
+        //final Map<String, String> nearestsTGEcccIds= new HashMap<String, String>();
+
+        this.getH2D2ASCIIWLFProbesData(nearestsTGCoords, mainJsonMapObj); //nearestsTGEcccIds);
 
       } else {
-        throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+" !!");
+        throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+
+                                    " for inputDataType ->"+this.inputDataType.name()+" !!");
       }
 
       //if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
@@ -251,14 +266,26 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
       //  throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+" !!");
       //}
 
+    } else if  (this.inputDataType == IWLAdjustmentIO.InputDataType.DHP_S104) {
+
+      throw new RuntimeException(mmi+" inputDataType -> "+
+                                 IWLAdjustmentIO.InputDataType.DHP_S104.name()+" not ready to be used yet!!");
+
     } else {
       throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name());
     }
 
-    // --- Now find the 3 nearest WDS grid points from the 3 neareast TG locations
+    // --- We can close the Json file now
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(mmi+e);
+    }
+
+    // --- Now find the 3 nearest Spine grid points location from the 3 neareast TG locations
     //     to apply the IWLS-FMS algo to their NS_TIDE predictions and merge the results with the
     //     model WLF signal before interpolating their predictions errors (past: WLO, future: WLF)
-    //     to the WDS location to add it to its NS_TIDE prediction
+    //     to the Spine location to add it to its NS_TIDE prediction
 
     // --- Split the this.locationIdInfo to use the resulting String array to build
     //     the path to the main discharges cluster directory
@@ -278,6 +305,7 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     try {
       mainDischargeClustersSubDirs=
         Files.newDirectoryStream(Paths.get(mainDischargeClustersDir));
+
     } catch (IOException e) {
       throw new RuntimeException(mmi+e);
     }
@@ -293,10 +321,12 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
       try {
         clusterDirGpInfoFiles=
           Files.newDirectoryStream(Paths.get(tfhaSubDir));
+
       } catch (IOException e) {
         throw new RuntimeException(mmi+e);
       }
 
+      // --- Iterate on all the grid points json files of this cluster
       for (final Path jsonInfoFile: clusterDirGpInfoFiles) {
         slog.info(mmi+"jsonInfoFile="+jsonInfoFile.toString());
 
@@ -328,4 +358,3 @@ final public class WLAdjustmentWDS extends WLAdjustmentType { // implements IWLA
     return this.locationAdjustedData; //adjustmentRet;
   }
 }
-

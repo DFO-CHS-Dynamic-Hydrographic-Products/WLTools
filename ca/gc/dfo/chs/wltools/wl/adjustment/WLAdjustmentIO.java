@@ -42,6 +42,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
 
 /**
  * Comments please!
@@ -129,8 +130,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final void getH2D2ASCIIWLFProbesData(/*@NotNull*/ Map<String, HBCoords> nearestsTGCoords,
-                                       /*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
+  final void getH2D2ASCIIWLFProbesData(/*@NotNull*/ Map<String, HBCoords> nearestsTGCoords, /*@NotNull*/ final JsonObject mainJsonMapObj) {
+                                       ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
 
     final String mmi= "getH2D2ASCIIWLProbesData: ";
 
@@ -159,7 +160,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     for (final String chsTGId: nearestsTGCoordsIds) {
       //slog.info(mmi+"chsTGId="+chsTGId+", ecccId="+nearestsTGEcccIds.get(chsTGId));
 
-      final String ecccTGId= nearestsTGEcccIds.get(chsTGId);
+      // --- Get the corresponding ECCC TG num. string id.
+      final String ecccTGId= mainJsonMapObj.
+        getJsonObject(chsTGId).getString(TIDE_GAUGES_INFO_ECCC_IDS_KEY); //nearestsTGEcccIds.get(chsTGId);
 
       tgDataColumnIndices.put(chsTGId,headerLineList.indexOf(ecccTGId));
 
@@ -169,6 +172,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       // --- Create the Map entry for this CHS TG.
       this.nearestModelData.put(chsTGId, new ArrayList<MeasurementCustom>() );
     }
+
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- Get the forecast zero'th hour timestamp to discard the analysis
     //     (a.k.a nowcast) WL data part. Need to use the input file name
@@ -254,28 +260,28 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final static JsonObject getWDSJsonLocationIdInfo( /*@NotNull*/ final String wdsLocationIdInfoFile) {
+  final static JsonObject getSpineJsonLocationIdInfo( /*@NotNull*/ final String spineLocationIdInfoFile) {
 
-    final String mmi= "getWDSLocationIdInfo: ";
+    final String mmi= "getSpineJsonLocationIdInfo: ";
 
-    Map<String,String> wdsLocationIdInfo= new HashMap<String,String>();
+    Map<String,String> spineLocationIdInfo= new HashMap<String,String>();
 
     //--- Deal with possible null tcInputfilePath String: if @NotNull not used
     try {
-      wdsLocationIdInfoFile.length();
+      spineLocationIdInfoFile.length();
 
     } catch (NullPointerException e) {
 
-      slog.error(mmi+"wdsLocationIdInfoFile is null !!");
+      slog.error(mmi+"spineLocationIdInfoFile is null !!");
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"start: wdsLocationIdInfoFile=" + wdsLocationIdInfoFile);
+    slog.info(mmi+"start: spineLocationIdInfoFile=" + spineLocationIdInfoFile);
 
     FileInputStream jsonFileInputStream= null;
 
     try {
-       jsonFileInputStream= new FileInputStream(wdsLocationIdInfoFile);
+       jsonFileInputStream= new FileInputStream(spineLocationIdInfoFile);
 
     } catch (FileNotFoundException e) {
        throw new RuntimeException(mmi+"e");
@@ -286,11 +292,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     // --- TODO: add fool-proof checks on all the Json dict keys.
 
-    final JsonObject wdsLocationIdInfoJsonObj=
+    final JsonObject spineLocationIdInfoJsonObj=
       mainJsonTcDataInputObj.getJsonObject(IStageIO.LOCATION_INFO_JSON_DICT_KEY);
 
     try {
       jsonFileInputStream.close();
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -300,6 +307,6 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    return wdsLocationIdInfoJsonObj;
+    return spineLocationIdInfoJsonObj;
   }
 }

@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public interface IWLAdjustmentIO {
 
-  String WDS_TIDE_GAUGES_INFO_FNAME= "wdsDfoTGs.json";
+  //String SPINE_STL_TIDE_GAUGES_INFO_FNAME= "";
 
   String TIDE_GAUGES_INFO_FOLDER_NAME= "tideGaugeInfo";
 
@@ -30,11 +30,12 @@ public interface IWLAdjustmentIO {
   enum InputDataType {
     ECCC_H2D2, //:NETCDF,
     //H2D2:ASCII,
+    DHP_S104,
     IWLS //:JSON
   }
 
   enum InputDataTypesFormatsDef {
-    //NETCDF,
+    HDF5_DCF3,
     ASCII,
     JSON
   }
@@ -43,6 +44,8 @@ public interface IWLAdjustmentIO {
   //String [] ECCC_H2D2_INPUT_FMTS= { InputDataTypesFormatsDef.NETCDF.name(),
   //                                  InputDataTypesFormatsDef.ASCII.name() };
 
+  String [] DHP_S104_INPUT_FMTS= { InputDataTypesFormatsDef.HDF5_DCF3.name() };
+
   String [] ECCC_H2D2_INPUT_FMTS= { InputDataTypesFormatsDef.ASCII.name() };
 
   String [] IWLS_INPUT_FMTS= { InputDataTypesFormatsDef.JSON.name() };
@@ -50,6 +53,7 @@ public interface IWLAdjustmentIO {
   // --- TODO: Use the InputDataTypesFormatsDef enum objects as keys to this
   //     InputDataTypesFormats Map instead of the related Strings ??
   Map< String, Set<String> > InputDataTypesFormats= Map.of(
+    InputDataType.DHP_S104.name() , Set.of(DHP_S104_INPUT_FMTS),
     InputDataType.ECCC_H2D2.name(), Set.of(ECCC_H2D2_INPUT_FMTS),
     InputDataType.IWLS.name()     , Set.of(IWLS_INPUT_FMTS)
   );
