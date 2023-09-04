@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TreeSet;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -113,15 +114,17 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     }
 
     //final String [] neighborDischargeClusters=
-    final Set<String> neighborDischargeClusters=
-      Set.of(argsMap.get("--neighborDischargeClusters").
-        split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR));
+    Set<String> nearestDischargeClusters= new
+      HashSet(Arrays.asList(argsMap.get("--neighborDischargeClusters").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR)));
+
+      //Set.of(argsMap.get("--neighborDischargeClusters").
+      //  split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR));
 
     //final String upstreamDischargeCluster= neighborDischargeClustersNames[0];
     //final String downstreamDischargeCluster= neighborDischargeClustersNames1];
     //slog.info(mmi+"upstreamDischargeCluster="+upstreamDischargeCluster);
     //slog.info(mmi+"downtreamDischargeCluster="+downstreamDischargeCluster);
-    slog.info(mmi+"neighborDischargeClusters="+neighborDischargeClusters.toString());
+    slog.info(mmi+"nearestDischargeClusters="+nearestDischargeClusters.toString());
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -310,6 +313,16 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     //     the path to the main discharges cluster directory
     final String [] locationIdInfoSplit= this.locationIdInfo.split(File.separator);
 
+    // --- Extract the name of the discharge cluster where the spine location is located
+    final String spineLocationClusterName= locationIdInfoSplit[4];
+
+    slog.info(mmi+"spineLocationClusterName="+spineLocationClusterName);
+
+    // --- Add the spineLocationClusterName to the 2 other nearestDischargeClusters Set
+    //     in order to get a complete collection for finding the nearest spine locations
+    //     for each nearest CHS TG
+    nearestDischargeClusters.add(spineLocationClusterName);
+
     // --- Build the path to the main discharges cluster directory where to find all the
     //     WDS grid points definition.
     final String mainDischargeClustersDir= WLToolsIO.getMainCfgDir() +
@@ -317,26 +330,17 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
     slog.info(mmi+"mainDischargeClustersDir="+mainDischargeClustersDir);
 
-    //// --- Now we need to read all WDS grid points location json info files.
-    ////     that are located in the subdirectories under the mainDischargeClustersDir
-    //DirectoryStream<Path> mainDischargeClustersSubDirs= null;
-   // try {
-   //   mainDischargeClustersSubDirs=
-   //     Files.newDirectoryStream(Paths.get(mainDischargeClustersDir));
-   // } catch (IOException e) {
-   //   throw new RuntimeException(mmi+e);
-   // }
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     Map<String, HBCoords> tmpSpineLocationsHBCoords= new HashMap<String, HBCoords>();
 
     // --- Iterate on all the disharges clusters subdirectories to find
     //     all the WDS grid points json info files
     //for(final Path clusterSubDir: mainDischargeClustersSubDirs) {
-    for(final String clusterSubDir: neighborDischargeClusters) {
+    for(final String clusterSubDir: nearestDischargeClusters) {
 
       slog.info(mmi+"clusterSubDir="+clusterSubDir);
-
-      //continue;
 
       final String tfhaSubDir= mainDischargeClustersDir +
         File.separator + clusterSubDir + File.separator + "dischargeClimatoTFHA";
@@ -355,18 +359,6 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
       //       to extract all their HBCoords info.
       for (final Path spineLocationJsonInfoFile: clusterDirGpInfoFiles) {
 
-        //slog.info(mmi+"spineLocationJsonInfoFile="+spineLocationJsonInfoFile.toString());
-
-        //FileInputStream jsonFInputStream= null;
-        //try {
-        //  jsonFInputStream= new FileInputStream(spineLocationJsonInfoFile.toString());
-        //} catch (FileNotFoundException e) {
-        //  throw new RuntimeException(mmi+"e");
-        //}
-
-        //final JsonObject jsonMapObj= Json.
-        //  createReader(jsonFInputStream).readObject();
-
         final JsonObject spineLocInfoJsonObj=
           this.getSpineJsonLocationIdInfo( spineLocationJsonInfoFile.toString() );
 
@@ -375,6 +367,11 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
         final double spineLocationLat= spineLocInfoJsonObj.
           getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+
+        //slog.info(mmi+"spineLocationLon="+spineLocationLon);
+        //slog.info(mmi+"spineLocationLat="+spineLocationLat);
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
 
         //final HBCoords spineLocationHBCoordsObj= new HBCoords(getJson);
 
@@ -396,6 +393,56 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
       } // --- for (final Path spineLocationJsonInfoFile: clusterDirGpInfoFiles)
     } // --- for(final String clusterSubDir: neighborDischargeClusters)
+
+    slog.info(mmi+"tmpSpineLocationsHBCoords.size()="+tmpSpineLocationsHBCoords.size());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    Map<String,String> tgVsSpineLocInfo= new HashMap<String,String>();
+    Map<String,Double> tgVsSpineLocMinDists= new HashMap<String,Double>();
+
+    for (final String tgNumStrId: nearestsTGCoords.keySet()) {
+
+      tgVsSpineLocInfo.put(tgNumStrId,null);
+      tgVsSpineLocMinDists.put(tgNumStrId,Double.MAX_VALUE);
+    }
+
+    for (final String spineLocationFID: tmpSpineLocationsHBCoords.keySet()) {
+
+      //slog.info(mmi+"spineLocationFID="+spineLocationFID);
+
+      final HBCoords spineLocHBCoordsObj=
+        tmpSpineLocationsHBCoords.get(spineLocationFID);
+
+      for (final String tgNumStrId: nearestsTGCoords.keySet()) {
+
+        final HBCoords tgHBCoordsObj= nearestsTGCoords.get(tgNumStrId);
+
+        final double tmpDist= Trigonometry.getDistanceInRadians(tgHBCoordsObj.getLongitude(), tgHBCoordsObj.getLatitude(),
+                                                                spineLocHBCoordsObj.getLongitude(), spineLocHBCoordsObj.getLatitude());
+        if (tmpDist < tgVsSpineLocMinDists.get(tgNumStrId) ) {
+
+          //slog.info(mmi+"spineLocationFID="+spineLocationFID);
+          //slog.info(mmi+"tgNumStrId="+tgNumStrId);
+          //slog.info(mmi+"tmpDist="+tmpDist);
+
+          //slog.info(mmi+"tgHBCoordsObj lon="+tgHBCoordsObj.getLongitude());
+          //slog.info(mmi+"tgHBCoordsObj lat="+tgHBCoordsObj.getLatitude());
+          //slog.info(mmi+"spineLocObj lon="+ spineLocHBCoordsObj.getLongitude());
+          //slog.info(mmi+"spineLocObj lat="+ spineLocHBCoordsObj.getLatitude()+"\n");
+
+          tgVsSpineLocMinDists.put(tgNumStrId,tmpDist);
+          tgVsSpineLocInfo.put(tgNumStrId,spineLocationFID);
+        }
+      }
+
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+    }
+
+
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     slog.info(mmi+"end");
 
