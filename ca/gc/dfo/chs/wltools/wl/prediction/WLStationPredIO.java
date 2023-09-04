@@ -3,7 +3,7 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
 
 /**
  * Created by Gilles Mercier on 2023-08-15.
- * 
+ *
  */
 
 //---
@@ -112,8 +112,10 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
        //final double wlpValue= mc.getValue();
 
        jsonArrayBuilderObj.
-          add( Json.createObjectBuilder().add("eventDate", mc.getEventDate().toString()) ).
-                    add( Json.createObjectBuilder().add("value"    , mc.getValue()) );
+          add( Json.createObjectBuilder().
+            add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ).
+              add( IWLStationPredIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
+              //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
     }
 
     //JsonArray jsonArrayObj= jsonArrayBuilderObj.build();
