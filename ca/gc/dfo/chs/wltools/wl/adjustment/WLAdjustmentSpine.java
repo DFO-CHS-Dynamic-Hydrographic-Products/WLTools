@@ -92,11 +92,38 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     final String mmi=
       "WLAdjustmentSpine(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
 
+    slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
+
     if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
       throw new RuntimeException(mmi+"Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
     }
 
-    slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
+    final String tideGaugeDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
+
+    // --- Now find the two nearest CHS tide gauges from this WDS grid point location
+    final String spineTideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
+      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;// IWLAdjustmentIO.SPINE_TIDE_GAUGES_INFO_FNAME;
+
+    slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    if (!argsMap.keySet().contains("--neighborDischargeClusters")) {
+      throw new RuntimeException(mmi+"Must have the --neighborDischargeClusters=<upstream cluster name>:<downstream cluster name> defined in argsMap");
+    }
+
+    //final String [] neighborDischargeClusters=
+    final Set<String> neighborDischargeClusters=
+      Set.of(argsMap.get("--neighborDischargeClusters").
+        split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR));
+
+    //final String upstreamDischargeCluster= neighborDischargeClustersNames[0];
+    //final String downstreamDischargeCluster= neighborDischargeClustersNames1];
+    //slog.info(mmi+"upstreamDischargeCluster="+upstreamDischargeCluster);
+    //slog.info(mmi+"downtreamDischargeCluster="+downstreamDischargeCluster);
+    slog.info(mmi+"neighborDischargeClusters="+neighborDischargeClusters.toString());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     final String spineLocationIdInfoFile=
       WLToolsIO.getMainCfgDir() + File.separator + this.locationIdInfo;
@@ -117,14 +144,6 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
     slog.info(mmi+"Spine adjustment location IGLD to ZC conversion value="+this.adjLocationZCVsVDatum);
     slog.info(mmi+"Spine adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
-
-    final String tideGaugeDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
-
-    // --- Now find the two nearest CHS tide gauges from this WDS grid point location
-    final String spineTideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
-      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;// IWLAdjustmentIO.SPINE_TIDE_GAUGES_INFO_FNAME;
-
-    slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -298,23 +317,29 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
     slog.info(mmi+"mainDischargeClustersDir="+mainDischargeClustersDir);
 
-    // --- Now we need to read all WDS grid points location json info files.
-    //     that are located in the subdirectories under the mainDischargeClustersDir
-    DirectoryStream<Path> mainDischargeClustersSubDirs= null;
+    //// --- Now we need to read all WDS grid points location json info files.
+    ////     that are located in the subdirectories under the mainDischargeClustersDir
+    //DirectoryStream<Path> mainDischargeClustersSubDirs= null;
+   // try {
+   //   mainDischargeClustersSubDirs=
+   //     Files.newDirectoryStream(Paths.get(mainDischargeClustersDir));
+   // } catch (IOException e) {
+   //   throw new RuntimeException(mmi+e);
+   // }
 
-    try {
-      mainDischargeClustersSubDirs=
-        Files.newDirectoryStream(Paths.get(mainDischargeClustersDir));
-
-    } catch (IOException e) {
-      throw new RuntimeException(mmi+e);
-    }
+    Map<String, HBCoords> tmpSpineLocationsHBCoords= new HashMap<String, HBCoords>();
 
     // --- Iterate on all the disharges clusters subdirectories to find
     //     all the WDS grid points json info files
-    for(final Path clusterSubDir: mainDischargeClustersSubDirs) {
+    //for(final Path clusterSubDir: mainDischargeClustersSubDirs) {
+    for(final String clusterSubDir: neighborDischargeClusters) {
 
-      final String tfhaSubDir= clusterSubDir + File.separator + "dischargeClimatoTFHA";
+      slog.info(mmi+"clusterSubDir="+clusterSubDir);
+
+      //continue;
+
+      final String tfhaSubDir= mainDischargeClustersDir +
+        File.separator + clusterSubDir + File.separator + "dischargeClimatoTFHA";
 
       DirectoryStream<Path> clusterDirGpInfoFiles= null;
 
@@ -327,13 +352,50 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
       }
 
       // --- Iterate on all the grid points json files of this cluster
-      for (final Path jsonInfoFile: clusterDirGpInfoFiles) {
-        slog.info(mmi+"jsonInfoFile="+jsonInfoFile.toString());
+      //       to extract all their HBCoords info.
+      for (final Path spineLocationJsonInfoFile: clusterDirGpInfoFiles) {
 
-        slog.info(mmi+"Debug System.exit(0)");
-        System.exit(0);
-      }
-    }
+        //slog.info(mmi+"spineLocationJsonInfoFile="+spineLocationJsonInfoFile.toString());
+
+        //FileInputStream jsonFInputStream= null;
+        //try {
+        //  jsonFInputStream= new FileInputStream(spineLocationJsonInfoFile.toString());
+        //} catch (FileNotFoundException e) {
+        //  throw new RuntimeException(mmi+"e");
+        //}
+
+        //final JsonObject jsonMapObj= Json.
+        //  createReader(jsonFInputStream).readObject();
+
+        final JsonObject spineLocInfoJsonObj=
+          this.getSpineJsonLocationIdInfo( spineLocationJsonInfoFile.toString() );
+
+        final double spineLocationLon= spineLocInfoJsonObj.
+          getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
+
+        final double spineLocationLat= spineLocInfoJsonObj.
+          getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+
+        //final HBCoords spineLocationHBCoordsObj= new HBCoords(getJson);
+
+        final String spineLocationJsonInfoFileStr=
+          spineLocationJsonInfoFile.getFileName().toString();
+
+        tmpSpineLocationsHBCoords.put( spineLocationJsonInfoFileStr,
+                                       new HBCoords(spineLocationLon,spineLocationLat) );
+
+        //// --- We can close the Json file now
+        //try {
+        //  jsonFInputStream.close();
+        //} catch (IOException e) {
+        //  throw new RuntimeException(mmi+e);
+        //}
+
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
+
+      } // --- for (final Path spineLocationJsonInfoFile: clusterDirGpInfoFiles)
+    } // --- for(final String clusterSubDir: neighborDischargeClusters)
 
     slog.info(mmi+"end");
 

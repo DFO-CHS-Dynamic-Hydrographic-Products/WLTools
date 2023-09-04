@@ -276,7 +276,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"start: spineLocationIdInfoFile=" + spineLocationIdInfoFile);
+    slog.debug(mmi+"start: spineLocationIdInfoFile=" + spineLocationIdInfoFile);
 
     FileInputStream jsonFileInputStream= null;
 
@@ -302,7 +302,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       throw new RuntimeException(e);
     }
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
