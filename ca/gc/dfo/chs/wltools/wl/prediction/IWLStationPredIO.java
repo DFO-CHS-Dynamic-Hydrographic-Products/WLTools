@@ -23,6 +23,9 @@ public interface IWLStationPredIO  {
 
   String JSON_FEXT= ".json";
 
+  String INSTANT_JSON_KEY= "eventDate";
+  String VALUE_JSON_KEY= "value";
+
   enum OutputFormats {
     JSON //,
     //CSV

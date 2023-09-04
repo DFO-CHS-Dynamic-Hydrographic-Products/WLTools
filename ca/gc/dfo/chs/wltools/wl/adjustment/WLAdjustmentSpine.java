@@ -482,8 +482,8 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
       slog.info(mmi+"nsTidePredDataJsonFile="+nsTidePredDataJsonFile);
 
-      //this.tgsNearestSpineLocationsPred.put(tgNumStrId,
-      //                                      this.getNSTidePredInJsonFmt(nsTidePredDataJsonFile));
+      this.tgsNearestSpineLocationsPred.put(tgNumStrId,
+                                            this.getWLPredDataInJsonFmt(nsTidePredDataJsonFile));
 
       if (nearestSpineLocationId.equals(this.locationId)) {
 
@@ -497,11 +497,19 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
     if (this.spineLocationNSTPred == null) {
 
-       slog.info(mmi+"Filling-up this.spineLocationNSTPred with its NS_TIDE prediction data");
+      slog.info(mmi+"Filling-up this.spineLocationNSTPred with its NS_TIDE prediction data");
 
-       // --- fill up the this.spineLocationNSTPred with its NS_TIDE prediction
-       slog.info(mmi+"Debug System.exit(0)");
-       System.exit(0);
+      final String nsTidePredDataJsonFile= nsTidePredInputDataDir +
+        File.separator + this.locationId + IWLStationPredIO.JSON_FEXT;
+
+      slog.info(mmi+"NS_TIDE prediction data file for the spine target location -> "+nsTidePredDataJsonFile);
+
+      // --- fill up the this.spineLocationNSTPred with its NS_TIDE prediction
+      this.spineLocationNSTPred=
+        this.getWLPredDataInJsonFmt(nsTidePredDataJsonFile);
+
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
     }
 
     //slog.info(mmi+"Debug System.exit(0)");

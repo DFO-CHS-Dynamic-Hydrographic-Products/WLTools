@@ -42,7 +42,9 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
+import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
+
 
 /**
  * Comments please!
@@ -281,19 +283,19 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     FileInputStream jsonFileInputStream= null;
 
     try {
-       jsonFileInputStream= new FileInputStream(spineLocationIdInfoFile);
+      jsonFileInputStream= new FileInputStream(spineLocationIdInfoFile);
 
     } catch (FileNotFoundException e) {
-       throw new RuntimeException(mmi+"e");
+      throw new RuntimeException(mmi+"e");
     }
 
-    final JsonObject mainJsonTcDataInputObj= Json.
+    final JsonObject mainJsonFileInputObj= Json.
       createReader(jsonFileInputStream).readObject();  //tmpJsonTcDataInputObj;
 
     // --- TODO: add fool-proof checks on all the Json dict keys.
 
     final JsonObject spineLocationIdInfoJsonObj=
-      mainJsonTcDataInputObj.getJsonObject(IStageIO.LOCATION_INFO_JSON_DICT_KEY);
+      mainJsonFileInputObj.getJsonObject(IStageIO.LOCATION_INFO_JSON_DICT_KEY);
 
     try {
       jsonFileInputStream.close();
@@ -309,4 +311,79 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     return spineLocationIdInfoJsonObj;
   }
+
+  /**
+   * Comments please!
+   */
+  final List<MeasurementCustom> getWLPredDataInJsonFmt(/*@NotNull*/ final String predDataJsonFile) {
+
+    final String mmi= "getWLPredDataInJsonFmt: ";
+
+    List<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
+
+    //--- Deal with possible null nsTidePredDataJsonFile String: if @NotNull not used
+    try {
+      predDataJsonFile.length();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"predDataJsonFile is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    slog.info(mmi+"start: predDataJsonFile=" + predDataJsonFile);
+
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(predDataJsonFile);
+
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(mmi+"e");
+    }
+
+    final JsonArray jsonWLPredDataArray= Json.
+      createReader(jsonFileInputStream).readArray();  //tmpJsonTcDataInputObj;
+
+    //for (final JsonObject jsonObj: jsonPredDataArray.toArray()) {
+    for (int itemIter= 0; itemIter< jsonWLPredDataArray.size(); itemIter++) {
+
+      final JsonObject jsonWLPredObj=
+        jsonWLPredDataArray.getJsonObject(itemIter);
+
+      final Instant wlPredTimeStamp= Instant.
+        parse(jsonWLPredObj.getString(IWLStationPredIO.INSTANT_JSON_KEY));
+
+      //slog.info(mmi+"wlPredTimeStamp="+wlPredTimeStamp.toString());
+
+      final double wlPredValue= jsonWLPredObj.
+        getJsonNumber(IWLStationPredIO.VALUE_JSON_KEY).doubleValue();
+
+      //slog.info(mmi+"wlPredValue="+wlPredValue);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+      // --- Add this WL pred Instant and value as a MeasurementCustom object
+      //    in the returned list
+      retList.add(new MeasurementCustom(wlPredTimeStamp,wlPredValue, 0.0));
+
+    }
+
+    try {
+      jsonFileInputStream.close();
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    slog.info(mmi+"done with predDataJsonFile=" + predDataJsonFile);
+
+    slog.info(mmi+"end");
+
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    return retList;
+  }
+
 }
