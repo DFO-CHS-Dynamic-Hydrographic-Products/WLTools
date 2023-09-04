@@ -38,6 +38,7 @@ import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
@@ -85,8 +86,11 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
       throw new RuntimeException(mmi+"this.predictionData cannot be null at this point!");
     }
 
+    final String jsonOutFileNamePrfx= locationId.
+      replace(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR,IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR);
+
     final String jsonOutputFile= this.outputDirectory +
-      File.separator + locationId.replace(":","-") + IWLStationPredIO.JSON_FEXT ;
+      File.separator + jsonOutFileNamePrfx + IWLStationPredIO.JSON_FEXT ;
 
     slog.info(mmi+"jsonOutputFile="+jsonOutputFile);
 

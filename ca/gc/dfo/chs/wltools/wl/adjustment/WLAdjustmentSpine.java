@@ -48,6 +48,8 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
+import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
+import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 
 /**
  * Comments please!
@@ -66,12 +68,15 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
   //    are relevant for the WL adjustment at a given spine location.
   //private Map<String, Map<String,HBCoords>> relevantSpineClustersInfo= null;
 
+  // --- To store The initial NS_TIDE WL predictions at the Spine target location.
+  private List<MeasurementCustom> spineLocationNSTPred= null;
+
+  // --- To store The adjusted NS_TIDE WL predictions at the Spine target location.
+  private List<MeasurementCustom> spineLocationNSTPredAdj= null;
+
   // --- To store The NS_TIDE WL predictions at the Spine locations that are
   //     the nearest to the tide gauges locations used for the adjustments.
   private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsPred= null;
-
-  // --- To store The NS_TIDE WL predictions at the Spine target location
-  private List<MeasurementCustom> spineLocationPred= null;
 
   //private IWLAdjustment.Type adjType= null;
 
@@ -86,7 +91,7 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     //  this.wlAdjustedData= null;
   }
 
-  public WLAdjustmentSpine(/*@NotNull*/ final HashMap<String,String> argsMap) { // final String wdsLocationIdInfoFile) {
+  public WLAdjustmentSpine(/*@NotNull*/ final HashMap<String,String> argsMap) {
 
     super(IWLAdjustment.Type.Spine,argsMap);
 
@@ -113,20 +118,25 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
       throw new RuntimeException(mmi+"Must have the --neighborDischargeClusters=<upstream cluster name>:<downstream cluster name> defined in argsMap");
     }
 
-    //final String [] neighborDischargeClusters=
+    final String [] neighborDischargeClusters= argsMap.
+      get("--neighborDischargeClusters").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+    // --- Store the neighborDischargeClusters in a local HashSet<String> object
+    //    in order to be able to add other discharge clusters to it.
     Set<String> nearestDischargeClusters= new
-      HashSet(Arrays.asList(argsMap.get("--neighborDischargeClusters").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR)));
+      HashSet(Arrays.asList(neighborDischargeClusters));
 
-      //Set.of(argsMap.get("--neighborDischargeClusters").
-      //  split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR));
-
-    //final String upstreamDischargeCluster= neighborDischargeClustersNames[0];
-    //final String downstreamDischargeCluster= neighborDischargeClustersNames1];
-    //slog.info(mmi+"upstreamDischargeCluster="+upstreamDischargeCluster);
-    //slog.info(mmi+"downtreamDischargeCluster="+downstreamDischargeCluster);
     slog.info(mmi+"nearestDischargeClusters="+nearestDischargeClusters.toString());
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
+
+    if (!argsMap.keySet().contains("--nsTidePredInputDataDir")) {
+      throw new RuntimeException(mmi+"Must have the --nsTidePredInputDataDir=<NS_TIDE pred. data input directory> defined in argsMap");
+    }
+
+    final String nsTidePredInputDataDir= argsMap.get("--nsTidePredInputDataDir");
+
+    slog.info(mmi+"nsTidePredInputDataDir="+nsTidePredInputDataDir);
 
     final String spineLocationIdInfoFile=
       WLToolsIO.getMainCfgDir() + File.separator + this.locationIdInfo;
@@ -313,6 +323,11 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     //     the path to the main discharges cluster directory
     final String [] locationIdInfoSplit= this.locationIdInfo.split(File.separator);
 
+    // --- Extract the name of the spine domain (e.g. STLawrence
+    final String spineDomainName= locationIdInfoSplit[2];
+
+    slog.info(mmi+"spineDomainName="+spineDomainName);
+
     // --- Extract the name of the discharge cluster where the spine location is located
     final String spineLocationClusterName= locationIdInfoSplit[4];
 
@@ -322,6 +337,16 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     //     in order to get a complete collection for finding the nearest spine locations
     //     for each nearest CHS TG
     nearestDischargeClusters.add(spineLocationClusterName);
+
+    // --- Redefine this.locationId to include its spineDomainName and
+    //     its cluster name
+    this.locationId= spineDomainName +
+      IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + spineLocationClusterName +
+      IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + this.locationId.replace(INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX,"");
+
+    slog.info(mmi+"Redefined this.locationId to "+this.locationId);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- Build the path to the main discharges cluster directory where to find all the
     //     WDS grid points definition.
@@ -375,21 +400,20 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
         //final HBCoords spineLocationHBCoordsObj= new HBCoords(getJson);
 
-        final String spineLocationJsonInfoFileStr=
-          spineLocationJsonInfoFile.getFileName().toString();
+        final String spineLocationIdStr= spineLocationJsonInfoFile.
+          getFileName().toString().replace(IWLStationPredIO.JSON_FEXT,"").
+            replace(INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX,"");
+
+        final String spineLocationJsonInfoFileStr= spineDomainName +
+          IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + clusterSubDir +
+          IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + spineLocationIdStr;
+
+        //slog.info(mmi+"spineLocationJsonInfoFileStr="+spineLocationJsonInfoFileStr);
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
 
         tmpSpineLocationsHBCoords.put( spineLocationJsonInfoFileStr,
                                        new HBCoords(spineLocationLon,spineLocationLat) );
-
-        //// --- We can close the Json file now
-        //try {
-        //  jsonFInputStream.close();
-        //} catch (IOException e) {
-        //  throw new RuntimeException(mmi+e);
-        //}
-
-        //slog.info(mmi+"Debug System.exit(0)");
-        //System.exit(0);
 
       } // --- for (final Path spineLocationJsonInfoFile: clusterDirGpInfoFiles)
     } // --- for(final String clusterSubDir: neighborDischargeClusters)
@@ -418,8 +442,10 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
         final HBCoords tgHBCoordsObj= nearestsTGCoords.get(tgNumStrId);
 
-        final double tmpDist= Trigonometry.getDistanceInRadians(tgHBCoordsObj.getLongitude(), tgHBCoordsObj.getLatitude(),
-                                                                spineLocHBCoordsObj.getLongitude(), spineLocHBCoordsObj.getLatitude());
+        final double tmpDist=
+          Trigonometry.getDistanceInRadians(tgHBCoordsObj.getLongitude(), tgHBCoordsObj.getLatitude(),
+                                            spineLocHBCoordsObj.getLongitude(), spineLocHBCoordsObj.getLatitude());
+
         if (tmpDist < tgVsSpineLocMinDists.get(tgNumStrId) ) {
 
           //slog.info(mmi+"spineLocationFID="+spineLocationFID);
@@ -440,6 +466,43 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
       //System.exit(0);
     }
 
+    for (final String tgNumStrId: nearestsTGCoords.keySet()) {
+
+      // --- Allocate the this.tgsNearestSpineLocationsPred Map properly
+      //     to store the NS_TIDE WL prediction for the nearest spine locations.
+      this.tgsNearestSpineLocationsPred= new HashMap<String, List<MeasurementCustom> >();
+
+      final String nearestSpineLocationId= tgVsSpineLocInfo.get(tgNumStrId);
+
+      slog.info(mmi+"CHS TG id -> "+tgNumStrId+
+                ": Reading the NS_TIDE prediction for the nearest spine location -> "+nearestSpineLocationId);
+
+      final String nsTidePredDataJsonFile= nsTidePredInputDataDir +
+        File.separator + nearestSpineLocationId + IWLStationPredIO.JSON_FEXT;
+
+      slog.info(mmi+"nsTidePredDataJsonFile="+nsTidePredDataJsonFile);
+
+      //this.tgsNearestSpineLocationsPred.put(tgNumStrId,
+      //                                      this.getNSTidePredInJsonFmt(nsTidePredDataJsonFile));
+
+      if (nearestSpineLocationId.equals(this.locationId)) {
+
+         slog.info(mmi+"The Spine target location is also the nearest spine location of the CHS TG -> "+tgNumStrId);
+
+         this.spineLocationNSTPred= this.tgsNearestSpineLocationsPred.get(tgNumStrId);
+      }
+    }
+
+    slog.info(mmi+"this.locationId="+this.locationId);
+
+    if (this.spineLocationNSTPred == null) {
+
+       slog.info(mmi+"Filling-up this.spineLocationNSTPred with its NS_TIDE prediction data");
+
+       // --- fill up the this.spineLocationNSTPred with its NS_TIDE prediction
+       slog.info(mmi+"Debug System.exit(0)");
+       System.exit(0);
+    }
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);

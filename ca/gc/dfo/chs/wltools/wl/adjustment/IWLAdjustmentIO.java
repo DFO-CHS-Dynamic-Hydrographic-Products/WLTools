@@ -17,6 +17,8 @@ public interface IWLAdjustmentIO {
 
   String INPUT_DATA_FMT_SPLIT_CHAR= ":";
 
+  String OUTPUT_DATA_FMT_SPLIT_CHAR= "-";
+
   //enum LocationType {
   //  WDS,
   //  IWLS

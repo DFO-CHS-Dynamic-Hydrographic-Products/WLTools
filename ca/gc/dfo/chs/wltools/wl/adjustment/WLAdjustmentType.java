@@ -27,6 +27,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
+import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO.InputDataType;
 
 /**
@@ -75,7 +76,8 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
     this.locationIdInfo= argsMap.get("--locationIdInfo");
 
     // --- Get only the base name of the this.locationIdInfo file.
-    this.locationId= new File(this.locationIdInfo).getName();
+    this.locationId= new File(this.locationIdInfo).
+      getName().replace(IWLStationPredIO.JSON_FEXT,"");;
 
     if (this.adjType != IWLAdjustment.Type.IWLS_WLO_QC) {
 
