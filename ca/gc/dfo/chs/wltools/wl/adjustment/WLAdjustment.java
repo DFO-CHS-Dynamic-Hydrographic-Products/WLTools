@@ -24,8 +24,9 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
-import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentType;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpineIPP;
+//import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpineFPP;
 
 /**
  * Comments please!
@@ -93,6 +94,12 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
                                  Type.MODEL_NEAREST_NEIGHBOR.name()+" is not yet ready to be used !!");
     }
 
+    if (adjType.equals(Type.SpineFPP.name())) {
+      throw new RuntimeException(mmi+"The WL adjustment type "+
+                                 Type.SpineFPP.name()+" is not yet ready to be used !!");
+    }
+
+
     //slog.info(mmi+"Will use WL location adjustment type "+locationAdjType);
     //if (!argsMapKeySet.contains("--locationIdInfo")) {
     //  throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
@@ -106,18 +113,18 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
 
     //slog.info(mmi+"Will use location Id info  -> "+locationIdInfo);
 
-    if (adjType.equals(IWLAdjustment.Type.Spine.name())) {
+    if (adjType.equals(IWLAdjustment.Type.SpineIPP.name())) {
 
-      slog.info(mmi+"Doing Spine type WL adjustment setup");
+      slog.info(mmi+"Doing Spine WL adjustment intial pre-processing type setup");
 
       //this.adjType=IWLAdjustment.Type.WDS;
       //final String wdsLocationIdInfoFile=
       //  WLToolsIO.getMainCfgDir() + "/"+ locationIdInfo;
       //slog.info(mmi+"wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
-      this.adjInstance= new WLAdjustmentSpine(argsMap); //wdsLocationIdInfoFile);
+      this.adjInstance= new WLAdjustmentSpineIPP(argsMap); //wdsLocationIdInfoFile);
 
-      slog.info(mmi+"Done with Spine type WL adjustment setup");
+      slog.info(mmi+"Done with Spine WL adjustment initial pre-processing type setup");
 
     }
 

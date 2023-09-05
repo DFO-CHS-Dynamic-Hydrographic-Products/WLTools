@@ -54,10 +54,10 @@ import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 /**
  * Comments please!
  */
-final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IWLAdjustment {
+final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
   private final static String whoAmI=
-     "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine";
+    "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpineIPP: ";
 
  /**
    * Usual class static log utility.
@@ -83,25 +83,26 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
   /**
    * Comments please!
    */
-  public WLAdjustmentSpine() {
-
+  public WLAdjustmentSpineIPP() {
     super();
 
     //this.wlOriginalData=
     //  this.wlAdjustedData= null;
   }
 
-  public WLAdjustmentSpine(/*@NotNull*/ final HashMap<String,String> argsMap) {
+  public WLAdjustmentSpineIPP(/*@NotNull*/ final HashMap<String,String> argsMap) {
 
-    super(IWLAdjustment.Type.Spine,argsMap);
+    super(IWLAdjustment.Type.SpineIPP,argsMap);
 
     final String mmi=
-      "WLAdjustmentSpine(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
+      "WLAdjustmentSpineIPP(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
 
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
     if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
-      throw new RuntimeException(mmi+"Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
+
+      throw new RuntimeException(mmi+
+         "Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
     }
 
     final String tideGaugeDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
@@ -115,7 +116,8 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     //System.exit(0);
 
     if (!argsMap.keySet().contains("--neighborDischargeClusters")) {
-      throw new RuntimeException(mmi+"Must have the --neighborDischargeClusters=<upstream cluster name>:<downstream cluster name> defined in argsMap");
+      throw new RuntimeException(mmi+
+        "Must have the --neighborDischargeClusters=<upstream cluster name>:<downstream cluster name> defined in argsMap");
     }
 
     final String [] neighborDischargeClusters= argsMap.
@@ -131,7 +133,8 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     //System.exit(0);
 
     if (!argsMap.keySet().contains("--nsTidePredInputDataDir")) {
-      throw new RuntimeException(mmi+"Must have the --nsTidePredInputDataDir=<NS_TIDE pred. data input directory> defined in argsMap");
+      throw new RuntimeException(mmi+
+        "Must have the --nsTidePredInputDataDir=<NS_TIDE pred. data input directory> defined in argsMap");
     }
 
     final String nsTidePredInputDataDir= argsMap.get("--nsTidePredInputDataDir");
