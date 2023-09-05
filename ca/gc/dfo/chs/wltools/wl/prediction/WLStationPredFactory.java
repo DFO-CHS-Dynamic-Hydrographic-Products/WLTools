@@ -7,6 +7,15 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
  * Modified on 2023-07-21, Gilles Mercier
  */
 
+import java.io.File;
+import java.lang.Math;
+import java.util.List;
+import org.slf4j.Logger;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.ArrayList;
+import org.slf4j.LoggerFactory;
+
 //---
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
@@ -34,14 +43,6 @@ import ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidal
 //import ca.gc.dfo.iwls.fmservice.modeling.util.ASCIIFileIO;
 //import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
 //import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-
-import java.lang.Math;
-import java.util.List;
-import org.slf4j.Logger;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.ArrayList;
-import org.slf4j.LoggerFactory;
 
 //import javax.validation.constraints.Min;
 //import javax.validation.constraints.NotNull;
@@ -236,9 +237,9 @@ abstract public class WLStationPredFactory extends WLStationPredIO implements IW
 
             // --- Build the path of the non-stationaty tidel consts. file inside the
             //     inner cfg DB.
-            stationTcInputFileLocal= WLToolsIO.getMainCfgDir()+
-              "/tidal/nonStationary/"+regionIdInfo+"/dischargeClusters/"+subRegionIdInfo+"/dischargeClimatoTFHA/"+
-              stationIdSpec+INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX+IStageIO.LOCATION_INFO_JSON_FNAME_EXT;
+            stationTcInputFileLocal= WLToolsIO.getMainCfgDir() + "/tidal/nonStationary/" + regionIdInfo +
+              "/dischargeClusters/" + subRegionIdInfo + File.separator + INonStationaryIO.CLUSTER_TFHA_MAIN_SUBDIR_NAME + //"/dischargeClimatoTFHA/"+
+              File.separator + stationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IStageIO.LOCATION_INFO_JSON_FNAME_EXT;
           }
 
           //slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);

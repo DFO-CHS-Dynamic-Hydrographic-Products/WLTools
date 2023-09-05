@@ -10,6 +10,8 @@ import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 // ---
 public interface INonStationaryIO extends ITidalIO {
 
+   String CLUSTER_TFHA_MAIN_SUBDIR_NAME= "dischargeClimatoTFHA";
+
    String LOCATION_TIDAL_CONSTS_FNAME_SUFFIX= "-TFHA";
 
    String ATMOS_TIDAL_CONSTS_JSON_DICT_KEY= "Atmos+Tidal";     // --- The json dict key for the non-stationary atmos+tidal constituents data.

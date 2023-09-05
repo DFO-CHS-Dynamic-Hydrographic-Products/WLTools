@@ -108,7 +108,7 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
     // --- Now find the two nearest CHS tide gauges from this WDS grid point location
     final String spineTideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
-      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;// IWLAdjustmentIO.SPINE_TIDE_GAUGES_INFO_FNAME;
+      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;
 
     slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
     //slog.info(mmi+"Debug System.exit(0)");
@@ -339,10 +339,13 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
     nearestDischargeClusters.add(spineLocationClusterName);
 
     // --- Redefine this.locationId to include its spineDomainName and
-    //     its cluster name
+    //     its cluster name and also remove the unwanted file name suffix.
+    final String locIdStrWithoutSuffix=
+      this.locationId.replace(INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX,"");
+
     this.locationId= spineDomainName +
       IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + spineLocationClusterName +
-      IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + this.locationId.replace(INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX,"");
+              IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + locIdStrWithoutSuffix;
 
     slog.info(mmi+"Redefined this.locationId to "+this.locationId);
     //slog.info(mmi+"Debug System.exit(0)");
@@ -367,8 +370,8 @@ final public class WLAdjustmentSpine extends WLAdjustmentType { // implements IW
 
       slog.info(mmi+"clusterSubDir="+clusterSubDir);
 
-      final String tfhaSubDir= mainDischargeClustersDir +
-        File.separator + clusterSubDir + File.separator + "dischargeClimatoTFHA";
+      final String tfhaSubDir= mainDischargeClustersDir + File.separator +
+        clusterSubDir + File.separator + INonStationaryIO.CLUSTER_TFHA_MAIN_SUBDIR_NAME; //"dischargeClimatoTFHA";
 
       DirectoryStream<Path> clusterDirGpInfoFiles= null;
 
