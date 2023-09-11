@@ -1,0 +1,16 @@
+export CLASSPATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/bin:/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib:$CLASSPATH
+export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib/as/hdfql:$LD_LIBRARY_PATH
+
+time java WLTools \
+--tool=adjustment \
+--adjType=tideGauge \
+--tideGaugeAdjMethod=DFO_IWLS \ # ECCC_H2D2_CORRECTION
+--tideGaugeId=03335 \
+--inputDataType=PREDICTION:JSON \ #ECCC_H2D2_FORECAST:ASCII \
+--tideGaugeInputDataFile=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/2023081706/StLawrence-Deschaillons-gridPoint-540.json
+#--outputDir=
+
+#--tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
+#--nsTidePredInputDataDir=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/2023081706 \
+#--modelInputDataDef=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2ASCII/2023081706_SLFE_NMM.csv \
+#--locationIdInfo=tidal/nonStationary/StLawrence/dischargeClusters/Deschaillons/dischargeClimatoTFHA/gridPoint-540-TFHA.json

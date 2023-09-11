@@ -10,20 +10,38 @@ import java.util.Set;
 public interface IWLAdjustment {
 
   enum Type {
-    SpineIPP, // --- Spine WL data initial pre-processing done inside SSC-ECCC 24/7 oper. system.
-    SpineFPP, // --- Spine WL data final pre-processing done alongside DFO-IMTS Spine API system (Azure cloud).
-    IWLS_WLO_QC, // --- Implies using IWLS WLP and WLO data to produce the specific WLF that is used for the short-term WLO quality control by the IWLS
-    MODEL_NEAREST_NEIGHBOR, // --- Implies use of WLF data coming from a model OR some WLP data to interpolate on the desired location using near. neigh. interp
-    MODEL_BARYCENTRIC   // --- Implies usr of WLF data coming from a FEM nodel(like H2D2 family OR even NEMO native grid WLF data)
+    TideGauge, // --- Implies doing adjustments at one tide gauge only.
+    SpineIPP,  // --- Spine WL adjustments initial pre-processing done inside SSC-ECCC 24/7 oper. system.
+    SpineFPP  // --- Spine WL adjustments final pre-processing done alongside DFO-IMTS Spine API system (Azure cloud).
   }
 
-  String [] allowedTypesDef= { Type.SpineIPP.name(),
-                               Type.SpineFPP.name(),
-                               Type.IWLS_WLO_QC.name(),
-                               Type.MODEL_NEAREST_NEIGHBOR.name(),
-                               Type.MODEL_BARYCENTRIC.name() };
+  // //IWLS_WLO_QC, // --- Implies using IWLS WLP and WLO data to produce the specific WLF that is used for the short-term WLO quality control by the IWLS
+  //  //MODEL_NEAREST_NEIGHBOR, // --- Implies use of WLF data coming from a model OR some WLP data to interpolate on the desired location using near. neigh. interp
+  //  //MODEL_BARYCENTRIC   // --- Implies usr of WLF data coming from a FEM nodel(like H2D2 family OR even NEMO native grid WLF data)
+  //}
+
+  String [] allowedTypesDef= {
+    Type.TideGauge.name(),
+    Type.SpineIPP.name(),
+    Type.SpineFPP.name()
+  }; //,
+                               //Type.IWLS_WLO_QC.name(),
+                               //Type.MODEL_NEAREST_NEIGHBOR.name(),
+                               //Type.MODEL_BARYCENTRIC.name() };
 
   Set<String> allowedTypes= Set.of(allowedTypesDef);
+
+  enum TideGaugeAdjMethod {
+    DFO_IWLS,
+    ECCC_H2D2_CORRECTION
+  }
+
+  TideGaugeAdjMethodsDef= {
+    TideGaugeAdjMethod.DFO_IWLS.name(),
+    TideGaugeAdjMethod.ECCC_H2D2_CORRECTION.name()
+  };
+
+  Set<String> allowedTideGaugeAdjMethods= Set.of(TideGaugeAdjMethodsDef);
 
   //enum Target {
   //  WDSFluvial //,
