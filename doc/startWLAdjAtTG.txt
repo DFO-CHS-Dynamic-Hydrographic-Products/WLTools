@@ -1,12 +1,15 @@
 export CLASSPATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/bin:/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib:$CLASSPATH
 export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib/as/hdfql:$LD_LIBRARY_PATH
 
+# --- 03335 TG id. can be passed in args or got from the maestro env. vars.
+
 time java WLTools \
 --tool=adjustment \
 --adjType=TideGauge \
 --locationIdInfo=03335 \
 --tideGaugeAdjMethod=CHS_IWLS \ # ECCC_H2D2_CORRECTION
 --inputDataType=CHS_PREDICTION:JSON \ #ECCC_H2D2_FORECAST:ASCII \
---tideGaugeLocationsDefFileName=spineStlCHSTGs.json
+--tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
+--tideGaugeWLODataFile=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/tgObs/03335-wloIGLD.json \
 --tideGaugeInputDataFile=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/2023081706/StLawrence-Deschaillons-gridPoint-540.json
 #--outputDir=
