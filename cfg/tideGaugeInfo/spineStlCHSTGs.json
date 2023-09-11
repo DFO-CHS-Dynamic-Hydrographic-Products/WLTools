@@ -1,38 +1,37 @@
 {
-  "15520": {"HRName": "Jetee-1", "lat": 45.5035, "lon": -73.552528, "IGLD85": 5.56, "ECCC_ID": "30308"},
+  "15520": {"HRName": "Jetee-1", "lat": 45.5035, "lon": -73.552528, "zcVsIGLD": 5.56, "ECCC_ID": "30308"},
 
-  "15540": {"HRName": "Montreal rue Frontenac", "lat": 45.528667, "lon": -73.5425, "IGLD85": 5.348, "ECCC_ID": "30310" },
+  "15540": {"HRName": "Montreal rue Frontenac", "lat": 45.528667, "lon": -73.5425, "zcVsIGLD": 5.348, "ECCC_ID": "30310" },
 
-  "15660": {"HRName": "Varennes", "lat": 45.684306, "lon": -73.443694, "IGLD85": 4.836, "ECCC_ID": "30312"  } ,
+  "15660": {"HRName": "Varennes", "lat": 45.684306, "lon": -73.443694, "zcVsIGLD": 4.836, "ECCC_ID": "30312"  } ,
 
-  "15780": {"HRName": "Contrecoeur(IOC)", "lat": 45.832667, "lon": -73.283167, "IGLD85": 4.288, "ECCC_ID": "30314" },
+  "15780": {"HRName": "Contrecoeur(IOC)", "lat": 45.832667, "lon": -73.283167, "zcVsIGLD": 4.288, "ECCC_ID": "30314" },
 
-  "15860": {"HRName": "Lanoraie", "lat": 45.959167, "lon": -73.214444, "IGLD85": 3.84, "ECCC_ID": "13606" },
+  "15860": {"HRName": "Lanoraie", "lat": 45.959167, "lon": -73.214444, "zcVsIGLD": 3.84, "ECCC_ID": "13606" },
 
-  "15930": {"HRName": "Sorel", "lat": 45.959167, "lon": 45.959167, "IGLD85": 3.775, "ECCC_ID": "30316"},
+  "15930": {"HRName": "Sorel", "lat": 45.959167, "lon": 45.959167, "zcVsIGLD": 3.775, "ECCC_ID": "30316"},
 
-  "15930": {"HRName": "Lac Saint-Pierre", "lat": 45.959167, "lon": -73.214444, "IGLD85": 3.39, "ECCC_ID": "30318" },
+  "15930": {"HRName": "Lac Saint-Pierre", "lat": 45.959167, "lon": -73.214444, "zcVsIGLD": 3.39, "ECCC_ID": "30318" },
 
-  "03365": {"HRName": "Port-Saint-Francois", "lat": 46.272556, "lon": -72.619306, "IGLD85": 2.987 , "ECCC_ID": "30300" },
+  "03365": {"HRName": "Port-Saint-Francois", "lat": 46.272556, "lon": -72.619306, "zcVsIGLD": 2.987 , "ECCC_ID": "30300" },
 
-  "03360": {"HRName": "Trois-Rivieres", "lat": 46.3405, "lon": -72.539167, "IGLD85": 2.926, "ECCC_ID": "30298"  },
+  "03360": {"HRName": "Trois-Rivieres", "lat": 46.3405, "lon": -72.539167, "zcVsIGLD": 2.926, "ECCC_ID": "30298"  },
 
-  "03353": {"HRName": "Becancour", "lat": 46.400333, "lon": -72.3795, "IGLD85": 2.59, "ECCC_ID": "30296" },
+  "03353": {"HRName": "Becancour", "lat": 46.400333, "lon": -72.3795, "zcVsIGLD": 2.59, "ECCC_ID": "30296" },
 
-  "03345": {"HRName": "Batiscan", "lat": 46.500333, "lon": -72.245833, "IGLD85": 1.91, "ECCC_ID": "30292" },
+  "03345": {"HRName": "Batiscan", "lat": 46.500333, "lon": -72.245833, "zcVsIGLD": 1.91, "ECCC_ID": "30292" },
 
-  "03335": {"HRName": "Deschaillons-sur-Saint-Laurent", "lat": 46.561033, "lon": -72.106222, "IGLD85": 0.695 , "ECCC_ID": "30288" },
+  "03335": {"HRName": "Deschaillons-sur-Saint-Laurent", "lat": 46.561033, "lon": -72.106222, "zcVsIGLD": 0.695 , "ECCC_ID": "30288" },
 
-  "03300": {"HRName": "Portneuf", "lat": 46.681167, "lon": -71.877167, "IGLD85": -1.117 , "ECCC_ID": "30282" },
+  "03300": {"HRName": "Portneuf", "lat": 46.681167, "lon": -71.877167, "zcVsIGLD": -1.117 , "ECCC_ID": "30282" },
 
-  "03280": {"HRName": "Neuville", "lat": 46.6965, "lon": -71.572833, "IGLD85": -1.377, "ECCC_ID": "30278" },
+  "03280": {"HRName": "Neuville", "lat": 46.6965, "lon": -71.572833, "zcVsIGLD": -1.377, "ECCC_ID": "30278" },
 
-  "03248": {"HRName": "Vieux-Quebec", "lat": 46.811111, "lon": -71.20175, "IGLD85": -2.005, "ECCC_ID": "30266" },
+  "03248": {"HRName": "Vieux-Quebec", "lat": 46.811111, "lon": -71.20175, "zcVsIGLD": -2.005, "ECCC_ID": "30266" },
 
-  "03110": {"HRName": "Saint-Laurent I.O.", "lat": 46.85816667, "lon": -71.00333333, "IGLD85": -2.186, "ECCC_ID": "30238" },
+  "03110": {"HRName": "Saint-Laurent I.O.", "lat": 46.85816667, "lon": -71.00333333, "zcVsIGLD": -2.186, "ECCC_ID": "30238" },
 
-  "03100": {"HRName": "Saint-Francois I.O.", "lat": 46.9965, "lon": -70.808167, "IGLD85": -2.535 , "ECCC_ID": "30234"  },
+  "03100": {"HRName": "Saint-Francois I.O.", "lat": 46.9965, "lon": -70.808167, "zcVsIGLD": -2.535 , "ECCC_ID": "30234"  },
 
-  "03057": {"HRName": "Saint-Joseph-de-la-Rive", "lat": 47.448833, "lon": -70.3655, "IGLD85": -3.394,  "ECCC_ID": "30218" }
+  "03057": {"HRName": "Saint-Joseph-de-la-Rive", "lat": 47.448833, "lon": -70.3655, "zcVsIGLD": -3.394,  "ECCC_ID": "30218" }
 }
-
