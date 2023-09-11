@@ -32,12 +32,12 @@ public interface IWLAdjustment {
   Set<String> allowedTypes= Set.of(allowedTypesDef);
 
   enum TideGaugeAdjMethod {
-    DFO_IWLS,
+    CHS_IWLS,
     ECCC_H2D2_CORRECTION
   }
 
-  TideGaugeAdjMethodsDef= {
-    TideGaugeAdjMethod.DFO_IWLS.name(),
+  String [] TideGaugeAdjMethodsDef= {
+    TideGaugeAdjMethod.CHS_IWLS.name(),
     TideGaugeAdjMethod.ECCC_H2D2_CORRECTION.name()
   };
 

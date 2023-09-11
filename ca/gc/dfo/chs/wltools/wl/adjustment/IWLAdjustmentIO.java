@@ -30,34 +30,49 @@ public interface IWLAdjustmentIO {
   //Set<String> allowedLocationTypes= Set.of(LOCATION_TYPES_DEF);
 
   enum InputDataType {
+    CHS_IWLS,
     ECCC_H2D2, //:NETCDF,
     //H2D2:ASCII,
-    DHP_S104,
-    IWLS //:JSON
+    CHS_DHP_S104,
+    CHS_PREDICTION //:JSON
   }
 
   enum InputDataTypesFormatsDef {
     HDF5_DCF3,
     ASCII,
-    JSON
+    JSON //,
+    // NetCDF
   }
 
   // ---
   //String [] ECCC_H2D2_INPUT_FMTS= { InputDataTypesFormatsDef.NETCDF.name(),
   //                                  InputDataTypesFormatsDef.ASCII.name() };
 
-  String [] DHP_S104_INPUT_FMTS= { InputDataTypesFormatsDef.HDF5_DCF3.name() };
+  String [] CHS_DHP_S104_INPUT_FMTS= {
+    InputDataTypesFormatsDef.HDF5_DCF3.name()
+  };
 
-  String [] ECCC_H2D2_INPUT_FMTS= { InputDataTypesFormatsDef.ASCII.name() };
+  String [] ECCC_H2D2_INPUT_FMTS= {
+    InputDataTypesFormatsDef.ASCII.name() //,
+    // InputDataTypesFormatsDef.NetCDF.name()
+  };
 
-  String [] IWLS_INPUT_FMTS= { InputDataTypesFormatsDef.JSON.name() };
+  String [] CHS_IWLS_INPUT_FMTS= {
+    InputDataTypesFormatsDef.JSON.name()
+  };
+
+  String [] CHS_PREDICTION_INPUT_FMTS= {
+    InputDataTypesFormatsDef.JSON.name()
+  };
+
 
   // --- TODO: Use the InputDataTypesFormatsDef enum objects as keys to this
   //     InputDataTypesFormats Map instead of the related Strings ??
   Map< String, Set<String> > InputDataTypesFormats= Map.of(
-    InputDataType.DHP_S104.name() , Set.of(DHP_S104_INPUT_FMTS),
-    InputDataType.ECCC_H2D2.name(), Set.of(ECCC_H2D2_INPUT_FMTS),
-    InputDataType.IWLS.name()     , Set.of(IWLS_INPUT_FMTS)
+    InputDataType.CHS_DHP_S104.name()  , Set.of(CHS_DHP_S104_INPUT_FMTS),
+    InputDataType.ECCC_H2D2.name()     , Set.of(ECCC_H2D2_INPUT_FMTS),
+    InputDataType.CHS_IWLS.name()      , Set.of(CHS_IWLS_INPUT_FMTS),
+    InputDataType.CHS_PREDICTION.name(), Set.of(CHS_PREDICTION_INPUT_FMTS)
   );
 
   Set<String> allowedInputDataTypes= InputDataTypesFormats.keySet();

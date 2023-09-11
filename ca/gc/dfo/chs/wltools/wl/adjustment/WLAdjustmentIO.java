@@ -132,8 +132,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final void getH2D2ASCIIWLFProbesData(/*@NotNull*/ Map<String, HBCoords> nearestsTGCoords, /*@NotNull*/ final JsonObject mainJsonMapObj) {
+  final void getH2D2ASCIIWLFProbesData(/*@NotNull*/ Map<String, HBCoords> nearestsTGCoords, 
+                                       /*@NotNull*/ final JsonObject mainJsonMapObj) {
                                        ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
+
+    // --- TODO: Use a Set<String> object instead of a Map<String, HBCoords> object
+    //     because the HBCoords object is useless for this method.
 
     final String mmi= "getH2D2ASCIIWLProbesData: ";
 

@@ -97,6 +97,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     final String mmi=
       "WLAdjustmentSpineIPP(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
 
+    slog.info(mmi+"Not ready yet!");
+
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
     if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
@@ -126,7 +128,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     // --- Store the neighborDischargeClusters in a local HashSet<String> object
     //    in order to be able to add other discharge clusters to it.
     Set<String> nearestDischargeClusters= new
-      HashSet(Arrays.asList(neighborDischargeClusters));
+      HashSet<String>(Arrays.asList(neighborDischargeClusters));
 
     slog.info(mmi+"nearestDischargeClusters="+nearestDischargeClusters.toString());
     //slog.info(mmi+"Debug System.exit(0)");
@@ -301,10 +303,10 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       //  throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+" !!");
       //}
 
-    } else if  (this.inputDataType == IWLAdjustmentIO.InputDataType.DHP_S104) {
+    } else if  (this.inputDataType == IWLAdjustmentIO.InputDataType.CHS_DHP_S104) {
 
       throw new RuntimeException(mmi+" inputDataType -> "+
-                                 IWLAdjustmentIO.InputDataType.DHP_S104.name()+" not ready to be used yet!!");
+                                 IWLAdjustmentIO.InputDataType.CHS_DHP_S104.name()+" not ready to be used yet!!");
 
     } else {
       throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name());

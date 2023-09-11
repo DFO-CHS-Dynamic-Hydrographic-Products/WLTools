@@ -79,20 +79,20 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
                                  " ! Must be one of -> "+IWLAdjustment.allowedTypes.toString());
     }
 
-    if (adjType.equals(Type.IWLS_WLO_QC.name())) {
-      throw new RuntimeException(mmi+"The WL location adjustment type "+
-                                Type.IWLS_WLO_QC.name()+" is not yet ready to be used !!");
-    }
+    //if (adjType.equals(Type.CHS_IWLS.name())) {
+    //  throw new RuntimeException(mmi+"The WL location adjustment type "+
+    //                            Type.CHS_IWLS.name()+" is not yet ready to be used !!");
+    //}
 
-    if (adjType.equals(Type.MODEL_BARYCENTRIC.name())) {
-      throw new RuntimeException(mmi+"The WL adjustment type "+
-                                 Type.MODEL_BARYCENTRIC.name()+" is not yet ready to be used !!");
-    }
+    //if (adjType.equals(Type.MODEL_BARYCENTRIC.name())) {
+    //  throw new RuntimeException(mmi+"The WL adjustment type "+
+    //                             Type.MODEL_BARYCENTRIC.name()+" is not yet ready to be used !!");
+    //}
 
-    if (adjType.equals(Type.MODEL_NEAREST_NEIGHBOR.name())) {
-      throw new RuntimeException(mmi+"The WL adjustment type "+
-                                 Type.MODEL_NEAREST_NEIGHBOR.name()+" is not yet ready to be used !!");
-    }
+    //if (adjType.equals(Type.MODEL_NEAREST_NEIGHBOR.name())) {
+    //  throw new RuntimeException(mmi+"The WL adjustment type "+
+    //                             Type.MODEL_NEAREST_NEIGHBOR.name()+" is not yet ready to be used !!");
+    //}
 
     if (adjType.equals(Type.SpineFPP.name())) {
       throw new RuntimeException(mmi+"The WL adjustment type "+
@@ -113,9 +113,18 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
 
     //slog.info(mmi+"Will use location Id info  -> "+locationIdInfo);
 
+    if (adjType.equals(IWLAdjustment.Type.TideGauge.name())) {
+
+      slog.info(mmi+"Doing WL adjustment at tide gauge type setup");
+
+      this.adjInstance= new WLAdjustmentTideGauge(argsMap);
+
+      slog.info(mmi+"Done with WL adjustment at tide gauge type setup");
+    }
+
     if (adjType.equals(IWLAdjustment.Type.SpineIPP.name())) {
 
-      slog.info(mmi+"Doing Spine WL adjustment intial pre-processing type setup");
+      slog.info(mmi+"Doing Spine WL adjustment intial pre-processing (IPP) type setup");
 
       //this.adjType=IWLAdjustment.Type.WDS;
       //final String wdsLocationIdInfoFile=
@@ -125,7 +134,6 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
       this.adjInstance= new WLAdjustmentSpineIPP(argsMap); //wdsLocationIdInfoFile);
 
       slog.info(mmi+"Done with Spine WL adjustment initial pre-processing type setup");
-
     }
 
     //slog.info(mmi+"Test dist. rad="+Trigonometry.getDistanceInRadians(-73.552528,45.5035,-73.5425,45.528667));
