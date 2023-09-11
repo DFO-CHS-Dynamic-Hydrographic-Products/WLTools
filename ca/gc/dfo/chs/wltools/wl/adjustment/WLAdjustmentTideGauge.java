@@ -74,7 +74,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
   //private IWLAdjustment.Type adjType= null;
 
-  private List<MeasurementCustom> tgLocationWLData= null;
+  private List<MeasurementCustom> tgLocationWLOData= null;
+
+  // ---  not used if the input data is WL forecast data
+  private List<MeasurementCustom> tgLocationWLPData= null;
 
   /**
    * Comments please!
@@ -99,47 +102,38 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
-    if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
+    final Set<String> argsMapKeysSet =argsMap.keySet();
+
+    if (!argsMapKeysSet.contains("--tideGaugeLocationsDefFileName")) {
       throw new RuntimeException(mmi+
         "Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
     }
 
     final String tideGaugeLocationsDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
 
-    if (!argsMap.keySet().contains("--tideGaugeInputDataFile")) {
+    if (!argsMapKeysSet.contains("--tideGaugeInputDataFile")) {
       throw new RuntimeException(mmi+
-         "Must have the --tideGaugeInputDataFile=<complete path to the tide gauge input data file> defined in argsMap");
+         "Must have the --tideGaugeInputDataFile=<complete path to the tide gauge WLP or WLF input data file> defined in argsMap");
     }
 
     final String tideGaugeInputDataFile= argsMap.get("--tideGaugeInputDataFile");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    if (!argsMapKeysSet.contains("--tideGaugeWLODataFile")) {
+      throw new RuntimeException(mmi+
+         "Must have the --tideGaugeInputDataFile=<complete path to the tide gauge input WLO data file> defined in argsMap");
+    }
+
+    final String tideGaugeWLODataFile= argsMap.get("--tideGaugeWLODataFile");
+
+    slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     // --- Now find the two nearest CHS tide gauges from this WDS grid point location
     final String tideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
       IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + tideGaugeLocationsDefFileName ;
 
     slog.info(mmi+"tideGaugesInfoFile="+tideGaugesInfoFile);
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
-
-   //final JsonObject spineLocationInfoJsonObj=
-   //   this.getSpineJsonLocationIdInfo( spineLocationIdInfoFile );
-
-    //this.adjLocationZCVsVDatum= spineLocationInfoJsonObj.
-    //  getJsonNumber(StageIO.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
-
-    //this.adjLocationLatitude= spineLocationInfoJsonObj.
-    //  getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
-
-    //this.adjLocationLongitude= spineLocationInfoJsonObj.
-    //  getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
-
-    //this.relevantSpineClustersInfo= new HashMap<String, Map<String,HBCoords>>();
-
-    //slog.info(mmi+"tide gauge adjustment location IGLD to ZC conversion value="+this.adjLocationZCVsVDatum);
-    //slog.info(mmi+"tide gauge adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -229,7 +223,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.JSON) {
 
-        this.tgLocationWLData=
+        this.tgLocationWLPData=
           this.getWLPredDataInJsonFmt(tideGaugeInputDataFile);
 
       } else {
@@ -246,7 +240,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name());
     }
 
-    slog.info(mmi+"Done with reading the input data now");
+    slog.info(mmi+"Done with reading the WL input data to adjust now");
 
     slog.info(mmi+"end");
 
