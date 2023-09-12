@@ -2,16 +2,16 @@ The St. Lawrence discharge clusters non-stationary tidal constituents values in 
 dischargeClusters/<cluster>/dischargeClimatoTFHA/gridPoint-NNN-TFHA.json files must be used for the
 non-stationary tidal predictions with the following equations:
 
-The stages discharges data used for the non-stationary tidal analysis was (2nd order polynomial):
+The stages discharges data used for the non-stationary tidal analysis by the NS_TIDE python code was (2nd order polynomial):
 
 log(discharge(t-CS1.lag)) and  (log(discharge(t-CS2lag)))**2
 
-Stage part only (no trigo function and no iteration):
+Stage reconstruction part only (no trigo function and no iteration):
 -----------------------------------------------------
 
 CS0 + CS1.factor * log(discharge(t-CS1.lag)) + CS2.factor * (log(discharge(t-CS2lag)))**2 
 
-non-stationary tidal part:
+non-stationary tidal reconstruction part:
 ---------------------------
 
 constituents (AmpCSn, PhaCSn) summation for one constituent, note that the Z0 of the TCF files
