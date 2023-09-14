@@ -98,6 +98,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       "WLAdjustmentSpineIPP(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
 
     slog.info(mmi+"Not ready yet!");
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
@@ -283,18 +285,16 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
               " using the "+this.inputDataFormat.name()+" file format");
 
     // --- TODO: replace this if-else block by a switch-case block ??
-    if (this.inputDataType == IWLAdjustmentIO.InputDataType.ECCC_H2D2) {
+    if (this.inputDataType == IWLAdjustmentIO.DataType.CHS_SPINE) {
 
-      if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.ASCII) {
-
+      //if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.ASCII) {
         //final Map<String, String> nearestsTGEcccIds= new HashMap<String, String>();
+      //  this.getH2D2ASCIIWLFProbesData(nearestsTGCoords, mainJsonMapObj); //nearestsTGEcccIds);
 
-        this.getH2D2ASCIIWLFProbesData(nearestsTGCoords, mainJsonMapObj); //nearestsTGEcccIds);
-
-      } else {
-        throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+
-                                    " for inputDataType ->"+this.inputDataType.name()+" !!");
-      }
+      //} else {
+      //  throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+
+      //                              " for inputDataType ->"+this.inputDataType.name()+" !!");
+      //}
 
       //if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
       //  this.getH2D2NearestGPNCDFWLData(nearestsTGCoords);
@@ -303,10 +303,10 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       //  throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+" !!");
       //}
 
-    } else if  (this.inputDataType == IWLAdjustmentIO.InputDataType.CHS_DHP_S104) {
-
-      throw new RuntimeException(mmi+" inputDataType -> "+
-                                 IWLAdjustmentIO.InputDataType.CHS_DHP_S104.name()+" not ready to be used yet!!");
+    //} else if  (this.inputDataType == IWLAdjustmentIO.DataType.CHS_DHP_S104) {
+    //
+    //  throw new RuntimeException(mmi+" inputDataType -> "+
+    //                             IWLAdjustmentIO.InputDataType.CHS_DHP_S104.name()+" not ready to be used yet!!");
 
     } else {
       throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name());

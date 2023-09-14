@@ -68,8 +68,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected String locationId= null;
   protected String locationIdInfo= null;
 
-  protected InputDataType inputDataType= null;
-  protected InputDataTypesFormatsDef inputDataFormat= null;
+  protected DataType inputDataType= null;
+  protected DataTypesFormatsDef inputDataFormat= null;
 
   protected double adjLocationLatitude= 0.0;
   protected double adjLocationLongitude= 0.0;

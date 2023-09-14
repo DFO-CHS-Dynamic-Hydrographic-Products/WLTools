@@ -15,67 +15,89 @@ public interface IWLAdjustmentIO {
 
   String TIDE_GAUGES_INFO_ECCC_IDS_KEY= "ECCC_ID";
 
+  String INPUT_DATA_TYPE_SPLIT_STR= "::";
+
   String INPUT_DATA_FMT_SPLIT_CHAR= ":";
 
   String OUTPUT_DATA_FMT_SPLIT_CHAR= "-";
 
-  //enum LocationType {
-  //  WDS,
-  //  IWLS
-  //}
-
-  //String [] LOCATION_TYPES_DEF= { LocationType.WDS.name(),
-  //                                LocationType.IWLS.name() };
-
-  //Set<String> allowedLocationTypes= Set.of(LOCATION_TYPES_DEF);
-
-  enum InputDataType {
+  enum DataType {
     CHS_IWLS,
-    ECCC_H2D2, //:NETCDF,
-    //H2D2:ASCII,
-    CHS_DHP_S104,
-    CHS_PREDICTION //:JSON
+    CHS_SPINE,
+    //CHS_DHP_S104,
+    CHS_TIDEGAUGE
+    //CHS_PREDICTION,
+    //ECCC_H2D2_FORECAST
   }
 
-  enum InputDataTypesFormatsDef {
-    HDF5_DCF3,
-    ASCII,
-    JSON //,
-    // NetCDF
+  //String [] allowedDataTypesDef= {
+  //  DataType.CHS_IWLS.name(),
+  //  DataType.CHS_DHP_S104.name(),
+  //  DataType.CHS_TIDEGAUGEname()
+  //};
+  //Set<String> allowedDataTypes= Set.of(allowedDataTypesDef);
+
+  //Map< String, Set<String> > allowedDataTypes= Map.of( );
+
+  enum DataTypesFormatsDef {
+    JSON,
+    DHP_S104_DCF3,
+    //DHP_S104_DCF2,
+    ECCC_H2D2_ASCII,
+    SPINE_ADHOC_ASCII
   }
 
   // ---
   //String [] ECCC_H2D2_INPUT_FMTS= { InputDataTypesFormatsDef.NETCDF.name(),
   //                                  InputDataTypesFormatsDef.ASCII.name() };
 
-  String [] CHS_DHP_S104_INPUT_FMTS= {
-    InputDataTypesFormatsDef.HDF5_DCF3.name()
+  String [] CHS_DHP_S104_FMTS= {
+    DataTypesFormatsDef.DHP_S104_DCF3.name(),
+    //DataTypesFormatsDef.HDF5_DCF2.name()
   };
 
-  String [] ECCC_H2D2_INPUT_FMTS= {
-    InputDataTypesFormatsDef.ASCII.name() //,
-    // InputDataTypesFormatsDef.NetCDF.name()
+  //String [] ECCC_H2D2_FORECAST_INPUT_FMTS= {
+  //  InputDataTypesFormatsDef.ASCII.name() //,
+  //  // InputDataTypesFormatsDef.NetCDF.name()
+  //};
+
+  String [] CHS_IWLS_FMTS= {
+    DataTypesFormatsDef.JSON.name()
   };
 
-  String [] CHS_IWLS_INPUT_FMTS= {
-    InputDataTypesFormatsDef.JSON.name()
+  String [] CHS_SPINE_FMTS= {
+    DataTypesFormatsDef.JSON.name(),
+    DataTypesFormatsDef.DHP_S104_DCF3.name(),
+    DataTypesFormatsDef.SPINE_ADHOC_ASCII.name(),
   };
 
-  String [] CHS_PREDICTION_INPUT_FMTS= {
-    InputDataTypesFormatsDef.JSON.name()
+  // ---
+  String [] CHS_TIDEGAUGE_FMTS= {
+    DataTypesFormatsDef.JSON.name(),
+    DataTypesFormatsDef.ECCC_H2D2_ASCII.name(),
+    DataTypesFormatsDef.JSON.name()+ INPUT_DATA_FMT_SPLIT_CHAR + DataTypesFormatsDef.ECCC_H2D2_ASCII.name()
   };
 
 
   // --- TODO: Use the InputDataTypesFormatsDef enum objects as keys to this
   //     InputDataTypesFormats Map instead of the related Strings ??
-  Map< String, Set<String> > InputDataTypesFormats= Map.of(
-    InputDataType.CHS_DHP_S104.name()  , Set.of(CHS_DHP_S104_INPUT_FMTS),
-    InputDataType.ECCC_H2D2.name()     , Set.of(ECCC_H2D2_INPUT_FMTS),
-    InputDataType.CHS_IWLS.name()      , Set.of(CHS_IWLS_INPUT_FMTS),
-    InputDataType.CHS_PREDICTION.name(), Set.of(CHS_PREDICTION_INPUT_FMTS)
+  Map< String, Set<String> > DataTypesFormats= Map.of(
+    DataType.CHS_IWLS.name()      , Set.of(CHS_IWLS_FMTS),
+    DataType.CHS_SPINE.name()     , Set.of(CHS_SPINE_FMTS),
+    DataType.CHS_TIDEGAUGE.name() , Set.of(CHS_TIDEGAUGE_FMTS)
+    //InputDataType.CHS_PREDICTION.name(), Set.of(CHS_PREDICTION_INPUT_FMTS),
+    //InputDataType.ECCC_H2D2_FORECAST.name() , Set.of(ECCC_H2D2_FORECAST_INPUT_FMTS)
   );
 
-  Set<String> allowedInputDataTypes= InputDataTypesFormats.keySet();
+  Set<String> allowedDataTypes= DataTypesFormats.keySet();
+
+  int H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX= 2;
+
+  String H2D2_ASCII_FMT_FLINE_SPLIT= ",";
+
+  String H2D2_ASCII_FMT_TIMESTAMP_KEY= "epoch";
+
+  String H2D2_ASCII_FMT_FNAME_SPLITSTR= "_";
 
   //enum ECCC_H2D2_WLF_NAMES {
   //  SURFACEN, //--- WLF values on FEM nodes (triangles vertices)
@@ -90,13 +112,4 @@ public interface IWLAdjustmentIO {
   //  ECCC_H2D2_WLF_NAMES.SURFACEN, "St_Lawrence_River_node_lon:St_Lawrence_River_node_lat",
   //  ECCC_H2D2_WLF_NAMES.SURFACEE, "St_Lawrence_River_edge_lon:St_Lawrence_River_edge_lat"
   //);
-
-   int H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX= 2;
-
-   String H2D2_ASCII_FMT_FLINE_SPLIT= ",";
-
-   String H2D2_ASCII_FMT_TIMESTAMP_KEY= "epoch";
-
-   String H2D2_ASCII_FMT_FNAME_SPLITSTR= "_";
 }
-

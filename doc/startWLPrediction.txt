@@ -8,5 +8,10 @@ time java WLTools \
 --startTimeISOFormat=2023-08-02T06:00:00Z \
 --stationPredType=TIDAL:NON_STATIONARY_FOREMAN \
 --tidalConstsInputFileFormat=NON_STATIONARY_JSON \
---stationIdInfo=StLawrence:Deschaillons:gridPoint-540 \
 --outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/2023081706
+--stationIdInfo=StLawrence:Deschaillons:gridPoint-540 \ # Deschaillons
+
+# --stationIdInfo=StLawrence:Longueuil:gridPoint-0  # Jetee1
+# --stationIdInfo=StLawrence:Longueuil:gridPoint-14 # Frontenac
+#  --stationIdInfo=StLawrence:Longueuil:gridPoint-85 # Varennes
+# 

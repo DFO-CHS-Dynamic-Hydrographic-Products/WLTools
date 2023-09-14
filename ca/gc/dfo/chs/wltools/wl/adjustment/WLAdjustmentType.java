@@ -86,21 +86,23 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
     }
 
     final String [] inputDataTypeFmtSplit= argsMap.
-      get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+      get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_TYPE_SPLIT_STR);//INPUT_DATA_FMT_SPLIT_CHAR);
 
     final String checkInputDataType= inputDataTypeFmtSplit[0];
-    final String checkInputDataFormat= inputDataTypeFmtSplit[1];
+    //final String checkInputDataFormat= inputDataTypeFmtSplit[1];
 
-    if (!IWLAdjustmentIO.allowedInputDataTypes.contains(checkInputDataType)) {
+    if (!IWLAdjustmentIO.allowedDataTypes.contains(checkInputDataType)) {
       throw new RuntimeException(mmi+"Invalid input data type -> "+checkInputDataType+
-                                 " ! must be one of -> "+IWLAdjustmentIO.allowedInputDataTypes.toString());
+                                 " ! must be one of -> "+IWLAdjustmentIO.allowedDataTypes.toString());
     }
 
     this.inputDataType= IWLAdjustmentIO.
-      InputDataType.valueOf(checkInputDataType);
+      DataType.valueOf(checkInputDataType);
+
+    final String checkInputDataFormat= inputDataTypeFmtSplit[1];
 
     final Set<String> allowedInputFormats=
-      InputDataTypesFormats.get(this.inputDataType.name());
+      DataTypesFormats.get(this.inputDataType.name());
 
     if (!allowedInputFormats.contains(checkInputDataFormat)) {
       throw new RuntimeException(mmi+"Invalid input data format -> "+checkInputDataFormat+" for input data type -> "+
@@ -108,10 +110,14 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
     }
 
     this.inputDataFormat= IWLAdjustmentIO.
-      InputDataTypesFormatsDef.valueOf(checkInputDataFormat);
+      DataTypesFormatsDef.valueOf(checkInputDataFormat);
 
     slog.info(mmi+"Will use input data type -> "+this.inputDataType.name()+
               " with input data format -> "+this.inputDataFormat.name());
+
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
+
 
     //if (!this.argsMapKeySet.contains("--modelInputDataDef")) {
     //  throw new RuntimeException(mmi+"Must have the mandatory option: --modelInputDataDef defined !!");
