@@ -281,8 +281,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     ////Map<Integer,HBCoords> mdlGrdPtsCoordinates= null;
     //ArrayList<HBCoords> mdlGrdPtsCoordinates= null;
 
-    slog.info(mmi+" Getting inputDataType -> "+this.inputDataType.name()+
-              " using the "+this.inputDataFormat.name()+" file format");
+    slog.info(mmi+" Getting inputDataType -> "+this.inputDataType.name()); //+
+        //  " using the "+this.inputDataFormat.name()+" file format");
 
     // --- TODO: replace this if-else block by a switch-case block ??
     if (this.inputDataType == IWLAdjustmentIO.DataType.CHS_SPINE) {

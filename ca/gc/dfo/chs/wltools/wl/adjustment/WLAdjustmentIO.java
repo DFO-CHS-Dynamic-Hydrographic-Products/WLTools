@@ -69,7 +69,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected String locationIdInfo= null;
 
   protected DataType inputDataType= null;
-  protected DataTypesFormatsDef inputDataFormat= null;
+
+  protected DataTypesFormatsDef obsInputDataFormat= null;
+
+  protected DataTypesFormatsDef predictInputDataFormat= null;
+  protected DataTypesFormatsDef forecastInputDataFormat= null;
 
   protected double adjLocationLatitude= 0.0;
   protected double adjLocationLongitude= 0.0;
@@ -99,7 +103,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       this.locationIdInfo= null;
 
     this.inputDataType= null;
-    this.inputDataFormat= null;
+
+    this.obsInputDataFormat=
+      this.predictInputDataFormat=
+        this.forecastInputDataFormat = null;
 
     this.adjLocationZCVsVDatum=
       this.adjLocationLatitude=

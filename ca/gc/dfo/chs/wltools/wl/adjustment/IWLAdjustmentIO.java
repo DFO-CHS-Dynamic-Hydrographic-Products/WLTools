@@ -47,6 +47,15 @@ public interface IWLAdjustmentIO {
     SPINE_ADHOC_ASCII
   }
 
+  String [] DataTypesFormatsDefArr= {
+    DataTypesFormatsDef.JSON.name(),
+    DataTypesFormatsDef.DHP_S104_DCF3.name(),
+    DataTypesFormatsDef.ECCC_H2D2_ASCII.name(),
+    DataTypesFormatsDef.SPINE_ADHOC_ASCII.name()
+  };
+
+  Set<String> allowedInputFormats= Set.of(DataTypesFormatsDefArr);
+
   // ---
   //String [] ECCC_H2D2_INPUT_FMTS= { InputDataTypesFormatsDef.NETCDF.name(),
   //                                  InputDataTypesFormatsDef.ASCII.name() };
