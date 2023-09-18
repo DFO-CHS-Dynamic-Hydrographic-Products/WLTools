@@ -23,19 +23,24 @@ public interface IWLStationPredIO  {
 
   String JSON_FEXT= ".json";
 
-  String INSTANT_JSON_KEY= "eventDate";
   String VALUE_JSON_KEY= "value";
+  String INSTANT_JSON_KEY= "eventDate";
+  String UNCERTAINTY_JSON_JEY= "uncertainty";
 
-  enum OutputFormats {
-    JSON //,
+  // ---
+  enum Format {
+    CHS_JSON,
+    DHP_S104_DCF8
     //CSV
   }
 
-  String [] allowedOutputFormatsDef= { OutputFormats.JSON.name() }; //, OutputFormats.CSV.name() };
+  String [] allowedFormatsDef= { Format.CHS_JSON.name(),
+                                 Format.DHP_S104_DCF8.name() }; //, OutputFormats.CSV.name() };
 
-  Set<String> allowedOutputFormats= Set.of(allowedOutputFormatsDef);
+  Set<String> allowedFormats= Set.of(allowedFormatsDef);
 
   //abstract public List<MeasurementCustom> getAllPredictions();
   abstract public IWLStationPred getAllPredictions();
+
   abstract public List<MeasurementCustom> getPredictionData();
 }

@@ -491,7 +491,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       slog.info(mmi+"nsTidePredDataJsonFile="+nsTidePredDataJsonFile);
 
       this.tgsNearestSpineLocationsPred.put(tgNumStrId,
-                                            this.getWLPredDataInJsonFmt(nsTidePredDataJsonFile));
+                                            this.getWLDataInJsonFmt(nsTidePredDataJsonFile));
 
       if (nearestSpineLocationId.equals(this.locationId)) {
 
@@ -514,7 +514,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
       // --- fill up the this.spineLocationNSTPred with its NS_TIDE prediction
       this.spineLocationNSTPred=
-        this.getWLPredDataInJsonFmt(nsTidePredDataJsonFile);
+        this.getWLDataInJsonFmt(nsTidePredDataJsonFile);
 
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);

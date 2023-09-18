@@ -78,7 +78,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
   //private List<MeasurementCustom> tgLocationWLOData= null;
 
   // ---
-  private List<MeasurementCustom> tgLocationWLPData= null;
+  private ArrayList<MeasurementCustom> tgLocationWLPData= null;
 
   // ---
   //private List<MeasurementCustom> tgLocationWLFData= null;
@@ -118,22 +118,22 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     final String tideGaugeLocationsDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
 
-    if (!argsMapKeysSet.contains("--tideGaugePredictInputDataFile")) {
+    if (!argsMapKeysSet.contains("--tideGaugePredictInputDataInfo")) {
       throw new RuntimeException(mmi+
-         "Must have the --tideGaugePredictInputDataFile=<complete path to the tide gauge WLP input data file> defined in argsMap");
+         "Must have the --tideGaugePredictInputDataInfo=<file format>:<complete path to the tide gauge WLP input data file> defined in argsMap");
     }
 
     final String [] tideGaugePredictInputDataInfo= argsMap.
        get("--tideGaugePredictInputDataInfo").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR) ;
 
-    if (!allowedInputFormats.contains(tideGaugePredictInputDataInfo[0])) {
+    if (!IWLStationPredIO.allowedFormats.contains(tideGaugePredictInputDataInfo[0])) {
 
       throw new RuntimeException(mmi+"Invalid tideGaugePredictInputData file format -> "+
-                                 tideGaugePredictInputDataInfo[0]+" Must be one of -> "+allowedInputFormats.toString());
+                                 tideGaugePredictInputDataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
     }
 
-    this.predictInputDataFormat= IWLAdjustmentIO.
-      DataTypesFormatsDef.valueOf(tideGaugePredictInputDataInfo[0]);
+    this.predictInputDataFormat=
+      IWLStationPredIO.Format.valueOf(tideGaugePredictInputDataInfo[0]);
 
     final String tideGaugePredictInputDataFile= tideGaugePredictInputDataInfo[1];  ;//argsMap.get("--tideGaugePredictInputDataFile");
 
@@ -145,22 +145,22 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final String [] tideGaugeWLODataInfo= argsMap.
       get("--tideGaugeWLODataInfo").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    if (!allowedInputFormats.contains(tideGaugeWLODataInfo[0])) {
+    if (!IWLStationPredIO.allowedFormats.contains(tideGaugeWLODataInfo[0])) {
 
       throw new RuntimeException(mmi+"Invalid TG WLO Input Data file format -> "+
-                                 tideGaugeWLODataInfo[0]+" Must be one of -> "+allowedInputFormats.toString());
+                                 tideGaugeWLODataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
     }
 
-    this.obsInputDataFormat= IWLAdjustmentIO.
-      DataTypesFormatsDef.valueOf(tideGaugeWLODataInfo[0]);
+    this.obsInputDataFormat=
+      IWLStationPredIO.Format.valueOf(tideGaugeWLODataInfo[0]);
 
     final String tideGaugeWLODataFile= tideGaugeWLODataInfo[1]; ;//argsMap.get("--tideGaugeWLODataFile");
 
     slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
     slog.info(mmi+"tideGaugePredictInputDataFile="+tideGaugePredictInputDataFile);
     slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //System.out(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     if (argsMapKeysSet.contains("--tideGaugeAdjMethods")) {
 
@@ -197,7 +197,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       if (this.forecastAdjType != IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG) {
 
         slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
-                IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()+"is allowed for now !");
+                IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()+" is allowed for now !");
       }
     }
 
@@ -227,7 +227,6 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       createReader(jsonFileInputStream).readObject();
 
     //double minDistRad= Double.MAX_VALUE;
-
     // String [] twoNearestTideGaugesIds= {null, null};
     //Map<Double,String> tmpDistCheck= new HashMap<Double,String>();
 
@@ -251,7 +250,6 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     slog.info(mmi+"this.adjLocationZCVsVDatum="+this.adjLocationZCVsVDatum);
     //final JsonObject test= mainJsonMapObj.getJsonObject(this.locationIdInfo);
     //slog.info(mmi+"test:"+test.toString());
-
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -262,17 +260,33 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"Reading the prediction data using "+
-               this.predictInputDataFormat.name()); //+" format for inputDataType -> "+this.inputDataType.name());
+    slog.info(mmi+"Reading the prediction data using "+this.predictInputDataFormat.name());
 
-    if (this.predictInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.CHS_JSON ) {
+    if (this.predictInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
+
       this.tgLocationWLPData=
-        this.getWLPredDataInJsonFmt(tideGaugePredictInputDataFile);
+        this.getWLDataInJsonFmt(tideGaugePredictInputDataFile);
+
+    } else {
+       throw new RuntimeException(mmi+"Invalid prediction input data format -> "+this.predictInputDataFormat.name());
     }
 
     slog.info(mmi+"Done with reading prediction input data from file -> "+tideGaugePredictInputDataFile);
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    slog.info(mmi+"Reading the TG obs (WLO) at TG -> "+
+              this.locationId+" data using "+this.obsInputDataFormat.name());
+
+    if (this.obsInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
+
+      this.nearestObsData= new HashMap<String,ArrayList<MeasurementCustom>>();
+
+      this.nearestObsData.put(this.locationId, this.getWLDataInJsonFmt(tideGaugeWLODataFile));
+
+    } else {
+       throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
+    }
 
     // ---
     if (this.forecastAdjType != null) {
@@ -300,33 +314,6 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                                    +this.modelForecastInputDataFormat.name() ); //+" for inputDataType ->"+this.inputDataType.name()+" !!");
       }
     }
-      //if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.NETCDF) {
-      //  this.getH2D2NearestGPNCDFWLData(nearestsTGCoords);
-      //
-      //} else {
-      //  throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+" !!");
-      //}
-
-    //} else if ( this.inputDataType == IWLAdjustmentIO.InputDataType.CHS_PREDICTION) {
-    //
-    //  if (this.inputDataFormat == IWLAdjustmentIO.InputDataTypesFormatsDef.JSON) {
-    //
-    //    this.tgLocationWLPData=
-    //      this.getWLPredDataInJsonFmt(tideGaugePredictInputDataFile);
-    //
-    //  } else {
-    //    throw new RuntimeException(mmi+"Invalid inputDataFormat -> "+this.inputDataFormat.name()+
-    //                                " for inputDataType ->"+this.inputDataType.name()+" !!");
-    //}
-
-     //} else if (this.inputDataType == IWLAdjustmentIO.InputDataType.CHS_DHP_S104) {
-     //
-     // throw new RuntimeException(mmi+" inputDataType -> "+
-     //                            IWLAdjustmentIO.InputDataType.CHS_DHP_S104.name()+" not ready to be used yet!!");
-
-    //} else {
-    //  throw new RuntimeException(mmi+"Invalid inputDataType -> "+this.inputDataType.name());
-    //}
 
     slog.info(mmi+"Done with reading the WL input data to adjust now");
 

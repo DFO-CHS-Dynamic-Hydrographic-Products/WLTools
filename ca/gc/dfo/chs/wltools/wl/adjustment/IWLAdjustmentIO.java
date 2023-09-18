@@ -4,6 +4,8 @@ package ca.gc.dfo.chs.wltools.wl.adjustment;
 import java.util.Set;
 import java.util.Map;
 
+import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
+
 /**
  * Comments please!
  */
@@ -21,34 +23,17 @@ public interface IWLAdjustmentIO {
 
   String OUTPUT_DATA_FMT_SPLIT_CHAR= "-";
 
-  //enum DataType {
-  //  CHS_IWLS,
-  //  CHS_SPINE,
-  //  //CHS_DHP_S104,
-  //  CHS_TIDEGAUGE
-  //  //CHS_PREDICTION,
-  //  //ECCC_H2D2_FORECAST
-  //}
-
-  //String [] allowedDataTypesDef= {
-  //  DataType.CHS_IWLS.name(),
-  //  DataType.CHS_DHP_S104.name(),
-  //  DataType.CHS_TIDEGAUGEname()
-  //};
-  //Set<String> allowedDataTypes= Set.of(allowedDataTypesDef);
-
-  //Map< String, Set<String> > allowedDataTypes= Map.of( );
-
+  // ---
   enum DataTypesFormatsDef {
-    CHS_JSON,
     DHP_S104_DCF3,
     //DHP_S104_DCF2,
     ECCC_H2D2_ASCII,
-    SPINE_ADHOC_ASCII
+    SPINE_ADHOC_ASCII,
+    //IWLStationPredIO.Format.CHS_JSON
   }
 
   String [] DataTypesFormatsDefArr= {
-    DataTypesFormatsDef.CHS_JSON.name(),
+    //IWLStationPredIO.Formats.CHS_JSON.name(),
     DataTypesFormatsDef.DHP_S104_DCF3.name(),
     DataTypesFormatsDef.ECCC_H2D2_ASCII.name(),
     DataTypesFormatsDef.SPINE_ADHOC_ASCII.name()
@@ -71,34 +56,21 @@ public interface IWLAdjustmentIO {
   //};
 
   String [] CHS_IWLS_FMTS= {
-    DataTypesFormatsDef.CHS_JSON.name()
+    IWLStationPredIO.Format.CHS_JSON.name()
   };
 
   String [] CHS_SPINE_FMTS= {
-    DataTypesFormatsDef.CHS_JSON.name(),
+    IWLStationPredIO.Format.CHS_JSON.name(),
     DataTypesFormatsDef.DHP_S104_DCF3.name(),
     DataTypesFormatsDef.SPINE_ADHOC_ASCII.name(),
   };
 
   // ---
   String [] CHS_TIDEGAUGE_FMTS= {
-    DataTypesFormatsDef.CHS_JSON.name(),
+    IWLStationPredIO.Format.CHS_JSON.name(),
     DataTypesFormatsDef.ECCC_H2D2_ASCII.name() //,
     //DataTypesFormatsDef.JSON.name()+ INPUT_DATA_FMT_SPLIT_CHAR + DataTypesFormatsDef.ECCC_H2D2_ASCII.name()
   };
-
-
-  // --- TODO: Use the InputDataTypesFormatsDef enum objects as keys to this
-  //     InputDataTypesFormats Map instead of the related Strings ??
-  //Map< String, Set<String> > DataTypesFormats= Map.of(
-  //  DataType.CHS_IWLS.name()      , Set.of(CHS_IWLS_FMTS),
-  //  DataType.CHS_SPINE.name()     , Set.of(CHS_SPINE_FMTS),
-  //  DataType.CHS_TIDEGAUGE.name() , Set.of(CHS_TIDEGAUGE_FMTS)
-  //  //InputDataType.CHS_PREDICTION.name(), Set.of(CHS_PREDICTION_INPUT_FMTS),
-  //  //InputDataType.ECCC_H2D2_FORECAST.name() , Set.of(ECCC_H2D2_FORECAST_INPUT_FMTS)
-  //);
-
-  //Set<String> allowedDataTypes= DataTypesFormats.keySet();
 
   int H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX= 2;
 
@@ -107,18 +79,4 @@ public interface IWLAdjustmentIO {
   String H2D2_ASCII_FMT_TIMESTAMP_KEY= "epoch";
 
   String H2D2_ASCII_FMT_FNAME_SPLITSTR= "_";
-
-  //enum ECCC_H2D2_WLF_NAMES {
-  //  SURFACEN, //--- WLF values on FEM nodes (triangles vertices)
-  //  SURFACEE  //--- WLF values on FEM edges (egdes that connect the triangle vertices)
-  //}
-
-  //String ECCC_H2D2_TIME_ATTR_NAME= "Time";
-
-  // --- Define the names of the coordinates datasets names that are used by the ECCC_H2D2
-  //     two different WLF datasets.
-  //Map<ECCC_H2D2_WLF_NAMES,String> ECCC_H2D2_COORDS_DSETS_NAMES= Map.of(
-  //  ECCC_H2D2_WLF_NAMES.SURFACEN, "St_Lawrence_River_node_lon:St_Lawrence_River_node_lat",
-  //  ECCC_H2D2_WLF_NAMES.SURFACEE, "St_Lawrence_River_edge_lon:St_Lawrence_River_edge_lat"
-  //);
 }

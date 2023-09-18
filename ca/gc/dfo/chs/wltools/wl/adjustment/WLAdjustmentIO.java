@@ -70,9 +70,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
   //protected DataType inputDataType= null;
 
-  protected DataTypesFormatsDef obsInputDataFormat= null;
+  protected IWLStationPredIO.Format obsInputDataFormat= null;
+  protected IWLStationPredIO.Format predictInputDataFormat= null;
 
-  protected DataTypesFormatsDef predictInputDataFormat= null;
   protected DataTypesFormatsDef modelForecastInputDataFormat= null;
 
   protected double adjLocationLatitude= 0.0;
@@ -106,8 +106,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     //this.inputDataType= null;
 
     this.obsInputDataFormat=
-      this.predictInputDataFormat=
-        this.modelForecastInputDataFormat = null;
+      this.predictInputDataFormat= null;
+
+    this.modelForecastInputDataFormat = null;
 
     this.adjLocationZCVsVDatum=
       this.adjLocationLatitude=
@@ -332,58 +333,65 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final List<MeasurementCustom> getWLPredDataInJsonFmt(/*@NotNull*/ final String predDataJsonFile) {
+  final ArrayList<MeasurementCustom> getWLDataInJsonFmt(/*@NotNull*/ final String WLDataJsonFile) {
 
-    final String mmi= "getWLPredDataInJsonFmt: ";
+    final String mmi= "getWLDataInJsonFmt: ";
 
-    List<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
+    ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
 
     //--- Deal with possible null nsTidePredDataJsonFile String: if @NotNull not used
     try {
-      predDataJsonFile.length();
+      WLDataJsonFile.length();
 
     } catch (NullPointerException e) {
 
-      slog.error(mmi+"predDataJsonFile is null !!");
+      slog.error(mmi+"WLDataJsonFile is null !!");
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"start: predDataJsonFile=" + predDataJsonFile);
+    slog.info(mmi+"start: WLDataJsonFile=" + WLDataJsonFile);
 
     FileInputStream jsonFileInputStream= null;
 
     try {
-      jsonFileInputStream= new FileInputStream(predDataJsonFile);
+      jsonFileInputStream= new FileInputStream(WLDataJsonFile);
 
     } catch (FileNotFoundException e) {
       throw new RuntimeException(mmi+"e");
     }
 
-    final JsonArray jsonWLPredDataArray= Json.
+    final JsonArray jsonWLDataArray= Json.
       createReader(jsonFileInputStream).readArray();  //tmpJsonTcDataInputObj;
 
     //for (final JsonObject jsonObj: jsonPredDataArray.toArray()) {
-    for (int itemIter= 0; itemIter< jsonWLPredDataArray.size(); itemIter++) {
+    for (int itemIter= 0; itemIter< jsonWLDataArray.size(); itemIter++) {
 
-      final JsonObject jsonWLPredObj=
-        jsonWLPredDataArray.getJsonObject(itemIter);
+      final JsonObject jsonWLDataObj=
+        jsonWLDataArray.getJsonObject(itemIter);
 
-      final Instant wlPredTimeStamp= Instant.
-        parse(jsonWLPredObj.getString(IWLStationPredIO.INSTANT_JSON_KEY));
+      final Instant wlDataTimeStamp= Instant.
+        parse(jsonWLDataObj.getString(IWLStationPredIO.INSTANT_JSON_KEY));
 
       //slog.info(mmi+"wlPredTimeStamp="+wlPredTimeStamp.toString());
 
-      final double wlPredValue= jsonWLPredObj.
+      final double wlDataValue= jsonWLDataObj.
         getJsonNumber(IWLStationPredIO.VALUE_JSON_KEY).doubleValue();
 
       //slog.info(mmi+"wlPredValue="+wlPredValue);
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
 
+      double uncertainty= 0.0;
+
+      if (jsonWLDataObj.containsKey(IWLStationPredIO.UNCERTAINTY_JSON_JEY)) {
+
+        uncertainty= jsonWLDataObj.
+          getJsonNumber(IWLStationPredIO.UNCERTAINTY_JSON_JEY).doubleValue();
+      }
+
       // --- Add this WL pred Instant and value as a MeasurementCustom object
       //    in the returned list
-      retList.add(new MeasurementCustom(wlPredTimeStamp,wlPredValue, 0.0));
-
+      retList.add(new MeasurementCustom(wlDataTimeStamp, wlDataValue, uncertainty));
     }
 
     try {
@@ -393,7 +401,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       throw new RuntimeException(e);
     }
 
-    slog.info(mmi+"done with predDataJsonFile=" + predDataJsonFile);
+    slog.info(mmi+"done with WLDataJsonFile=" + WLDataJsonFile);
 
     slog.info(mmi+"end");
 

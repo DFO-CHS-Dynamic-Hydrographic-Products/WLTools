@@ -261,7 +261,7 @@ final public class WLStationPred extends WLStationPredFactory {
   /**
    * comments please!
    */
-  final public void writeIfNeeded(/*@NotNull*/ IWLStationPredIO.OutputFormats outputFormat) {
+  final public void writeIfNeeded(/*@NotNull*/ IWLStationPredIO.Format outputFormat) {
 
     final String mmi= "writeIfNeeded: ";
 
@@ -269,7 +269,7 @@ final public class WLStationPred extends WLStationPredFactory {
 
     if (this.outputDirectory != null) {
 
-      if (!IWLStationPredIO.allowedOutputFormats.contains(outputFormat.name())) {
+      if (!IWLStationPredIO.allowedFormats.contains(outputFormat.name())) {
         throw new RuntimeException(mmi+"Invalid output file format -> "+outputFormat.name());
       }
 
@@ -279,7 +279,7 @@ final public class WLStationPred extends WLStationPredFactory {
                 " using "+ outputFormat.name()+" output file format");
 
       if ( outputFormat.name().
-              equals(IWLStationPredIO.OutputFormats.JSON.name()) ) {
+              equals(IWLStationPredIO.Format.CHS_JSON.name()) ) {
 
          this.writeJSONOutputFile(this.stationId);
       }

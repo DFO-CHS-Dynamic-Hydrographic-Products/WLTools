@@ -84,70 +84,6 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
       throw new RuntimeException(mmi+" Only the "+IWLAdjustment.Type.TideGauge.name()+" allowed for now !!");
     }
 
-     //if (!this.argsMapKeySet.contains("--inputDataType")) {
-    //  throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
-    //}
-
-    //final String [] inputDataTypeFmtSplit= argsMap.
-    //  get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_TYPE_SPLIT_STR);//INPUT_DATA_FMT_SPLIT_CHAR);
-
-    //final String checkInputDataType= inputDataTypeFmtSplit[0];
-    //final String checkInputDataFormat= inputDataTypeFmtSplit[1];
-
-    //if (!IWLAdjustmentIO.allowedDataTypes.contains(checkInputDataType)) {
-    //  throw new RuntimeException(mmi+"Invalid input data type -> "+checkInputDataType+
-    //                             " ! must be one of -> "+IWLAdjustmentIO.allowedDataTypes.toString());
-    //}
-
-    //this.inputDataType= IWLAdjustmentIO.
-    //  DataType.valueOf(checkInputDataType);
-
-    //final String checkFormatForInputDataType= inputDataTypeFmtSplit[1];
-
-    //final Set<String> allowedFormatsForInputDataType=
-    //  DataTypesFormats.get(this.inputDataType.name());
-
-    ///if (!allowedFormatsForInputDataType.contains(checkFormatForInputDataType)) {
-    //
-    //  throw new RuntimeException(mmi+"Invalid input data format -> "+
-    //                             checkFormatForInputDataType+" for input data type -> "+
-    //                             this.inputDataType.name()+" ! must be one of -> "+allowedFormatsForInputDataType.toString());
-    //}
-
-    //slog.info(mmi+"checkInputDataFormat="+checkInputDataFormat);
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
-
-    // --- We can have 2 different input data formats:
-    //     one for predictions and possibly another one for model forecast.
-    //final String [] checkInputDataFormats=
-    //  checkFormatForInputDataType.split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
-
-    //if (!allowedInputFormats.contains(checkInputDataFormats[0])) {
-    //   throw new RuntimeException(mmi+
-    //               "Invalid input data format for predictions -> "+checkInputDataFormats[0]);
-    //}
-
-    //this.predictInputDataFormat= IWLAdjustmentIO.
-    //  DataTypesFormatsDef.valueOf(checkInputDataFormats[0]);
-
-    //slog.info(mmi+"Using input data type -> "+ this.inputDataType.name()+
-    //  " with prediction data format -> "+this.predictInputDataFormat.name());
-
-    //if ( checkInputDataFormats.length == 2) {
-    //  if (!allowedInputFormats.contains(checkInputDataFormats[1])) {
-    //    throw new RuntimeException(mmi+
-    //         "Invalid input data format for model forecast -> "+checkInputDataFormats[0]);
-    //  }
-    //
-    //  this.forecastInputDataFormat= IWLAdjustmentIO.
-    //    DataTypesFormatsDef.valueOf(checkInputDataFormats[1]);
-    //  slog.info(mmi+"input data format for model forecast -> "+this.forecastInputDataFormat.name());
-    //}
-
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
-
     // --- NOTE: --modelInputDataDef=<path> <path> could be the path of an ASCII file that contains
     //           all the needed model input data itself (eg. H2D2 WL probes forecast data) OR the
     //           path of an ASCII file that defines all the paths to the model WL forecast input data
@@ -172,32 +108,14 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
       slog.info(mmi+"this.modelForecastInputDataFormat="+this.modelForecastInputDataFormat.name());
       slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
     }
-
-    //final String inputDataFilesPathsDef= argsMap.get("--modelInputDataDef");
-    //slog.info(mmi+"inputDataFilesPathsDef="+inputDataFilesPathsDef);
-    // --- Here the inputDataFilesPathsDef value must be the path of an ASCII file that defines the
-    //     complete paths of all the input data files themselves (the number of input files can be
-    //     a large as 5000 so we cannot pass all their paths in the arguments)
-    //this.modelInputDataFiles=
-    //  ASCIIFileIO.getFileLinesAsArrayList(inputDataFilesPathsDef);
-    //slog.info(mmi+"Will use "+this.modelInputDataFiles.size()+" model input data files");
-
-    //final String firstInputFile= this.inputDataFilesPaths.get(0);
-    //slog.info(mmi+"Getting the grid points information
-    //for (final String inputFilePath: this.inputDataFilesPaths) {
-    //   slog.info(mmi+"Processing inputFilePath="+inputFilePath);
-    //   slog.info(mmi+"Debug System.exit(0)");
-    //   System.exit(0);
-    //}
-    //}
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
   }
 
   ///**
