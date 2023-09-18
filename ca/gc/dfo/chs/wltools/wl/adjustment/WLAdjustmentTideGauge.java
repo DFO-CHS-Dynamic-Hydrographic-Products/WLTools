@@ -319,8 +319,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
   }
 
   ///**
@@ -331,6 +331,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final String mmi= "getAdjustment: ";
 
     slog.info(mmi+"start");
+
+    // --- 1.) Get the adjustment-correction for the predictions (IWLS WLF-QC algo)
+
+
+
+    // --- 2.) Get the adjustment-correction for the model forecast (ECCC P. Matte's algo).
 
     slog.info(mmi+"end");
 
