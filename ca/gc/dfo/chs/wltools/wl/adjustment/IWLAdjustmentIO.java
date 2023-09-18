@@ -21,14 +21,14 @@ public interface IWLAdjustmentIO {
 
   String OUTPUT_DATA_FMT_SPLIT_CHAR= "-";
 
-  enum DataType {
-    CHS_IWLS,
-    CHS_SPINE,
-    //CHS_DHP_S104,
-    CHS_TIDEGAUGE
-    //CHS_PREDICTION,
-    //ECCC_H2D2_FORECAST
-  }
+  //enum DataType {
+  //  CHS_IWLS,
+  //  CHS_SPINE,
+  //  //CHS_DHP_S104,
+  //  CHS_TIDEGAUGE
+  //  //CHS_PREDICTION,
+  //  //ECCC_H2D2_FORECAST
+  //}
 
   //String [] allowedDataTypesDef= {
   //  DataType.CHS_IWLS.name(),
@@ -40,7 +40,7 @@ public interface IWLAdjustmentIO {
   //Map< String, Set<String> > allowedDataTypes= Map.of( );
 
   enum DataTypesFormatsDef {
-    JSON,
+    CHS_JSON,
     DHP_S104_DCF3,
     //DHP_S104_DCF2,
     ECCC_H2D2_ASCII,
@@ -48,7 +48,7 @@ public interface IWLAdjustmentIO {
   }
 
   String [] DataTypesFormatsDefArr= {
-    DataTypesFormatsDef.JSON.name(),
+    DataTypesFormatsDef.CHS_JSON.name(),
     DataTypesFormatsDef.DHP_S104_DCF3.name(),
     DataTypesFormatsDef.ECCC_H2D2_ASCII.name(),
     DataTypesFormatsDef.SPINE_ADHOC_ASCII.name()
@@ -71,34 +71,34 @@ public interface IWLAdjustmentIO {
   //};
 
   String [] CHS_IWLS_FMTS= {
-    DataTypesFormatsDef.JSON.name()
+    DataTypesFormatsDef.CHS_JSON.name()
   };
 
   String [] CHS_SPINE_FMTS= {
-    DataTypesFormatsDef.JSON.name(),
+    DataTypesFormatsDef.CHS_JSON.name(),
     DataTypesFormatsDef.DHP_S104_DCF3.name(),
     DataTypesFormatsDef.SPINE_ADHOC_ASCII.name(),
   };
 
   // ---
   String [] CHS_TIDEGAUGE_FMTS= {
-    DataTypesFormatsDef.JSON.name(),
-    DataTypesFormatsDef.ECCC_H2D2_ASCII.name(),
-    DataTypesFormatsDef.JSON.name()+ INPUT_DATA_FMT_SPLIT_CHAR + DataTypesFormatsDef.ECCC_H2D2_ASCII.name()
+    DataTypesFormatsDef.CHS_JSON.name(),
+    DataTypesFormatsDef.ECCC_H2D2_ASCII.name() //,
+    //DataTypesFormatsDef.JSON.name()+ INPUT_DATA_FMT_SPLIT_CHAR + DataTypesFormatsDef.ECCC_H2D2_ASCII.name()
   };
 
 
   // --- TODO: Use the InputDataTypesFormatsDef enum objects as keys to this
   //     InputDataTypesFormats Map instead of the related Strings ??
-  Map< String, Set<String> > DataTypesFormats= Map.of(
-    DataType.CHS_IWLS.name()      , Set.of(CHS_IWLS_FMTS),
-    DataType.CHS_SPINE.name()     , Set.of(CHS_SPINE_FMTS),
-    DataType.CHS_TIDEGAUGE.name() , Set.of(CHS_TIDEGAUGE_FMTS)
-    //InputDataType.CHS_PREDICTION.name(), Set.of(CHS_PREDICTION_INPUT_FMTS),
-    //InputDataType.ECCC_H2D2_FORECAST.name() , Set.of(ECCC_H2D2_FORECAST_INPUT_FMTS)
-  );
+  //Map< String, Set<String> > DataTypesFormats= Map.of(
+  //  DataType.CHS_IWLS.name()      , Set.of(CHS_IWLS_FMTS),
+  //  DataType.CHS_SPINE.name()     , Set.of(CHS_SPINE_FMTS),
+  //  DataType.CHS_TIDEGAUGE.name() , Set.of(CHS_TIDEGAUGE_FMTS)
+  //  //InputDataType.CHS_PREDICTION.name(), Set.of(CHS_PREDICTION_INPUT_FMTS),
+  //  //InputDataType.ECCC_H2D2_FORECAST.name() , Set.of(ECCC_H2D2_FORECAST_INPUT_FMTS)
+  //);
 
-  Set<String> allowedDataTypes= DataTypesFormats.keySet();
+  //Set<String> allowedDataTypes= DataTypesFormats.keySet();
 
   int H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX= 2;
 

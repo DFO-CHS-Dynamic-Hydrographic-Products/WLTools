@@ -59,7 +59,8 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
   /**
    * Parse the main program arguments using a constructor.
    */
-  public WLAdjustmentType(/*NotNull*/ final WLAdjustment.Type adjType, /*NotNull*/ final HashMap<String,String> argsMap) {
+  public WLAdjustmentType(/*NotNull*/ final WLAdjustment.Type adjType,
+                          /*NotNull*/ final HashMap<String,String> argsMap) {
 
     super(adjType, argsMap);
 
@@ -77,39 +78,41 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
     // --- Get only the base name of the this.locationIdInfo file.
     this.locationId= new File(this.locationIdInfo).
-      getName().replace(IWLStationPredIO.JSON_FEXT,"");;
+      getName().replace(IWLStationPredIO.JSON_FEXT,"");
 
-    //if (this.adjType != IWLAdjustment.Type.IWLS_WLO_QC) {
-
-    if (!this.argsMapKeySet.contains("--inputDataType")) {
-      throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
+    if (this.adjType != IWLAdjustment.Type.TideGauge) {
+      throw new RuntimeException(mmi+" Only the "+IWLAdjustment.Type.TideGauge.name()+" allowed for now !!");
     }
 
-    final String [] inputDataTypeFmtSplit= argsMap.
-      get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_TYPE_SPLIT_STR);//INPUT_DATA_FMT_SPLIT_CHAR);
+     //if (!this.argsMapKeySet.contains("--inputDataType")) {
+    //  throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataType defined !!");
+    //}
 
-    final String checkInputDataType= inputDataTypeFmtSplit[0];
+    //final String [] inputDataTypeFmtSplit= argsMap.
+    //  get("--inputDataType").split(IWLAdjustmentIO.INPUT_DATA_TYPE_SPLIT_STR);//INPUT_DATA_FMT_SPLIT_CHAR);
+
+    //final String checkInputDataType= inputDataTypeFmtSplit[0];
     //final String checkInputDataFormat= inputDataTypeFmtSplit[1];
 
-    if (!IWLAdjustmentIO.allowedDataTypes.contains(checkInputDataType)) {
-      throw new RuntimeException(mmi+"Invalid input data type -> "+checkInputDataType+
-                                 " ! must be one of -> "+IWLAdjustmentIO.allowedDataTypes.toString());
-    }
+    //if (!IWLAdjustmentIO.allowedDataTypes.contains(checkInputDataType)) {
+    //  throw new RuntimeException(mmi+"Invalid input data type -> "+checkInputDataType+
+    //                             " ! must be one of -> "+IWLAdjustmentIO.allowedDataTypes.toString());
+    //}
 
-    this.inputDataType= IWLAdjustmentIO.
-      DataType.valueOf(checkInputDataType);
+    //this.inputDataType= IWLAdjustmentIO.
+    //  DataType.valueOf(checkInputDataType);
 
-    final String checkFormatForInputDataType= inputDataTypeFmtSplit[1];
+    //final String checkFormatForInputDataType= inputDataTypeFmtSplit[1];
 
-    final Set<String> allowedFormatsForInputDataType=
-      DataTypesFormats.get(this.inputDataType.name());
+    //final Set<String> allowedFormatsForInputDataType=
+    //  DataTypesFormats.get(this.inputDataType.name());
 
-    if (!allowedFormatsForInputDataType.contains(checkFormatForInputDataType)) {
-
-      throw new RuntimeException(mmi+"Invalid input data format -> "+
-                                 checkFormatForInputDataType+" for input data type -> "+
-                                 this.inputDataType.name()+" ! must be one of -> "+allowedFormatsForInputDataType.toString());
-    }
+    ///if (!allowedFormatsForInputDataType.contains(checkFormatForInputDataType)) {
+    //
+    //  throw new RuntimeException(mmi+"Invalid input data format -> "+
+    //                             checkFormatForInputDataType+" for input data type -> "+
+    //                             this.inputDataType.name()+" ! must be one of -> "+allowedFormatsForInputDataType.toString());
+    //}
 
     //slog.info(mmi+"checkInputDataFormat="+checkInputDataFormat);
     //slog.info(mmi+"Debug System.exit(0)");
@@ -117,32 +120,30 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
     // --- We can have 2 different input data formats:
     //     one for predictions and possibly another one for model forecast.
-    final String [] checkInputDataFormats=
-      checkFormatForInputDataType.split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+    //final String [] checkInputDataFormats=
+    //  checkFormatForInputDataType.split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    if (!allowedInputFormats.contains(checkInputDataFormats[0])) {
-       throw new RuntimeException(mmi+
-                   "Invalid input data format for predictions -> "+checkInputDataFormats[0]);
-    }
+    //if (!allowedInputFormats.contains(checkInputDataFormats[0])) {
+    //   throw new RuntimeException(mmi+
+    //               "Invalid input data format for predictions -> "+checkInputDataFormats[0]);
+    //}
 
-    this.predictInputDataFormat= IWLAdjustmentIO.
-      DataTypesFormatsDef.valueOf(checkInputDataFormats[0]);
+    //this.predictInputDataFormat= IWLAdjustmentIO.
+    //  DataTypesFormatsDef.valueOf(checkInputDataFormats[0]);
 
-    slog.info(mmi+"Using input data type -> "+ this.inputDataType.name()+
-      " with prediction data format -> "+this.predictInputDataFormat.name());
+    //slog.info(mmi+"Using input data type -> "+ this.inputDataType.name()+
+    //  " with prediction data format -> "+this.predictInputDataFormat.name());
 
-    if ( checkInputDataFormats.length == 2) {
-
-      if (!allowedInputFormats.contains(checkInputDataFormats[1])) {
-        throw new RuntimeException(mmi+
-             "Invalid input data format for model forecast -> "+checkInputDataFormats[0]);
-      }
-
-      this.forecastInputDataFormat= IWLAdjustmentIO.
-        DataTypesFormatsDef.valueOf(checkInputDataFormats[1]);
-
-      slog.info(mmi+"input data format for model forecast -> "+this.forecastInputDataFormat.name());
-    }
+    //if ( checkInputDataFormats.length == 2) {
+    //  if (!allowedInputFormats.contains(checkInputDataFormats[1])) {
+    //    throw new RuntimeException(mmi+
+    //         "Invalid input data format for model forecast -> "+checkInputDataFormats[0]);
+    //  }
+    //
+    //  this.forecastInputDataFormat= IWLAdjustmentIO.
+    //    DataTypesFormatsDef.valueOf(checkInputDataFormats[1]);
+    //  slog.info(mmi+"input data format for model forecast -> "+this.forecastInputDataFormat.name());
+    //}
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
@@ -151,13 +152,28 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
     //           all the needed model input data itself (eg. H2D2 WL probes forecast data) OR the
     //           path of an ASCII file that defines all the paths to the model WL forecast input data
     //           files that are needed (e.g. H2D2 NetCDF file).
-    if (this.argsMapKeySet.contains("--modelInputDataDef")) {
+    if (this.argsMapKeySet.contains("--modelForecastInputDataInfo")) {
 
-       this.modelInputDataDef= argsMap.get("--modelInputDataDef");
+      final String [] modelForecastInputDataInfo= argsMap.
+        get("--modelForecastInputDataInfo").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-       slog.info(mmi+"this.modelInputDataDef="+this.modelInputDataDef);
-       //slog.info(mmi+"Debug System.exit(0)");
-        //System.exit(0);
+      if (!allowedInputFormats.contains(modelForecastInputDataInfo[0])) {
+
+        throw new RuntimeException(mmi+"Invalid model forecast Input Data file format -> "+
+                                 modelForecastInputDataInfo[0]+" Must be one of -> "+allowedInputFormats.toString());
+      }
+
+      this.modelForecastInputDataFormat= IWLAdjustmentIO.
+        DataTypesFormatsDef.valueOf(modelForecastInputDataInfo[0]);
+
+      // --- modelInputDataInfo[1] could be: only one model forecast input data file OR an
+      //     ASCII file that defines a list of at least two model forecast input data files
+      this.modelForecastInputDataInfo= modelForecastInputDataInfo[1];
+
+      slog.info(mmi+"this.modelForecastInputDataFormat="+this.modelForecastInputDataFormat.name());
+      slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
     }
 
     //final String inputDataFilesPathsDef= argsMap.get("--modelInputDataDef");
@@ -180,8 +196,8 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
   }
 
   ///**

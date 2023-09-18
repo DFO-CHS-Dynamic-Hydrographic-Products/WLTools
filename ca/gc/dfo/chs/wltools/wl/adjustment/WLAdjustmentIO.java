@@ -68,12 +68,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected String locationId= null;
   protected String locationIdInfo= null;
 
-  protected DataType inputDataType= null;
+  //protected DataType inputDataType= null;
 
   protected DataTypesFormatsDef obsInputDataFormat= null;
 
   protected DataTypesFormatsDef predictInputDataFormat= null;
-  protected DataTypesFormatsDef forecastInputDataFormat= null;
+  protected DataTypesFormatsDef modelForecastInputDataFormat= null;
 
   protected double adjLocationLatitude= 0.0;
   protected double adjLocationLongitude= 0.0;
@@ -89,8 +89,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected Map<String, ArrayList<MeasurementCustom>> nearestObsData= null;
   protected Map<String, ArrayList<MeasurementCustom>> nearestModelData= null;
 
-  protected String modelInputDataDef= null;
-  //protected List<String> modelInputDataFiles= null;
+  protected String modelForecastInputDataInfo= null;
+  protected List<String> modelForecastInputDataFiles= null;
+  //protected String= modelForecastInputDataInfo= null;
 
   /**
    * Comments please!
@@ -102,11 +103,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     this.locationId=
       this.locationIdInfo= null;
 
-    this.inputDataType= null;
+    //this.inputDataType= null;
 
     this.obsInputDataFormat=
       this.predictInputDataFormat=
-        this.forecastInputDataFormat = null;
+        this.modelForecastInputDataFormat = null;
 
     this.adjLocationZCVsVDatum=
       this.adjLocationLatitude=
@@ -118,16 +119,18 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     this.nearestObsData=
       this.nearestModelData= null;
 
-    this.modelInputDataDef= null;
+    this.modelForecastInputDataInfo= null;
+    this.modelForecastInputDataFiles= null;
     //this.modelInputDataFiles= null;
   }
 
   /**
    * Comments please!
    */
-  public WLAdjustmentIO(/*@NotNull*/ final WLAdjustment.Type adjType, /*@NotNull*/ final Map<String,String> argsMap) {
-
-    final String mmi= "WLAdjustmentIO(final WLAdjustment.Type adjType,final Map<String,String> argsMap) construtor : ";
+  public WLAdjustmentIO(/*@NotNull*/ final WLAdjustment.Type adjType,
+                        /*@NotNull*/ final Map<String,String> argsMap) {
+    final String mmi=
+      "WLAdjustmentIO(final WLAdjustment.Type adjType,final Map<String,String> argsMap) construtor : ";
 
     this.adjType= adjType;
 
@@ -139,32 +142,35 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final void getH2D2ASCIIWLFProbesData(/*@NotNull*/ Map<String, HBCoords> nearestsTGCoords, 
-                                       /*@NotNull*/ final JsonObject mainJsonMapObj) {
+  final void getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
+                                        /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
+                                        /*@NotNull*/ final JsonObject       mainJsonMapObj     ) {
+
                                        ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
 
     // --- TODO: Use a Set<String> object instead of a Map<String, HBCoords> object
     //     because the HBCoords object is useless for this method.
 
-    final String mmi= "getH2D2ASCIIWLProbesData: ";
+    final String mmi= "getH2D2ASCIIWLProbeData: ";
 
     final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
 
     slog.info(mmi+"start: nearestsTGCoordsIds="+nearestsTGCoordsIds.toString());
 
-    slog.info(mmi+"this.modelInputDataDef="+this.modelInputDataDef);
+    slog.info(mmi+"H2D2ASCIIWLFProbesDataFile="+H2D2ASCIIWLFProbesDataFile);
+    //slog.info(mmi+"this.modelInputDataFiles="+this.modelInputDataFiles);
 
     //--- Create the this.nearestModelData object to store the H2D2 ASCII WL
     //      forecast data
     this.nearestModelData= new HashMap<String, ArrayList<MeasurementCustom>>();
 
-    final List<String> H2D2ASCIIWLFProbesData=
-      ASCIIFileIO.getFileLinesAsArrayList(this.modelInputDataDef);
+    final List<String> H2D2ASCIIWLFProbesDataLines=
+      ASCIIFileIO.getFileLinesAsArrayList(H2D2ASCIIWLFProbesDataFile); //(this.modelInputDataFiles);
 
     // --- Extract-split the header line that defines the H2D2 WL probes used
     //    (ECCC_IDS)
     final String [] headerLineSplit=
-      H2D2ASCIIWLFProbesData.get(0).split(H2D2_ASCII_FMT_FLINE_SPLIT);
+      H2D2ASCIIWLFProbesDataLines.get(0).split(H2D2_ASCII_FMT_FLINE_SPLIT);
 
     final List<String> headerLineList= Arrays.asList(headerLineSplit); //stream(headerLineSplit).collect(Collectors.toSet());
 
@@ -193,7 +199,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     //     (a.k.a nowcast) WL data part. Need to use the input file name
     //      to do so.
     final String zerothHourYYYYMMDDhh= new
-      File(this.modelInputDataDef).getName().split(H2D2_ASCII_FMT_FNAME_SPLITSTR)[0];
+      File(H2D2ASCIIWLFProbesDataFile).getName().split(H2D2_ASCII_FMT_FNAME_SPLITSTR)[0];
 
     slog.info(mmi+"zerothHourYYYYMMDDhh="+zerothHourYYYYMMDDhh);
 
@@ -221,8 +227,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     //System.exit(0);
 
     // --- Need to get rid of the file lines < H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX
-    final List<String> relevantDataLines= H2D2ASCIIWLFProbesData.
-      subList(H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX, H2D2ASCIIWLFProbesData.size());
+    final List<String> relevantDataLines= H2D2ASCIIWLFProbesDataLines.
+      subList(H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX, H2D2ASCIIWLFProbesDataLines.size());
 
     // ---
     for (final String inputDataLine: relevantDataLines ) {
