@@ -33,19 +33,19 @@ import javax.json.JsonReader;
 import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
+import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
-import ca.gc.dfo.chs.wltools.wl.fms.FMSLegacyContext;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
-
 
 /**
  * Comments please!
@@ -81,7 +81,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected double adjLocationZCVsVDatum= 0.0;
 
   //protected ArrayList<WLMeasurement> locationOriginalData= null;
-  protected ArrayList<MeasurementCustom> locationOriginalData= null;
+  protected ArrayList<MeasurementCustom> locationPredData= null;
   protected ArrayList<MeasurementCustom> locationAdjustedData= null;
 
   //protected Map<String, ArrayList<WLMeasurement>> nearestObsData= null;
@@ -94,7 +94,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected List<String> modelForecastInputDataFiles= null;
   //protected String= modelForecastInputDataInfo= null;
 
-  protected FMSLegacyContext fmsLegacyContextObj= null;
+  protected FMS fmsObj= null;
+  protected FMSInput fmsInputObj= null;
+  //protected FMSFactory fmsFactoryObj= null;
 
   /**
    * Comments please!
@@ -117,7 +119,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       this.adjLocationLatitude=
         this.adjLocationLongitude= 0.0;
 
-    this.locationOriginalData= null;
+    this.locationPredData= null;
     this.locationAdjustedData= null;
 
     this.nearestObsData=
@@ -126,6 +128,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     this.modelForecastInputDataInfo= null;
     this.modelForecastInputDataFiles= null;
     //this.modelInputDataFiles= null;
+
+    this.fmsObj= null;
+    this.fmsInputObj= null;
   }
 
   /**

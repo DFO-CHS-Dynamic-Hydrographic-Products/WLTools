@@ -44,6 +44,7 @@ import java.io.FileNotFoundException;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSFactory;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
@@ -78,7 +79,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
   //private List<MeasurementCustom> tgLocationWLOData= null;
 
   // ---
-  private ArrayList<MeasurementCustom> tgLocationWLPData= null;
+  //private ArrayList<MeasurementCustom> tgLocationWLPData= null;
 
   // ---
   //private List<MeasurementCustom> tgLocationWLFData= null;
@@ -89,8 +90,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
   public WLAdjustmentTideGauge() {
     super();
 
-   this.tgLocationWLPData= null;
-
+    //this.tgLocationWLPData= null;
     //this.tgLocationWLOData=
     //  this.tgLocationWLPData=
     //    this.tgLocationWLFData = null;
@@ -264,7 +264,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     if (this.predictInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
 
-      this.tgLocationWLPData=
+      //this.tgLocationWLPData=
+      this.locationPredData=
         this.getWLDataInJsonFmt(tideGaugePredictInputDataFile);
 
     } else {
@@ -317,12 +318,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy algo");
 
-    //this.fmsContextObj= this.getFMSontext(argsMap,this);
+    // --- Instantiate the FMSFactory object using the argsMap and this object.
+    this.fmsFactoryObj= new FMSFactory(argsMap, this);
 
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
   }
 
   ///**
@@ -340,7 +342,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //         the result of the adjustment-correction for the model forecast done at the
     //         previous step with it.
     //final fmsContext fmsContextObj= this.getFmsContext(this);
-
+    
 
     slog.info(mmi+"end");
 

@@ -7,10 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLData;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSContext;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType
 
 //import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
 //import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
@@ -42,9 +44,10 @@ abstract public class FMSFactory implements IFMS {
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
-   * Contains all FM data needed.
+   * Contains all data needed for FMS.
    */
   protected FMSWLData data;
+
   /**
    * The forecasts duration in seconds.
    */
@@ -68,47 +71,41 @@ abstract public class FMSFactory implements IFMS {
   // */
   //FMSFactory(@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
 
-  FMSFactory(/*@NotNull @Size(min = 1)*/ final List<LegacyFMSContext> legacyFMSContextList) {
+  FMSFactory(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
+  //FMSFactory(final Map<String,String> argsMap, final WLAdjustmentType wlAdjType) {
 
     final String mmi=
-      "FMSFactory(final List<LegacyFMSContext> legacyFMSContextList) constructor: ";
+      "FMSFactory(final List<FMSConfig> fmsConfigList) constructor: ";
 
     slog.debug(mmi+"start");
 
     //final ForecastingContext fc0 = forecastingContextList.get(0);
-    final LegacyFMSContext lfc0= legacyFMSContextList.get(0);
+    final FMSConfig fc0= fmsConfigList.get(0);
 
     //if (!checkForecastingContext(fc0)) {
-    if (!checkLegacyFMSContext(lfc0)) {
+    if (!checkFMSConfig(fc0)) {
 
-      slog.error(mmi+"checkLegacyFMSContext(lfc0)==false!");
+      slog.error(mmi+"checkFMSConfig(lfc0)==false!");
       throw new RuntimeException(mmi+:"Cannot update the WLF-QC !!");
     }
 
-    final String station0Id = lfc0.getStationCode();
+    //final String station0Id = fc0.getStationCode();
+    //slog.debug(mmi+"station0Id=" + station0Id);
+
+    try {
+      fc0.getStationId();
+
+    } catch (NullPointerException npe) {
+
+      slog.error(mmi+"fc0 is null!");
+      throw new RuntimeException(npe);
+    }
+
+    final String station0Id = fc0.getStationId();
 
     slog.debug(mmi+"station0Id=" + station0Id);
 
-    try {
-      lfc0.getParameters();
-
-    } catch (NullPointerException npe) {
-
-      slog.error(mmi+"lfc0.getParameters()==null!, station0Id=" + station0Id);
-      throw new RuntimeException(npe);
-    }
-
-    try {
-      lfc0.getParameters().getDeltaTMinutes();
-
-    } catch (NullPointerException npe) {
-
-      slog.error(mmi+"lfc0.getParameters().getDeltaTMinutes()==null! station0Id=" + station0Id);
-      throw new RuntimeException(npe);
-    }
-
-    final int fcstsTimeIncrMinutes= lfc0.
-      getParameters().getDeltaTMinutes().intValue();
+    final int fcstsTimeIncrMinutes= fc0.getDeltaTMinutes().intValue();
 
     if (fcstsTimeIncrMinutes < FORECASTS_TIME_INCR_MINUTES_MIN) {
 
@@ -126,7 +123,7 @@ abstract public class FMSFactory implements IFMS {
       throw new RuntimeException(mmi+"Cannot update forecast ! station0Id=" + station0Id);
     }
 
-    final int fcstDurationHours = lfc0.getParameters().getDurationHours().intValue();
+    final int fcstDurationHours = fc0.getDurationHours().intValue();
 
     if (fcstDurationHours > FORECASTS_DURATION_HOURS_MAX) {
 
@@ -141,54 +138,56 @@ abstract public class FMSFactory implements IFMS {
 
     // --- Check the other LegacyFMSContext object (if any) in the legacyFMSContextList
     //for (final ForecastingContext fc : forecastingContextList.subList(1, forecastingContextList.size())) {
-    for (final LegacyFMSContext lfc: legacyFMSContextList.subList(1, legacyFMSContextList.size())) {
+    for (final FMSConfig fc: FMSConfigList.subList(1, fmsConfigList.size())) {
 
       try {
-        lfc.getStationCode();
+        fc.getStationid();
 
       } catch (NullPointerException npe) {
 
-        slog.error(mmi+"lfc==null !");
+        slog.error(mmi+"fc==null !");
         throw new RuntimeException(npe);
       }
 
-      final String stationCode = lfc.getStationCode();
+      final String stationId = fc.getStationId();
+
+      slog.info(mmi+"Now checking station: "+stationId);
 
       //if (!checkForecastingContext(fc)) {
-      if (!checkLegacyFMSContext(lfc)) {
+      if (!checkFMSConfig(fc)) {
 
-        slog.error(mmi+"checkLegacyFMSContext(lfc)==false for station:" + stationCode);
-        throw new RuntimeException("Cannot update WLF-QC (with or without WLF-SSE) for station=" + stationCode);
+        slog.error(mmi+"checkFMSConfig(fc)==false for station:" + stationId);
+        throw new RuntimeException("Cannot update WLF-QC (with or without WLF-SSE) for station=" + stationId);
       }
 
-      slog.info(mmi+"Now checking station: "+stationCode);
+      slog.info(mmi+"Now checking station: "+stationId);
 
       //--- Check for null objects here also ??
-      final int checkTimeIncr= lfc.getParameters().getDeltaTMinutes().intValue();
+      final int checkTimeIncr= fc.getDeltaTMinutes().intValue();
 
       if (checkTimeIncr != fcstsTimeIncrMinutes) {
 
         slog.error(mmi+"checkTimeIncr=" + checkTimeIncr +
-            " minutes != fcstsTimeIncrMinutes=" + fcstsTimeIncrMinutes + " minutes for station: " + stationCode);
+            " minutes != fcstsTimeIncrMinutes=" + fcstsTimeIncrMinutes + " minutes for station: " + stationId);
 
-        throw new RuntimeException("FMFactory constructor: Cannot update forecast ! station=" + stationCode);
+        throw new RuntimeException("FMFactory constructor: Cannot update forecast ! station=" + stationId);
       }
 
-      final int checkFstDurHours = lfc.getParameters().getDurationHours().intValue();
+      final int checkFstDurHours = fc.getDurationHours().intValue();
 
       if (checkFstDurHours != fcstDurationHours) {
 
         slog.error(mmi+"checkFstDurHours=" + checkFstDurHours +
-            " hours != fcstDurationHours=" + fcstDurationHours + " hours for station: " + stationCode);
+            " hours != fcstDurationHours=" + fcstDurationHours + " hours for station: " + stationId);
 
-        throw new RuntimeException(mmi+"Cannot update forecast ! station=" + stationCode);
+        throw new RuntimeException(mmi+"Cannot update forecast ! station=" + stationId);
       }
     }
 
     this.fcstsDurationSeconds = SECONDS_PER_HOUR * fcstDurationHours;
     this.fcstsTimeIncrSeconds = SECONDS_PER_MINUTE * fcstsTimeIncrMinutes;
 
-    this.data = new FMSWLData(fcstsTimeIncrMinutes, legacyFMSContextList);//forecastingContextList);
+    this.data = new FMSWLData(fcstsTimeIncrMinutes, fmsConfigList); //forecastingContextList);
 
     this.log.debug(mmi+"end\n");
   }
@@ -199,68 +198,64 @@ abstract public class FMSFactory implements IFMS {
   // */
   //protected final boolean checkForecastingContext(@NotNull final ForecastingContext forecastingContext) {
 
-  protected final boolean checkLegacyFMSContext(@NotNull final LegacyFMSContext legacyFMSContext) {
+  protected final boolean checkFMSConfig(@NotNull final FMSConfig fmsConfig) {
 
     boolean ret = true;
 
-    final String stationId = legacyFMSContext.getStationCode();
+    final String stationId = fmsConfig.getStationId();
 
     //final FmsParameters fmsParameters = forecastingContext.getFmsParameters();
 
-    if (fmsParameters == null) {
-      
-      this.log.error("FMSFactory checkForecastingContext: fmsParameters==null for station:" + stationId);
-      ret = false;
-      
-    } else if (fmsParameters.getForecast() == null) {
-      
-      this.log.error("FMSFactory checkForecastingContext: fmsParameters.getForecast()==null for station:" + stationId);
-      ret = false;
-      
-    } else if (fmsParameters.getForecast().getDeltaTMinutes() == null) {
-      
-      this.log.error("FMSFactory checkForecastingContext: fmsParameters.getForecast().getDeltaTMinutes()==null for " +
-          "station:" + stationId);
-      ret = false;
-      
-    } else if (forecastingContext.getPredictions() == null) {
-      
-      this.log.error("FMSFactory checkForecastingContext: fc.getPredictions()==null for station:" + stationId);
-      ret = false;
-    }
-    
+    //if (fmsParameters == null) {
+    //  this.log.error("FMSFactory checkForecastingContext: fmsParameters==null for station:" + stationId);
+    //  ret = false;
+    //} else if (fmsParameters.getForecast() == null) {
+    //  this.log.error("FMSFactory checkForecastingContext: fmsParameters.getForecast()==null for station:" + stationId);
+    //  ret = false;
+    //
+    //} else if (fmsParameters.getForecast().getDeltaTMinutes() == null) {
+    //
+    //  this.log.error("FMSFactory checkForecastingContext: fmsParameters.getForecast().getDeltaTMinutes()==null for " +
+    //      "station:" + stationId);
+    //  ret = false;
+    //} else if (forecastingContext.getPredictions() == null) {
+    //  this.log.error("FMSFactory checkForecastingContext: fc.getPredictions()==null for station:" + stationId);
+    //  ret = false;
+    //}
+
     return ret;
   }
-  
+
   /**
    * @param wlTimeNode      : A WLTimeNode object.
    * @param nextMeasurement : A Measurement object supposed to be in the future compared to the wlTimeNode object.
    * @return true if nextMeasurement is at this.fcstsTimeIncrSeconds seconds in the future compared to the wlTimeNode
    * object.
    */
-  final boolean checkFutureTimeDiff(@NotNull final WLTimeNode wlTimeNode,
-                                    @NotNull final MeasurementCustom nextMeasurement) {
+  final boolean checkFutureTimeDiff(/*@NotNull*/ final WLTimeNode wlTimeNode,
+                                    /*@NotNull*/ final MeasurementCustom nextMeasurement) {
+
     return ((nextMeasurement.getEventDate().getEpochSecond() - wlTimeNode.seconds()) == this.fcstsTimeIncrSeconds);
   }
-  
+
   /**
    * @param pstrWLTimeNode : A WLTimeNode object which have already been processed.
    * @return A new WLTimeNode object with the WL predictions errors residuals computations done and which is in the
    * future compared
    * to the pstrWLTimeNode object.
    */
-  @NotNull
-  final WLTimeNode getNewFMSTimeNode(@NotNull final WLTimeNode pstrWLTimeNode) {
-    
+  //@NotNull
+  final WLTimeNode getNewFMSTimeNode(/*@NotNull*/ final WLTimeNode pstrWLTimeNode) {
+
     //--- NOTE: The incremented SecondsSinceEpoch time-stamp is created here.
     return this.data.newFMSTimeNode(pstrWLTimeNode,
-        new SecondsSinceEpoch(pstrWLTimeNode.getSse().seconds() + this.fcstsTimeIncrSeconds));
+               new SecondsSinceEpoch(pstrWLTimeNode.getSse().seconds() + this.fcstsTimeIncrSeconds));
   }
-  
+
   /**
    * @return The current List of WLTimeNode objects.
    */
-  @Size(min = 1)
+ // @Size(min = 1)
   final List<WLTimeNode> timeNodes() {
     return this.data.timeNodes;
   }

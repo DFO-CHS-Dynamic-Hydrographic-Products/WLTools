@@ -4,11 +4,12 @@ package ca.gc.dfo.chs.wltools.wl.fms;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS.
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSinput;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSFactory;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
-import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSContext;
+//import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,11 +54,11 @@ public final class FMS extends FMSFactory implements IFMS {
   /**
    * @param legacyFMSContext : A LegacyFMSContext object
    */
-  public FMS(/*@NotNull*/ final LegacyFMSContext legacyFMSContext ) {
+  public FMS(/*@NotNull*/ final FMSInput fmsInput ) {
 
     //this(getFcList(forecastingContext));
 
-    this(getSingleFcList(legacyFMSContext));
+    this(getSingleFMSIList(fmsInput));
   }
 
   /**
@@ -69,8 +70,8 @@ public final class FMS extends FMSFactory implements IFMS {
   /**
    * @param legacyFMSContextList : A List(min size==1) of LegacyFMSContext objects
    */
-  private FMS(/*@NotNull @Size(min = 1)*/ final List<LegacyFMSContext> legacyFMSContextList) {
-    super(legacyFMSContextList);
+  private FMS(/*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputist) {
+    super(fmsInputList);
   }
 
   /**
@@ -82,15 +83,15 @@ public final class FMS extends FMSFactory implements IFMS {
   //@NotNull
   //private static List<ForecastingContext> getSingleFcList(@NotNull final ForecastingContext forecastingContext) {
 
-  private static List<LegacyFMSContext> getSingleFcList(/*@NotNull*/ final LegacyFMSContext legacyFMSContext) {
+  private static List<FMSInput> getSingleFMSIList(/*@NotNull*/ final FMSInput fmsInput) {
 
     //final List<ForecastingContext> fcList = new ArrayList<>(1);
     //fcList.add(forecastingContext);
 
-    final List<LegacyFMSContext> singleLfcList = new ArrayList<LegacyFMSContext>(1);
-    fcList.add(legacyFMSContext);
+    final List<FMSInput> singleFMSIList = new ArrayList<FMSInput>(1);
+    singleFMSIList.add(fmsInput);
 
-    return singleLfcList;
+    return singleFMSIList;
   }
 
   /**
