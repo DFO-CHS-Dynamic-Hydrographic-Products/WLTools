@@ -40,6 +40,7 @@ import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSLegacyContext;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
@@ -92,6 +93,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected String modelForecastInputDataInfo= null;
   protected List<String> modelForecastInputDataFiles= null;
   //protected String= modelForecastInputDataInfo= null;
+
+  protected FMSLegacyContext fmsLegacyContextObj= null;
 
   /**
    * Comments please!

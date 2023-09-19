@@ -315,7 +315,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       }
     }
 
-    slog.info(mmi+"Done with reading the WL input data to adjust now");
+    slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy algo");
+
+    //this.fmsContextObj= this.getFMSontext(argsMap,this);
 
     slog.info(mmi+"end");
 
@@ -332,11 +334,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"start");
 
-    // --- 1.) Get the adjustment-correction for the predictions (IWLS WLF-QC algo)
+    // --- 1.) Get the adjustment-correction for the model forecast (ECCC P. Matte's algo).
 
+    // --- 2.) Get the adjustment-correction for the predictions (IWLS WLF-QC algo) and merge
+    //         the result of the adjustment-correction for the model forecast done at the
+    //         previous step with it.
+    //final fmsContext fmsContextObj= this.getFmsContext(this);
 
-
-    // --- 2.) Get the adjustment-correction for the model forecast (ECCC P. Matte's algo).
 
     slog.info(mmi+"end");
 
