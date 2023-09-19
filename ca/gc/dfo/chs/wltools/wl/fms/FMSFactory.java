@@ -161,7 +161,7 @@ abstract public class FMSFactory implements IFMS {
         throw new RuntimeException("Cannot update WLF-QC (with or without WLF-SSE) for station=" + stationCode);
       }
 
-      slog.info(mmi+"Now processing station: "+stationCode);
+      slog.info(mmi+"Now checking station: "+stationCode);
 
       //--- Check for null objects here also ??
       final int checkTimeIncr= lfc.getParameters().getDeltaTMinutes().intValue();
@@ -193,18 +193,20 @@ abstract public class FMSFactory implements IFMS {
     this.log.debug(mmi+"end\n");
   }
 
-  /**
-   * @param forecastingContext : A ForecastingContext configuration object.
-   * @return true if the ForecastingContext object is OK and ready to use for some(not all) of its attributes.
-   */
-  protected final boolean checkForecastingContext(@NotNull final ForecastingContext forecastingContext) {
-    
+  ///**
+  // * @param forecastingContext : A ForecastingContext configuration object.
+  // * @return true if the ForecastingContext object is OK and ready to use for some(not all) of its attributes.
+  // */
+  //protected final boolean checkForecastingContext(@NotNull final ForecastingContext forecastingContext) {
+
+  protected final boolean checkLegacyFMSContext(@NotNull final LegacyFMSContext legacyFMSContext) {
+
     boolean ret = true;
-    
-    final String stationId = forecastingContext.getStationCode();
-    
-    final FmsParameters fmsParameters = forecastingContext.getFmsParameters();
-    
+
+    final String stationId = legacyFMSContext.getStationCode();
+
+    //final FmsParameters fmsParameters = forecastingContext.getFmsParameters();
+
     if (fmsParameters == null) {
       
       this.log.error("FMSFactory checkForecastingContext: fmsParameters==null for station:" + stationId);
