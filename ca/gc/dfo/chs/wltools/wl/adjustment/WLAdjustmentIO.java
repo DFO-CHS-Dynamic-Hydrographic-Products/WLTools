@@ -43,6 +43,7 @@ import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
+import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
@@ -93,6 +94,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected String modelForecastInputDataInfo= null;
   protected List<String> modelForecastInputDataFiles= null;
   //protected String= modelForecastInputDataInfo= null;
+
+  //protected long obsDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
+  protected long predDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
+  protected long forecastDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
 
   protected FMS fmsObj= null;
   protected FMSInput fmsInputObj= null;
@@ -283,6 +288,21 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
+  }
+
+  // --- IMPORTANT: Do not use this method for WL observation data since we could
+  //     have missing data so the result of this method could be misleading for 
+  //     that kind of WL data. 
+  final long getDataTimeIntervallSeconds(final List<MeasurementCuston> dataList) {
+
+    //long ret= IWLStationPred.TIME_NOT_DEFINED;
+
+    final long firstTimeStampSeconds= dataList.get(0).getEventDate().getEpochSeconds();
+    final long secondTimeStampSeconds= dataList.get(1).getEventDate().getEpochSeconds();
+
+   // --- Do not assume that the secondTimeStampSeconds value is larger than the
+   //     firstTimeStampSeconds value so usr Math.abs here.
+    return Math.abs(secondTimeStampSeconds - firstTimeStampSeconds);
   }
 
   /**

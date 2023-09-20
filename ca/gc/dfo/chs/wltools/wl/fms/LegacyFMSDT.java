@@ -32,4 +32,8 @@ abstract public class LegacyFMSDT {
   final public Float getDeltaTMinutes() {
     return this.deltaTMinutes;
   }
+
+  final public void setDeltaTMinutes(final Float deltaTMinutes) {
+    this.deltaTMinutes= deltaTMinutes;
+  }
 }
