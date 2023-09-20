@@ -122,6 +122,10 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
     return this.locationId;
   }
 
+  final public String getStormSurgeForecastModelName() {
+    return this.stormSurgeForecastModelName;
+  }
+
   final public List<MeasurementCustom> getLocationPredData() {
     return (List<MeasurementCustom>) this.locationPredData;
   }

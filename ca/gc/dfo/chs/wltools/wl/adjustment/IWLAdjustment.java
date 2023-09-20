@@ -9,6 +9,14 @@ import java.util.Set;
  */
 public interface IWLAdjustment {
 
+  enum StormSurgeForecastModel {
+    ECCC_H2D2_SLFE //,
+    //DFO_NEMO_SJ100,
+    //DFO_NEMO_VH20,
+  }
+
+  String DEFAULT_H2D2_NAME= "ECCC_H2D2";
+
   enum Type {
     TideGauge, // --- Implies doing adjustments at one tide gauge only.
     SpineIPP,  // --- Spine WL adjustments initial pre-processing done inside SSC-ECCC 24/7 oper. system.

@@ -192,14 +192,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                 IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC.name()+" is allowed for now !");
     }
 
-    if ( this.forecastAdjType != null ) {
-
-      if (this.forecastAdjType != IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG) {
-
-        slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
-                IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()+" is allowed for now !");
-      }
-    }
+    //if ( this.forecastAdjType != null ) {
+    //  if (this.forecastAdjType != IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG) {
+    //    slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
+    //            IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()+" is allowed for now !");
+    //  }
+    //}
 
     slog.info(mmi+"this.predictAdjType="+this.predictAdjType.name());
     slog.info(mmi+"this.forecastAdjType="+this.forecastAdjType.name());
@@ -292,12 +290,21 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // ---
     if (this.forecastAdjType != null) {
 
+      if (this.forecastAdjType != IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG) {
+
+        slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
+                IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()+" is allowed for now !");
+      }
+
+     this.stormSurgeForecastModelName=
+       (argsMapKeysSet.contains("--stormSurgeForecastModelName") ? argsMap.get("--stormSurgeForecastModelName") : IWLAdjustment.DEFAULT_H2D2_NAME;
+
       if (this.modelForecastInputDataInfo == null) {
         throw new RuntimeException(mmi+
                   "this.modelForecastInputDataInfo attribute cannot be null at this point if this.forecastAdjType is not null !");
       }
 
-      if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
+      if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) 
 
         // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
         //     method call.
@@ -318,8 +325,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy algo");
 
-    // --- Instantiate the FMSFactory object using the argsMap and this object.
-    this.fmsFactoryObj= new FMSFactory(argsMap, this);
+    // --- Instantiate the FMSInput object using the argsMap and this object.
+    this.fmsInputObj= new FMSInput(this);
 
     slog.info(mmi+"end");
 

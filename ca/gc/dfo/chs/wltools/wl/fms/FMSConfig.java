@@ -3,6 +3,7 @@ package ca.gc.dfo.chs.wltools.wl.fms;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
+import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSDT;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType;
@@ -27,7 +28,8 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   private String stationId;
 
-  private String mergeTo;
+  // --- The name of the model used for the storm surge forecast signal.
+  private String mergeWithSSFModel;
 
   private Float stdErrSigma;
 
@@ -36,12 +38,21 @@ abstract public class FMSConfig extends LegacyFMSDT {
   //           it is relevant or not (2023-09-20)
   private Float durationHours;
 
-  // --- mergeDurationHours is the time duration in hours to use to
-  //     merge the FMS WLF-QC to a WL forecast (if any) coming from
-  //     a numerical model result that includes a storm surge signal
-  //     TODO: rename mergeDurationHours to ssfMergeDurationHours
+  // --- ssfMergeDurationHours is the time duration in hours to use to
+  //     merge the FMS WLF-QC to a storm (and-or fresh water) surge WL
+  //     forecast (if any) coming from a numerical model result that 
+  //     includes a storm (or fresh water) surge signal.
   //     (ssf stands for Storm Surge Forecast)
-  private Float mergeDurationHours;
+  private Float ssfMergeDurationHours;
+
+  // --- fmsResidualConfig object must be defined (i.e. not null)
+  //     and set for all TG stations.
+  private FMSResidualConfig fmsResidualConfig= null;
+
+  // --- fmsTidalRemnantConfig is relevant only for TG stations where
+  //     the tidal signal (or energy) is significant otherwise it is null
+  //     (e.g. in the Great Lakes or upstream the Portneuf TG in the St. Lawrence.
+  private FMSTidalRemnantConfig fmsTidalRemnantConfig= null;
 
   /**
    *
@@ -56,6 +67,11 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
     this.stationId= wlAdjObj.getLocationId();
 
+    // --- TODO: Add code that calculates the estimated forecast uncertainty
+    this.stdErrSigma= 0.0;
+
+    this.mergeWithSSFModel= wlAdjObj.getStormSurgeForecastModelName();
+
     final long predDataTimeIntervallSeconds= wlAdjObj.
       getDataTimeIntervallSeconds(wlAdjObj.getPredictions());
 
@@ -67,8 +83,10 @@ abstract public class FMSConfig extends LegacyFMSDT {
     }
 
     // --- We use the forecastDataTimeIntervallSeconds as the deltaTMinutes
-    //    for the legacy FMS deltaTMinutes attribute
-    this.setDeltaTMinutes( Float.valueOf( (float)forecastDataTimeIntervallSeconds/ITimeMachine.SECONDS_PER_MINUTE ) );
+    //     for the legacy FMS deltaTMinutes attribute
+    this.setDeltaTMinutes( Float.valueOf( (float) forecastDataTimeIntervallSeconds/ITimeMachine.SECONDS_PER_MINUTE ) );
+
+    this.ssfMergeDurationHours= IFMS.DEFAULT_STORM_SURGE_FORECAST_MERGE_HOURS;
 
   }
 
@@ -76,8 +94,8 @@ abstract public class FMSConfig extends LegacyFMSDT {
     return this.stationId;
   }
 
-  final public String getMergeTo() {
-    return this.mergeTo;
+  final public String getMergeWithSSFModel() {
+    return this.mergeWithSSFModel;
   }
 
   final public Float getDurationHours() {
@@ -88,37 +106,37 @@ abstract public class FMSConfig extends LegacyFMSDT {
     return this.stdErrSigma;
   }
 
-  final public Float getMergeDurationHours() {
-    return this.mergeDurationHours;
+  final public Float getSsfMergeDurationHours() {
+    return this.ssfMergeDurationHours;
   }
 
-  final public void setStationId(final String stationId) {
-    this.stationId= stationId;
-  }
+  //final public void setStationId(final String stationId) {
+  //  this.stationId= stationId;
+  //}
 
-  final public void setMergeTo(final String mergeTo) {
-    this.mergeTo= mergeTo;
-  }
+  //final public void setMergeTo(final String mergeTo) {
+  //  this.mergeTo= mergeTo;
+  //}
 
-  final public void setDurationHours(final Float durationHours) {
-    this.durationHours= durationHours;
-  }
+  //final public void setDurationHours(final Float durationHours) {
+  //  this.durationHours= durationHours;
+  //}
 
-  final public void setStdErrSigma(final Float stdErrSigma) {
-    this.stdErrSigma= stdErrSigma;
-  }
+  //final public void setStdErrSigma(final Float stdErrSigma) {
+  //  this.stdErrSigma= stdErrSigma;
+  //}
 
-  final public void setMergeDurationHours(final Float mergeDurationHours) {
-    this.mergeDurationHours= mergeDurationHours;
-  }
+  //final public void setMergeDurationHours(final Float mergeDurationHours) {
+  //  this.mergeDurationHours= mergeDurationHours;
+  //}
 
-  @Override
-  public String toString() {
-    return "Forecast{" +
-        "deltaTMinutes=" + this.getDeltaTMinutes() + ", " +
-        "durationHours=" + this.getDurationHours() + ", " +
-        "stdErrSigma=" + this.getStdErrSigma() + ", " +
-        "mergeTo=" + this.getMergeTo() + ", " +
-        "mergeDurationHours=" + this.getMergeDurationHours() + "}";
-  }
+  //@Override
+  //public String toString() {
+  //  return "Forecast{" +
+  //      "deltaTMinutes=" + this.getDeltaTMinutes() + ", " +
+  //      "durationHours=" + this.getDurationHours() + ", " +
+  //      "stdErrSigma=" + this.getStdErrSigma() + ", " +
+  //      "mergeTo=" + this.getMergeTo() + ", " +
+  //      "mergeDurationHours=" + this.getMergeDurationHours() + "}";
+  //}
 }

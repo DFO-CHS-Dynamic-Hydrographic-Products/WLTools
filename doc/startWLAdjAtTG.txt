@@ -7,6 +7,7 @@ time java WLTools \
 --tool=adjustment \
 --adjType=TideGauge \
 --locationIdInfo=03335 \
+--stormSurgeForecastModelName=ECCC_H2D2_SLFE \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
 --tideGaugeAdjMethods=CHS_IWLS_QC:ECCC_H2D2_FORECAST_AUTOREG \
 --tideGaugeWLODataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/tgObs/03335-wloIGLD.json \

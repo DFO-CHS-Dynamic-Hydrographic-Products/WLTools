@@ -27,7 +27,7 @@ abstract public class LegacyFMSTime extends LegacyFMSDT {
   /**
    * Default constructor.
    */
-  public LegacyFMSTime(final Float tauHours, final FloatdeltaTMinutes) {
+  public LegacyFMSTime(final Float tauHours, final Float deltaTMinutes) {
 
     super(deltaTMinutes);
 

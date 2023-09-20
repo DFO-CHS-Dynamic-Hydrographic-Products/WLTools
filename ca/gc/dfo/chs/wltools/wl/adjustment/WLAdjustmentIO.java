@@ -70,6 +70,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected String locationId= null;
   protected String locationIdInfo= null;
 
+  protected String stormSurgeForecastModelName= "UNKNOWN";
+
   //protected DataType inputDataType= null;
 
   protected IWLStationPredIO.Format obsInputDataFormat= null;

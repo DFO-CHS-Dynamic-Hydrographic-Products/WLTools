@@ -60,6 +60,8 @@ public interface IFMS extends IWL, ITimeMachine, ITrigonometry {
    */
   int FORECASTS_TIME_INCR_MINUTES_MAX= 15;
 
+  int DEFAULT_STORM_SURGE_FORECAST_MERGE_HOURS= 6;
+
   // --- TODO: Change FORECASTS_TIME_INCR_MINUTES_ALLOWED to WLF_QC_TIME_INCR_MINUTES_ALLOWED
   /**
    * Regroup the 3 FORECASTS_TIME_INCR_MINUTES* constants in an array.
