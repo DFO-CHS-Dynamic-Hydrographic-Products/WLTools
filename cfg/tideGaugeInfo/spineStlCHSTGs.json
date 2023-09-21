@@ -8,7 +8,7 @@
     "nearestSpinePointId": "StLawrence-Longueuil-gridPoint-0",
     "FMSConfig": { "merge": "ECCC_H2D2_SLFE","mergeHours": 6,
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "15520", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                 "covariance": [ { "stationId" : "15520", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
     }
   },
 
@@ -21,7 +21,7 @@
     "nearestSpinePointId": "StLawrence-Longueuil-gridPoint-15",
     "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "15540", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                 "covariance": [ { "stationId" : "15540", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
     }
    },
 
@@ -34,7 +34,7 @@
     "nearestSpinePointId": "StLawrence-Longueuil-gridPoint-85",
     "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "15660", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                 "covariance": [ { "stationId" : "15660", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
     }
   },
 
@@ -47,7 +47,7 @@
      "nearestSpinePointId": "StLawrence-Sorel-gridPoint-130",
      "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "15780", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                 "covariance": [ { "stationId" : "15780", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
    },
 
@@ -60,7 +60,7 @@
      "nearestSpinePointId": "StLawrence-Sorel-gridPoint-155",
      "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "15860", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                 "covariance": [ { "stationId" : "15860", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
    },
 
@@ -73,7 +73,7 @@
      "nearestSpinePointId": "StLawrence-Sorel-gridPoint-180",
      "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "15930", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                 "covariance": [ { "stationId" : "15930", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
   },
 
@@ -86,7 +86,7 @@
       "nearestSpinePointId": "StLawrence-TroisRivieres-gridPoint-270",
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "15975", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "15975", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
    },
 
@@ -99,7 +99,7 @@
       "nearestSpinePointId": "StLawrence-TroisRivieres-gridPoint-350",
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "03365", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "03365", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
   },
 
@@ -112,7 +112,7 @@
       "nearestSpinePointId": "StLawrence-TroisRivieres-gridPoint-380",
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                   "StationCovariance": [ { "stationId" : "03365", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "03365", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
    },
 
@@ -125,7 +125,7 @@
      "nearestSpinePointId": "StLawrence-TroisRivieres-gridPoint-430",
      "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                     "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                  "StationCovariance": [ { "stationId" : "03353", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                  "covariance": [ { "stationId" : "03353", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
    },
 
@@ -138,7 +138,7 @@
      "nearestSpinePointId": "StLawrence-Deschaillons-gridPoint-500",
      "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                     "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                  "StationCovariance": [ { "stationId" : "03345", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                  "covariance": [ { "stationId" : "03345", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
   },
 
@@ -151,7 +151,7 @@
     "nearestSpinePointId": "StLawrence-Deschaillons-gridPoint-540",
     "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                  "StationCovariance": [ { "stationId" : "03335", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                  "covariance": [ { "stationId" : "03335", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
    },
 
@@ -165,7 +165,7 @@
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "tidalRemnant": { "tauHours": 48, "deltaTMinutes": 15.0,"maxEps1": 120.0, "maxEps2": 5.0 },
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                   "StationCovariance": [ { "stationId" : "03300", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "03300", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
       }
     },
 
@@ -179,7 +179,7 @@
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "tidalRemnant": { "tauHours": 48, "deltaTMinutes": 15.0,"maxEps1": 120.0, "maxEps2": 5.0 },
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                   "StationCovariance": [ { "stationId" : "03280", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "03280", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
       }
     },
 
@@ -193,7 +193,7 @@
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "tidalRemnant": { "tauHours": 48, "deltaTMinutes": 15.0,"maxEps1": 120.0, "maxEps2": 5.0 },
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                   "StationCovariance": [ { "stationId" : "03248", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "03248", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
       }
    },
 
@@ -207,7 +207,7 @@
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "tidalRemnant": { "tauHours": 48, "deltaTMinutes": 15.0,"maxEps1": 120.0, "maxEps2": 5.0 },
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                   "StationCovariance": [ { "stationId" : "03110", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "03110", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
       }
    },
 
@@ -221,7 +221,7 @@
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "tidalRemnant": { "tauHours": 48, "deltaTMinutes": 15.0,"maxEps1": 120.0, "maxEps2": 5.0 },
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                   "StationCovariance": [ { "stationId" : "03100", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "03100", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
       }
    },
 
@@ -235,7 +235,7 @@
     "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                    "tidalRemnant": { "tauHours": 48, "deltaTMinutes": 15.0,"maxEps1":120, "maxEps2":5 },
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                 "StationCovariance": [ { "stationId" : "03100", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                 "covariance": [ { "stationId" : "03100", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
     }
   }
 }
