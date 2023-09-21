@@ -32,24 +32,23 @@ public interface IStageIO {
    //String STAGE_JSON_DNLAG_KEYS= "CS*.hoursLag"; // --- The stage order>=1 coefficient time lags (in hours) json dict keys.
    //String STAGE_JSON_DNFCT_KEYS= "s*.factor";  // --- The stage order>=1 coefficient factors json dict keys.
    //String STAGE_JSON_DNLAG_KEYS= "s*.hoursLag"; // --- The stage order>=1 coefficient time lags (in hours) json dict keys.
+   //String LOCATION_INFO_JSON_DICT_KEY= "channelGridPointInfo"; // --- The json dict key for the station info dict.
 
-   String LOCATION_INFO_JSON_DICT_KEY= "channelGridPointInfo"; // --- The json dict key for the station info dict.
+   //String LOCATION_INFO_JSON_LATCOORD_KEY= "lat";
+   //String LOCATION_INFO_JSON_LONCOORD_KEY= "lon";
 
-   String LOCATION_INFO_JSON_LATCOORD_KEY= "lat";
-   String LOCATION_INFO_JSON_LONCOORD_KEY= "lon";
-
-   String LOCATION_INFO_JSON_FNAME_EXT= ".json";
+   //String LOCATION_INFO_JSON_FNAME_EXT= ".json";
                                                          //    WL(IGLD) - zcVsIGLD to get the ZC values
-   String LOCATION_ID_SPLIT_CHAR= ":";
+   //String LOCATION_ID_SPLIT_CHAR= ":";
 
    String CLIMATO_YEAR_PLACEHOLDER= "YYYY";
 
    String LOCATION_DISCHARGE_INPUT_FNAME_SUFFIX= "-SCD";
 
-   String LOCATION_INFO_JSON_ZCIGLD_CONV_KEY= "zcVsIGLD"; //--- Implies that tha the preductions are referred to IGLD datum
+   // --- Moved to wl/IWLConfig class
+   //String LOCATION_INFO_JSON_ZCIGLD_CONV_KEY= "zcVsIGLD"; //--- Implies that tha the preductions are referred to IGLD datum
                                                           //    WL(IGLD) - zcVsIGLD to get the ZC values
    enum FileFormat {
      JSON
    };
 }
-

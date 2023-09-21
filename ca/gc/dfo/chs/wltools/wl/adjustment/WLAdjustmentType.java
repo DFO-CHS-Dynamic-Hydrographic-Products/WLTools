@@ -20,11 +20,13 @@ import javax.json.JsonReader;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
+//import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
@@ -76,12 +78,29 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
     // --- Get only the base name of the
     this.locationIdInfo= argsMap.get("--locationIdInfo");
 
-    // --- Get only the base name of the this.locationIdInfo file.
-    this.locationId= new File(this.locationIdInfo).
-      getName().replace(IWLStationPredIO.JSON_FEXT,"");
+    // --- Get only the base name of the this.locationIdInfo file path.
+    //this.locationId= new File(this.locationIdInfo).
+    final String identity=
+      new File(this.locationIdInfo).getName().replace(IWLStationPredIO.JSON_FEXT,"");
 
-    if (this.adjType != IWLAdjustment.Type.TideGauge) {
-      throw new RuntimeException(mmi+" Only the "+IWLAdjustment.Type.TideGauge.name()+" allowed for now !!");
+    if (this.adjType == IWLAdjustment.Type.TideGauge) {
+
+      this.location= new TideGaugeConfig(identity);
+
+    } else if (this.adjType == IWLAdjustment.Type.SpineIPP) {
+
+      this.location= new WLLocation(identity);
+
+      throw new RuntimeException(mmi+"SpineIPP adjustment type not ready yet !!");
+
+    } else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
+
+      this.location= new WLLocation(identity);
+
+      throw new RuntimeException(mmi+"SpineFPP adjustment type not ready yet !!");
+
+    } else {
+       throw new RuntimeException(mmi+"Invalid adjustment type "+this.adjType.name()+" !!");
     }
 
     // --- NOTE: --modelInputDataDef=<path> <path> could be the path of an ASCII file that contains
@@ -114,12 +133,12 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
   }
 
-  final public String getLocationId() {
-    return this.locationId;
+  final public String getIdentity() {
+    return this.location.getIdentity();
   }
 
   final public String getStormSurgeForecastModelName() {
@@ -131,7 +150,7 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
   }
 
   final public List<MeasurementCustom> getNearestObsData() {
-    return (List<MeasurementCustom>) this.nearestObsData.get(this.locationId);
+    return (List<MeasurementCustom>) this.nearestObsData.get(this.location.getIdentity());
   }
 
   final public List<MeasurementCustom> getNearestObsData(final String locationId) {
@@ -139,7 +158,7 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
   }
 
   final public List<MeasurementCustom> getNearestModelData() {
-    return (List<MeasurementCustom>) this.nearestModelData.get(this.locationId);
+    return (List<MeasurementCustom>) this.nearestModelData.get(this.location.getIdentity());
   }
 
   final public List<MeasurementCustom> getNearestModelData(final String locationId) {

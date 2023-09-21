@@ -42,10 +42,12 @@ import java.io.FileNotFoundException;
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
+//import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
@@ -113,7 +115,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
     // --- Now find the two nearest CHS tide gauges from this WDS grid point location
     final String spineTideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
-      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;
+      ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;
 
     slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
     //slog.info(mmi+"Debug System.exit(0)");
@@ -152,13 +154,13 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       this.getSpineJsonLocationIdInfo( spineLocationIdInfoFile );
 
     this.adjLocationZCVsVDatum= spineLocationInfoJsonObj.
-      getJsonNumber(StageIO.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
+      getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
     this.adjLocationLatitude= spineLocationInfoJsonObj.
-      getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+      getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
 
     this.adjLocationLongitude= spineLocationInfoJsonObj.
-      getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
+      getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
 
     //this.relevantSpineClustersInfo= new HashMap<String, Map<String,HBCoords>>();
 
@@ -195,10 +197,10 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
         mainJsonMapObj.getJsonObject(tgStrNumId);
 
       final double tgLatitude= tgInfoJsonObj.
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+        getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
 
       final double tgLongitude= tgInfoJsonObj.
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
+        getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
 
       final double tgDistRad= Trigonometry.
         getDistanceInRadians(tgLongitude, tgLatitude, this.adjLocationLongitude, this.adjLocationLatitude);
@@ -257,10 +259,10 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       final JsonObject chsTGJsonObj= mainJsonMapObj.getJsonObject(chsTGId);
 
       final double tgLon= chsTGJsonObj.
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
+        getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
 
       final double tgLat= chsTGJsonObj.
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+        getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
 
       nearestsTGCoords.put(chsTGId, new HBCoords(tgLon,tgLat) );
 
@@ -396,10 +398,10 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
           this.getSpineJsonLocationIdInfo( spineLocationJsonInfoFile.toString() );
 
         final double spineLocationLon= spineLocInfoJsonObj.
-          getJsonNumber(StageIO.LOCATION_INFO_JSON_LONCOORD_KEY).doubleValue();
+          getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
 
         final double spineLocationLat= spineLocInfoJsonObj.
-          getJsonNumber(StageIO.LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+          getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
 
         //slog.info(mmi+"spineLocationLon="+spineLocationLon);
         //slog.info(mmi+"spineLocationLat="+spineLocationLat);

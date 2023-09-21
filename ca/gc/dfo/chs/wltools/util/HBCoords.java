@@ -11,7 +11,8 @@ import ca.gc.dfo.chs.wltools.util.IHBGeom;
 //     from the jts code https://github.com/locationtech/jts.
 //     BUT we only need this class for now and it could probably
 //     be overkill to use jts or the GDAL java wrappers.
-public final class HBCoords implements IHBGeom {
+//     NOTE: Assuming that the EPSG:4326 CRS is always used.
+public class HBCoords implements IHBGeom {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.util.HBCoords";

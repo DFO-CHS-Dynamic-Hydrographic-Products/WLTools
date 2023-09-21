@@ -36,12 +36,15 @@ import as.hdfql.HDFqlConstants;
 import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
+import ca.gc.dfo.chs.wltools.wl.WLLocation;
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
+//import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
@@ -67,7 +70,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
   protected IWLAdjustment.Type adjType= null;
 
-  protected String locationId= null;
+  protected WLLocation location= null;
+
+  //protected String locationId= null;
   protected String locationIdInfo= null;
 
   protected String stormSurgeForecastModelName= "UNKNOWN";
@@ -112,8 +117,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     this.argsMapKeySet= null;
 
-    this.locationId=
-      this.locationIdInfo= null;
+    this.location= null;
+
+    //this.locationId=
+    this.locationIdInfo= null;
 
     //this.inputDataType= null;
 
@@ -197,7 +204,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
       // --- Get the corresponding ECCC TG num. string id.
       final String ecccTGId= mainJsonMapObj.
-        getJsonObject(chsTGId).getString(TIDE_GAUGES_INFO_ECCC_IDS_KEY); //nearestsTGEcccIds.get(chsTGId);
+        getJsonObject(chsTGId).getString(ITideGaugeConfig.INFO_ECCC_ID_JSON_KEY); //nearestsTGEcccIds.get(chsTGId);
 
       tgDataColumnIndices.put(chsTGId,headerLineList.indexOf(ecccTGId));
 
@@ -343,7 +350,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     // --- TODO: add fool-proof checks on all the Json dict keys.
 
     final JsonObject spineLocationIdInfoJsonObj=
-      mainJsonFileInputObj.getJsonObject(IStageIO.LOCATION_INFO_JSON_DICT_KEY);
+      mainJsonFileInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
 
     try {
       jsonFileInputStream.close();

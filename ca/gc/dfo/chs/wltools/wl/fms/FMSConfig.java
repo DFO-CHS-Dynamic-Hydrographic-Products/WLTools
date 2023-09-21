@@ -65,7 +65,7 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
     final String mmi= "MSConfig( final WLAdjustmentType wlAdjObj) constructor: ";
 
-    this.stationId= wlAdjObj.getLocationId();
+    this.stationId= wlAdjObj.getIdentity();
 
     // --- TODO: Add code that calculates the estimated forecast uncertainty
     this.stdErrSigma= 0.0;

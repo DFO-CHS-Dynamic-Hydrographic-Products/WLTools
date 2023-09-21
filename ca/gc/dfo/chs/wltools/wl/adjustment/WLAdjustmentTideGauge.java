@@ -43,11 +43,13 @@ import java.io.FileNotFoundException;
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSFactory;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
+//import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
@@ -206,7 +208,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     // --- Now find the two nearest CHS tide gauges from this WDS grid point location
     final String tideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
-      IWLAdjustmentIO.TIDE_GAUGES_INFO_FOLDER_NAME + File.separator + tideGaugeLocationsDefFileName ;
+      ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeLocationsDefFileName ;
 
     slog.info(mmi+"tideGaugesInfoFile="+tideGaugesInfoFile);
     //slog.info(mmi+"Debug System.exit(0)");
@@ -241,15 +243,17 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     //--- Get the tide gauge ZC conversion (-this.adjLocationZCVsVDatum to convert to ZC)
     //    from the json file.
-    this.adjLocationZCVsVDatum=
-      mainJsonMapObj.getJsonObject(this.locationIdInfo).
-        getJsonNumber(StageIO.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
+    //this.adjLocationZCVsVDatum=
+    //  mainJsonMapObj.getJsonObject(this.locationIdInfo).
+    //    getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
-    slog.info(mmi+"this.adjLocationZCVsVDatum="+this.adjLocationZCVsVDatum);
+    this.location.setConfig
+
+    slog.info(mmi+"this.location.getZcVsVertDatum()="+this.location.getZcVsVertDatum());
     //final JsonObject test= mainJsonMapObj.getJsonObject(this.locationIdInfo);
     //slog.info(mmi+"test:"+test.toString());
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     // --- We can close the tide gauges info Json file now
     try {
@@ -275,13 +279,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //System.exit(0);
 
     slog.info(mmi+"Reading the TG obs (WLO) at TG -> "+
-              this.locationId+" data using "+this.obsInputDataFormat.name());
+              this.location.getIdentity()+" data using "+this.obsInputDataFormat.name());
 
     if (this.obsInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
 
       this.nearestObsData= new HashMap<String,ArrayList<MeasurementCustom>>();
 
-      this.nearestObsData.put(this.locationId, this.getWLDataInJsonFmt(tideGaugeWLODataFile));
+      this.nearestObsData.put(this.location.getIdentity(), this.getWLDataInJsonFmt(tideGaugeWLODataFile));
 
     } else {
        throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
@@ -310,7 +314,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         //     method call.
         final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
 
-        uniqueTGMapObj.put(this.locationIdInfo, null);
+        uniqueTGMapObj.put(this.location.getIdentity(), null);
 
         // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII

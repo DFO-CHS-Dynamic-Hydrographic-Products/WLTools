@@ -13,9 +13,8 @@ public interface IWLAdjustmentIO {
 
   //String SPINE_STL_TIDE_GAUGES_INFO_FNAME= "";
 
-  String TIDE_GAUGES_INFO_FOLDER_NAME= "tideGaugeInfo";
-
-  String TIDE_GAUGES_INFO_ECCC_IDS_KEY= "ECCC_ID";
+  //String TIDE_GAUGES_INFO_FOLDER_NAME= "tideGaugeInfo";
+  //String TIDE_GAUGES_INFO_ECCC_IDS_KEY= "ECCC_ID";
 
   String INPUT_DATA_TYPE_SPLIT_STR= "::";
 
