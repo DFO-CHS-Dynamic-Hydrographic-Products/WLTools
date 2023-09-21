@@ -39,7 +39,7 @@ final public class FMSInput extends FMSConfig {
   public FMSInput(final WLAdjustmentType wlAdjObj) {
 
     //super(argsMap, wlAdjObj);
-    super(wlAdjObj)
+    super(wlAdjObj.getIdentity(), wlAdjObj.getLocation().getFmsJsonObject());
 
     this.predictions= wlAdjObj.getLocationPredData();
 

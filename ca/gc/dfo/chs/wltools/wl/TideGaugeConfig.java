@@ -37,11 +37,15 @@ import javax.json.JsonReader;
 /**
  *
  */
-public class TideGaugeConfig extends WLLocation implements ITideGaugeConfig {
+final public class TideGaugeConfig extends WLLocation implements ITideGaugeConfig {
 
-  String hrName= null; // --- Human readable TG name string (e.g. "Sorel")
+  private String hrName= null; // --- Human readable TG name string (e.g. "Sorel")
 
-  String ECCC_id= null; // --- The ECCC ADE numeric string id (e.g. "30316")
+  private String ECCCId= null; // --- The ECCC ADE numeric string id (e.g. "30316")
+
+  private String nearestSpinePointId= null;
+
+  private JsonObject fmsJsonObject= null;
 
   public TideGaugeConfig(final String identity) {
     super(identity);
@@ -51,8 +55,12 @@ public class TideGaugeConfig extends WLLocation implements ITideGaugeConfig {
 
     super.setConfig(tgJsonObj);
 
-    this.ECCC_id= tgJsonObj.getJsonString(INFO_ECCC_ID_JSON_KEY);
-    this.hrName= tgJsonObj.getJsonString(INFO_HUMAN_READABLE_NAME_JSON_KEY);
+    this.ECCCId= tgJsonObj.getString(INFO_ECCC_ID_JSON_KEY);
+    this.hrName = tgJsonObj.getString(INFO_HUMAN_READABLE_NAME_JSON_KEY);
+
+    this.nearestSpinePointId= tgJsonObj.getString(INFO_NEAREST_SPINE_POINT_ID_JSON_KEY)
+
+    this.fmsJsonObject= tgJsonObj.getJsonObject(INFO_FMS_CONFIG_JSON_KEY);
 
     //this.zcVsVertDatum= tgJsonObj.
     //  getJsonNumber(IWLConfig.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
@@ -61,5 +69,21 @@ public class TideGaugeConfig extends WLLocation implements ITideGaugeConfig {
     //                  tgJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
 
     return this;
+  }
+
+  final public String getHrName() {
+    return this.hrName;
+  }
+
+  final public String getECCCId() {
+    return this.ECCCId;
+  }
+
+  final public String getNearestSpinePointId() {
+    return this.nearestSpinePointId;
+  }
+
+  final public JsonObject getFmsJsonObject () {
+    return this.fmsJsonObject;
   }
 }

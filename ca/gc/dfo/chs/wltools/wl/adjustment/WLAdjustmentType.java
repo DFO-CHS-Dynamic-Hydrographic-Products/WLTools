@@ -137,6 +137,10 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
     System.exit(0);
   }
 
+  final public WLLocation getLocation() {
+    return this.location;
+  }
+
   final public String getIdentity() {
     return this.location.getIdentity();
   }

@@ -1,10 +1,12 @@
 package ca.gc.dfo.chs.wltools.wl.fms;
 
 import org.slf4j.Logger;
+import javax.json.JsonObject;
 import org.slf4j.LoggerFactory;
 
+import ca.gc.dfo.chs.wltools.wl.fms.IFMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSTime;
-import ca.gc.dfo.chs.wltools.wl.fms.neighborStationCovInfo;
+import ca.gc.dfo.chs.wltools.wl.fms.StationCovarianceConfig;
 
 //---
 //---
@@ -13,7 +15,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.neighborStationCovInfo;
 /**
  * FM Service master class.
  */
-final public class FMSResidualConfig extends LegacyFMSTime {
+final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig {
 
   private final static String whoAmI=
      "ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig";
@@ -27,18 +29,35 @@ final public class FMSResidualConfig extends LegacyFMSTime {
 
   private Float fallBackError;
 
-  private List<NeighborStationCovInfo> neighborStationCovInfo= new LinkedList<neighborStationCovInfo>();
+  private List<StationCovarianceConfig> stationCovCfg= new LinkedList<StationCovarianceConfig>();
 
   /**
-   * Default constructor.
+   *
    */
-  public FMSResidualConfig(final String method,  final Float fallBackError,
-                           final Float tauHours, final Float deltaTMinutes) {
+   public FMSResidualConfig(final JsonObject fmsResCfgJsonObj) {
 
-    super(tauHours, deltaTMinutes);
-    this.method= method;
-    this.fallBackError= fallBackError;
-  }
+     this.method= fmsResCfgJsonObj.
+       getString(LEGACY_RESIDUAL_METH_JSON_KEY);
+
+     this.fallBackError= fmsResCfgJsonObj.
+       getJsonNumber(LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY).getFloat();
+
+     //this.stationCovCfg= new 
+
+     for (final JsonObject stnCovCfgJsonObj: fmsResCfgJsonObj.getJsonArray()) {
+       this.stationCovCfg.add( new StationCovarianceConfig(stnCovCfgJsonObj) );
+     }
+   }
+
+  /**
+   *
+   */
+  //public FMSResidualConfig(final String method,  final Float fallBackError,
+  //                         final Float tauHours, final Float deltaTMinutes) {
+  //  super(tauHours, deltaTMinutes);
+  //  this.method= method;
+  //  this.fallBackError= fallBackError;
+  //}
 
   final public String getMethod() {
     return this.method;
