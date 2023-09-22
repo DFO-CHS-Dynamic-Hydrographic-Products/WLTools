@@ -22,19 +22,19 @@ abstract public class LegacyFMSTime extends LegacyFMSDT {
    */
   final static private Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  protected Float tauHours= 0.0;
+  protected double tauHours= 0.0;
 
   /**
    * Default constructor.
    */
-  public LegacyFMSTime(final Float tauHours, final Float deltaTMinutes) {
+  public LegacyFMSTime(final double tauHours, final double deltaTMinutes) {
 
     super(deltaTMinutes);
 
     this.tauHours= tauHours;
   }
 
-  final public Float getTauHours() {
+  final public double getTauHours() {
     return this.tauHours;
   }
 

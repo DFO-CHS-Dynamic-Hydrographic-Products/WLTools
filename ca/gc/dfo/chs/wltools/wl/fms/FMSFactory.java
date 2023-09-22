@@ -6,12 +6,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// ---
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLData;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
-import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSContext;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType
 
 //import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
@@ -101,11 +102,11 @@ abstract public class FMSFactory implements IFMS {
       throw new RuntimeException(npe);
     }
 
-    final String station0Id = fc0.getStationId();
+    final String station0Id= fc0.getStationId();
 
     slog.debug(mmi+"station0Id=" + station0Id);
 
-    final int fcstsTimeIncrMinutes= fc0.getDeltaTMinutes().intValue();
+    final long fcstsTimeIncrMinutes= (long) fc0.getDeltaTMinutes(); //.intValue();
 
     if (fcstsTimeIncrMinutes < FORECASTS_TIME_INCR_MINUTES_MIN) {
 
@@ -123,15 +124,12 @@ abstract public class FMSFactory implements IFMS {
       throw new RuntimeException(mmi+"Cannot update forecast ! station0Id=" + station0Id);
     }
 
-    final int fcstDurationHours = fc0.getDurationHours().intValue();
-
-    if (fcstDurationHours > FORECASTS_DURATION_HOURS_MAX) {
-
-      slog.error(mmi+"fcstDurationHours=" + fcstDurationHours +
-          " hours > FORECASTS_DURATION_HOURS_MAX=" + FORECASTS_DURATION_HOURS_MAX + " hours for station: " + station0Id);
-
-      throw new RuntimeException(mmi+"Cannot update forecast ! station0Id=" + station0Id);
-    }
+    //final long fcstDurationHours = (long) fc0.getDurationHours(); //.intValue();
+    //if (fcstDurationHours > FORECASTS_DURATION_HOURS_MAX) {
+    //  slog.error(mmi+"fcstDurationHours=" + fcstDurationHours +
+    //      " hours > FORECASTS_DURATION_HOURS_MAX=" + FORECASTS_DURATION_HOURS_MAX + " hours for station: " + station0Id);
+    //  throw new RuntimeException(mmi+"Cannot update forecast ! station0Id=" + station0Id);
+    //}
 
     // --- TODO: Verify if we can remove the previous checks for the first LegacyFMSContext (index 0) of the
     //   legacyFMSContextList in order to avoid having redundant code.
@@ -149,7 +147,7 @@ abstract public class FMSFactory implements IFMS {
         throw new RuntimeException(npe);
       }
 
-      final String stationId = fc.getStationId();
+      final String stationId= fc.getStationId();
 
       slog.info(mmi+"Now checking station: "+stationId);
 
@@ -163,7 +161,7 @@ abstract public class FMSFactory implements IFMS {
       slog.info(mmi+"Now checking station: "+stationId);
 
       //--- Check for null objects here also ??
-      final int checkTimeIncr= fc.getDeltaTMinutes().intValue();
+      final long checkTimeIncr= (long) fc.getDeltaTMinutes(); //.intValue();
 
       if (checkTimeIncr != fcstsTimeIncrMinutes) {
 
@@ -173,21 +171,18 @@ abstract public class FMSFactory implements IFMS {
         throw new RuntimeException("FMFactory constructor: Cannot update forecast ! station=" + stationId);
       }
 
-      final int checkFstDurHours = fc.getDurationHours().intValue();
-
-      if (checkFstDurHours != fcstDurationHours) {
-
-        slog.error(mmi+"checkFstDurHours=" + checkFstDurHours +
-            " hours != fcstDurationHours=" + fcstDurationHours + " hours for station: " + stationId);
-
-        throw new RuntimeException(mmi+"Cannot update forecast ! station=" + stationId);
-      }
+      //final long checkFstDurHours = (long) fc.getDurationHours(); //.intValue();
+      //if (checkFstDurHours != fcstDurationHours) {
+      //  slog.error(mmi+"checkFstDurHours=" + checkFstDurHours +
+      //      " hours != fcstDurationHours=" + fcstDurationHours + " hours for station: " + stationId);
+      //  throw new RuntimeException(mmi+"Cannot update forecast ! station=" + stationId);
+      //}
     }
 
-    this.fcstsDurationSeconds = SECONDS_PER_HOUR * fcstDurationHours;
+    //this.fcstsDurationSeconds = SECONDS_PER_HOUR * fcstDurationHours;
     this.fcstsTimeIncrSeconds = SECONDS_PER_MINUTE * fcstsTimeIncrMinutes;
 
-    this.data = new FMSWLData(fcstsTimeIncrMinutes, fmsConfigList); //forecastingContextList);
+    this.data= new FMSWLData(fcstsTimeIncrMinutes, fmsConfigList); //forecastingContextList);
 
     this.log.debug(mmi+"end\n");
   }
@@ -197,12 +192,9 @@ abstract public class FMSFactory implements IFMS {
   // * @return true if the ForecastingContext object is OK and ready to use for some(not all) of its attributes.
   // */
   //protected final boolean checkForecastingContext(@NotNull final ForecastingContext forecastingContext) {
-
-  protected final boolean checkFMSConfig(@NotNull final FMSConfig fmsConfig) {
-
-    boolean ret = true;
-
-    final String stationId = fmsConfig.getStationId();
+  //protected final boolean checkFMSConfig(/*@NotNull*/ final FMSConfig fmsConfig) {
+  //  boolean ret= true;
+  //  final String stationId= fmsConfig.getStationId();
 
     //final FmsParameters fmsParameters = forecastingContext.getFmsParameters();
 
@@ -223,8 +215,8 @@ abstract public class FMSFactory implements IFMS {
     //  ret = false;
     //}
 
-    return ret;
-  }
+    //return ret;
+  //}
 
   /**
    * @param wlTimeNode      : A WLTimeNode object.
@@ -235,7 +227,8 @@ abstract public class FMSFactory implements IFMS {
   final boolean checkFutureTimeDiff(/*@NotNull*/ final WLTimeNode wlTimeNode,
                                     /*@NotNull*/ final MeasurementCustom nextMeasurement) {
 
-    return ((nextMeasurement.getEventDate().getEpochSecond() - wlTimeNode.seconds()) == this.fcstsTimeIncrSeconds);
+    return ( this.fcstsTimeIncrSeconds ==
+            (nextMeasurement.getEventDate().getEpochSecond() - wlTimeNode.seconds()) );
   }
 
   /**
@@ -248,8 +241,9 @@ abstract public class FMSFactory implements IFMS {
   final WLTimeNode getNewFMSTimeNode(/*@NotNull*/ final WLTimeNode pstrWLTimeNode) {
 
     //--- NOTE: The incremented SecondsSinceEpoch time-stamp is created here.
-    return this.data.newFMSTimeNode(pstrWLTimeNode,
-               new SecondsSinceEpoch(pstrWLTimeNode.getSse().seconds() + this.fcstsTimeIncrSeconds));
+    return this.data.
+      newFMSTimeNode(pstrWLTimeNode,
+        new SecondsSinceEpoch(pstrWLTimeNode.getSse().seconds() + this.fcstsTimeIncrSeconds));
   }
 
   /**
@@ -259,7 +253,7 @@ abstract public class FMSFactory implements IFMS {
   final List<WLTimeNode> timeNodes() {
     return this.data.timeNodes;
   }
-  
+
   /**
    * FM Service forecast generic method update.
    *

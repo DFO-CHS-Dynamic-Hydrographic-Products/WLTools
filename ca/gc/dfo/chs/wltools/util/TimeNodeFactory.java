@@ -23,52 +23,49 @@ import org.slf4j.LoggerFactory;
  * TODO: Implement a abstract template version of TimeNodeFactory.
  */
 abstract public class TimeNodeFactory implements ITimeMachine {
-  
+
   /**
-   * Private static Logger for static methods
+   * Private static Logger
    */
-  private static final Logger staticLogger = LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.util" +
-      ".TimeNodeFactory");
-  /**
-   * Private Logger utility.
-   */
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private static final Logger slog= LoggerFactory.getLogger(whoAmI);
+
   /**
    * Wraps a GregorianCalendar object compatible with both Java-1.7 and 1.8.
    */
-  protected SecondsSinceEpoch sse = null;
+  protected SecondsSinceEpoch sse= null;
+
   /**
    * Reference to a TimeNodeFactory  which is just before in time(i.e. this.sse.seconds() is larger than this.pstr
    * .seconds()).
    */
-  protected TimeNodeFactory pstr = null;
+  protected TimeNodeFactory pstr= null;
+
   /**
    * Reference to a TimeNodeFactory  which is just after in time(i.e. this.sse.seconds() is smaller than this.futr
    * .seconds()).
    */
-  protected TimeNodeFactory futr = null;
-  
+  protected TimeNodeFactory futr= null;
+
   /**
    * @param seconds : The seconds since epoch used to construct the underlying GregorianCalendar object this.sse.
    */
   //public TimeNodeFactory(@Min(0) final long seconds) {
   public TimeNodeFactory(final long seconds) {
     this();
-    this.sse = new SecondsSinceEpoch(seconds);
+    this.sse= new SecondsSinceEpoch(seconds);
   }
-  
+
   //--- constructors:
   public TimeNodeFactory() {
-    
     this.sse = null;
     this.pstr = this.futr = null;
   }
-  
+
   //--- constructor kept for possible future usage.
 //    public TimeNodeFactory(@NotNull final TimeNodeFactory wln) {
 //        this(wln,false);
 //    }
-  
+
   /**
    * @param sse  : Already existing SecondsSinceEpoch object.
    * @param pstr : (Could be null) Reference to an already existing TimeNodeFactory  which is just before in time(i.e
@@ -80,11 +77,11 @@ abstract public class TimeNodeFactory implements ITimeMachine {
   public TimeNodeFactory(final SecondsSinceEpoch sse, final TimeNodeFactory pstr, final TimeNodeFactory futr) {
 
     //--- Only a reference here
-    this.sse = sse;
-    
+    this.sse= sse;
+
     this.setRefs(pstr, futr);
   }
-  
+
   //--- constructor for possible future usage.
   //    public TimeNodeFactory(@NotNull final TimeNodeFactory wln, final TimeNodeFactory pstr, final TimeNodeFactory
   //    futr) {
@@ -92,7 +89,6 @@ abstract public class TimeNodeFactory implements ITimeMachine {
   //
   //        this.setRefs(pstr,futr);
   //    }
-  
   //--- constructor for possible future usage.
 //    @NotNull
 //    public TimeNodeFactory(@NotNull final TimeNodeFactory wln, final boolean newSseObj) {
@@ -108,7 +104,7 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 //
 //        this.setRefs(wln.pstr,wln.futr);
 //    }
-  
+
   /**
    * Set the pstr and futr TimeNodeFactory time neighbors.
    *
@@ -118,66 +114,69 @@ abstract public class TimeNodeFactory implements ITimeMachine {
    */
   //@NotNull
   protected TimeNodeFactory setRefs(final TimeNodeFactory pstr, final TimeNodeFactory futr) {
-    
+
+    final String mmi= "setRefs: ";
+
     if (pstr == this) {
-      this.log.error("TimeNodeFactory setRefs: pstr==this !");
-      throw new RuntimeException("TimeNodeFactory setRefs");
+      slog.error(mmi+"pstr==this !");
+      throw new RuntimeException(mmi);
     }
-    
+
     if (futr == this) {
-      this.log.error("TimeNodeFactory setRefs: futr==this !");
-      throw new RuntimeException("TimeNodeFactory setRefs");
+      slog.error(mmi+"futr==this !");
+      throw new RuntimeException(mmi);
     }
-    
+
     if ((pstr != null) && (futr != null)) {
-      
+
       if (pstr == futr) {
-        
-        this.log.error("TimeNodeFactory setRefs: pstr==futr !");
-        throw new RuntimeException("TimeNodeFactory setRefs");
+
+        slog.error(mmi+"pstr==futr !");
+        throw new RuntimeException(mmi);
       }
     }
-    
+
     //--- Past TimeNodeFactory Object reference(could be null):
-    this.pstr = pstr;
-    
+    this.pstr= pstr;
+
     if (this.pstr != null) {
-      
+
       //--- Verify time-stamps order validity:
       if (this.pstr.sse.seconds() >= this.sse.seconds()) {
-        
-        this.log.error("TimeNodeFactory setRefs: this.pstr.sse.seconds() >= this.sse.seconds() !");
-        throw new RuntimeException("TimeNodeFactory setRefs");
+
+        slog.error(mmi+"this.pstr.sse.seconds() >= this.sse.seconds() !");
+        throw new RuntimeException(mmi);
       }
-      
+
       //--- Set past Object future reference as this TimeNodeFactory.
-      this.pstr.futr = this;
-      
-      this.log.debug("TimeNodeFactory setRefs: this=" + this);
-      this.log.debug("TimeNodeFactory setRefs: this dt=" + this.sse.dateTimeString(true));
-      this.log.debug("TimeNodeFactory setRefs: this.pstr=" + this.pstr);
-      this.log.debug("TimeNodeFactory setRefs: this.pstr.futr=" + this.pstr.futr);
+      this.pstr.futr= this;
+
+      slog.info(mmi+"this=" + this);
+      slog.info(mmi+"this dt=" + this.sse.dateTimeString(true));
+
+      slog.info(mmi+"this.pstr=" + this.pstr);
+      slog.info(mmi+"this.pstr.futr=" + this.pstr.futr);
     }
-    
+
     //--- future TimeNodeFactory Object reference(could be null):
-    this.futr = futr;
-    
+    this.futr= futr;
+
     if (this.futr != null) {
-      
+
       //--- Verify time-stamps order validity:
       if (this.futr.sse.seconds() <= this.sse.seconds()) {
-        
-        this.log.error("TimeNodeFactory setRefs: this.futr.sse.seconds() <= this.sse.seconds() !");
-        throw new RuntimeException("TimeNodeFactory setRefs");
+
+        slog.error(mmi+"this.futr.sse.seconds() <= this.sse.seconds() !");
+        throw new RuntimeException(mmi);
       }
-      
+
       //--- Set future Object past reference as this TimeNodeFactory.
       this.futr.pstr = this;
     }
-    
+
     return this;
   }
-  
+
   /**
    * Find a TimeNodeFactory having a specific time-stamp in the past using the pstr reference recursively.
    * NOTE: Recursive method.
@@ -188,61 +187,61 @@ abstract public class TimeNodeFactory implements ITimeMachine {
   //public final TimeNodeFactory findInPastR(@Min(0) final long seconds) {
   public final TimeNodeFactory findInPastR(final long seconds) {
 
+   final String mmi= "findInPastR: "
+
     if (seconds > this.sse.seconds()) {
-      
-      this.log.error("TimeNodeFactory findInPastR: seconds dt=" +
+
+      this.log.error(mmi+seconds dt=" +
           SecondsSinceEpoch.dtFmtString(seconds, true) + " > this.sse.seconds() dt=" + this.sse.dateTimeString(true) + " !");
-      
-      throw new RuntimeException("TimeNodeFactory findInPastR:");
+
+      throw new RuntimeException(mmi);
     }
 
 //        this.log.debug("TimeNodeFactory findInPastR: this="+this+", this dt="+this.sse.dateTimeString());
 //        this.log.debug("TimeNodeFactory findInPastR: this.pstr=="+this.pstr);
 //        this.log.debug("TimeNodeFactory findInPastR: seconds dt="+SecondsSinceEpoch.dtFmtString(seconds,true));
-    
+
     TimeNodeFactory ret = null;
-    
+
     if (this.sse.seconds() == seconds) {
-      
       ret = this;
-      
+
     } else if (this.pstr != null) {
-      
       //--- continue the search with the previous(in time) TimeNodeFactory object this.pstr.
       ret = this.pstr.findInPastR(seconds);
     }
-    
+
     return ret;
   }
-  
+
   /**
    * @return The TimeNodeFactory object just after in time.
    */
   final public TimeNodeFactory getFutr() {
     return this.futr;
   }
-  
+
   /**
    * @return The TimeNodeFactory object just before in time.
    */
   final public TimeNodeFactory getPstr() {
     return this.pstr;
   }
-  
+
   /**
    * @return The SecondsSinceEpoch of this TimeNodeFactory
    */
   final public SecondsSinceEpoch getSse() {
     return this.sse;
   }
-  
+
   /**
    * @return long : The seconds since the epoch returned by this SecondsSinceEpoch.
    */
   final public long seconds() {
     return this.sse.seconds();
   }
-  
+
   /**
    * Set this.sse as a reference to an already existing SecondsSinceEpoch object.
    *
@@ -255,7 +254,7 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 
     return (this.sse = sse);
   }
-  
+
   //--- for possible future usage.
 //    public static final boolean checkTimeSync(@NotNull final TimeNodeFactory tn1, @NotNull final TimeNodeFactory
 //    tn2) {
@@ -266,7 +265,6 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 //
 //        return tn1.checkTimeSync(tn2);
 //    }
-  
   //--- for possible future usage
 //    @NotNull
 //    public final boolean checkTimeSync(@NotNull final TimeNodeFactory other) {
@@ -278,7 +276,6 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 //
 //        return (this.seconds() == other.seconds());
 //    }
-  
   //--- for possible future usage
 //    public final static TimeNodeFactory find(@NotNull final SecondsSinceEpoch sse, @NotNull @Size(min=1) final
 //    List<TimeNodeFactory> bunch) {
@@ -300,7 +297,6 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 //
 //        return ret;
 //    }
-  
   //--- commented for possible future usage
 //    public final TimeNodeFactory findR(@Min(0) final long seconds) {
 //
@@ -316,7 +312,6 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 //
 //        return ret;
 //    }
-  
   //--- commented for possible future usage
 //    public final TimeNodeFactory findInFuture(@NotNull final SecondsSinceEpoch sse) {
 //        return this.findInFuture(sse.seconds());
@@ -348,7 +343,6 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 //    public final TimeNodeFactory findInPast(@NotNull final SecondsSinceEpoch sse) {
 //        return this.findInPast(sse.seconds());
 //    }
-  
   ////--- commented for possible future usage
 //    public final TimeNodeFactory findInFutureR(@Min(0) final long seconds) {
 //
@@ -369,7 +363,6 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 //
 //        return ret;
 //    }
-
 //    //--- commented for possible future usage
 //    public final TimeNodeFactory findInPast(@Min(0) final long seconds) {
 //
@@ -455,8 +448,7 @@ abstract public class TimeNodeFactory implements ITimeMachine {
 //
 //        return ret;
 //    }
-  
-  //--- method kept for possible future usage
+//--- method kept for possible future usage
 //    @NotNull
 //    @Size(min=1)
 //    protected final static List<TimeNodeFactory> setAllRefs(@NotNull @Size(min=1) final List<TimeNodeFactory> tnl) {

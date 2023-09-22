@@ -1,7 +1,8 @@
 package ca.gc.dfo.chs.wltools.wl.fms;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import javax.json.JsonObject;
+import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
@@ -31,19 +32,19 @@ abstract public class FMSConfig extends LegacyFMSDT {
   // --- The name of the model used for the storm surge forecast signal.
   private String mergeWithSSFModel;
 
-  private Float stdErrSigma;
+  private double stdErrSigma;
 
   // --- The time duration in the future of the WLF-QC data.
   //     TODO: Verify if it is really used, not yer clear if
   //           it is relevant or not (2023-09-20)
-  //private Float durationHours;
+  //private double durationHours;
 
   // --- ssfMergeDurationHours is the time duration in hours to use to
   //     merge the FMS WLF-QC to a storm (and-or fresh water) surge WL
   //     forecast (if any) coming from a numerical model result that
   //     includes a storm (or fresh water) surge signal.
   //     (ssf stands for Storm Surge Forecast)
-  private Float ssfMergeDurationHours;
+  private double ssfMergeDurationHours;
 
   // --- fmsResidualConfig object must be defined (i.e. not null)
   //     and set for all TG stations.
@@ -87,24 +88,27 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
     // --- We use the forecastDataTimeIntervallSeconds as the deltaTMinutes
     //     for the legacy FMS deltaTMinutes attribute
-    this.deltaTMinutes= Float.valueOf( (float) forecastDataTimeIntervallSeconds/ITimeMachine.SECONDS_PER_MINUTE ) );
+    this.deltaTMinutes= ( (double) forecastDataTimeIntervallSeconds/ITimeMachine.SECONDS_PER_MINUTE ) );
 
     if (fmsConfigJsonObj.contains(LEGACY_DELTA_MINS_JSON_KEY)) {
       this.deltaTMinutes= fmsConfigJsonObj.
-         getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).getFloat();
+         getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue();
     }
 
-    this.ssfMergeDurationHours= IFMS.DEFAULT_STORM_SURGE_FORECAST_MERGE_HOURS;
+    this.ssfMergeDurationHours=
+      IFMS.DEFAULT_STORM_SURGE_FORECAST_MERGE_HOURS;
 
     if (fmsConfigJsonObj.contains(LEGACY_MERGE_HOURS_JSON_KEY)) {
+
       this.ssfMergeDurationHours= fmsConfigJsonObj.
-         getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).getFloat();
+         getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).doubleValue();
     }
 
     this.fmsResidualConfig= new
       FMSResidualConfig(fmsConfigJsonObj.getJsonObject(LEGACY_RESIDUAL_JSON_KEY));
 
     if (fmsConfigJsonObj.contains(LEGACY_TIDAL_REMNANT_JSON_KEY)) {
+
       this.fmsTidalRemnantConfig= new
         FMSTidalRemnantConfig(fmsConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY));
     }
@@ -118,15 +122,15 @@ abstract public class FMSConfig extends LegacyFMSDT {
     return this.mergeWithSSFModel;
   }
 
-  final public Float getDurationHours() {
-    return this.durationHours;
-  }
+  //final public double getDurationHours() {
+  //  return this.durationHours;
+  //}
 
-  final public Float getStdErrSigma() {
+  final public double getStdErrSigma() {
     return this.stdErrSigma;
   }
 
-  final public Float getSsfMergeDurationHours() {
+  final public double getSsfMergeDurationHours() {
     return this.ssfMergeDurationHours;
   }
 

@@ -25,9 +25,9 @@ final public class StationCovarianceConfig implements IFMSConfig {
 
   private String stationId= null;
 
-  private Float fallBackCoeff = null;
+  private double fallBackCoeff = null;
 
-  private Float timeLagMinutes= null;
+  private double timeLagMinutes= null;
 
   /**
    *
@@ -38,33 +38,32 @@ final public class StationCovarianceConfig implements IFMSConfig {
       getString(LEGACY_STN_COV_JSON_KEY);
 
     this.timeLagMinutes= stnCovCfgJsonObj.
-      getJsonNumber(LEGACY_STN_COV_TLAG_MINS_JSON_KEY).getFloat();
+      getJsonNumber(LEGACY_STN_COV_TLAG_MINS_JSON_KEY).doubleValue();
 
     this.fallBackCoeff= stnCovCfgJsonObj.
-      getJsonNumber(LEGACY_STN_COV_FALLBACK_COEFF_JSON_KEY).getFloat();
+      getJsonNumber(LEGACY_STN_COV_FALLBACK_COEFF_JSON_KEY).doubleValue();
   }
 
-  /**
-   *
-   */
-  public StationCovarianceConfig(final String stationId,
-                                 final Float timeLagMinutes,
-                                 final Float fallBackCoeff ) {
-
-    this.stationId= stationId;
-    this.fallBackCoeff= fallBackCoeff;
-    this.timeLagMinutes= timeLagMinutes;
-  }
+  ///**
+  // *
+  // */
+  //public StationCovarianceConfig(final String stationId,
+  //                               final double timeLagMinutes,
+  //                               final double fallBackCoeff ) {
+  //  this.stationId= stationId;
+  //  this.fallBackCoeff= fallBackCoeff;
+  //  this.timeLagMinutes= timeLagMinutes;
+  //}
 
   final String getStationId() {
     return this.stationId;
   }
 
-  final public Float getTimeLagMinutes() {
+  final public double getTimeLagMinutes() {
     return this.timeLagMinutes;
   }
 
-  final public Float getFallBackCoeff() {
+  final public double getFallBackCoeff() {
     return this.fallBackCoeff;
   }
 

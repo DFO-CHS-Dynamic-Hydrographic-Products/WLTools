@@ -52,13 +52,13 @@ public final class FMS extends FMSFactory implements IFMS {
   //public FMS(@NotNull final ForecastingContext forecastingContext) {
 
   /**
-   * @param legacyFMSContext : A LegacyFMSContext object
+   * @param 
    */
   public FMS(/*@NotNull*/ final FMSInput fmsInput ) {
 
     //this(getFcList(forecastingContext));
 
-    this(getSingleFMSIList(fmsInput));
+    this( getSingleFMSIList(fmsInput) );
   }
 
   /**
@@ -77,8 +77,8 @@ public final class FMS extends FMSFactory implements IFMS {
   /**
    * Trick method to get a List with a single ForecastingContext object.
    *
-   * @param forecastingContext : A ForecastingContext object.
-   * @return A new List of one ForecastingContext.
+   * @param fmsInput : A FMSInput object.
+   * @return A new List of one FMSInput object (i.e. fmsInput).
    */
   //@NotNull
   //private static List<ForecastingContext> getSingleFcList(@NotNull final ForecastingContext forecastingContext) {
@@ -89,6 +89,7 @@ public final class FMS extends FMSFactory implements IFMS {
     //fcList.add(forecastingContext);
 
     final List<FMSInput> singleFMSIList = new ArrayList<FMSInput>(1);
+
     singleFMSIList.add(fmsInput);
 
     return singleFMSIList;
@@ -131,11 +132,12 @@ public final class FMS extends FMSFactory implements IFMS {
       throw new RuntimeException(npe);
     }
 
-    final String station0Id = this.data.allStationsData.get(0).getStationCode();
+    final String station0Id=
+      this.data.allStationsData.get(0).getStationId();
 
     slog.info(mmi+"station0Id=" + station0Id);
 
-    final List<MeasurementCustom> predictionsMeasurements0 =
+    final List<MeasurementCustom> predictionsMeasurements0=
       this.data.allStationsData.get(0).getMeasurementList(WLType.PREDICTION);
 
     try {

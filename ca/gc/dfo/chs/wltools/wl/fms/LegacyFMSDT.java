@@ -20,20 +20,20 @@ abstract public class LegacyFMSDT {
    */
   final static private Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  protected Float deltaTMinutes= 0.0;
+  protected double deltaTMinutes= 0.0;
 
   /**
    * Default constructor.
    */
-  public LegacyFMSDT(final FloatdeltaTMinutes) {
+  public LegacyFMSDT(final double deltaTMinutes) {
     this.deltaTMinutes= deltaTMinutes;
   }
 
-  final public Float getDeltaTMinutes() {
+  final public double getDeltaTMinutes() {
     return this.deltaTMinutes;
   }
 
-  final public void setDeltaTMinutes(final Float deltaTMinutes) {
+  final public void setDeltaTMinutes(final double deltaTMinutes) {
     this.deltaTMinutes= deltaTMinutes;
   }
 }

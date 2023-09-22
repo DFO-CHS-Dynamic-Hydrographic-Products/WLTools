@@ -27,7 +27,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
 
   private String method;
 
-  private Float fallBackError;
+  private double fallBackError;
 
   private List<StationCovarianceConfig> stationCovCfg= new LinkedList<StationCovarianceConfig>();
 
@@ -40,9 +40,9 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
        getString(LEGACY_RESIDUAL_METH_JSON_KEY);
 
      this.fallBackError= fmsResCfgJsonObj.
-       getJsonNumber(LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY).getFloat();
+       getJsonNumber(LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY).doubleValue();
 
-     //this.stationCovCfg= new 
+     //this.stationCovCfg= new
 
      for (final JsonObject stnCovCfgJsonObj: fmsResCfgJsonObj.getJsonArray()) {
        this.stationCovCfg.add( new StationCovarianceConfig(stnCovCfgJsonObj) );
@@ -63,7 +63,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
     return this.method;
   }
 
-  final public getFallBackError() {
+  final public double getFallBackError() {
     return this.fallBackError;
   }
 
@@ -71,12 +71,12 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
     this.method= method;
   }
 
-  final public void setFallBackError(final Float fallBackError) {
+  final public void setFallBackError(final double fallBackError) {
     this.fallBackError= fallBackError;
   }
 
   @Override
-  public String toString() {
+  final public String toString() {
     return whoAmi+"{" +
         "method=" + this.getMethod() + ", " +
         "tauhours=" + this.getTauHours() + ", " +
