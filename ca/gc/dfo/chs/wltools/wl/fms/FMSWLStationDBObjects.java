@@ -1,20 +1,33 @@
-package ca.gc.dfo.iwls.fmservice.modeling.fms;
+//package ca.gc.dfo.iwls.fmservice.modeling.fms;
+package ca.gc.dfo.chs.wltools.wl.fms;
 
-import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-import ca.gc.dfo.iwls.fmservice.modeling.geo.GlobalRefPoint;
-import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-import ca.gc.dfo.iwls.fmservice.modeling.wl.IWL;
-import ca.gc.dfo.iwls.fmservice.modeling.wl.WLMeasurementFinder;
-import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.ArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.List;
+import ca.gc.dfo.chs.wltools.wl.IWL;
+import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.wl.WLMeasurementFinder;
+
+//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
+//import ca.gc.dfo.iwls.fmservice.modeling.geo.GlobalRefPoint;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
+//import ca.gc.dfo.iwls.fmservice.modeling.wl.IWL;
+//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLMeasurementFinder;
+//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+//import lombok.extern.slf4j.Slf4j;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
+//import java.util.ArrayList;
+//import java.util.List;
 
 //---
 //import com.vividsolutions.jts.geom.Point;
@@ -26,149 +39,163 @@ import java.util.List;
  * Class for a specific WL station database WLType objects(PREDICTION, OBSERVATION, FORECAST, EXT_STORM_SURGE)
  * references.
  */
-@Slf4j
+//@Slf4j
 public class FMSWLStationDBObjects extends GlobalRefPoint implements IFMS, IWL {
-  
+
+  final static private whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationDBObjects";
+
   /**
    * static log utility.
    */
-  private final static Logger staticLog = LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.fms" +
-      ".WLStationDBData");
+  private final static Logger sLog= LoggerFactory.getLogger(whoAmI);
+
   /**
-   * To store the newly updated WLF(forecast) in the future.
+   * To store the newly updated WLF-QC in the future.
    */
-  final List<MeasurementCustom> udpatedForecastData = new ArrayList<>();
+  final List<MeasurementCustom> udpatedWLFData= new ArrayList<MeasurementCustom>();
+
   /**
    * One WLMeasurementFinder object for each PREDICTION, OBSERVATION, FORECAST, EXT_STORM_SURGE WLType.
    */
-  private final List<WLMeasurementFinder> wlMeasurementFinderList = new ArrayList<>(WLType.values().length);
+  private final List<WLMeasurementFinder>
+    wlMeasurementFinderList= new ArrayList<WLMeasurementFinder>(WLType.values().length);
 
   /**
    * To keep track of the last valid WLO time-stamp(seconds since the epcoh)available.
    */
-  long lastWLOSse = 0L;
+  long lastWLOSse= 0L;
+
   /**
    * boolean flag to signal that we have some WL storm surge to use for the forecast at this WL station.
    */
-  boolean useSsf = false;
+  boolean useSsf= false;
+
   /**
    * The time-increment(in seconds) between successive WL(O,P,F,SSF) data.
    */
-  long secondsIncr = FORECASTS_TIME_INCR_SECONDS_MAX;
+  long secondsIncr= FORECASTS_TIME_INCR_SECONDS_MAX;
+
   /**
    * WL storm surge type to use.
    */
-  private StormSurgeWLType ssfType = StormSurgeWLType.WLSSF_FULL;
+  private StormSurgeWLType ssfType= StormSurgeWLType.WLSSF_FULL;
+
   /**
-   * The String of the station SINECO ID. It MUST be the String returned by the ForecastingContext.getStationCode().
+   * The String id. of the stationIt MUST be the String returned by the FMSConfig.getStationId() method.
    */
-  private String stationCode = null;
-  
+  private String stationId= null;
+
   /**
    * @param forecastingContext   : A ForecastingContext object coming from a SQL request on the operational DB.
    * @param globalVerticalDatum  : A GlobalVerticalDatum object.
    * @param globalVerticalOffset : The global vertical Z elevation offset referred to the GlobalVerticalDatum object.
    *                             It is zero if WL location is directly referred to the GlobalVerticalDatum.
    */
-  public FMSWLStationDBObjects(@NotNull final ForecastingContext forecastingContext,
-                               @NotNull final GlobalVerticalDatum globalVerticalDatum,
-                               final double globalVerticalOffset) {
-    
+  //public FMSWLStationDBObjects(/*@NotNull*/ final ForecastingContext forecastingContext,
+  public FMSWLStationDBObjects(/*@NotNull*/ final FMSInput fmsInput,
+                               /*@NotNull*/ final GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
+
     //--- Re-activate the following super invocation if the ca.gc.dfo.iwls.station class re-activate its own com
     // .vividsolutions.jts.geom.Point as an attribute.
     //super(fc.getStationInfo().getLocation(), globalVerticalDatum, globalVerticalOffset);
-    
+
     //--- super invocation dealing with the absence of the com.vividsolutions.jts.geom.Point as an attribute to the
     // ca.gc.dfo.iwls.Station class
-    super(forecastingContext.getStationInfo().getLongitude(), forecastingContext.getStationInfo().getLatitude(), 0.0,
-        globalVerticalDatum, globalVerticalOffset);
-    
-    this.stationCode = forecastingContext.getStationCode();
-    
+    //super(forecastingContext.getStationInfo().getLongitude(), forecastingContext.getStationInfo().getLatitude(), 0.0,
+
+    super(fmsInput.getStationHBCoords().getLongitude(),
+          fmsInput.getStationHBCoords().getLatitude(),
+          0.0, globalVerticalDatum, globalVerticalOffset);
+
+    this.stationId= fmsInput.getStationId();
+
     //--- Set the ForecastingContext.newGeneratedForecasts object to point to the WL station udpatedForecastData
-    // object to
-    //    be able to udpate the DB with the new WLF data.
-    forecastingContext.setNewGeneratedForecasts(this.udpatedForecastData);
-    
+    // object to be able to udpate the DB with the new WLF data.
+    //forecastingContext.setNewGeneratedForecasts(this.udpatedWLFData);
+
     //--- Predictions:
-    final List<MeasurementCustom> dbPrdList = forecastingContext.getPredictions();
-    
-    this.log.debug("FMSWLStationDBObjects constructor: Got " + dbPrdList.size() + " predictions data.");
-    
-    final long frstDt = dbPrdList.get(0).getEventDate().getEpochSecond();
-    
-    this.log.debug("FMSWLStationDBObjects constructor:  Predictions 1st time-stamp Instant Object:" + dbPrdList.get(0).getEventDate().toString());
-    this.log.debug("FMSWLStationDBObjects constructor:  Predictions 1st time-stamp SecondsSinceEpoch UTC: " + SecondsSinceEpoch.dtFmtString(frstDt, true));
-    
+    final List<MeasurementCustom> dbPrdList= fmsInput.getPredictions();
+
+    slog.info(mmi+"Got " + dbPrdList.size() + " predictions data.");
+
+    final long frstDt= dbPrdList.get(0).getEventDate().getEpochSecond();
+
+    slog.info(mmi+"Predictions 1st time-stamp Instant Object:" + dbPrdList.get(0).getEventDate().toString());
+    slog.info(mmi+"Predictions 1st time-stamp SecondsSinceEpoch UTC: " + SecondsSinceEpoch.dtFmtString(frstDt, true));
+
     //--- Set this.measurementsFinderList references:
-    
+
     //--- Populate this.wlMeasurementFinderList for PREDICTION type:
     this.wlMeasurementFinderList.add(PREDICTION, new WLMeasurementFinder(dbPrdList));
-    
+
     final long lastDt = dbPrdList.get(dbPrdList.size() - 1).getEventDate().getEpochSecond();
-    
-    this.log.debug("FMSWLStationDBObjects constructor: Predictions last time-stamp: " + SecondsSinceEpoch.dtFmtString(lastDt, true));
-    
+
+    slog.info(mmi+"Predictions last time-stamp: " + SecondsSinceEpoch.dtFmtString(lastDt, true));
+
     //--- WL OBSERVATION type
-    final List<MeasurementCustom> dbObsList = forecastingContext.getObservations();
-    
+    final List<MeasurementCustom> dbObsList= fmsInput.getObservations();
+
     if ((dbObsList != null) && (dbObsList.size() > 0)) {
-      
-      this.log.debug("FMSWLStationDBObjects constructor: Got " + dbObsList.size() + " WL observations from the DB for" +
-          " station:" + this.stationCode);
-      
+
+      slog.info(mmi+"Got "+dbObsList.size()+
+                " WL observations from the DB for station: " + this.stationId);
+
       this.wlMeasurementFinderList.add(OBSERVATION, new WLMeasurementFinder(dbObsList));
-      this.lastWLOSse = this.wlMeasurementFinderList.get(OBSERVATION).getLastSse();
-      
+
+      this.lastWLOSse= this.wlMeasurementFinderList.get(OBSERVATION).getLastSse();
+
     } else {
-      
+
       this.wlMeasurementFinderList.add(OBSERVATION, null);
-      
-      this.log.warn("FMSWLStationDBObjects constructor: No observations retreived(null or size()==0) from the DB for " +
-          "station:" + this.stationCode +
-          ", setting this last.ObsSse at the ForecastingContext reference time.");
-      
-      this.lastWLOSse = forecastingContext.getReferenceTime().getEpochSecond();
+
+      slog.info(mmi+"No observations retreived(null or size()==0) from the DB for station:"+
+                this.stationID + ", setting this last.ObsSse at the FMSInput reference time.");
+
+      this.lastWLOSse = fmsInput.getReferenceTime().getEpochSecond();
     }
-    
-    this.log.debug("FMSWLStationDBObjects constructor: this.lastWLOSse time-stamp=" + SecondsSinceEpoch.dtFmtString(this.lastWLOSse, true));
-    
+
+    slog.info(mmi+"this.lastWLOSse time-stamp="+
+              SecondsSinceEpoch.dtFmtString(this.lastWLOSse, true));
+
     final int wlpSize = this.wlMeasurementFinderList.get(PREDICTION).size();
-  
-    final List<MeasurementCustom> dbFcsList = forecastingContext.getForecasts();
-    
+
+    final List<MeasurementCustom> dbFcsList = fmsInput.getForecasts();
+
     if ((dbFcsList != null) && (dbFcsList.size() > 0)) {
-      
-      this.log.debug("FMSWLStationDBObjects constructor: Got " + dbFcsList.size() + " WL forecasts from the DB for " +
-          "station:" + this.stationCode);
-      
-      final int wlfSize = dbFcsList.size();
-      
+
+      slog.info(mmi+"Got " + dbFcsList.size() + " WL forecasts data for station: " + this.stationId);
+
+      final int wlfSize= dbFcsList.size();
+
       if (wlfSize != wlpSize) {
-        
-        this.log.warn("FMSWLStationDBObjects constructor: wlfSize=" + wlfSize + ", wlpSize=" + wlpSize);
-        this.log.warn("FMSWLStationDBObjects constructor: wlfSize != wlpSize for station: " + this.stationCode);
-        this.log.warn("FMSWLStationDBObjects constructor: WLP and WLF are not synchronized ! WLF will be replaced by " +
-            "WLP !");
-        
+
+        slog.warn(mmi+"wlfSize=" + wlfSize + ", wlpSize=" + wlpSize);
+        slog.warn(mmi+"wlfSize != wlpSize for station: " + this.stationId);
+        slog.warn(mmi+"WLP and WLF are not synchronized ! WLF will be replaced by WLP !");
+
         this.wlMeasurementFinderList.add(FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
-        
+
+        throw new RuntimeException(mmi+"Debug exit here !!");
+
       } else {
-        
-        this.log.debug("FMSWLStationDBObjects constructor: Got the same number of WLP and WLF data, WLF data will be " +
-            "used");
-        
+
+        slog.debug(mmi+"Got the same number of WLP and WLF data, WLF data will be used");
+
         this.wlMeasurementFinderList.add(FORECAST, new WLMeasurementFinder(dbFcsList));
+
+        throw new RuntimeException(mmi+"Debug exit here !!");
       }
-      
+
     } else {
-      
-      this.log.warn("FMSWLStationDBObjects constructor: No WL forecasts retreived from the DB for station:" + this.stationCode +
-          ", replacing it with prediction-climatology");
-      
+
+      slog.warn(mmi+"No WL forecasts for station:"+
+                this.stationId + ", replacing it with its prediction-climatology");
+
       this.wlMeasurementFinderList.add(FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
+
+      throw new RuntimeException(mmi+"Debug exit here !!");
     }
-    
+
     //TODO : un-comment the following if-else block when the EXT_STORM_SURGE will be available in the DB
 //        final List<Measurement> dbSsfList= fc.getStormSurge();
 //        if ((dbSsfList != null) && (dbSsfList.size() > 0) ) {

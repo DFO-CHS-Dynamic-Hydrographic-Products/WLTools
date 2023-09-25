@@ -30,6 +30,8 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   private String stationId;
 
+  private HBCoords stationHBCoords;
+
   protected Instant referenceTime= null;
 
   // --- The name of the model used for the storm surge forecast signal.
@@ -66,11 +68,15 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   //public FMSConfig(final Map<String,String> argsMap, final WLAdjustmentType wlAdjObj ) {
   //public FMSConfig( final WLAdjustmentType wlAdjObj ) {
-  public FMSConfig( final String stationId, final JsonObject fmsConfigJsonObj ) {
+  public FMSConfig( final String stationId,
+                    final HBCoords stationHBCoords,
+                    final JsonObject fmsConfigJsonObj ) {
 
     final String mmi= "MSConfig( final WLAdjustmentType wlAdjObj) constructor: ";
 
     this.stationId= stationId; //wlAdjObj.getIdentity();
+
+    this.stationHBCoords= stationHBCoords;
 
     // --- TODO: Add code that calculates the estimated forecast uncertainty
     this.stdErrSigma= 0.0;
@@ -121,6 +127,10 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   final public String getStationId() {
     return this.stationId;
+  }
+
+  final public HBCoords getStationHBCoords() {
+    return this.stationHBCoords;
   }
 
   final public getFMSResidualConfig() {

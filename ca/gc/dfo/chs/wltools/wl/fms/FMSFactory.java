@@ -72,7 +72,8 @@ abstract public class FMSFactory implements IFMS {
   // */
   //FMSFactory(@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
 
-  FMSFactory(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
+  FMSFactory(/*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputList) {
+  //FMSFactory(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
   //FMSFactory(final Map<String,String> argsMap, final WLAdjustmentType wlAdjType) {
 
     final String mmi=
@@ -81,7 +82,7 @@ abstract public class FMSFactory implements IFMS {
     slog.debug(mmi+"start");
 
     //final ForecastingContext fc0 = forecastingContextList.get(0);
-    final FMSConfig fc0= fmsConfigList.get(0);
+    final FMSConfig fc0= fmsInputList.get(0);
 
     //if (!checkForecastingContext(fc0)) {
     if (!checkFMSConfig(fc0)) {
@@ -180,9 +181,9 @@ abstract public class FMSFactory implements IFMS {
     }
 
     //this.fcstsDurationSeconds = SECONDS_PER_HOUR * fcstDurationHours;
-    this.fcstsTimeIncrSeconds = SECONDS_PER_MINUTE * fcstsTimeIncrMinutes;
+    this.fcstsTimeIncrSeconds= SECONDS_PER_MINUTE * fcstsTimeIncrMinutes;
 
-    this.data= new FMSWLData(fcstsTimeIncrMinutes, fmsConfigList); //forecastingContextList);
+    this.data= new FMSWLData(fcstsTimeIncrMinutes, fmsInputList); //forecastingContextList);
 
     this.log.debug(mmi+"end\n");
   }

@@ -24,11 +24,13 @@ final public class FMSInput extends FMSConfig {
    */
   final static private Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  private List<MeasurementCustom> observations;
+  private List<MeasurementCustom> observations= null;
 
-  private List<MeasurementCustom> predictions;
+  private List<MeasurementCustom> predictions= null;
 
-  private List<MeasurementCustom> forecasts;
+  private List<MeasurementCustom> modelForecasts= null;
+
+  private List<MeasurementCustom> qualityControlForecasts= null;
 
   /**
    *
@@ -39,13 +41,17 @@ final public class FMSInput extends FMSConfig {
   public FMSInput(final WLAdjustmentType wlAdjObj) {
 
     //super(argsMap, wlAdjObj);
-    super(wlAdjObj.getIdentity(), wlAdjObj.getLocation().getFmsJsonObject());
+    super(wlAdjObj.getIdentity(),
+          wlAdjObj.getLocation(),
+          wlAdjObj.getLocation().getFmsJsonObject());
 
     this.predictions= wlAdjObj.getLocationPredData();
 
     this.observations= wlAdjObj.getNearestObsData();
 
-    this.forecasts= wlAdjObj.getNearestModelData();
+    this.modelforecasts= wlAdjObj.getNearestModelData();
+
+    this.qualityControlForecasts= null;
   }
 
   public List<MeasurementCustom> getObservations() {
@@ -56,7 +62,11 @@ final public class FMSInput extends FMSConfig {
     return this.predictions;
   }
 
-  public List<MeasurementCustom> getForecasts() {
-    return this.forecasts;
+  public List<MeasurementCustom> getModelForecasts() {
+    return this.modelForecasts;
+  }
+
+  public List<MeasurementCustom> getQualityControlForecasts() {
+    return this.qualityControlForecasts;
   }
 }

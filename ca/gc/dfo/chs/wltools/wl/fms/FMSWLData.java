@@ -71,60 +71,62 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
    * @param forecastingContextList : List of ForecastingContext(Must have at least one item).
    */
   FMSWLData(/*@Min(0)*/ final int fcstsTimeIncrMinutes,
-           /*@NotNull @Size(min = 1) */ final List<FMSConfig> fmsConfigList) {
+            /*@NotNull @Size(min = 1) */ final List<FMSInput> fmsInputList) {
+
+          // /*@NotNull @Size(min = 1) */ final List<FMSConfig> fmsConfigList) {
           //  /*@NotNull @Size(min = 1) */ final List<ForecastingContext> forecastingContextList) {
 
     final String mmi= "FMSWLData main constructor: ";
 
     //--- Check forecastingContextList before doing anything else with it.
     try {
-      fmsConfigList.size();
+      fmsInputList.size();
 
     } catch (NullPointerException npe) {
 
-      slog.error(mmi+"fmsConfigList==null !");
+      slog.error(mmi+"fmsInputList==null !");
       throw new RuntimeException(mmi+npe);
     }
 
-    if (fmsConfigList.size() == 0) {
+    if (fmsInputList.size() == 0) {
 
-      slog.error(mmi+"fmsConfigList.size()==0 !");
+      slog.error(mmi+"fmsInputList.size()==0 !");
       throw new RuntimeException(mmi+"Cannot update forecast !");
     }
 
     try {
-      fmsConfigList.get(0).getReferenceTime();
+      fmsInputList.get(0).getReferenceTime();
 
     } catch (NullPointerException npe) {
 
-      slog.error(mmi+"forecastingContextList.get(0)==null !");
+      slog.error(mmi+"fmsInputList.get(0)==null !");
       throw new RuntimeException(mmi+npe);
     }
 
     try {
-      forecastingContextList.get(0).getReferenceTime().getEpochSecond();
+      fmsInputList.get(0).getReferenceTime().getEpochSecond();
 
     } catch (NullPointerException npe) {
-      
-      this.log.error("FMWLData constructor: forecastingContextList.get(0).getEpochSecond()==null !");
+
+      slog.error(mmi+"fmsInputList.get(0).getReferenceTime().getEpochSecond()==null !");
       throw new RuntimeException(npe);
     }
-    
-    this.log.debug("FMWLData constructor start");
-    
-    this.referenceSse = forecastingContextList.get(0).getReferenceTime().getEpochSecond();
-  
-    this.log.debug("FMWLData constructor: this.referenceSse date-time is: " + SecondsSinceEpoch.dtFmtString(this.referenceSse, true));
-    
-    this.allStationsData = new ArrayList<>(forecastingContextList.size());
-    
-    this.wlsnaTmp = new ArrayList<>(forecastingContextList.size());
-    
-    this.populateFMSWLStationsData(fcstsTimeIncrMinutes, forecastingContextList);
-    
-    this.log.debug("FMWLData constructor end: this.timeNodes.size()=" + this.timeNodes.size());
+
+    slog.info(mmi+"start");
+
+    this.referenceSse= fmsInputList.get(0).getReferenceTimeInSeconds(); //forecastingContextList.get(0).getReferenceTime().getEpochSecond();
+
+    slog.info(mmi+"this.referenceSse date-time is: " + SecondsSinceEpoch.dtFmtString(this.referenceSse, true));
+
+    this.allStationsData = new ArrayList<FMSWLStation>(fmsInputList.size());
+
+    this.wlsnaTmp = new ArrayList<WLStationTimeNode>(fmsInputList.size());
+
+    this.populateFMSWLStationsData(fcstsTimeIncrMinutes, fmsInputList); //forecastingContextList);
+
+    slog.info(mmi+"end: this.timeNodes.size()=" + this.timeNodes.size());
   }
-  
+
   /**
    * Populate all the objects structures of all the ForecastingContext objects of the forecastingContextList argument.
    * NOTE: forecastingContextList must have already been controlled in terms of objects existence.
@@ -133,309 +135,225 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
    * @param forecastingContextList : The List of ForecastingContext objects (minimum size 1).
    * @return This FMWLData object fully populated.
    */
-  @NotNull
+  //@NotNull
   private final FMSWLData populateFMSWLStationsData(@Min(0) final int fcstsTimeIncrMinutes,
-                                                    @NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
-  
-    this.log.debug("FMWLData populateFMSWLStationsData start: fcstsTimeIncrMinutes=" + fcstsTimeIncrMinutes + ", " +
-        "fcList.size()=" + forecastingContextList.size());
-    
-    int sit = 0;
-    
-    final List<IFMSResidual> stationsResiduals = new ArrayList<>();
-    
-    final ForecastingContext fc0 = forecastingContextList.get(0);
-    
-    final String residualMethod = fc0.getFmsParameters().getResidual().getMethod();
-    
-    if (forecastingContextList.size() > 1) {
-      
-      this.log.debug("FMWLData populateFMSWLStationsData: fcList.size()>1 : Need to validate ForecastingContext items" +
-          " with each other.");
-      
-      if (FMSResidualFactory.validateStationsFMSConfigParameters(residualMethod, forecastingContextList)) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: ForecastingContext items validation failed");
-        throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
+                                                    /*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputList) {
+                                                    //@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
+
+    final String mmi= "populateFMSWLStationsData: ";
+
+    slog.debug(mmi+"fcstsTimeIncrMinutes="+fcstsTimeIncrMinutes+
+               ", " + "fmsInputList.size()=" + fmsInputList.size());
+
+    int sit= 0;
+
+    final List<IFMSResidual> stationsResiduals= new ArrayList<IFMSResidual>();
+
+    //final ForecastingContext fc0 = forecastingContextList.get(0);
+    final FMSInput fmsInput0= fmsInputList.get(0);
+
+    final String residualMethod= fmsInput0.getFMSResidualConfig().getMethod();  //fc0.getFmsParameters().getResidual().getMethod();
+
+    //if (forecastingContextList.size() > 1) {
+    if (fmsInput0.size() > 1) {
+
+      // --- Stop exec here if fmsConfig.size() > 1 since this has not been tested yet
+      throw new RuntimeException(mmi+"Use of more than one TG station has not been tested yet!");
+
+      slog.info(mmi+"fmsConfig.size()>1: Need to validate FMSConfig items with each other.");
+
+      if (! FMSResidualFactory.validateStationsFMSConfigParameters(residualMethod, fmsConfigList)) { // forecastingContextList)) {
+
+        slog.error(mmi+"fmsConfigList items validation failed");
+        throw new RuntimeException(mmi+"Cannot update forecast !");
       }
-      
-      this.log.debug("FMWLData populateFMSWLStationsData: fcList.size()>1 : Success for ForecastingContext items " +
-          "validation.");
+
+      slog.info("FMWLData populateFMSWLStationsData: fmsConfig.size() > 1: Success for ForecastingContext items validation.");
     }
-    
+
     //--- Create new FMWLStationData Objects in this.allStationsData:
-    for (final ForecastingContext forecastingContext : forecastingContextList) {
-      
-      if (forecastingContext == null) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: fc==null!");
-        throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
+    //for (final ForecastingContext forecastingContext : forecastingContextList) {
+    for (final FMSInput fmsInputItem : FMSInputList) {
+
+      if (fmsInputItem == null) {
+
+        slog.error(mmi+"fmsInputItem==null!");
+        throw new RuntimeException(mmi+"Cannot update forecast !");
       }
-      
-      final String stationId = forecastingContext.getStationCode();
-  
-      this.log.debug("FMWLData populateFMSWLStationsData: Populating residuals errors statistics " +
-          "data structures for " +
-          "station: " + stationId);
-      
-      //--- Check fc.getStationInfo():
-      if (forecastingContext.getStationInfo() == null) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: fc.getStationInfo()==null for station: " + stationId);
-        throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
-      }
-      
-      //--- No more com.vividsolutions.jts.geom.Point object in IWLS Station class.
-      //    But it could eventually comeback.
-//            if (fc.getStationInfo().getLocation()==null) {
-//                this.log.error("fc.getStationInfo().getLocation()==null for station: "+stationId);
-//                 throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
-//            }
-//            final double stationLon= fc.getStationInfo().getLocation().getCoordinates()[0].x;
-//            final double stationLat= fc.getStationInfo().getLocation().getCoordinates()[0].y;
-      
-      double stationLat = 0.0;
-      double stationLon = 0.0;
-      
-      try {
-        stationLat = forecastingContext.getStationInfo().getLatitude();
-        
-      } catch (NullPointerException npe) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: stationLat= forecastingContext.getStationInfo()" +
-            ".getLatitude() produced a NullPointerException !");
-        throw new RuntimeException(npe);
-      }
-      
-      try {
-        stationLon = forecastingContext.getStationInfo().getLongitude();
-        
-      } catch (NullPointerException npe) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: stationLon= forecastingContext.getStationInfo()" +
-            ".getLongitude() produced a NullPointerException !");
-        throw new RuntimeException(npe);
-      }
-      
-      //final double stationLat= forecastingContext.getStationInfo().getLatitude();
-      //final double stationLon= forecastingContext.getStationInfo().getLongitude();
-      
-      this.log.debug("FMWLData populateFMSWLStationsData: Station coordinates in decimal degrees: longitude -> " + stationLon + ", latitude -> " + stationLat);
-      
-      final FmsParameters fmsParameters = forecastingContext.getFmsParameters();
-      
-      if (fmsParameters == null) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: fmsParameters==null !");
-        throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
-      }
-      
-      final int tauHours = fmsParameters.getResidual().getTauHours().intValue();
-      
-      if (forecastingContext.getPredictions().size() == 0) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: fc.getPredictions().size()==0 for station: " + stationId);
-        this.log.error("FMWLData populateFMSWLStationsData: Cannot compute new forecast for for station: " + stationId);
-        throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
-        
-        //--- The rest of the block is the code using local tidal prediction data. It was used to test new Java tidal
-        // prediction package.
-        //    Normally, this tidal package will be implemented(we hope!) operationnaly to be able to use it in a
-        //    suitable way.
-        //    The code is kept in comments if more dev. tests are needed.
-//                this.log.warn("FMWLData populateFMSWLStationsData: fc.getPredictions().size()==0 for station:
-//                "+stationId+ " Need to compute all its predictions !");
-//
-//                final long timeIncrSeconds= SECONDS_PER_MINUTE*fmsParameters.getForecast().getDeltaTMinutes()
-//                .longValue();
-//
-//                //--- NOTE: Need to start at the nearest hour to get Foreman's method to work properly
-//                (ASTRO_UDPATE_OFFSET_SECONDS==3600)
-//                final long refSsePastRounded= TimeMachine.roundPastToTimeIncrSeconds(ASTRO_UDPATE_OFFSET_SECONDS,
-//                this.referenceSse);
-//
-//                final long startTimeSeconds= refSsePastRounded - SECONDS_PER_HOUR*tauHours;
-//                this.log.debug("FMWLData populateFMSWLStationsData: startTimeSeconds dt=" +SecondsSinceEpoch
-//                .dtFmtString(startTimeSeconds,true));
-//
-//                final long endTimeSeconds= refSsePastRounded + SECONDS_PER_HOUR*fmsParameters.getForecast()
-//                .getDurationHours().longValue();
-//                this.log.debug("FMWLData populateFMSWLStationsData: endTimeSeconds dt=" +SecondsSinceEpoch
-//                .dtFmtString(endTimeSeconds,true));
-//
-//                final long ts= Instant.now().toEpochMilli();
-//
-//                WLStationTidalPredictions.computeForecastingContextPredictions(Method.FOREMAN,
-//                                                                               WLConstituentsInputFileFormat.TCF,
-//                                                                               startTimeSeconds, endTimeSeconds,
-//                                                                               timeIncrSeconds, forecastingContext);
-//
-//                                                                        //TEST BACKWARD: endTimeSeconds,
-//                                                                        //startTimeSeconds, timeIncrSeconds, fc);
-//                final long tf= Instant.now().toEpochMilli();
-//
-//                this.log.debug("FMWLData populateFMSWLStationsData: WLP produced in "+(tf-ts)+" millisecs");
-      
+
+      final String stationId = fmsInputItem.getStationId();
+
+      slog.debug(mmi+"Populating residuals errors statistics data structures for station: " + stationId);
+
+      final int tauHours= (int) fmsInputItem.getFMSResidualConfig().getTauHours();  //fmsParameters.getResidual().getTauHours().intValue();
+
+      //if (forecastingContext.getPredictions().size() == 0) {
+      if (fmsInputItem.getPredictions().size() == 0) {
+
+        slog.error(mmi+"fmsInputItem.getPredictions().size()==0 for station: " + stationId);
+        //slog.error("FMWLData populateFMSWLStationsData: fmsInputItem. compute new forecast for for station: " + stationId);
+        throw new RuntimeException(mmi+"Cannot update forecast !");
+
       } else {
-  
-        this.log.debug("FMWLData populateFMSWLStationsData: checking if WLP uncertainty data " +
-            "exists.");
-  
-        for (final MeasurementCustom msr : forecastingContext.getPredictions()) {
-          
+
+        slog.info(mmi+"checking if WLP uncertainty data exists.");
+
+        for (final MeasurementCustom msr : fmsInputItem.getPredictions()) {
+
           if (msr.getUncertainty() == null) {
 
 //                        this.log.debug("FMWLData populateFMSWLStationsData: msr.getUncertainty()==null at
 //                        time-stamp:"+
 //                                       SecondsSinceEpoch.dtFmtString(msr.getEventDate().getEpochSecond(),true)+
 //                                       " ! Set it to default: "+PREDICTIONS_ERROR_ESTIMATE_METERS+" meters.");
-            
             msr.setUncertainty(PREDICTIONS_ERROR_ESTIMATE_METERS);
           }
         }
       }
-  
-      final List<MeasurementCustom> wlpList = forecastingContext.getPredictions();
-      
+
+      final List<MeasurementCustom> wlpList= fmsInputItem.getPredictions();
+
       if (wlpList == null) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: wlpList cannot be null at this point !");
-        throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
-        
+
+        slog.error(mmi+"wlpList cannot be null at this point !");
+        throw new RuntimeException(mmi+"Cannot update forecast !");
+
       } else if (wlpList.size() == 0) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: wlpList size cannot be 0 at this point !");
-        throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
+
+        slog.error(mmi+"wlpList size cannot be 0 at this point !");
+        throw new RuntimeException(mmi+"Cannot update forecast !");
       }
-  
+
       final MeasurementCustom wlp0 = wlpList.get(0);
-      
+
       final long firstWlpSeconds = wlp0.getEventDate().getEpochSecond();
-  
-      this.log.debug("FMWLData populateFMSWLStationsData: WLP size=" + wlpList.size());
-      this.log.debug("FMWLData populateFMSWLStationsData: WLP dt0 Instant=" + wlp0.getEventDate().toString());
-      this.log.debug("FMWLData populateFMSWLStationsData: WLP dt0 SSE=" + SecondsSinceEpoch.dtFmtString(firstWlpSeconds, true));
-      this.log.debug("FMWLData populateFMSWLStationsData: WLP dt0 Z value=" + wlp0.getValue());
-      
+
+      slog.info(mmi+"WLP size=" + wlpList.size());
+      slog.info(mmi+"WLP dt0 Instant=" + wlp0.getEventDate().toString());
+      slog.info(mmi+"WLP dt0 SSE=" + SecondsSinceEpoch.dtFmtString(firstWlpSeconds, true));
+      slog.info(mmi+"WLP dt0 Z value=" + wlp0.getValue());
+
       //--- Control WLO data:
-      final List<MeasurementCustom> wloList = forecastingContext.getObservations();
-      
+      final List<MeasurementCustom> wloList = fmsInputItem.getObservations();
+
       if (wloList.size() > 0) {
-        
+
         if (!FMSWLStationDBObjects.validateDBObjects(wloList, tauHours)) {
-          
-          this.log.warn("FMWLData populateFMSWLStationsData: Not enough WLO retreived from the database for station: "
-              + stationId + ", the resulting forecast will not be optimal !");
+
+          slog.warn(mmi+"Not enough WLO retreived from the database for station: "+
+                    stationId + ", the resulting forecast will not be optimal !");
         }
-  
+
         final MeasurementCustom wlo0 = wloList.get(0);
         final long firstWloSeconds = wlo0.getEventDate().getEpochSecond();
-  
-        this.log.debug("FMWLData populateFMSWLStationsData: WLO size=" + wloList.size());
-        this.log.debug("FMWLData populateFMSWLStationsData: 1st retreived WLO Instant=" + wlo0.getEventDate().toString());
-        this.log.debug("FMWLData populateFMSWLStationsData: 1st retreived WLO  SSE=" + SecondsSinceEpoch.dtFmtString(firstWloSeconds, true));
-        this.log.debug("FMWLData populateFMSWLStationsData: 1st retreived WLO dt0 Z value=" + wlo0.getValue());
-  
-        final MeasurementCustom wloLast = wloList.get(wloList.size() - 1);
-  
-        this.log.debug("FMWLData populateFMSWLStationsData: more recent WLO dt Instant " +
-            "retreived=" + wloLast.getEventDate().toString());
-        this.log.debug("FMWLData populateFMSWLStationsData: more recent WLO dt SSE retreived=" + SecondsSinceEpoch.dtFmtString(wloLast.getEventDate().getEpochSecond(), true));
-        this.log.debug("FMWLData populateFMSWLStationsData: more recent WLO dt Z value " +
-            "retreived=" + wloLast.getValue());
-        
+
+        slog.info(mmi+"WLO size=" + wloList.size());
+        slog.info(mmi+"1st retreived WLO Instant=" + wlo0.getEventDate().toString());
+        slog.info(mmi+"1st retreived WLO SSE=" + SecondsSinceEpoch.dtFmtString(firstWloSeconds, true));
+        slog.info(mmi+"FMWLData populateFMSWLStationsData: 1st retreived WLO dt0 Z value=" + wlo0.getValue());
+
+        final MeasurementCustom wloLast= wloList.get(wloList.size() - 1);
+
+        slog.info(mmi+"more recent WLO dt Instant retreived=" + wloLast.getEventDate().toString());
+
+        slog.info(mmi+"more recent WLO dt SSE retreived="+
+                  SecondsSinceEpoch.dtFmtString(wloLast.getEventDate().getEpochSecond(), true));
+
+        slog.debug(mmi+"more recent WLO dt Z value retreived=" + wloLast.getValue());
+
       } else {
-        this.log.warn("FMWLData populateFMSWLStationsData: fc.getObservations().size()==0  for station: "
+
+        slog.warn(mmi+"fmsInputItem.getObservations().size()==0  for station: "
             + stationId + ", no residual error statistics computations will be done !");
       }
-      
-      //--- 1st check on the WLF data. Just report on the WLP and WLF synchronisation here.
+
+      //--- 1st check on the storm surge model forecast data. Just report on the WLP and WLF synchronisation here.
       //    Serious erros errors with WLF data are handled later in FMSWLStationDBObjects constructor.
-      if (forecastingContext.getForecasts().size() > 0) {
-        
-        if (!FMSWLStationDBObjects.validateDBObjects(forecastingContext.getForecasts(), tauHours)) {
-          
-          this.log.warn("FMWLData populateFMSWLStationsData: FMSWLStationDBObjects.validateDBObjects failed for last " +
-              "forecast data retrieved from the DB");
-          this.log.warn("FMWLData populateFMSWLStationsData: WLF data seems not usable!");
+      if (fmsInputItem.getForecasts().size() > 0) {
+
+        if (!FMSWLStationDBObjects.validateDBObjects(fmsInputItem.getForecasts(), tauHours)) {
+
+         slog.warn(mmi+"FMSWLStationDBObjects.validateDBObjects failed for last forecast data retrieved from the DB");
+         slog.warn(mmi+"storm surge model forecast  data seems not usable!");
         }
-        
+
       } else {
-        this.log.warn("FMWLData populateFMSWLStationsData: fc.getForecasts().size()==0 for station:" + stationId);
+        slog.warn(mmi+"fmsInputItem.getForecasts().size()==0 for station:" + stationId);
       }
-      
-      this.allStationsData.add(new FMSWLStation(sit++, forecastingContext));
-      
-      this.log.debug("FMWLData populateFMSWLStationsData: Adding station:" + stationId + " residual to " +
-          "stationsResiduals ");
-      
+
+      this.allStationsData.add(new FMSWLStation(sit++, fmsInputItem); //forecastingContext));
+
+      slog.info("FMWLData populateFMSWLStationsData: Adding station:"+
+          stationId + " residual to stationsResiduals");
+
       stationsResiduals.add(this.getFMSWLStationResidual(stationId));
-    }
-    
+
+    } // --- for (final FMSInput fmsInputItem : FMSInputList) {
+
     final long fcstsTimeIncrSeconds = SECONDS_PER_MINUTE * fcstsTimeIncrMinutes;
-    
+
     //--- Check if the WLP time-increments are the same for all stations
     //    and set the stations statistics dependencies(Objects references).
     for (final FMSWLStation fmsd : this.allStationsData) {
-      
-      this.log.debug("fcstsTimeIncrSeconds=" + fcstsTimeIncrSeconds + ", station=" + fmsd.getStationCode() + ", fmsd" +
-          ".secondsIncr=" + fmsd.secondsIncr);
-      
+
+      slog.info("fcstsTimeIncrSeconds=" + fcstsTimeIncrSeconds + ", station="+
+        fmsd.getStationId() + ", fmsd" + ".secondsIncr=" + fmsd.secondsIncr);
+
       if (fmsd.secondsIncr != fcstsTimeIncrSeconds) {
-        
-        this.log.error("FMWLData populateFMSWLStationsData: fmsd.secondsIncr=" + fmsd.secondsIncr +
-            "!= fcstsTimeIncrSeconds=" + fcstsTimeIncrSeconds + " for station:" + fmsd.getStationCode());
-        
-        throw new RuntimeException("FMWLData populateFMSWLStationsData: Cannot update forecast !");
+
+        slog.error(mmi+"fmsd.secondsIncr=" + fmsd.secondsIncr + "!= fcstsTimeIncrSeconds="+
+                   fcstsTimeIncrSeconds + " for station:" + fmsd.getStationCode());
+
+        throw new RuntimeException(mmi+"Cannot update forecast !");
       }
-      
+
       //--- Set the FMResidualFactory objects references in the covariance statistics data stuctures
       //    of the underlying FMResidualFactory object of the current fmsd.residual
-      fmsd.residual.getFMSResidualFactory().setAuxCovsResiduals(fmsd.getStationCode(), stationsResiduals);
+      fmsd.residual.getFMSResidualFactory().
+        setAuxCovsResiduals(fmsd.getStationId(), stationsResiduals);
     }
-    
+
     //--- 1st time-stamp of the WL prediction data retreived from the DB:
     final SecondsSinceEpoch sseStart =
-        new SecondsSinceEpoch(fc0.getPredictions().get(0).getEventDate().getEpochSecond());
-  
-    this.log.debug("FMWLData populateFMSWLStationsData: Starting new forecast(s) residuals errors" +
-        " statistics at date " +
-        "time-stamp: " + sseStart.dateTimeString(true));
-    
-    this.timeNodes = new ArrayList<>(this.allStationsData.get(0).predictionsSize());
-    
+        new SecondsSinceEpoch(fmsInput0.getPredictions().get(0).getEventDate().getEpochSecond());
+
+    slog.info(mmi+"Starting new forecast(s) residuals errors statistics at date time-stamp: " + sseStart.dateTimeString(true));
+
+    this.timeNodes= new ArrayList<WLTimeNode>(this.allStationsData.get(0).predictionsSize());
+
     //--- Setup the 1st WLTimeNode:
     //    NOTE: the WLTimeNode argument is null here because we have no past data before sseStart time-stamp:
     this.newFMSTimeNode(null, sseStart);
-  
-    this.log.debug("populateFMSWLStationsData end");
-    
+
+    slog.info(mmi+"end");
+
     return this;
   }
-  
+
   /**
    * Get the IFMResidual residual of a FMWLStation object for a WL station.
    *
    * @param stationId A WL station traditional SINECO String Id.
    * @return The IFMResidual wanted if found.
    */
-  @NotNull
-  private final IFMSResidual getFMSWLStationResidual(@NotNull final String stationId) {
-    
-    this.log.debug("FMWLData getFMSWLStationResidual: Getting stationId:" + stationId + " residual");
-    
+  //@NotNull
+  private final IFMSResidual getFMSWLStationResidual(/*@NotNull*/ final String stationId) {
+
+    final String mmi= "getFMSWLStationResidual: ";
+
+    slog.info(mmi+"Getting stationId:" + stationId + " WL IFMSResidual object");
+
     //--- Check if this.getFMSWLStation(stationId) found what we want.
-    final FMSWLStation checkIt = this.getFMSWLStation(stationId);
-    
+    final FMSWLStation checkIt= this.getFMSWLStation(stationId);
+
     if (checkIt == null) {
-      
-      this.log.error("FMWLData getFMSWLStationResidual: this.getFMSWLStation(stationId) returned null for station: " + stationId);
-      throw new RuntimeException("FMWLData getFMSWLStationResidual: Cannot update forecast !");
+      slog.error(mmi+"this.getFMSWLStation(stationId) returned null for station: " + stationId);
+      throw new RuntimeException(mmi+"Cannot update forecast !");
     }
-    
+
     return checkIt.residual;
   }
-  
+
   /**
    * @param pstrWLTimeNode : The WLTimeNode object just before in time compared to the SecondsSinceEpoch sse object
    *                       time-stamp.
@@ -444,21 +362,25 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
    *                       to use.
    * @return A new WLTimeNode ready to use.
    */
-  protected final WLTimeNode newFMSTimeNode(final WLTimeNode pstrWLTimeNode, @NotNull final SecondsSinceEpoch sse) {
-    
-    this.log.debug("FMWLData newFMSTimeNode start: sse dt=" + sse.dateTimeString(true));
-    
-    for (final FMSWLStation station : this.allStationsData) {
-      
+  protected final WLTimeNode newFMSTimeNode(final WLTimeNode pstrWLTimeNode, /*@NotNull*/ final SecondsSinceEpoch sse) {
+
+    final String mmi= "newFMSTimeNode: ";
+
+    slog.info(mmi+"sse dt=" + sse.dateTimeString(true));
+
+    for (final FMSWLStation station: this.allStationsData) {
+
       this.wlsnaTmp.add(station.getNewWLStationFMTimeNode(pstrWLTimeNode, sse, this.referenceSse));
-      this.log.debug("FMWLData newFMSTimeNode: station: " + station.getStationCode() + " processed for time-stamp: " + sse.dateTimeString(true));
+
+      slog.info(mmi+"station: " + station.getStationid()+
+                " processed for time-stamp: " + sse.dateTimeString(true));
     }
-    
-    final WLTimeNode wltn = new WLTimeNode(pstrWLTimeNode, this.wlsnaTmp);
-    
-    this.log.debug("FMWLData newFMSTimeNode: wltn=" + wltn);
-    this.log.debug("FMWLData newFMSTimeNode: wltn dt=" + wltn.getSse().dateTimeString(true));
-    
+
+    final WLTimeNode wltn= new WLTimeNode(pstrWLTimeNode, this.wlsnaTmp);
+
+    //slog.debug(mmi+"wltn=" + wltn);
+    slog.info(mmi+"wltn dt=" + wltn.getSse().dateTimeString(true));
+
     this.timeNodes.add(wltn);
 
 //        final WLStationTimeNode check= this.timeNodes.get(this.timeNodes.size()-1).getStationNode(0);
@@ -469,17 +391,17 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
 //            this.log.debug("FMWLData newFMSTimeNode: check pstr dt="+check.pstr().getSse().dateTimeString(true));
 //            this.log.debug("FMWLData newFMSTimeNode: check pstr.futr="+check.pstr().futr());
 //        }
-    
+
     //--- MUST clear this.wlsnaTmp List here for the next time-stamp iteration:
     this.wlsnaTmp.clear();
-    
-    this.log.debug("FMWLData newFMSTimeNode: this.timeNodes.size()=" + this.timeNodes.size());
-    
-    this.log.debug("FMWLData newFMSTimeNode end.");
-    
+
+    slog.info(mmi+"this.timeNodes.size()=" + this.timeNodes.size());
+
+    slog.info(mmi+"end.");
+
     return wltn;
   }
-  
+
   /**
    * Return a FMWLStation object contained in this.allStationsData. WARNING: The client method must check for
    * possible a null return.
@@ -487,39 +409,43 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
    * @param stationId : A WL station traditional SINECO String Id.
    * @return The FMWLStation object for the WL station wanted
    */
-  @NotNull
-  private final FMSWLStation getFMSWLStation(@NotNull final String stationId) {
-    
-    FMSWLStationDBObjects ret = null;
-    
+  //@NotNull
+  private final FMSWLStation getFMSWLStation(/*@NotNull*/ final String stationId) {
+
+    FMSWLStationDBObjects ret= null;
+
     for (final FMSWLStationDBObjects wlsd : this.allStationsData) {
-      
-      if (wlsd.getStationCode().equals(stationId)) {
+
+      if (wlsd.getStationId().equals(stationId)) {
         ret = wlsd;
         break;
       }
     }
-    
+
     //--- FMWLStation inherits from WLStationDBObjects class
     return (FMSWLStation) ret;
   }
-  
+
   /**
-   * Utility method for writing all the results in local disk .csv files formatted in the legacy ODIM dbquery results.
+   * Utility method for writing all the results in local disk .csv files formatted in the legacy ODIN dbquery results.
    *
    * @param outDir : The local disk directory where to write the results.
    */
-  public final void writeResults(final String outDir) {
-    
-    this.log.debug("FMWLData writeResults: start.");
-    
+  public final void writeCSVOnDisk(final String outDir) {
+
+    final String mmi= "writeCSVOnDisk: ";
+
+    slog.info(mmi+"start.");
+
     int stn = 0;
-    
+
     for (final FMSWLStation station : this.allStationsData) {
-      ASCIIFileIO.writeOdinAsciiFmtFile(station.getStationCode(), this.timeNodes.get(0).getStationNode(stn++),
-          station.udpatedForecastData, outDir);
+
+      ASCIIFileIO.writeOdinAsciiFmtFile(station.getStationId(),
+                                        this.timeNodes.get(0).getStationNode(stn++),
+                                        station.udpatedForecastData, outDir);
     }
-    
-    this.log.debug("FMWLData writeResults: end");
+
+    slog.info(mmi+"end");
   }
 }

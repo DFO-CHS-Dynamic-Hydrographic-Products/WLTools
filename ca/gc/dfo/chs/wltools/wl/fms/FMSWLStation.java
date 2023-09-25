@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
@@ -83,10 +84,9 @@ public final class FMSWLStation extends FMSWLStationDBObjects implements IFMS, I
   //  this(stationNodeIndex, forecastingContext, GlobalVerticalDatum.NAVD88, 0.0);
   //}
 
-  FMSWLStation(/*@Min(0)*/ final int stationNodeIndex, /*@NotNull*/ final FMSConfig fmsConfig) {
-    this(stationNodeIndex, FMSConfig, GlobalVerticalDatum.NAVD88, 0.0);
+  FMSWLStation(/*@Min(0)*/ final int stationNodeIndex, /*@NotNull*/ final FMSInput fmsInput) {
+    this(stationNodeIndex, FMSInput, GlobalVerticalDatum.NAVD88, 0.0);
   }
-
 
   /**
    * @param stationNodeIndex     : The WL station index in the allStationsData List attribute of class FMWLData.
@@ -98,19 +98,19 @@ public final class FMSWLStation extends FMSWLStationDBObjects implements IFMS, I
   //private FMSWLStation(@Min(0) final int stationNodeIndex, @NotNull final ForecastingContext forecastingContext,
   //                     @NotNull final GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
 
-  private FMSWLStation(/*@Min(0)*/ final int stationNodeIndex, /*@NotNull*/ final FMSConfig fmsConfig,
+  private FMSWLStation(/*@Min(0)*/ final int stationNodeIndex, /*@NotNull*/ final FMSInput fmsInput,
                        /*@NotNull*/ final GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
 
     final String mmi= "FMSWLStation main constructor: "
 
     //super(forecastingContext, globalVerticalDatum, globalVerticalOffset);
-   super(fmsConfig, globalVerticalDatum, globalVerticalOffset);
+   super(fmsInput, globalVerticalDatum, globalVerticalOffset);
 
     this.log.debug(mmi+"Start: stationId:" + this.getStationId());
 
-    if (fmsConfig == null) {
+    if (fmsInput == null) {
 
-      slog.error(mmi+"fmsConfig==null");
+      slog.error(mmi+"fmsInput==null");
       throw new RuntimeException(mmi+"Cannot update forecast !");
     }
 
@@ -132,8 +132,7 @@ public final class FMSWLStation extends FMSWLStationDBObjects implements IFMS, I
 
     //--- Duration in seconds after which the merge to the storm surge forecast(if any) is complete:
     //final long mergeDurationSeconds = SECONDS_PER_HOUR * forecastParameters.getMergeHours().longValue();
-    final long mergeDurationSeconds= (long)
-      SECONDS_PER_HOUR * forecastParameters.ssfMergeDurationHours();
+    final long mergeDurationSeconds= (long) SECONDS_PER_HOUR * fmsInput.getSsfMergeDurationHours();
 
     if (mergeDurationSeconds < 0L) {
       slog.error(mmi+"mergeDurationSeconds<0L");
@@ -147,7 +146,7 @@ public final class FMSWLStation extends FMSWLStationDBObjects implements IFMS, I
 
     //--- The time stamp in seconds after which the merge to the storm surge forecast(if any) is complete:
     //this.mergeCompleteSse = forecastingContext.getReferenceTime().getEpochSecond() + mergeDurationSeconds;
-    this.ssfMergeCompleteSse= fmsConfig.getReferenceTimeInSeconds() + mergeDurationSeconds;
+    this.ssfMergeCompleteSse= fmsInput.getReferenceTimeInSeconds() + mergeDurationSeconds;
 
     //--- time interpolation weight factor for merging verification forecast with a storm surge forecast(if any).
     this.tiForecastMergeWeight = 1.0 / mergeDurationSeconds;
@@ -164,16 +163,16 @@ public final class FMSWLStation extends FMSWLStationDBObjects implements IFMS, I
 
     final double predsTimeIncrMinutes = (this.secondsIncr / SECONDS_PER_MINUTE);
 
-    if (fmsConfig.getDeltaTMinutes() != predsTimeIncrMinutes) {
+    if (fmsInput.getDeltaTMinutes() != predsTimeIncrMinutes) {
 
       slog.warn(mmi+"Must change station: " + this.getStationId() + " forecast parameters dt="
-          + fmsConfig.getDeltaTMinutes() + " minutes to the predictions interval of " + predsTimeIncrMinutes + " minutes get the best results.");
+          + fmsInput.getDeltaTMinutes() + " minutes to the predictions interval of " + predsTimeIncrMinutes + " minutes get the best results.");
 
-      fmsConfig.setDeltaTMinutes(predsTimeIncrMinutes);
+      fmsInput.setDeltaTMinutes(predsTimeIncrMinutes);
     }
 
     //final Residual residualParameters = forecastingContext.getFmsParameters().getResidual();
-    final FMSResidualConfig fmsResidualConfig= fmsConfig.getFMSResidualConfig();
+    final FMSResidualConfig fmsResidualConfig= fmsInput.getFMSResidualConfig();
 
     //if (residualParameters.getDeltaTMinutes() != predsTimeIncrMinutes) {
     if (fmsResidualConfig.getDeltaTMinutes() != predsTimeIncrMinutes) {
@@ -198,7 +197,7 @@ public final class FMSWLStation extends FMSWLStationDBObjects implements IFMS, I
       thisStationCovarianceCfg.setTimeLagMinutes(predsTimeIncrMinutes);
     }
 
-    final FMSTidalRemnantConfig fmsTidalRemnantConfig= fmsConfig.getFMSTidalRemnantConfig();  //forecastingContext.getFmsParameters().getTidalRemnant();
+    final FMSTidalRemnantConfig fmsTidalRemnantConfig= fmsInput.getFMSTidalRemnantConfig();  //forecastingContext.getFmsParameters().getTidalRemnant();
 
     if (fmsTidalRemnantConfig != null) {
 
@@ -212,14 +211,14 @@ public final class FMSWLStation extends FMSWLStationDBObjects implements IFMS, I
     }
 
     //--- Set this.residual IFMResidual object according to the ForecastingContext configuration Object of the station
-    this.fmsResidual= FMSResidualFactory.getIFMSResidual(fmsConfig, this.lastWLOSse); //getIFMSResidual(forecastingContext, this.lastWLOSse);
+    this.fmsResidual= FMSResidualFactory.getIFMSResidual(fmsInput, this.lastWLOSse); //getIFMSResidual(forecastingContext, this.lastWLOSse);
 
     //--- Create the FMWLMeasurement objects contained in this.dataReferences array:
     for (final WLType wlt : WLType.values()) {
-      this.dataReferences[wlt.ordinal()] = new FMSWLMeasurement(null);
+      this.dataReferences[wlt.ordinal()]= new FMSWLMeasurement(null);
     }
 
-    slog.debug(mmi+"End for station:" + this.getStationCode());
+    slog.debug(mmi+"End for station:" + this.getStationId());
   }
 
   /**

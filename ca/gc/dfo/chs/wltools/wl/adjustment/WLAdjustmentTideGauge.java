@@ -247,7 +247,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //  mainJsonMapObj.getJsonObject(this.locationIdInfo).
     //    getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
-    this.location.setConfig
+    this.location.setConfig(mainJsonMapObj);
 
     slog.info(mmi+"this.location.getZcVsVertDatum()="+this.location.getZcVsVertDatum());
     //final JsonObject test= mainJsonMapObj.getJsonObject(this.locationIdInfo);
