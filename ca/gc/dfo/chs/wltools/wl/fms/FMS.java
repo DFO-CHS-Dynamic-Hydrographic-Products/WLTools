@@ -2,7 +2,7 @@ package ca.gc.dfo.chs.wltools.wl.fms;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
 
-import ca.gc.dfo.chs.wltools.wl.fms.IFMS.
+import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSinput;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;

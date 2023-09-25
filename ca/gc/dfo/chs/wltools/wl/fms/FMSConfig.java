@@ -1,6 +1,7 @@
 package ca.gc.dfo.chs.wltools.wl.fms;
 
 import org.slf4j.Logger;
+import java.time.Instant;
 import javax.json.JsonObject;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +30,10 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   private String stationId;
 
+  protected Instant referenceTime= null;
+
   // --- The name of the model used for the storm surge forecast signal.
-  private String mergeWithSSFModel;
+  private String mergeWithSSFModel= null;
 
   private double stdErrSigma;
 
@@ -112,10 +115,28 @@ abstract public class FMSConfig extends LegacyFMSDT {
       this.fmsTidalRemnantConfig= new
         FMSTidalRemnantConfig(fmsConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY));
     }
+
+    this.referenceTime= Instant.now(Clock.systemUTC());
   }
 
   final public String getStationId() {
     return this.stationId;
+  }
+
+  final public getFMSResidualConfig() {
+    return this.FMSResidualConfig;
+  }
+
+  final public FMSTidalRemnantConfig getFMSTidalRemnantConfig() {
+    return this.FMSTidalRemnantConfig;
+  }
+
+  final public Instant getReferenceTime() {
+    return this referenceTime;
+  }
+
+  final public long getReferenceTimeInSeconds() {
+    return this referenceTime.getEpochSecond();
   }
 
   final public String getMergeWithSSFModel() {

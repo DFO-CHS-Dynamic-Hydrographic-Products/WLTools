@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSTime;
-import ca.gc.dfo.chs.wltools.wl.fms.StationCovarianceConfig;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSStationCovarianceConfig;
 
 //---
 //---
@@ -29,7 +29,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
 
   private double fallBackError;
 
-  private List<StationCovarianceConfig> stationCovCfg= new LinkedList<StationCovarianceConfig>();
+  private List<FMSStationCovarianceConfig> stationsCovCfgList= new LinkedList<FMSStationCovarianceConfig>();
 
   /**
    *
@@ -45,7 +45,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
      //this.stationCovCfg= new
 
      for (final JsonObject stnCovCfgJsonObj: fmsResCfgJsonObj.getJsonArray()) {
-       this.stationCovCfg.add( new StationCovarianceConfig(stnCovCfgJsonObj) );
+       this.stationCovCfg.add( new FMSStationCovarianceConfig(stnCovCfgJsonObj) );
      }
    }
 
@@ -65,6 +65,10 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
 
   final public double getFallBackError() {
     return this.fallBackError;
+  }
+
+  final public List<FMSStationCovarianceConfig> getFMSStationCovarianceConfigList() {
+    return this.stationsCovCfgList;
   }
 
   final public void setMethod(final String method) {
