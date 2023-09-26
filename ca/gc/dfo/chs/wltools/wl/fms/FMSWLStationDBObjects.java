@@ -50,6 +50,7 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
   private final static Logger sLog= LoggerFactory.getLogger(whoAmI);
 
   /**
+   * updatedForecastData:
    * To store the newly updated full (i.e. with storm surge and-or river discharge effects)
    * WL forecast data in the future for the processed CHS TG.
    */
@@ -67,9 +68,10 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
   long lastWLOSse= 0L;
 
   /**
-   * boolean flag to signal that we have some WL storm surge to use for the forecast at this WL station.
+   * boolean flag to signal that we have some WL full model forecast to use for this WL station.
    */
-  boolean useSsf= false;
+  //boolean useSsf= false;
+   boolean useFullModelForecast= false;
 
   /**
    * The time-increment(in seconds) between successive WL(O,P,F,SSF) data.
@@ -115,33 +117,33 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
     //forecastingContext.setNewGeneratedForecasts(this.udpatedWLFData);
 
     //--- Predictions:
-    final List<MeasurementCustom> dbPrdList= fmsInput.getPredictions();
+    final List<MeasurementCustom> prdDataList= fmsInput.getPredictions();
 
-    slog.info(mmi+"Got " + dbPrdList.size() + " predictions data.");
+    slog.info(mmi+"Got " + prdDataList.size() + " predictions data.");
 
-    final long frstDt= dbPrdList.get(0).getEventDate().getEpochSecond();
+    final long frstDt= prdDataList.get(0).getEventDate().getEpochSecond();
 
-    slog.info(mmi+"Predictions 1st time-stamp Instant Object:" + dbPrdList.get(0).getEventDate().toString());
+    slog.info(mmi+"Predictions 1st time-stamp Instant Object:" + prdDataList.get(0).getEventDate().toString());
     slog.info(mmi+"Predictions 1st time-stamp SecondsSinceEpoch UTC: " + SecondsSinceEpoch.dtFmtString(frstDt, true));
 
     //--- Set this.measurementsFinderList references:
 
     //--- Populate this.wlMeasurementFinderList for PREDICTION type:
-    this.wlMeasurementFinderList.add(PREDICTION, new WLMeasurementFinder(dbPrdList));
+    this.wlMeasurementFinderList.add(PREDICTION, new WLMeasurementFinder(prdDataList));
 
-    final long lastDt = dbPrdList.get(dbPrdList.size() - 1).getEventDate().getEpochSecond();
+    final long lastDt = prdDataList.get(prdDataList.size() - 1).getEventDate().getEpochSecond();
 
     slog.info(mmi+"Predictions last time-stamp: " + SecondsSinceEpoch.dtFmtString(lastDt, true));
 
     //--- WL OBSERVATION type
-    final List<MeasurementCustom> dbObsList= fmsInput.getObservations();
+    final List<MeasurementCustom> obsDataList= fmsInput.getObservations();
 
-    if ((dbObsList != null) && (dbObsList.size() > 0)) {
+    if ((obsDataList != null) && (obsDataList.size() > 0)) {
 
-      slog.info(mmi+"Got "+dbObsList.size()+
+      slog.info(mmi+"Got "+obsDataList.size()+
                 " WL observations from the DB for station: " + this.stationId);
 
-      this.wlMeasurementFinderList.add(OBSERVATION, new WLMeasurementFinder(dbObsList));
+      this.wlMeasurementFinderList.add(OBSERVATION, new WLMeasurementFinder(obsDataList));
 
       this.lastWLOSse= this.wlMeasurementFinderList.get(OBSERVATION).getLastSse();
 
@@ -158,41 +160,41 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
     slog.info(mmi+"this.lastWLOSse time-stamp="+
               SecondsSinceEpoch.dtFmtString(this.lastWLOSse, true));
 
-    final int wlpSize = this.wlMeasurementFinderList.get(PREDICTION).size();
+    final int prdDataSize= this.wlMeasurementFinderList.get(PREDICTION).size();
 
-    final List<MeasurementCustom> dbFcsList = fmsInput.getForecasts();
+    final List<MeasurementCustom> qcfDataList= fmsInput.getQualityControlForecasts();
 
-    if ((dbFcsList != null) && (dbFcsList.size() > 0)) {
+    if ((qcfDataList != null) && (qcfDataList.size() > 0)) {
 
-      slog.info(mmi+"Got " + dbFcsList.size() + " WL forecasts data for station: " + this.stationId);
+      slog.info(mmi+"Got " + qcfDataList.size() + " WL QC forecasts data for station: " + this.stationId);
 
-      final int wlfSize= dbFcsList.size();
+      final int qcfDataSize= qcfDataList.size();
 
-      if (wlfSize != wlpSize) {
+      if (qcfDataSize != prdDataSize) {
 
-        slog.warn(mmi+"wlfSize=" + wlfSize + ", wlpSize=" + wlpSize);
-        slog.warn(mmi+"wlfSize != wlpSize for station: " + this.stationId);
-        slog.warn(mmi+"WLP and WLF are not synchronized ! WLF will be replaced by WLP !");
+        slog.warn(mmi+"qcfDataSize=" + qcfDataSize + ", prdDataSize=" + prdDataSize);
+        slog.warn(mmi+"qcfDataSize != prdDataSize for station: " + this.stationId);
+        slog.warn(mmi+"QC forecasts and predictions are not synchronized ! QC forecasts will be replaced by predictions !");
 
-        this.wlMeasurementFinderList.add(FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
+        this.wlMeasurementFinderList.add(QC_FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
 
         throw new RuntimeException(mmi+"Debug exit here !!");
 
       } else {
 
-        slog.debug(mmi+"Got the same number of WLP and WLF data, WLF data will be used");
+        slog.debug(mmi+"Got the same number of predictions and QC forecasts data, QC forecasts data will be used");
 
-        this.wlMeasurementFinderList.add(FORECAST, new WLMeasurementFinder(dbFcsList));
+        this.wlMeasurementFinderList.add(QC_FORECAST, new WLMeasurementFinder(dbFcsList));
 
         throw new RuntimeException(mmi+"Debug exit here !!");
       }
 
     } else {
 
-      slog.warn(mmi+"No WL forecasts for station:"+
+      slog.warn(mmi+"No WL QC forecasts for station:"+
                 this.stationId + ", replacing it with its prediction-climatology");
 
-      this.wlMeasurementFinderList.add(FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
+      this.wlMeasurementFinderList.add(QC_FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
 
       throw new RuntimeException(mmi+"Debug exit here !!");
     }
@@ -204,97 +206,96 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
 //            this.log.debug("Got "+checkSsf.size()+" WL storm surges from the DB for station:"+this.stationCode);
 //            this.WLMeasurementFinderList.add(EXT_STORM_SURGE, new WLMeasurementFinder(dbSsfList));
 //        } else {
-    
-    this.log.warn("FMSWLStationDBObjects constructor: No WL storm surges retreived from the DB for station:" +
-        this.stationCode + ", replacing it with WLP");
-    
-    this.wlMeasurementFinderList.add(EXT_STORM_SURGE, this.wlMeasurementFinderList.get(PREDICTION));
-//        }
-    
+//    this.log.warn("FMSWLStationDBObjects constructor: No WL storm surges retreived from the DB for station:" +
+//        this.stationCode + ", replacing it with WLP");
+
+    final List<MeasurementCustom> mfDataList= fmsInput.getModelForecasts();
+
+    if ( (mfDataList != null ) && (mfDataList.size() > 0 ) ) {
+
+      this.wlMeasurementFinderList.add( MODEL_FORECAST, new wlMeasurementFinderList(mfDataList) );
+
+      slog.info(mmi+"Got " + mfDataList.size() + " model WL forecasts data for station: " + this.stationId);
+
+      final int mfDataSize= mfDataList.size();
+
+      if (mfDataSize != prdDataSize) {
+
+        slog.warn(mmi+"mfDataSize=" + mfDataSize + ", prdDataSize=" + prdDataSize);
+        slog.warn(mmi+"mfDataSize != prdDataSize for station: " + this.stationId);
+        slog.warn(mmi+"Model forecasts and predictions are not synchronized ! model forecasts will be replaced by predictions !");
+
+        this.wlMeasurementFinderList.add(MODEL_FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
+
+        throw new RuntimeException(mmi+"Debug exit here !!");
+
+      } else {
+
+        slog.debug(mmi+"Got the same number of predictions and model forecasts data, Model forecasts data will be used");
+
+        this.wlMeasurementFinderList.add(MODEL_FORECAST, new WLMeasurementFinder(dbFcsList));
+
+        this.useFullModelForecast= true
+
+        throw new RuntimeException(mmi+"Debug exit here !!");
+
+    } else {
+
+      slog.warn(mmi+"No model WL forecasts for station:"+
+                this.stationId + ", replacing it with its prediction-climatology");
+
+      this.wlMeasurementFinderList.add(MODEL_FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
+
+      throw new RuntimeException(mmi+"Debug exit here !!");
+    }
+
     //--- this.wlMeasurementFinderList.get(PREDICTION).getSecondsIncrement() returns an absolute value:
-    this.secondsIncr = this.wlMeasurementFinderList.get(PREDICTION).getSecondsIncrement();
-    
+    this.secondsIncr= this.wlMeasurementFinderList.get(PREDICTION).getSecondsIncrement();
+
     if (this.secondsIncr == 0L) {
-      
-      this.log.error("FMSWLStationDBObjects constructor: this.secondsIncr <= 0L for station: " + this.stationCode);
-      throw new RuntimeException("FMSWLStationDBObjects constructor");
+      slog.error(mmi+"this.secondsIncr <= 0L for station: " + this.stationId);
+      throw new RuntimeException(mmi+"Cannot update forecast!");
     }
-    
+
     if (this.secondsIncr < FORECASTS_TIME_INCR_SECONDS_MIN) {
-      
-      this.log.error("FMSWLStationDBObjects constructor: this.secondsIncr=" + this.secondsIncr + " < " +
-          "FORECASTS_TIME_INCR_SECONDS_MIN=" +
-          FORECASTS_TIME_INCR_SECONDS_MIN + " for station: " + this.stationCode);
-      
-      throw new RuntimeException("FMSWLStationDBObjects constructor");
+
+      slog.error(mmi+"this.secondsIncr=" + this.secondsIncr + " < " +
+        "FORECASTS_TIME_INCR_SECONDS_MIN=" + FORECASTS_TIME_INCR_SECONDS_MIN + " for station: " + this.stationId);
+
+      throw new RuntimeException(mmi+"Cannot update forecast!");
     }
-    
+
     if (this.secondsIncr > FORECASTS_TIME_INCR_SECONDS_MAX) {
-      
-      this.log.error("FMSWLStationDBObjects constructor: this.secondsIncr=" + this.secondsIncr + " > " +
-          "FORECASTS_TIME_INCR_SECONDS_MAX=" +
-          FORECASTS_TIME_INCR_SECONDS_MAX + " for station: " + this.stationCode);
-      
-      throw new RuntimeException("FMSWLStationDBObjects constructor: Cannot update forecast !");
+
+      slog.error(mmi+"this.secondsIncr=" + this.secondsIncr + " > "+
+        "FORECASTS_TIME_INCR_SECONDS_MAX="+FORECASTS_TIME_INCR_SECONDS_MAX + " for station: " + this.stationCode);
+
+      throw new RuntimeException(mmi+"Cannot update forecast !");
     }
-    
-    boolean validTi = false;
-    
+
+    boolean validTi= false;
+
     //--- Validate the time increment returned for the time increment allowed.
     for (final int check : FORECASTS_TIME_INCR_MINUTES_ALLOWED) {
-      
+
       if (this.secondsIncr == (long) SECONDS_PER_MINUTE * check) {
-        validTi = true;
+        validTi= true;
         break;
       }
     }
-    
+
     if (!validTi) {
-      
-      this.log.error("FMSWLStationDBObjects constructor: Invalid time increment in seconds=" + this.secondsIncr + " " +
-          "for station: " + this.stationCode);
-      throw new RuntimeException("FMSWLStationDBObjects constructor");
-    }
-  
-    this.log.debug("FMSWLStationDBObjects constructor: Will use " + this.secondsIncr + " seconds " +
-        "as time increment.");
-  
-    //this.log.debug("No WLSSF for now then set this.wlssfDb to the predictions to use it as a
-    // fake storm-surge
-    // forecast.");
-    
-    //--- TODO: un-comment the following line when we will be ready to use forecasts merge.
-    //final String mergeWith= fc.getFmsParameters().getForecast().getMerge();
-    final String mergeWith = null;
-    
-    if (mergeWith != null) {
-  
-      this.log.debug("FMSWLStationDBObjects constructor: Using " + mergeWith + " as forecasts " +
-          "merge target for " +
-          "station:" + this.stationCode);
-      this.useSsf = true;
-
-//            switch (mergeWith) {
-//
-//                case WLSSF_FULL.toString() :
-//
-//            }
-    
-    }
-    
-    if (this.useSsf) {
-      this.log.debug("FMSWLStationDBObjects constructor: WLSSF data is: " + mergeWith + " and " +
-          "merge type will be: " + this.ssfType + " for station:" + this.stationCode);
+      slog.error(mmi+"Invalid time increment in seconds="+this.secondsIncr+" for station: "+this.stationId);
+      throw new RuntimeException(mmi+"Cannot update forecast !");
     }
 
-//        this.log.debug("this.wlMeasurementFinderList.get(PREDICTION)="+this.wlMeasurementFinderList.get(PREDICTION));
-//        this.log.debug("this.wlMeasurementFinderList.get(OBSERVATION)="+this.wlMeasurementFinderList.get
-//        (OBSERVATION));
-//        this.log.debug("this.wlMeasurementFinderList.get(FORECAST)="+this.wlMeasurementFinderList.get(FORECAST));
-//        this.log.debug("this.wlMeasurementFinderList.get(EXT_STORM_SURGE)="+this.wlMeasurementFinderList.get
-//        (EXT_STORM_SURGE));
+    slog.info(mmi+"Will use " + this.secondsIncr + " seconds as the time increment in seconds");
+
+    slog.info(mmi+"end");
+
+    throw new RuntimeException(mmi+"Debug exit!");
   }
-  
+
   // ----
   final List<MeasurementCustom> getUpdatedForecastData() {
     return this.updatedForecastData;
@@ -305,67 +306,69 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
    * @param tauHours         : The number of hours to go back in time for WL predictions errors statistics.
    * @return true if the Measurement List have a larger time span than tauHours, false otherwise.
    */
-  protected final static boolean validateDBObjects(@NotNull @Size(min = 1) final List<MeasurementCustom> measurementsList,
-                                                   @Min(1) final int tauHours) {
-    
-    staticLog.debug("Start: wlList=" + measurementsList + ", wList.size()=" + measurementsList.size());
-    
+  protected final static boolean validateDBObjects(/*@NotNull @Size(min = 1)*/
+                                                   final List<MeasurementCustom> measurementsList,
+                                                   /*@Min(1)*/ final int tauHours) {
+    final String mmi= "validateDBObjects: ";
+
+    slog.info(mmi+"Start: wlList=" + measurementsList + ", wList.size()=" + measurementsList.size());
+
     //--- We must have at least tauHours between the 1st and the last WL DB data
-    final long sseBeg = measurementsList.get(0).getEventDate().getEpochSecond();
-    final long sseEnd = measurementsList.get(measurementsList.size() - 1).getEventDate().getEpochSecond();
-    
+    final long sseBeg= measurementsList.get(0).getEventDate().getEpochSecond();
+    final long sseEnd= measurementsList.get(measurementsList.size() - 1).getEventDate().getEpochSecond();
+
     final int durationHours = ((int) (sseEnd - sseBeg)) / SECONDS_PER_HOUR;
-    
+
     return (durationHours >= tauHours);
   }
-  
+
   /**
    * @param type : The WLType to find.
    * @return The right WLType Measurement List.
    * WARNING: The verification on the existence of the returned Measurement List is deferred to the client method.
    */
-  final List<MeasurementCustom> getMeasurementList(@NotNull final WLType type) {
-    
+  final List<MeasurementCustom> getMeasurementList(/*@NotNull*/ final WLType type) {
+
     //--- this.getWLMeasurementFinder(type) could return null.
-    final WLMeasurementFinder whichOne = this.getWLMeasurementFinder(type);
-    
+    final WLMeasurementFinder whichOne= this.getWLMeasurementFinder(type);
+
     return (whichOne != null) ? whichOne.getDbData() : null;
   }
-  
+
   /**
    * @param type : The WLType to find.
    * @return The right WLType WLMeasurementFinder object(which could be possibly null)
    */
-  private final WLMeasurementFinder getWLMeasurementFinder(@NotNull final WLType type) {
-    
+  private final WLMeasurementFinder getWLMeasurementFinder(/*@NotNull*/ final WLType type) {
     return this.wlMeasurementFinderList.get(type.ordinal());
   }
-  
+
   /**
    * @param type             : The WLType wanted.
    * @param timeStampSeconds : The time-stamp in seconds since the epoch wanted.
    * @return The Measurement object of WLType type at the time-stamp in seconds timeStampSeconds(if any).
    * WARNING : The verification on the existence of the returned Measurement is deferred to the client method.
    */
-  final MeasurementCustom getMeasurementType(@NotNull final WLType type,
+  final MeasurementCustom getMeasurementType(/*@NotNull*/
+                                             final WLType type,
                                              final long timeStampSeconds) {
-    
-    final WLMeasurementFinder wlTypeFinder = this.getWLMeasurementFinder(type);
-    
+
+    final WLMeasurementFinder wlTypeFinder= this.getWLMeasurementFinder(type);
+
     //this.log.debug("type="+type+", this.wlMeasurementFinderList.get(intType)="+this.wlMeasurementFinderList.get
     // (intType));
-    
+
     return (wlTypeFinder != null ? wlTypeFinder.find(timeStampSeconds) : null);
   }
-  
+
   /**
    * @return this.stationCode.
    */
-  @NotNull
-  public final String getStationCode() {
-    return this.stationCode;
+  //@NotNull
+  public final String getStationId() {
+    return this.stationId;
   }
-  
+
   /**
    * @return The length of the PREDICTION type WL Measurement data.
    */
