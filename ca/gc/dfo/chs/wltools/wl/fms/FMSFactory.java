@@ -188,6 +188,11 @@ abstract public class FMSFactory implements IFMS {
     this.log.debug(mmi+"end\n");
   }
 
+  // ---
+  final List<MeasurementCustom> getNewForecastData() {
+    return this.data.getUpdatedForecastDataForTGStn0()
+  }
+
   ///**
   // * @param forecastingContext : A ForecastingContext configuration object.
   // * @return true if the ForecastingContext object is OK and ready to use for some(not all) of its attributes.

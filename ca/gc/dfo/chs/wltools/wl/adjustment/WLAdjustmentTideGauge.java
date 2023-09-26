@@ -331,6 +331,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     // --- Instantiate the FMSInput object using the argsMap and this object.
     this.fmsInputObj= new FMSInput(this);
+    this.fmsObj= new FMS(this.fmsInputObj);
+    //this.fmsObj= new FMS(new FMSInput(this));
 
     slog.info(mmi+"end");
 
@@ -353,7 +355,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //         the result of the adjustment-correction for the model forecast done at the
     //         previous step with it.
     //final fmsContext fmsContextObj= this.getFmsContext(this);
-    
+    this.locationAdjustedData= this.fmsObj.update().getNewForecastData();
 
     slog.info(mmi+"end");
 

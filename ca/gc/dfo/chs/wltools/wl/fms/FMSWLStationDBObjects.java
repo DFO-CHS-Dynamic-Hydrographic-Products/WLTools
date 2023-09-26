@@ -40,7 +40,7 @@ import ca.gc.dfo.chs.wltools.wl.WLMeasurementFinder;
  * references.
  */
 //@Slf4j
-public class FMSWLStationDBObjects extends GlobalRefPoint implements IFMS, IWL {
+abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IFMS, IWL {
 
   final static private whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationDBObjects";
 
@@ -50,9 +50,10 @@ public class FMSWLStationDBObjects extends GlobalRefPoint implements IFMS, IWL {
   private final static Logger sLog= LoggerFactory.getLogger(whoAmI);
 
   /**
-   * To store the newly updated WLF-QC in the future.
+   * To store the newly updated full (i.e. with storm surge and-or river discharge effects)
+   * WL forecast data in the future for the processed CHS TG.
    */
-  final List<MeasurementCustom> udpatedWLFData= new ArrayList<MeasurementCustom>();
+  final List<MeasurementCustom> updatedForecastData= new ArrayList<MeasurementCustom>();
 
   /**
    * One WLMeasurementFinder object for each PREDICTION, OBSERVATION, FORECAST, EXT_STORM_SURGE WLType.
@@ -294,6 +295,11 @@ public class FMSWLStationDBObjects extends GlobalRefPoint implements IFMS, IWL {
 //        (EXT_STORM_SURGE));
   }
   
+  // ----
+  final List<MeasurementCustom> getUpdatedForecastData() {
+    return this.updatedForecastData;
+  }
+
   /**
    * @param measurementsList : A List of Measurement objects.
    * @param tauHours         : The number of hours to go back in time for WL predictions errors statistics.

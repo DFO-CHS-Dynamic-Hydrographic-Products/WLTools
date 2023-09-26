@@ -265,7 +265,7 @@ abstract public class FMSResidualFactory extends FMSLongTermSurge implements IFM
       }
       
       //--- Populate the updated WL forecasts data.
-      fmwlStation.udpatedForecastData.add(wlstn.getUpdatedForecast());
+      fmwlStation.updatedForecastData.add(wlstn.getUpdatedForecast());
       
       //--- block for testing purposes:
       //if (seconds%3600L==0) {

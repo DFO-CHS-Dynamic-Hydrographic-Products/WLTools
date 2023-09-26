@@ -68,22 +68,27 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   //public FMSConfig(final Map<String,String> argsMap, final WLAdjustmentType wlAdjObj ) {
   //public FMSConfig( final WLAdjustmentType wlAdjObj ) {
-  public FMSConfig( final String stationId,
-                    final HBCoords stationHBCoords,
-                    final JsonObject fmsConfigJsonObj ) {
+  //public FMSConfig( final String stationId,
+  //                  final HBCoords stationHBCoords,
+  //                  final JsonObject fmsConfigJsonObj ) {
+
+  public FMSConfig(final WLLocation wlLocation) {
 
     final String mmi= "MSConfig( final WLAdjustmentType wlAdjObj) constructor: ";
 
-    this.stationId= stationId; //wlAdjObj.getIdentity();
+    // --- WLLocation extends the HBCoords class
+    this.stationHBCoords= (HBCoords) wlLocation; //stationHBCoords;
 
-    this.stationHBCoords= stationHBCoords;
+    this.stationId= wlLocation.getIdentity(); // stationId; //wlAdjObj.getIdentity();
+
+    final JsonObject wllFMSConfigJsonObj= wlLocation.getFmsJsonObject();
 
     // --- TODO: Add code that calculates the estimated forecast uncertainty
     this.stdErrSigma= 0.0;
 
-    this.deltaTMinutes= fmsConfigJsonObj.getString(LEGACY_DELTA_MINS_JSON_KEY);
+    this.deltaTMinutes= wllFMSConfigJsonObj.getString(LEGACY_DELTA_MINS_JSON_KEY);
 
-    this.mergeWithSSFModel= fmsConfigJsonObj.getString(LEGACY_MERGE_JSON_KEY); //wlAdjObj.getStormSurgeForecastModelName();
+    this.mergeWithSSFModel= wllFMSConfigJsonObj.getString(LEGACY_MERGE_JSON_KEY); //wlAdjObj.getStormSurgeForecastModelName();
 
     final long predDataTimeIntervallSeconds= wlAdjObj.
       getDataTimeIntervallSeconds(wlAdjObj.getPredictions());
@@ -99,32 +104,34 @@ abstract public class FMSConfig extends LegacyFMSDT {
     //     for the legacy FMS deltaTMinutes attribute
     this.deltaTMinutes= ( (double) forecastDataTimeIntervallSeconds/ITimeMachine.SECONDS_PER_MINUTE ) );
 
-    if (fmsConfigJsonObj.contains(LEGACY_DELTA_MINS_JSON_KEY)) {
-      this.deltaTMinutes= fmsConfigJsonObj.
+    if (wllFMSConfigJsonObj.contains(LEGACY_DELTA_MINS_JSON_KEY)) {
+
+      this.deltaTMinutes= wllFMSConfigJsonObj.
          getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue();
     }
 
     this.ssfMergeDurationHours=
       IFMS.DEFAULT_STORM_SURGE_FORECAST_MERGE_HOURS;
 
-    if (fmsConfigJsonObj.contains(LEGACY_MERGE_HOURS_JSON_KEY)) {
+    if (wllFMSConfigJsonObj.contains(LEGACY_MERGE_HOURS_JSON_KEY)) {
 
-      this.ssfMergeDurationHours= fmsConfigJsonObj.
+      this.ssfMergeDurationHours= wllFMSConfigJsonObj.
          getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).doubleValue();
     }
 
     this.fmsResidualConfig= new
-      FMSResidualConfig(fmsConfigJsonObj.getJsonObject(LEGACY_RESIDUAL_JSON_KEY));
+      FMSResidualConfig(wllFMSConfigJsonObj.getJsonObject(LEGACY_RESIDUAL_JSON_KEY));
 
-    if (fmsConfigJsonObj.contains(LEGACY_TIDAL_REMNANT_JSON_KEY)) {
+    if (wllFMSConfigJsonObj.contains(LEGACY_TIDAL_REMNANT_JSON_KEY)) {
 
       this.fmsTidalRemnantConfig= new
-        FMSTidalRemnantConfig(fmsConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY));
+        FMSTidalRemnantConfig(wllFMSConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY));
     }
 
     this.referenceTime= Instant.now(Clock.systemUTC());
   }
 
+  // ---
   final public String getStationId() {
     return this.stationId;
   }

@@ -127,6 +127,12 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
     slog.info(mmi+"end: this.timeNodes.size()=" + this.timeNodes.size());
   }
 
+  // --- Return the updatedForecastData List<MeasurementCustom> object
+  //     of the TG station being processed (which is always at index 0)
+  final List<MeasurementCustom> getUpdatedForecastDataForTGStn0() {
+    return this.allStationsData.get(0).getUpdatedForecastData();
+  }
+
   /**
    * Populate all the objects structures of all the ForecastingContext objects of the forecastingContextList argument.
    * NOTE: forecastingContextList must have already been controlled in terms of objects existence.
