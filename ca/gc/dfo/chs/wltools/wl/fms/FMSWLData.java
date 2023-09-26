@@ -13,6 +13,7 @@ import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
@@ -174,7 +175,7 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
         throw new RuntimeException(mmi+"Cannot update forecast !");
       }
 
-      slog.info("FMWLData populateFMSWLStationsData: fmsConfig.size() > 1: Success for ForecastingContext items validation.");
+      slog.info(mmi+"fmsConfig.size() > 1: Success for ForecastingContext items validation.");
     }
 
     //--- Create new FMWLStationData Objects in this.allStationsData:
@@ -230,9 +231,9 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
         throw new RuntimeException(mmi+"Cannot update forecast !");
       }
 
-      final MeasurementCustom wlp0 = wlpList.get(0);
+      final MeasurementCustom wlp0= wlpList.get(0);
 
-      final long firstWlpSeconds = wlp0.getEventDate().getEpochSecond();
+      final long firstWlpSeconds= wlp0.getEventDate().getEpochSecond();
 
       slog.info(mmi+"WLP size=" + wlpList.size());
       slog.info(mmi+"WLP dt0 Instant=" + wlp0.getEventDate().toString());
@@ -240,11 +241,11 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
       slog.info(mmi+"WLP dt0 Z value=" + wlp0.getValue());
 
       //--- Control WLO data:
-      final List<MeasurementCustom> wloList = fmsInputItem.getObservations();
+      final List<MeasurementCustom> wloList= fmsInputItem.getObservations();
 
       if (wloList.size() > 0) {
 
-        if (!FMSWLStationDBObjects.validateDBObjects(wloList, tauHours)) {
+        if (!FMSWLStationData.validate(wloList, tauHours)) {
 
           slog.warn(mmi+"Not enough WLO retreived from the database for station: "+
                     stationId + ", the resulting forecast will not be optimal !");
@@ -275,22 +276,21 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
 
       //--- 1st check on the storm surge model forecast data. Just report on the WLP and WLF synchronisation here.
       //    Serious erros errors with WLF data are handled later in FMSWLStationDBObjects constructor.
-      if (fmsInputItem.getForecasts().size() > 0) {
+      if (fmsInputItem.getModelForecasts().size() > 0) {
 
-        if (!FMSWLStationDBObjects.validateDBObjects(fmsInputItem.getForecasts(), tauHours)) {
+        if (!FMSWLStationData.validate(fmsInputItem.getModelForecasts(), tauHours)) {
 
-         slog.warn(mmi+"FMSWLStationDBObjects.validateDBObjects failed for last forecast data retrieved from the DB");
-         slog.warn(mmi+"storm surge model forecast  data seems not usable!");
+         slog.warn(mmi+"FMSWLStationData.validate failed for last model forecast data !");
+         slog.warn(mmi+"model forecast data seems not usable!");
         }
 
       } else {
-        slog.warn(mmi+"fmsInputItem.getForecasts().size()==0 for station:" + stationId);
+        slog.warn(mmi+"fmsInputItem.getModelForecasts().size()==0 for station:" + stationId);
       }
 
       this.allStationsData.add(new FMSWLStation(sit++, fmsInputItem); //forecastingContext));
 
-      slog.info("FMWLData populateFMSWLStationsData: Adding station:"+
-          stationId + " residual to stationsResiduals");
+      slog.info(mmi+"Adding station:"+stationId + " residual to stationsResiduals");
 
       stationsResiduals.add(this.getFMSWLStationResidual(stationId));
 
@@ -302,13 +302,13 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
     //    and set the stations statistics dependencies(Objects references).
     for (final FMSWLStation fmsd : this.allStationsData) {
 
-      slog.info("fcstsTimeIncrSeconds=" + fcstsTimeIncrSeconds + ", station="+
-        fmsd.getStationId() + ", fmsd" + ".secondsIncr=" + fmsd.secondsIncr);
+      slog.info(mmi+"fcstsTimeIncrSeconds=" + fcstsTimeIncrSeconds +
+        ", station="+ fmsd.getStationId() + ", fmsd" + ".secondsIncr=" + fmsd.secondsIncr);
 
       if (fmsd.secondsIncr != fcstsTimeIncrSeconds) {
 
-        slog.error(mmi+"fmsd.secondsIncr=" + fmsd.secondsIncr + "!= fcstsTimeIncrSeconds="+
-                   fcstsTimeIncrSeconds + " for station:" + fmsd.getStationCode());
+        slog.error(mmi+"fmsd.secondsIncr=" + fmsd.secondsIncr +
+          "!= fcstsTimeIncrSeconds="+ fcstsTimeIncrSeconds + " for station:" + fmsd.getStationCode());
 
         throw new RuntimeException(mmi+"Cannot update forecast !");
       }
@@ -320,12 +320,13 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
     }
 
     //--- 1st time-stamp of the WL prediction data retreived from the DB:
-    final SecondsSinceEpoch sseStart =
-        new SecondsSinceEpoch(fmsInput0.getPredictions().get(0).getEventDate().getEpochSecond());
+    final SecondsSinceEpoch sseStart= new
+      SecondsSinceEpoch(fmsInput0.getPredictions().get(0).getEventDate().getEpochSecond());
 
     slog.info(mmi+"Starting new forecast(s) residuals errors statistics at date time-stamp: " + sseStart.dateTimeString(true));
 
-    this.timeNodes= new ArrayList<WLTimeNode>(this.allStationsData.get(0).predictionsSize());
+    this.timeNodes= new
+      ArrayList<WLTimeNode>(this.allStationsData.get(0).predictionsSize());
 
     //--- Setup the 1st WLTimeNode:
     //    NOTE: the WLTimeNode argument is null here because we have no past data before sseStart time-stamp:
@@ -418,9 +419,9 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
   //@NotNull
   private final FMSWLStation getFMSWLStation(/*@NotNull*/ final String stationId) {
 
-    FMSWLStationDBObjects ret= null;
+    FMSWLStationData ret= null;
 
-    for (final FMSWLStationDBObjects wlsd : this.allStationsData) {
+    for (final FMSWLStationData wlsd : this.allStationsData) {
 
       if (wlsd.getStationId().equals(stationId)) {
         ret = wlsd;

@@ -36,13 +36,13 @@ import ca.gc.dfo.chs.wltools.wl.WLMeasurementFinder;
 //import ca.gc.dfo.iwls.fmservice.modeling.geo.IGeo;
 
 /**
- * Class for a specific WL station database WLType objects(PREDICTION, OBSERVATION, FORECAST, EXT_STORM_SURGE)
+ * Class for a specific WL station database WLType objects(PREDICTION, OBSERVATION, MODEL_FORECAST, QC_FORECAST )
  * references.
  */
 //@Slf4j
-abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IFMS, IWL {
+abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, IWL {
 
-  final static private whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationDBObjects";
+  final static private whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData";
 
   /**
    * static log utility.
@@ -57,7 +57,7 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
   final List<MeasurementCustom> updatedForecastData= new ArrayList<MeasurementCustom>();
 
   /**
-   * One WLMeasurementFinder object for each PREDICTION, OBSERVATION, FORECAST, EXT_STORM_SURGE WLType.
+   * One WLMeasurementFinder object for each PREDICTION, OBSERVATION, MODEL_FORECAST, QC_FORECAST WLType.
    */
   private final List<WLMeasurementFinder>
     wlMeasurementFinderList= new ArrayList<WLMeasurementFinder>(WLType.values().length);
@@ -95,8 +95,8 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
    *                             It is zero if WL location is directly referred to the GlobalVerticalDatum.
    */
   //public FMSWLStationDBObjects(/*@NotNull*/ final ForecastingContext forecastingContext,
-  public FMSWLStationDBObjects(/*@NotNull*/ final FMSInput fmsInput,
-                               /*@NotNull*/ final GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
+  public FMSWLStationData(/*@NotNull*/ final FMSInput fmsInput,
+                          /*@NotNull*/ final GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
 
     //--- Re-activate the following super invocation if the ca.gc.dfo.iwls.station class re-activate its own com
     // .vividsolutions.jts.geom.Point as an attribute.
@@ -109,6 +109,8 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
     super(fmsInput.getStationHBCoords().getLongitude(),
           fmsInput.getStationHBCoords().getLatitude(),
           0.0, globalVerticalDatum, globalVerticalOffset);
+
+    final String mmi= "FMSWLStationData constructor: ";
 
     this.stationId= fmsInput.getStationId();
 
@@ -306,10 +308,10 @@ abstract public class FMSWLStationDBObjects extends GlobalRefPoint implements IF
    * @param tauHours         : The number of hours to go back in time for WL predictions errors statistics.
    * @return true if the Measurement List have a larger time span than tauHours, false otherwise.
    */
-  protected final static boolean validateDBObjects(/*@NotNull @Size(min = 1)*/
-                                                   final List<MeasurementCustom> measurementsList,
-                                                   /*@Min(1)*/ final int tauHours) {
-    final String mmi= "validateDBObjects: ";
+  protected final static boolean validate(/*@NotNull @Size(min = 1)*/
+                                          final List<MeasurementCustom> measurementsList, /*@Min(1)*/ final int tauHours) {
+
+    final String mmi= "validate: ";
 
     slog.info(mmi+"Start: wlList=" + measurementsList + ", wList.size()=" + measurementsList.size());
 

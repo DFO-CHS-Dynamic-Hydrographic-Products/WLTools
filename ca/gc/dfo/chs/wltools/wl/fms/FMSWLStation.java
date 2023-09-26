@@ -16,6 +16,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
@@ -38,7 +39,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
 /**
  * Class for one WL station FM Service objects.
  */
-public final class FMSWLStation extends FMSWLStationDBObjects implements IFMS, IWL {
+public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
   final private static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLStation";
 
