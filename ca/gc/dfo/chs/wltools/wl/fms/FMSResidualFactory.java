@@ -1,24 +1,35 @@
-package ca.gc.dfo.iwls.fmservice.modeling.fms;
+//package ca.gc.dfo.iwls.fmservice.modeling.fms;
+package ca.gc.dfo.chs.wltools.wl.fms;
 
 /**
  *
  */
 
-//---
-
-import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-import ca.gc.dfo.iwls.fmservice.modeling.fms.legacy.LegacyFMSResidual;
-import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
-import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.List;
+import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
+import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSLongTermWLOffset;
+import ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSResidual;
 
+//---
+//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
+//import ca.gc.dfo.iwls.fmservice.modeling.fms.legacy.LegacyFMSResidual;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
+//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
+//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
+//import java.util.List;
 //import java.util.ArrayList;
 //---2
 //---
@@ -29,189 +40,204 @@ import java.util.List;
  * external storm surge forecasts)
  * method depending on the WL stations being processed.
  */
-abstract public class FMSResidualFactory extends FMSLongTermSurge implements IFMS {
-  
+abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements IFMS {
+
+  private static final String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory";
+
   /**
    * static log utility.
    */
-  private static final Logger staticLog = LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.fms" +
-      ".FMResidualFactory");
-  /**
-   * log utility.
-   */
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
-  
+  private static final Logger slog= LoggerFactory.getLogger(whoAmI);
+
+  ///**
+  // * log utility.
+  // */
+  //private final Logger log = LoggerFactory.getLogger(this.getClass());
+
   //--- For possible future usage.
   //protected double forecastDuration= (double)FORECASTS_DURATION_HOURS*SECONDS_PER_HOUR;
   /**
    * One generic residual object for each WL station so each residual is related to one main WL station.
    */
-  protected String stationCode = null;
+  protected String stationId= null;
+
   /**
    * Time-stamp of the last update of residual errors statistics:
    */
-  protected SecondsSinceEpoch lastUpdateSse = null;
+  protected SecondsSinceEpoch lastUpdateSse= null;
+
   /**
    * To keep track of all the WLStationTimeNode already processed.(NOTE: the pstr objects references of all the
    * WLStationTimeNode chained objects MUST be valid)
    */
-  protected WLStationTimeNode lastLagNodeAdded = null;
+  protected WLStationTimeNode lastLagNodeAdded= null;
+
   /**
    * CovData: Equivalent of C struct model_status_type in the source file dvfm.c of the 1990 legacy ODIN C source
    * code bundle.
    */
-  protected FMSCov covData = null;
+  protected FMSCov covData= null;
+
   /**
    * The WL errors residuals computations method used for a given WL station(see IFM interface and or confluance
    * documentation for more details)
    */
-  private ResidualMethod residualMethod = ResidualMethod.LEGACY;
+  private IFMS.ResidualMethod residualMethod= IFMS.ResidualMethod.LEGACY;
+
   /**
    * Missing WLOs data counter. It logged at the end of the computations.
    */
   private int nbMissingWLO = 0;
-  
+
   //--- constructors for possible future usage.
 //    public FMResidualFactory() { }
 //
 //    public FMResidualFactory(final String stationId) {
 //      this(stationId,ResidualMethod.LEGACY);
 //    }
-  
+
   /**
-   * @param stationCode    : The usual SINECO station String Id.
+   * @param stationId    : The usual CHS TG station string Id.
    * @param residualMethod : The ResidualMethod type to use.
    */
-  public FMSResidualFactory(@NotNull final String stationCode, @NotNull final ResidualMethod residualMethod) {
-    
+  public FMSResidualFactory(/*@NotNull*/ final String stationId, /*@NotNull*/ final IFMS.ResidualMethod residualMethod) {
+
     super();
-    
-    this.stationCode = stationCode;
+
+    final String mmi= "FMSResidualFactory main constructor: ";
+
+    this.stationId = stationId;
     this.residualMethod = residualMethod;
-    
+
     this.lastUpdateSse = new SecondsSinceEpoch(0L);
     this.covData = null;
-    
+
     this.nbMissingWLO = 0;
-    
-    this.log.debug("FMResidualFactory constr. end: this.stationCode=" + this.stationCode + ", this.residualMethod=" + this.residualMethod);
+
+    slog.info(mmi+"this.stationCode=" + this.stationCode + ", this.residualMethod=" + this.residualMethod);
   }
-  
+
+  final String getStationId() {
+    return this.stationId;
+  }
+
   /**
    * @param forecastingContext : A WL station ForecastingContext object.
    * @param lastWLOSse         : The  time-stamp seconds of the last available valid WLO data of the same WL station.
    * @return The IFMResidual object of the WL station.
    */
-  @NotNull
-  protected static IFMSResidual getIFMSResidual(@NotNull final ForecastingContext forecastingContext,
-                                                @Min(0) final long lastWLOSse) {
-    
+  //@NotNull
+ // protected static IFMSResidual getIFMSResidual(@NotNull final ForecastingContext forecastingContext,
+  protected static IFMSResidual getIFMSResidual(@NotNull final FMSInput fmsInput, /*@Min(0)*/ final long lastWLOSse) {
+
     try {
-      forecastingContext.getFmsParameters();
-      
+      //forecastingContext.getFmsParameters();
+      fmsInput.getStationId();
+
     } catch (NullPointerException npe) {
-      
-      staticLog.error("FMResidualFactory getIFMSResidual: forecastingContext.getFmsParameters()==null !!");
-      throw new RuntimeException(npe);
+
+      slog.error(mmi+"fmsInput is null !!");
+      throw new RuntimeException(mmi+npe);
     }
-    
+
     try {
-      forecastingContext.getFmsParameters().getResidual();
-      
+    //  //forecastingContext.getFmsParameters().getResidual();
+      fmsInput.getFMSResidualConfig().getMethod();
+
     } catch (NullPointerException npe) {
-      
-      staticLog.error("FMResidualFactory getIFMSResidual: forecastingContext.getFmsParameters().getResidual()==null " +
-          "!!");
-      throw new RuntimeException(npe);
+      slog.error(mmi+"fmsInput.getFMSResidualConfig() returns null !!");
+      throw new RuntimeException(mmi+npe);
     }
-    
-    staticLog.debug("FMResidualFactory getIFMSResidual: Start");
-    
-    final String residualMethodCheck = forecastingContext.getFmsParameters().getResidual().getMethod();
-    
+
+    slog.info(mmi+"Start");
+
+    final String residualMethodCheck= fmsInput.getFMSResidualConfig().getMethod(); //forecastingContext.getFmsParameters().getResidual().getMethod();
+
     try {
       residualMethodCheck.length();
-      
+
     } catch (NullPointerException npe) {
-      
-      staticLog.error("FMResidualFactory getIFMSResidual: residualMethodCheck==null !!");
-      throw new RuntimeException(npe);
+
+      slog.error(mmi+"residualMethodCheck is null !!");
+      throw new RuntimeException(mmi+npe);
     }
-    
+
     IFMSResidual ret = null;
-    
-    final ResidualMethod residualMethodWanted = getResidualMethod(residualMethodCheck);
-    
+
+    final IFMS.ResidualMethod residualMethodWanted=
+      FMSResidualFactory.getResidualMethod(residualMethodCheck);
+
     try {
       residualMethodWanted.hashCode();
-      
+
     } catch (NullPointerException npe) {
-      
-      staticLog.error("FMResidualFactory getIFMSResidual: residualMethodWanted==null !!");
-      throw new RuntimeException(npe);
+
+      slog.error(mmi+"residualMethodWanted==null !!");
+      throw new RuntimeException(mmi+npe);
     }
-    
+
     switch (residualMethodWanted) {
-      
+
       case LEGACY:
-        
-        ret = new LegacyFMSResidual().getIFMSResidual(forecastingContext, lastWLOSse);
+
+        ret= new LegacyFMSResidual().getIFMSResidual(fmsInput, lastWLOSse);
         break;
 
 //            case SPECTRAL_NUDGING:
 //                ret= new SpectralNudgingResidual().getIFMSResidual(fc,lastWLOSse);
 //                break;
-      
+
       default:
-        
-        staticLog.error("FMResidualFactory getIFMSResidual: Invalid ResidualMethod type -> " + residualMethodCheck);
-        throw new RuntimeException("FMResidualFactory getIFMSResidual method");
-        //break;
+
+        slog.error(mmi+"Invalid ResidualMethod type -> " + residualMethodCheck);
+        throw new RuntimeException(mmi+"Cannot update forecast !!");
     }
-    
+
     if (ret == null) {
-      
-      staticLog.error("FMResidualFactory getIFMSResidual: Invalid WL residual errors computation method: " + residualMethodCheck);
-      throw new RuntimeException("FMResidualFactory getIFMSResidual: ret==null !");
-      
+
+      slog.error(mmi+"Invalid WL residual errors computation method: " + residualMethodCheck);
+      throw new RuntimeException(mmi+"ret==null !");
+
     } else {
-      staticLog.debug("FMResidualFactory getIFMSResidual: Will use ResidualMethod -> " + residualMethodWanted.toString());
+      slog.info(mmi+"Will use ResidualMethod -> " + residualMethodWanted.toString());
     }
-    
-    staticLog.debug("FMResidualFactory getIFMSResidual: End");
-    
+
+    slog.debug(mmi+"end");
+
     return ret;
   }
-  
+
   /**
    * @param residualMethodCheck : A String representing the residual method wanted.
    * @return The corresponding ResidualMethod object if found, null object otherwise. The client metho must then
    * check for a null return.
    */
-  protected final static ResidualMethod getResidualMethod(final String residualMethodCheck) {
-    
-    ResidualMethod residualMethodWanted = null;
-    
-    for (final ResidualMethod residualMethod : ResidualMethod.values()) {
-      
+  protected final static IFMS.ResidualMethod getResidualMethod(final String residualMethodCheck) {
+
+    final String mmi= "getResidualMethod: ";
+
+    IFMS.ResidualMethod residualMethodWanted = null;
+
+    for (final IFMS.ResidualMethod residualMethod : ResidualMethod.values()) {
+
       if (residualMethodCheck.equals(residualMethod.toString())) {
-        
-        residualMethodWanted = residualMethod;
+
+        residualMethodWanted= residualMethod;
         //staticLog.debug("FMResidualFactory  Will use WL residual errors computation method: "+residualMethod
         // .toString() );
-        
         break;
       }
     }
-    
+
     if (residualMethodWanted == null) {
-      staticLog.error("FMResidualFactory getResidualMethod: Invalid ResidualMethod -> " + residualMethodCheck);
-      throw new RuntimeException("FMResidualFactory getResidualMethod");
+
+      slog.error(mmi+"Invalid ResidualMethod -> " + residualMethodCheck);
+      throw new RuntimeException(mmi+"Cannot update forecast !!");
     }
-    
+
     return residualMethodWanted;
   }
-  
+
   /**
    * @param pstrWLStationTimeNode : A WLStationTimeNode object which is just before in time compared to the
    *                              SecondsSinceEpoch sse object time-stamp.
@@ -222,65 +248,66 @@ abstract public class FMSResidualFactory extends FMSLongTermSurge implements IFM
    * @param fmwlStation           : A FMWLStation object used in the processing computations.
    * @return A new processed WLStationTimeNode which can be used subsequently later.
    */
-  @NotNull
-  protected static final WLStationTimeNode processFMSWLStation(@NotNull final WLStationTimeNode pstrWLStationTimeNode,
-                                                               @NotNull final SecondsSinceEpoch sse,
-                                                               @Min(0) final long sseFutureThreshold,
-                                                               @NotNull final FMSWLStation fmwlStation) {
-    final String stationCode = fmwlStation.getStationCode();
-    
-    final String dts = sse.dateTimeString(true);
-    
-    staticLog.debug("FMResidualFactory processFMSWLStation Start: stationCode=" + stationCode + ", sse dts=" + dts);
-    staticLog.debug("FMResidualFactory processFMSWLStation Start: psr=" + pstrWLStationTimeNode);
-    staticLog.debug("FMResidualFactory processFMSWLStation Start: sseFutureThreshold dt=" + SecondsSinceEpoch.dtFmtString(sseFutureThreshold, true));
-    staticLog.debug("FMResidualFactory processFMSWLStation Start: station.lastWLOSse dt=" + SecondsSinceEpoch.dtFmtString(fmwlStation.lastWLOSse, true));
-    
-    final long seconds = sse.seconds();
-    
-    final FMSWLMeasurement[] stationMeasurementsRef =
-        FMSWLMeasurement.getMeasurementsRefs(fmwlStation.getDataReferences(seconds),
-            new FMSWLMeasurement[WLType.values().length]);
-    
-    final boolean stillGotWLOs = (seconds <= fmwlStation.lastWLOSse);
-    
-    final WLStationTimeNode wlstn = fmwlStation.residual.processWLStationTimeNode(stationCode, stillGotWLOs,
+  //@NotNull
+  protected static final WLStationTimeNode processFMSWLStation(/*@NotNull*/ final WLStationTimeNode pstrWLStationTimeNode,
+                                                               /*@NotNull*/ final SecondsSinceEpoch sse,
+                                                               /*@Min(0)*/  final long sseFutureThreshold,
+                                                               /*@NotNull*/ final FMSWLStation fmwlStation) {
+    final String mmi= "processFMSWLStation: ";
+
+    final String stationId= fmwlStation.getStationId();
+
+    final String dts= sse.dateTimeString(true);
+
+    slog.info(mmi+"start: stationId=" + stationId + ", sse dts=" + dts);
+    slog.info(mmi+"psr=" + pstrWLStationTimeNode);
+    slog.info(mmi+"sseFutureThreshold dt=" + SecondsSinceEpoch.dtFmtString(sseFutureThreshold, true));
+    slog.info(mmi+"station.lastWLOSse dt=" + SecondsSinceEpoch.dtFmtString(fmwlStation.lastWLOSse, true));
+
+    final long seconds= sse.seconds();
+
+    final FMSWLMeasurement[] stationMeasurementsRef= FMSWLMeasurement.
+      getMeasurementsRefs(fmwlStation.getDataReferences(seconds), new FMSWLMeasurement[WLType.values().length]);
+
+    final boolean stillGotWLOs= (seconds <= fmwlStation.lastWLOSse);
+
+    final WLStationTimeNode wlstn = fmwlStation.residual.
+      processWLStationTimeNode(stationCode, stillGotWLOs,
         fmwlStation.residual.newFMSTimeNode(pstrWLStationTimeNode, sse, stationMeasurementsRef));
-    
+
     if (seconds >= sseFutureThreshold) {
-      
-      staticLog.debug("FMResidualFactory processFMSWLStation: seconds>=sseFutureThreshold: updating station: " + stationCode + " forecast.");
-      
-      if (fmwlStation.useSsf) {
-        
-        staticLog.error("FMResidualFactory processFMSWLStation: The merging of default forecasts with external storm " +
-            "surge forecast not available yet !");
-        throw new RuntimeException("FMResidualFactory processFMSWLStation method");
-        
+
+      slog.debug(mmi+"seconds >= sseFutureThreshold: updating station: " + stationId + " forecast.");
+
+      if (fmwlStation.useFullModelForecast) {
+
+        //  slog.error("FMResidualFactory processFMSWLStation: The merging of default forecasts with external storm " +
+        //      "surge forecast not available yet !");
+        //  throw new RuntimeException("FMResidualFactory processFMSWLStation method");
         //--- Uncomment the following two lines when the merge of the default forecast with an external storm surge
         // forecast will be implemented.
-//                staticLog.debug("FMResidualFactory processFMSWLStation: Merging stand-alone forecast with external
-//                storm surge forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
-//                station.mergeWithSSF(seconds,sseFutureThreshold,wlstn);
+        slog.info(mmi+"Merging the QC forecast with a full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true) );
+
+        fmwlStation.mergeWithFullModelForecast( seconds, sseFutureThreshold, wlstn);
       }
-      
+
       //--- Populate the updated WL forecasts data.
       fmwlStation.updatedForecastData.add(wlstn.getUpdatedForecast());
-      
+
       //--- block for testing purposes:
       //if (seconds%3600L==0) {
       ////if (seconds==(sseFutureThreshold+7200L)) {
 //            staticLog.debug("FMResidualFactory processFMSWLStation: System.exit(0)");
 //            System.exit(0);
       //}
-      
+
     }
-    
-    staticLog.debug("FMResidualFactory processFMSWLStation end: stationCode=" + stationCode + ", sse dts=" + dts);
-    
+
+    slog.info(mmi+"end: stationId=" + stationId + ", sse dts=" + dts);
+
     return wlstn;
   }
-  
+
   /**
    * @param residualMethodCheck    : A String representing the residual method wanted.
    * @param forecastingContextList : A List(min. size==1) of ForecastingContext object(s).
@@ -289,11 +316,11 @@ abstract public class FMSResidualFactory extends FMSLongTermSurge implements IFM
    */
   protected static final boolean validateStationsFMSConfigParameters(@NotNull final String residualMethodCheck,
                                                                      @NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
-    
+
     boolean ret = true;
-    
+
     final ResidualMethod residualMethodWanted = getResidualMethod(residualMethodCheck);
-    
+
     switch (residualMethodWanted) {
       
       case LEGACY:

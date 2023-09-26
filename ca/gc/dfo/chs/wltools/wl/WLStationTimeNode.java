@@ -57,14 +57,16 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
 
   //protected EnumMap<WLType,WLMeasurement> data= new EnumMap<>(WLType.class);
   /**
-   * A reference to an already existing array of WLMeasurement[PREDICTION, OBSERVATION, FORECAST or EXT_STORM_SURGE
+   * A reference to an already existing array of WLMeasurement[PREDICTION, OBSERVATION, QC_FORECAST or MODEL_FORECAST
    * (if any)] objects.
    */
-  protected WLMeasurement[] dbData = null;
+  protected WLMeasurement[] wlmData= null;
+
   /**
    * ZWL object for storing the computed or estimated residual surge component.
    */
-  protected WLZE surge = null;
+  protected WLZE surge= null;
+
   /**
    * Measurement object for storing the updated forecasted WL value for a given time-stamp.
    */
@@ -72,8 +74,10 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
 
   public WLStationTimeNode() {
 
-    this.dbData = null;
+    this.wlmData = null;
+
     this.surge = new WLZE(0.0, 0.0);
+
     this.updatedForecast = null;
   }
 
@@ -104,12 +108,12 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
    *                compared to the SecondsSinceEpoch argument.
    * @param sse:    An already existing SecondsSinceEpoch object containing the UTC time-stamp since the epoch for this
    *                WLStationTimeNode object.
-   * @param dbData: An already existing array of WLMeasurement type containing the references to PREDICTION,
+   * @param wlmData: An already existing array of WLMeasurement type containing the references to PREDICTION,
    *                OBSERVATION, FORECAST or EXT_STORM_SURGE WL data.
    */
   public WLStationTimeNode(final WLStationTimeNode pstr,
                            /*@NotNull*/ final SecondsSinceEpoch sse,
-                           /*@NotNull*/ final WLMeasurement[] dbData) {
+                           /*@NotNull*/ final WLMeasurement[] wlmData) {
 
     super(sse, pstr, null);
 
@@ -123,9 +127,10 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
     //}
 
     //--- RECALL: this.dbData is just a reference to na already existing array of WLMeasurement objects:
-    this.dbData = dbData;
+    this.wlmata= wlmData;
 
     this.updatedForecast = null;
+
     this.surge = new WLZE(0.0, 0.0);
   }
 
@@ -138,21 +143,21 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
   //@NotNull
   public final boolean checkTimeSync() {
 
-    final long prdSse = this.dbData[PREDICTION].seconds();
+    final long prdSse= this.wlmData[PREDICTION].seconds();
 
-    boolean ret = true; //( (prdSse == this.data[FORECAST].seconds()) && (prdSse == this.data[EXT_STORM_SURGE]
+    boolean ret= true; //( (prdSse == this.data[FORECAST].seconds()) && (prdSse == this.data[EXT_STORM_SURGE]
     // .seconds()) );
 
-    if (this.dbData[OBSERVATION].measurement != null) {
-      ret= (ret && (prdSse == this.dbData[OBSERVATION].seconds()));
+    if (this.wlmData[OBSERVATION].measurement != null) {
+      ret= (ret && (prdSse == this.wlmData[OBSERVATION].seconds()));
     }
 
-    if (this.dbData[FORECAST].measurement != null) {
-      ret= (ret && (prdSse == this.dbData[FORECAST].seconds()));
+    if (this.wlmData[QC_FORECAST].measurement != null) {
+      ret= (ret && (prdSse == this.wlmData[QC_FORECAST].seconds()));
     }
 
-    if (this.dbData[EXT_STORM_SURGE].measurement != null) {
-      ret= (ret && (prdSse == this.dbData[EXT_STORM_SURGE].seconds()));
+    if (this.wlmData[MODEL_FORECAST].measurement != null) {
+      ret= (ret && (prdSse == this.dbData[MODEL_FORECAST].seconds()));
     }
 
     ret= (ret && (this.sse.seconds() == prdSse));
@@ -164,12 +169,12 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
    * Return the WLMeasurement wanted according to the WLType argument provided that the underlying wrapped
    * Measurement object is not null.
    *
-   * @param type WLType PREDICTION, OBSERVATION, FORECAST or EXT_STORM_SURGE
+   * @param type WLType PREDICTION, OBSERVATION, QC_FORECAST or MODEL_FORECAST
    * @return the WLMeasurement object  wanted according to the WLType argument.
    */
   final public WLMeasurement get(/*@NotNull*/ final WLType type) {
 
-    final WLMeasurement checkIt = this.dbData[type.ordinal()];
+    final WLMeasurement checkIt= this.wlmData[type.ordinal()];
 
     return (checkIt.measurement != null) ? checkIt : null;
   }
@@ -196,13 +201,13 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
    * @return double : the surge computed with the FORECAST data
    */
   //@NotNull
-  public final double getWlfSurge() {
+  public final double getQCFSurge() {
 
     //this.log.debug("this.dbData[FORECAST]="+this.dbData[FORECAST]);
     //this.log.debug("this.dbData[PREDICTION]="+this.dbData[PREDICTION]);
 
-    return this.surge.setZw(this.dbData[FORECAST].getDoubleZValue() -
-                            this.dbData[PREDICTION].getDoubleZValue());
+    return this.surge.setZw(this.dbData[QC_FORECAST].getDoubleZValue() -
+                             this.dbData[PREDICTION].getDoubleZValue());
   }
 
   /**
@@ -223,10 +228,10 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
    * @return WLStationTimeNode
    */
   //@NotNull
-  final public WLStationTimeNode mergeSSF(/*@NotNull*/ final StormSurgeWLType stormSurgeWLType, final double ssfWeight) {
+  final public WLStationTimeNode mergeWithFullModelForecast(/*@NotNull*/ final StormSurgeWLType stormSurgeWLType, final double fmfWeight) {
 
     return ( (stormSurgeWLType == StormSurgeWLType.WLSSF_FULL) ?
-             this.mergeFullSSF(ssfWeight) : this.mergeDeTidedSSF(ssfWeight) );
+             this.mergeFullModelForecast(fmfWeight) : this.mergeDeTidedFMF(fmfWeight) );
   }
 
   /**
@@ -236,10 +241,10 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
    * @return WLStationTimeNode
    */
   //@NotNull
-  final private WLStationTimeNode mergeFullSSF(final double ssfWeight) {
+  final private WLStationTimeNode mergeFullModelForecast(final double fmfWeight) {
 
-    final double mergedValue = ((1.0 - ssfWeight) * this.updatedForecast.getValue() +
-                                ssfWeight * this.dbData[EXT_STORM_SURGE].getDoubleZValue());
+    final double mergedValue = ((1.0 - fmfWeight) * this.updatedForecast.getValue() +
+                                fmfWeight * this.wlmData[MODEL_FORECAST].getDoubleZValue());
 
     this.updatedForecast.setValue(mergedValue);
 
@@ -253,11 +258,11 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
    * @return WLStationTimeNode
    */
   //@NotNull
-  final public WLStationTimeNode mergeDeTidedSSF(final double ssfWeight) {
+  final public WLStationTimeNode mergeDeTidedFMF(final double fmfWeight) {
 
     //--- Only need to add time weighted de-tided storm-surge to the forecast signal data:
     final double mergedValue= (this.updatedForecast.getValue() +
-                               ssfWeight * this.dbData[EXT_STORM_SURGE].getDoubleZValue());
+                               fmfWeight * this.dbData[MODEL_FORECAST].getDoubleZValue());
 
     this.updatedForecast.setValue(mergedValue);
 

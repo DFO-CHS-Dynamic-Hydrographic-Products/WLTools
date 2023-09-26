@@ -14,6 +14,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
+import ca.gc.dfo.chs.wltools.wl.fms.IFMSResidual;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData;
@@ -66,16 +67,16 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   /**
    * The time-stamp(seconds since the epoch) used to mark the time of the complete merge of the default WLF-QC
    * (made with prediction data without external storm surge and-or fresh water discharge component) with the
-   *  external storm surge component coming from a full-fledged model that includes atmos. and possibly fresh-water
-   *  discharge effects.
+   *  full model forecast component coming from a full-fledged model that includes atmos. forcings and-or
+   *  fresh-water discharge effects.
    */
-  private long ssfMergeCompleteSse = 0L;
+  private long fmfMergeCompleteSse= 0L;
 
   /**
    * Time weight for  merge of the default forecasts(without external storm surge component)
    * with the external storm surge component(if any).
    */
-  private double tiForecastMergeWeight = 0.0;
+  private double tiForecastMergeWeight= 0.0;
 
   /**
    * @param stationNodeIndex   : The WL station index in the allStationsData List attribute of class FMWLData.
@@ -86,6 +87,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   //}
 
   FMSWLStation(/*@Min(0)*/ final int stationNodeIndex, /*@NotNull*/ final FMSInput fmsInput) {
+
     this(stationNodeIndex, FMSInput, GlobalVerticalDatum.NAVD88, 0.0);
   }
 
@@ -147,7 +149,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
     //--- The time stamp in seconds after which the merge to the storm surge forecast(if any) is complete:
     //this.mergeCompleteSse = forecastingContext.getReferenceTime().getEpochSecond() + mergeDurationSeconds;
-    this.ssfMergeCompleteSse= fmsInput.getReferenceTimeInSeconds() + mergeDurationSeconds;
+    this.fmfMergeCompleteSse= fmsInput.getReferenceTimeInSeconds() + mergeDurationSeconds;
 
     //--- time interpolation weight factor for merging verification forecast with a storm surge forecast(if any).
     this.tiForecastMergeWeight = 1.0 / mergeDurationSeconds;
@@ -234,8 +236,8 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
     FMSWLMeasurement.setMeasurementsRefs(this.getMeasurementType(WLType.PREDICTION, timeStampSeconds),
                                          this.getMeasurementType(WLType.OBSERVATION, timeStampSeconds),
-                                         this.getMeasurementType(WLType.FORECAST, timeStampSeconds),
-                                         this.getMeasurementType(WLType.EXT_STORM_SURGE, timeStampSeconds), this.dataReferences);
+                                         this.getMeasurementType(WLType.QC_FORECAST, timeStampSeconds),
+                                         this.getMeasurementType(WLType.MODEL_FORECAST, timeStampSeconds), this.dataReferences);
 
     //--- this.dataReferences[PREDICTION] object reference should not be null at this point(it is allocated by
     // FMSWLMeasurement.setMeasurementsRefs())
@@ -312,28 +314,28 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 //        return seconds>=this.mergeCompleteSse;
 //    }
 
-  //--- Uncomment the following method when the merge of the default forecast with an external storm surge forecast
-  // will be implemented.
-//    @NotNull
-//    protected final WLStationTimeNode mergeWithSSF(@Min(0) final long seconds, @Min(0) final long sseThreshold,
-//    @NotNull final WLStationTimeNode wlstn) {
-//
-//        this.log.debug("FMWLStationData getWLStationFMTimeNode: Merging stand-alone forecast with external storm
-//        surge forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
-//
-//        if (seconds < this.mergeCompleteSse) {
-//
-//            final double ssfWeight= this.tiForecastMergeWeight * (seconds - sseThreshold);
-//            this.log.debug("FMWLStationData getWLStationFMTimeNode: merge dt=" + SecondsSinceEpoch.dtFmtString
-//            (seconds, true) + ", ssfWeight=" + ssfWeight);
-//
-//            wlstn.mergeSSF(this.ssfType, ssfWeight);
-//        } else {
-//
-//            wlstn.mergeSSF(this.ssfType, 1.0);
-//        }
-//
-//        return wlstn;
-//    }
+  //---
+  // @NotNull
+  protected final WLStationTimeNode mergeWithFullModelForecast(/*@Min(0)*/  final long seconds,
+                                                               /*@Min(0)*/  final long fmfThreshold
+                                                               /*@NotNull*/ final WLStationTimeNode wlstn) {
+    final String mmi= "mergeWithFullModelForecast: ";
 
+    slog.info(mmi+"Merging QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+
+    if (seconds < this.fmfMergeCompleteSse) {
+
+      final double fmfWeight= this.tiForecastMergeWeight * (seconds - fmfThreshold);
+
+      slog.info(mmi+"merge dt="+SecondsSinceEpoch.dtFmtString (seconds, true)+", fmfWeight=" + fmfWeight);
+
+      wlstn.mergeWithFullModelForecast(this.ssfType, fmfWeight);
+
+    } else {
+
+      wlstn.mergeWithFullModelForecast(this.ssfType, 1.0);
+    }
+
+    return wlstn;
+  }
 }
