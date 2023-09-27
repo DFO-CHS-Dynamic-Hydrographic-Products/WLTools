@@ -38,7 +38,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData;
  */
 final public class FMSWLData implements IFMS, ITidal, ITidalIO {
 
-  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms";
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLData";
 
   /**
    * log utility.
@@ -117,11 +117,12 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
 
     this.referenceSse= fmsInputList.get(0).getReferenceTimeInSeconds(); //forecastingContextList.get(0).getReferenceTime().getEpochSecond();
 
-    slog.info(mmi+"this.referenceSse date-time is: " + SecondsSinceEpoch.dtFmtString(this.referenceSse, true));
+    slog.info(mmi+"this.referenceSse date-time is: "+
+              SecondsSinceEpoch.dtFmtString(this.referenceSse, true));
 
-    this.allStationsData = new ArrayList<FMSWLStation>(fmsInputList.size());
+    this.allStationsData= new ArrayList<FMSWLStation>(fmsInputList.size());
 
-    this.wlsnaTmp = new ArrayList<WLStationTimeNode>(fmsInputList.size());
+    this.wlsnaTmp= new ArrayList<WLStationTimeNode>(fmsInputList.size());
 
     this.populateFMSWLStationsData(fcstsTimeIncrMinutes, fmsInputList); //forecastingContextList);
 
@@ -169,7 +170,7 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
 
       slog.info(mmi+"fmsConfig.size()>1: Need to validate FMSConfig items with each other.");
 
-      if (! FMSResidualFactory.validateStationsFMSConfigParameters(residualMethod, fmsConfigList)) { // forecastingContextList)) {
+      if (! FMSResidualFactory.validateStationsFMSConfig(residualMethod, (List<FMSConfig>) fmsInputList)) { // forecastingContextList)) {
 
         slog.error(mmi+"fmsConfigList items validation failed");
         throw new RuntimeException(mmi+"Cannot update forecast !");

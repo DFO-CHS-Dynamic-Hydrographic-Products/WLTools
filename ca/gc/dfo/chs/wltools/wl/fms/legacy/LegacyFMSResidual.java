@@ -1,29 +1,39 @@
-package ca.gc.dfo.iwls.fmservice.modeling.fms.legacy;
+//package ca.gc.dfo.iwls.fmservice.modeling.fms.legacy;
+package ca.gc.dfo.chs.wltools.wl.fms.legacy;
 
 /**
  *
  */
 
-//--
+import java.util.List;
 
-import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-import ca.gc.dfo.iwls.fmservice.modeling.fms.FMSResidualFactory;
-import ca.gc.dfo.iwls.fmservice.modeling.fms.FMSWLMeasurement;
-import ca.gc.dfo.iwls.fmservice.modeling.fms.IFMSResidual;
-import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
-import ca.gc.dfo.iwls.modeling.fms.FmsParameters;
-import ca.gc.dfo.iwls.modeling.fms.Forecast;
-import ca.gc.dfo.iwls.modeling.fms.Residual;
-import ca.gc.dfo.iwls.modeling.fms.TidalRemnant;
-import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.List;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
+import ca.gc.dfo.chs.wltools.wl.fms.IFMSResidual;
+import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSTidalRemnantConfig;
+import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSResidualFactory;
+//--
+//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
+//import ca.gc.dfo.iwls.fmservice.modeling.fms.FMSResidualFactory;
+//import ca.gc.dfo.iwls.fmservice.modeling.fms.FMSWLMeasurement;
+//import ca.gc.dfo.iwls.fmservice.modeling.fms.IFMSResidual;
+//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
+//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
+//import ca.gc.dfo.iwls.modeling.fms.FmsParameters;
+//import ca.gc.dfo.iwls.modeling.fms.Forecast;
+//import ca.gc.dfo.iwls.modeling.fms.Residual;
+//import ca.gc.dfo.iwls.modeling.fms.TidalRemnant;
+//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+//import javax.validation.constraints.Min;
+//import javax.validation.constraints.NotNull;
+//import javax.validation.constraints.Size;
 
 //---
 //---
@@ -35,77 +45,81 @@ import java.util.List;
  * i.e. with or without a WL tidal remnant component.
  */
 final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
-  
+
+  private static final String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSResidual";
+
   /**
    * static log utility.
    */
-  private static final Logger staticLog = LoggerFactory.getLogger("LegacyFMResidual");
-  /**
-   * log utility.
-   */
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private static final Logger slog= LoggerFactory.getLogger(whoAmI);
+
   /**
    * Generic Legacy errors residuals object(could be a LegacyResidual or a TidalRemnantResidual object)
    */
-  protected LegacyFMSResidualFactory residual = null;
-  
+  protected LegacyFMSResidualFactory residual= null;
+
   //--- For possible future usage.
-//    public LegacyFMResidual() {
-//        super();
-//    }
-  
+  //    public LegacyFMResidual() {
+  //        super();
+  //    }
+
   /**
    * Validate all the ForecastingContext configuration objects in the List forecastingContextsList.
    *
-   * @param forecastingContextsList : A List of ForecastingContext configuration objects.
-   * @return true if all the ForecastingContext configuration objects are ok, false otherwise.
+   * @param fmsConfigList : A List of FMSConfig objects.
+   * @return true if all the FMSConfig objects are ok, false otherwise.
    */
-  public final static boolean validateFMConfigParameters(@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextsList) {
-    
-    boolean ret = true;
-    
-    final ForecastingContext fc0 = forecastingContextsList.get(0);
-    
-    final String referenceStationCode = fc0.getStationCode();
-    
-    final FmsParameters fm0 = fc0.getFmsParameters();
-    final Forecast fs0 = fm0.getForecast();
-    
-    final Residual rs0 = fm0.getResidual();
-    
-    TidalRemnant tr0 = fm0.getTidalRemnant();
-    
+  //public final static boolean validateFMSConfig(@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextsList) {
+  public final static boolean validateFMSConfig(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) [
+
+    final String mmi= "validateFMSConfig; ";
+
+    slog.info(mmi+"start");
+
+    boolean ret= true;
+
+    //final ForecastingContext fc0 = forecastingContextsList.get(0);
+    final FMSConfig fc0= fmsConfigList.get(0);
+
+    final String referenceStationId= fc0.getStationId();
+
+    //final FmsParameters fm0 = fc0.getFmsParameters();
+    //final Forecast fs0 = fm0.getForecast();
+
+    final FMSResidualConfig rs0= fc0.getFMSResidualConfig();
+
+    FMSTidalRemnantConfig tr0= fc0.getFMSTidalRemnantConfig();
+
     //--- begin at item 1 to avoid comparing reference station with itself.
-    for (final ForecastingContext fc : forecastingContextsList.subList(1, forecastingContextsList.size())) {
-      
-      final String stationCode = fc.getStationCode();
-      
-      final FmsParameters fm = fc.getFmsParameters();
-      final Forecast fs = fm.getForecast();
-      final Residual rs = fm.getResidual();
-      
+    //for (final ForecastingContext fc: forecastingContextsList.subList(1, forecastingContextsList.size())) {
+    for (final FMSConfig fc: fmsConfigList.subList(1, fmsConfigList.size())) {
+
+      final String stationId= fc.getStationId();
+
+      //final FmsParameters fm = fc.getFmsParameters();
+      //final Forecast fs = fm.getForecast();
+      final FMSResidualConfig rs= fc.getFMSResidualConfig();
+
       //--- Check if we have a duplicate ForecastingContext
-      if (stationCode.equals(referenceStationCode)) {
-        
-        staticLog.error("LegacyFMResidual validateFMConfigParameters: Found a ForecastingContext duplicate for " +
-            "station: " + stationCode);
-        ret = false;
+      if (stationId.equals(referenceStationId)) {
+
+        slog.error(mmi+"Found a ForecastingContext duplicate for station: " + stationId);
+        ret= false;
         break;
       }
-      
-      if (fs.getDeltaTMinutes() != fs0.getDeltaTMinutes()) {
-        
-        staticLog.error("LegacyFMResidual validateFMConfigParameters: Must have the same Forecast deltaT minutes " +
-            "for all ForecastingContexts, station in error: " + stationCode);
-        ret = false;
+
+      if (fc.getDeltaTMinutes() != fc0.getDeltaTMinutes()) {
+
+        slog.error(mmi+"Must have the same deltaT minutes for all FMSCnnfig objects, station in error: " + stationId);
+        ret= false;
         break;
       }
-      
-      if (fs.getDurationHours() != fs0.getDurationHours()) {
-        
-        staticLog.error("LegacyFMResidual validateFMConfigParameters:  Must have the same Forecast duration hours " +
-            "for all ForecastingContexts, station in error: " + stationCode);
-        ret = false;
+
+      if (fc.getDurationHours() != fc0.getDurationHours()) {
+
+        slog.error(mmi+"Must have the same Forecast duration hours for all FMSCnnfig objects, station in error: " + stationId);
+        ret= false;
         break;
       }
 
@@ -115,93 +129,89 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 //                ret= false;
 //                break;
 //            }
-      
+
       if (rs.getTauHours() != rs0.getTauHours()) {
-        
-        staticLog.error("LegacyFMResidual validateFMConfigParameters: Must have the same Residual tau hours for " +
-            "all ForecastingContexts, station in error: " + stationCode);
-        ret = false;
+
+        slog.error(mmi+"Must have the same Residual tau hours for all FMSCnnfig objects, station in error: " + stationId);
+        ret= false;
         break;
       }
-      
+
       if (rs.getDeltaTMinutes() != rs0.getDeltaTMinutes()) {
-        
-        staticLog.error("LegacyFMResidual validateFMConfigParameters: Must have the same Residual deltaT minutes for " +
-            "all ForecastingContexts, station in error: " + stationCode);
-        ret = false;
+
+        slog.error(mmi+"Must have the same Residual deltaT minutes for all ForecastingContexts, station in error: " + stationId);
+        ret= false;
         break;
       }
     }
-    
+
     //--- Validate TidalRemnant parameters(if any)
     //     (tr0 could be null at this point)
     if (tr0 == null) {
-      
+
       //--- Try to find a non-null TidalRemnant Object:
-      for (final ForecastingContext fc : forecastingContextsList) {
-        
-        if ((tr0 = fc.getFmsParameters().getTidalRemnant()) != null) {
+      //for (final ForecastingContext fc : forecastingContextsList) {
+      for (final FMSConfig fc : fmsConfigList) {
+
+        if ((tr0= fc.getFMSTidalRemnantConfig()) != null) {
           break;
         }
       }
     }
-    
+
     if (tr0 != null) {
-      
-      staticLog.debug("LegacyFMResidual validateFMConfigParameters: Found a non-null TidalRemnant, validate it with " +
-          "other TidalRemnant configs. if any");
-      
-      for (final ForecastingContext fc : forecastingContextsList) {
-        
-        final TidalRemnant tr = fc.getFmsParameters().getTidalRemnant();
-        
+
+      slog.info(mmi+"Found a non-null FMSTidalRemnantConfig object, validate it with other FMSTidalRemnantConfig objects (if any)");
+
+      //for (final ForecastingContext fc : forecastingContextsList) {
+      for (final FMSConfig fc : fmsConfigList) {
+
+        final FMSTidalRemnantConfig tr= fc.getFMSTidalRemnantConfig();
+
         if (tr != null) {
-          
-          final String stationCode = fc.getStationCode();
-          
+
+          final String stationId= fc.getStationId();
+
           if (tr.getTauHours() != tr0.getTauHours()) {
-            
-            staticLog.error("LegacyFMResidual validateFMConfigParameters: Must have the same TidalRemnant tau hours " +
-                "for " +
-                "all ForecastingContexts, station in error: " + stationCode);
-            ret = false;
+
+            slog.error(mmi+"Must have the same FMSTidalRemnantConfig tau hours for all FMSConfig objects, station in error: " + stationId);
+            ret= false;
             break;
           }
-          
+
           if (tr.getDeltaTMinutes() != tr0.getDeltaTMinutes()) {
-            
-            staticLog.error("LegacyFMResidual validateFMConfigParameters: Must have the same TidalRemnant deltaT " +
-                "minutes for all ForecastingContexts, station in error: " + stationCode);
-            ret = false;
+
+            slog.error(mmi+"Must have the same FMSTidalRemnantConfig deltaT minutes for all FMSConfig objects, station in error: " + stationId);
+            ret= false;
             break;
           }
         }
       }
     }
-    
+
     return ret;
   }
-  
+
   /**
    * @return this.residual as a generice FMSResidualFactory object regardless of its sub-type.
    */
-  @NotNull
-  @Override
+  //@NotNull
+  //@Override
   public final FMSResidualFactory getFMSResidualFactory() {
     return this.residual;
   }
-  
+
   /**
    * @param forecastingContext : A ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext object.
    * @param lastWLOSse         : The time-stamp(seconds since the epoch) of the last valid WLO available for the
    *                           station.
    * @return this as a generic IFMSResidual type object.
    */
-  @NotNull
-  @Override
-  public final IFMSResidual getIFMSResidual(@NotNull final ForecastingContext forecastingContext,
-                                            @Min(0) final long lastWLOSse) {
-    
+  //@NotNull
+  //@Override
+  public final IFMSResidual getIFMSResidual(final FMSConfig fmsConfig, ///*@NotNull*/ final ForecastingContext forecastingContext,
+                                            /*@Min(0)*/ final long lastWLOSse) {
+
     this.log.debug("LegacyFMResidual getIFMSResidual: Start");
     
     //this.init();

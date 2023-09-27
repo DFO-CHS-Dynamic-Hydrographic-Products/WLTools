@@ -114,7 +114,8 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     this.nbMissingWLO = 0;
 
-    slog.info(mmi+"this.stationCode=" + this.stationCode + ", this.residualMethod=" + this.residualMethod);
+    slog.info(mmi+"this.stationCode=" +this.stationCode+
+              ", this.residualMethod=" + this.residualMethod);
   }
 
   final String getStationId() {
@@ -314,37 +315,91 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
    * @return true if the relevant configuration data of the ForecastingContext object(s) is(are) ready to use, false
    * otherwise.
    */
-  protected static final boolean validateStationsFMSConfigParameters(@NotNull final String residualMethodCheck,
-                                                                     @NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
+  protected static final boolean validateStationsFMSConfig(/*@NotNull*/ final String residualMethodCheck,
+                                                           /*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
+                                                           ///*@NotNull @Size(min = 1)*/ final List<ForecastingContext> forecastingContextList) {
 
-    boolean ret = true;
+    final String mmi= "validateStationsFMSConfig: ";
 
-    final ResidualMethod residualMethodWanted = getResidualMethod(residualMethodCheck);
+    boolean ret= true;
+
+    final ResidualMethod residualMethodWanted= getResidualMethod(residualMethodCheck);
 
     switch (residualMethodWanted) {
-      
+
       case LEGACY:
-        
-        LegacyFMSResidual.validateFMConfigParameters(forecastingContextList);
+
+        LegacyFMSResidual.validateFMSConfig(fmsConfigList);
+        //LegacyFMSResidual.validateFMConfigParameters(forecastingContextList);
         break;
 
 //            case SPECTRAL_NUDGING:
 //
 //                ret= new SpectralNudgingResidual.validateFMConfigParameters(fcList);
 //                break;
-      
+
       default:
-        
-        staticLog.error("FMResidualFactory validateStationsFMSConfigParameters: Invalid ResidualMethod type -> " + residualMethodCheck);
-        throw new RuntimeException("FMResidualFactory validateStationsFMSConfigParameters method");
-        
+
+        slog.error(mmi+"Invalid ResidualMethod type -> " + residualMethodCheck);
+        throw new RuntimeException(mmi+"method");
+
         //---
         //break;
     }
-    
+
     return ret;
   }
-  
+
+  /**
+   * @param seconds : The time-stamp lag in seconds of the past at which we want a stored WLStationTimeNode.
+   * @return The wanted WLStationTimeNode object which is at is time lag seconds if found, null object otherwise
+   * NOTE: The client method must then check for a null return.
+   */
+  protected final WLStationTimeNode getLagFMSWLStationTimeNode(/*@Min(0)*/ final long seconds) {
+
+    final String mmi= "getLagFMSWLStationTimeNode: ";
+
+    slog.info(mmi+"this.stationId=" + this.stationId + ", seconds " + "dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+
+    slog.info(mmi+"this.lastLagNodeAdded=" + this.lastLagNodeAdded);
+
+    if (this.lastLagNodeAdded != null) {
+      slog.info(mmi+"this.lastLagNodeAdded dt=" + this.lastLagNodeAdded.getSse().dateTimeString(true));
+    }
+
+    //--- NOTE: Using recursive function findInPastR(seconds) of class TimeNodeFactory.
+    return (this.lastLagNodeAdded != null) ? (WLStationTimeNode) this.lastLagNodeAdded.findInPastR(seconds) : null;
+  }
+
+  /**
+   * @return this.nbMissingWLO
+   */
+  public final int getNbMissingWLO() {
+    return this.nbMissingWLO;
+  }
+
+  /**
+   * @return The current number of missing WLOs data.
+   */
+  public final int incrNbMissingWLO() {
+    return (++this.nbMissingWLO);
+  }
+
+  /**
+   * @param stationId     : The usual SINECO station String Id.
+   * @param residualsList : A List(min. size ==1) of IFMResidual to use to properly set the temporal WL errors
+   *                      covariance data structure(s).
+   * @return The FMResidualFactory object itself.
+   */
+  //@NotNull
+  public final FMSResidualFactory setAuxCovsResiduals(/*@NotNull*/ final String stationId,
+                                                      /*@NotNull @Size(min = 1)*/ final List<IFMSResidual> residualsList) {
+
+    this.covData.setAuxCovsResiduals(stationId, residualsList);
+
+    return this.setupCheck();
+  }
+
   /**
    * @param pstrWLStationTimeNode : A WLStationTimeNode object which is just before in time compared to the
    *                              SecondsSinceEpoch sse object time-stamp.
@@ -354,18 +409,17 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
    *                              NULL)) objects.
    * @return A new WLStationTimeNode object ready to be used.
    */
-  @NotNull
+  //@NotNull
   abstract public WLStationTimeNode getFMSTimeNode(final WLStationTimeNode pstrWLStationTimeNode,
-                                                   @NotNull final SecondsSinceEpoch sse,
-                                                   @NotNull @Size(min = 4) final FMSWLMeasurement[] data);
-  
+                                                   /*@NotNull*/ final SecondsSinceEpoch sse,
+                                                   /*@NotNull @Size(min = 4)*/ final FMSWLMeasurement[] data);
   /**
    * @return The time-stamp seconds of the 1st WL data time-stamp in the past used by the residual method(it can vary
    * depending on the method used).
    */
-  @Min(0)
+  /*@Min(0)*/
   abstract public long getSseStart();
-  
+
   /**
    * Do the setup of the residual method before starting the computations.
    *
@@ -377,61 +431,13 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
    * depending on the method used).
    */
   abstract public long setup(final long lastWLOSse,
-                             @NotNull @Size(min = 1) final List<MeasurementCustom> predictionsMeasurementsList);
-  
-  /**
-   * @param seconds : The time-stamp lag in seconds of the past at which we want a stored WLStationTimeNode.
-   * @return The wanted WLStationTimeNode object which is at is time lag seconds if found, null object otherwise
-   * NOTE: The client method must then check for a null return.
-   */
-  protected final WLStationTimeNode getLagFMSWLStationTimeNode(@Min(0) final long seconds) {
-    
-    this.log.debug("FMResidualFactory getLagFMSWLStationTimeNode: this.stationCode=" + this.stationCode + ", seconds " +
-        "dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
-    this.log.debug("FMResidualFactory getLagFMSWLStationTimeNode: this.lastLagNodeAdded=" + this.lastLagNodeAdded);
-    
-    if (this.lastLagNodeAdded != null) {
-      this.log.debug("FMResidualFactory getLagFMSWLStationTimeNode: this.lastLagNodeAdded dt=" + this.lastLagNodeAdded.getSse().dateTimeString(true));
-    }
-    
-    //--- NOTE: Using recursive function findInPastR(seconds) of class TimeNodeFactory.
-    return (this.lastLagNodeAdded != null) ? (WLStationTimeNode) this.lastLagNodeAdded.findInPastR(seconds) : null;
-  }
-  
-  /**
-   * @return this.nbMissingWLO
-   */
-  public final int getNbMissingWLO() {
-    return this.nbMissingWLO;
-  }
-  
-  /**
-   * @return The current number of missing WLOs data.
-   */
-  public final int incrNbMissingWLO() {
-    return (++this.nbMissingWLO);
-  }
-  
-  /**
-   * @param stationId     : The usual SINECO station String Id.
-   * @param residualsList : A List(min. size ==1) of IFMResidual to use to properly set the temporal WL errors
-   *                      covariance data structure(s).
-   * @return The FMResidualFactory object itself.
-   */
-  @NotNull
-  public final FMSResidualFactory setAuxCovsResiduals(@NotNull final String stationId,
-                                                      @NotNull @Size(min = 1) final List<IFMSResidual> residualsList) {
-    
-    this.covData.setAuxCovsResiduals(stationId, residualsList);
-    
-    return this.setupCheck();
-  }
-  
+                             /*@NotNull @Size(min = 1)*/ final List<MeasurementCustom> predictionsMeasurementsList);
+
   /**
    * Check the residual method setup before starting the computations.
    *
    * @return The FMResidualFactory object.
    */
-  @NotNull
+  //@NotNull
   abstract public FMSResidualFactory setupCheck();
 }
