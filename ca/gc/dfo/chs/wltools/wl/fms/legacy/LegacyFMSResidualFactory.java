@@ -1,17 +1,22 @@
-package ca.gc.dfo.iwls.fmservice.modeling.fms.legacy;
+//package ca.gc.dfo.iwls.fmservice.modeling.fms.legacy;
+package ca.gc.dfo.chs.wltools.wl.fms.legacy;
 
 /**
- * Created by Gilles Mercier on 2017-12-06.
+ * Created by G. Mercier on 2017-12-06.
+ * Adapted-modified for the Spine 2.0 API system by Mercier on 2023-09-28.
  */
 
-//---
-
-import ca.gc.dfo.iwls.fmservice.modeling.fms.FMSResidualFactory;
-import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
+import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
+
+/////---
+//import ca.gc.dfo.iwls.fmservice.modeling.fms.FMSResidualFactory;
+//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
+//import javax.validation.constraints.NotNull;
 
 //---
 //---
@@ -22,27 +27,33 @@ import javax.validation.constraints.NotNull;
  * FMSResidualFactory but it could be used to extend it if there is a need to do so.
  */
 abstract public class LegacyFMSResidualFactory extends FMSResidualFactory implements ILegacyFMSResidual {
-  
+
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy";
+
   /**
    * log utility
    */
-  private final Logger log = LoggerFactory.getLogger(this.getClass());
-  
+  private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+
   /**
-   * @param stationCode : A WL station usual SINECO string ID.
+   * @param stationCode : CHS TG station Id.
    */
-  public LegacyFMSResidualFactory(@NotNull final String stationCode) {
-    super(stationCode, ResidualMethod.LEGACY);
+  public LegacyFMSResidualFactory(/*@NotNull*/ final String stationId) {
+
+    super(stationId, ResidualMethod.LEGACY);
   }
-  
+
   /**
    * @param newLagNode : New WLStationTimeNode to use as the last lag node.
-   * @return The WLStationTimeNode object.
+   * @return this.lastLagNodeAdded (WLStationTimeNode) object.
    */
   protected final WLStationTimeNode udpateLagNode(final WLStationTimeNode newLagNode) {
-    
-    this.log.debug("LegacyFMResidualFactory udpateLagNode: newLagNode=" + newLagNode + ", newLagNode dt=" + newLagNode.getSse().dateTimeString(true));
-    
-    return (this.lastLagNodeAdded = newLagNode);
+
+    final String mmi= "udpateLagNode: ";
+
+    slog.info(mmi+"newLagNode=" + newLagNode +
+              ", newLagNode dt=" + newLagNode.getSse().dateTimeString(true));
+
+    return (this.lastLagNodeAdded= newLagNode);
   }
 }
