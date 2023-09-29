@@ -1,6 +1,7 @@
 //package ca.gc.dfo.iwls.fmservice.modeling.wl;
 package ca.gc.dfo.chs.wltools.wl;
 
+import javax.json.JsonObject;
 
 /**
  *
@@ -20,5 +21,5 @@ public interface IWLLocation {
 
   String INFO_JSON_DICT_KEY= "channelGridPointInfo"; // --- The json dict key for the station info dict
 
-  abstract public IWLLocation setConfig(final JsonObject );
+  abstract public IWLLocation setConfig(final JsonObject jsonObject);
 }

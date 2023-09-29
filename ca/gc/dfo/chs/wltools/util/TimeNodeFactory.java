@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
  */
 abstract public class TimeNodeFactory implements ITimeMachine {
 
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.util.TimeNodeFactory";
+
   /**
    * Private static Logger
    */
@@ -187,11 +189,11 @@ abstract public class TimeNodeFactory implements ITimeMachine {
   //public final TimeNodeFactory findInPastR(@Min(0) final long seconds) {
   public final TimeNodeFactory findInPastR(final long seconds) {
 
-   final String mmi= "findInPastR: "
+    final String mmi= "findInPastR: ";
 
     if (seconds > this.sse.seconds()) {
 
-      this.log.error(mmi+seconds dt=" +
+      slog.error(mmi+"seconds dt=" +
           SecondsSinceEpoch.dtFmtString(seconds, true) + " > this.sse.seconds() dt=" + this.sse.dateTimeString(true) + " !");
 
       throw new RuntimeException(mmi);
