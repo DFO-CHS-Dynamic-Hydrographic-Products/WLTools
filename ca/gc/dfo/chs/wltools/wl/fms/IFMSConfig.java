@@ -29,7 +29,7 @@ public interface IFMSConfig {
   String LEGACY_TIDAL_REMNANT_EPS1MAX_JSON_KEY= "maxEps1";
   String LEGACY_TIDAL_REMNANT_EPS2MAX_JSON_KEY= "maxEps2";
 
-  String LEGACY_STN_COV_JSON_KEY= "stationId";
+  String LEGACY_STN_ID_JSON_KEY= "stationId";
   String LEGACY_STN_COV_JSON_KEY= "covariance";
   String LEGACY_STN_COV_TLAG_MINS_JSON_KEY= "timeLagMinutes";
   String LEGACY_STN_COV_FALLBACK_COEFF_JSON_KEY= "fallBackCoeff";

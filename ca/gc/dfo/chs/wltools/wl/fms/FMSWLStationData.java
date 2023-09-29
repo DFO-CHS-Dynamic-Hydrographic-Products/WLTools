@@ -8,8 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.IWL;
+import ca.gc.dfo.chs.wltools.util.IGeo;
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
+import ca.gc.dfo.chs.wltools.util.GlobalRefPoint;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurementFinder;
@@ -42,7 +44,7 @@ import ca.gc.dfo.chs.wltools.wl.WLMeasurementFinder;
 //@Slf4j
 abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, IWL {
 
-  final static private whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData";
+  final static private String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData";
 
   /**
    * static log utility.
@@ -96,7 +98,7 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
    */
   //public FMSWLStationDBObjects(/*@NotNull*/ final ForecastingContext forecastingContext,
   public FMSWLStationData(/*@NotNull*/ final FMSInput fmsInput,
-                          /*@NotNull*/ final GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
+                          /*@NotNull*/ final IGeo.GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
 
     //--- Re-activate the following super invocation if the ca.gc.dfo.iwls.station class re-activate its own com
     // .vividsolutions.jts.geom.Point as an attribute.
@@ -133,7 +135,7 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
     //--- Populate this.wlMeasurementFinderList for PREDICTION type:
     this.wlMeasurementFinderList.add(PREDICTION, new WLMeasurementFinder(prdDataList));
 
-    final long lastDt = prdDataList.get(prdDataList.size() - 1).getEventDate().getEpochSecond();
+    final long lastDt= prdDataList.get(prdDataList.size() - 1).getEventDate().getEpochSecond();
 
     slog.info(mmi+"Predictions last time-stamp: " + SecondsSinceEpoch.dtFmtString(lastDt, true));
 
@@ -237,9 +239,10 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
 
         this.wlMeasurementFinderList.add(MODEL_FORECAST, new WLMeasurementFinder(dbFcsList));
 
-        this.useFullModelForecast= true
+        this.useFullModelForecast= true;
 
         throw new RuntimeException(mmi+"Debug exit here !!");
+      }
 
     } else {
 

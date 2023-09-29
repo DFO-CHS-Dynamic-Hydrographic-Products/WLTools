@@ -5,10 +5,10 @@ package ca.gc.dfo.chs.wltools.wl.fms.legacy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-package ca.gc.dfo.chs.wltools.wl.WLZE;
-package ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
-package ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
-package ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.wl.WLZE;
+import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
 
 /**
  *
@@ -31,12 +31,13 @@ package ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
  */
 final public class TidalRemnantNode extends WLStationTimeNode implements ILegacyFMS {
 
-  private final static whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy.TidalRemnantNode";
+  private final static String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.fms.legacy.TidalRemnantNode";
 
   /**
    * log utility.
    */
-  private final static Logger slog = LoggerFactory.getLogger(this.getClass());
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * WLZE object to store the tidal remnant component data

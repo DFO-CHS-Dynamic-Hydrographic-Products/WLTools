@@ -5,8 +5,8 @@ package ca.gc.dfo.chs.wltools.wl;
  *
  */
 
-import ca.gc.dfo.chs.wltools.wl.IWLConfig;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
+//import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 //import ca.gc.dfo.chs.wltools.util.HBCoords;
 
@@ -58,7 +58,8 @@ final public class TideGaugeConfig extends WLLocation implements ITideGaugeConfi
     this.ECCCId= tgJsonObj.getString(INFO_ECCC_ID_JSON_KEY);
     this.hrName = tgJsonObj.getString(INFO_HUMAN_READABLE_NAME_JSON_KEY);
 
-    this.nearestSpinePointId= tgJsonObj.getString(INFO_NEAREST_SPINE_POINT_ID_JSON_KEY)
+    this.nearestSpinePointId=
+      tgJsonObj.getString(INFO_NEAREST_SPINE_POINT_ID_JSON_KEY);
 
     this.fmsJsonObject= tgJsonObj.getJsonObject(INFO_FMS_CONFIG_JSON_KEY);
 

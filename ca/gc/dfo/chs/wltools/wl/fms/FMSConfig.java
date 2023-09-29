@@ -6,10 +6,12 @@ import javax.json.JsonObject;
 import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
+import ca.gc.dfo.chs.wltools.util.HBCoords;
+import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSDT;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType;
-
 
 //---
 //---
@@ -74,7 +76,7 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   public FMSConfig(final WLLocation wlLocation) {
 
-    final String mmi= "MSConfig( final WLAdjustmentType wlAdjObj) constructor: ";
+    final String mmi= "FMSConfig main constructor: ";
 
     // --- WLLocation extends the HBCoords class
     this.stationHBCoords= (HBCoords) wlLocation; //stationHBCoords;
@@ -102,12 +104,12 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
     // --- We use the forecastDataTimeIntervallSeconds as the deltaTMinutes
     //     for the legacy FMS deltaTMinutes attribute
-    this.deltaTMinutes= ( (double) forecastDataTimeIntervallSeconds/ITimeMachine.SECONDS_PER_MINUTE ) );
+    this.deltaTMinutes= ( ((double)forecastDataTimeIntervallSeconds)/ITimeMachine.SECONDS_PER_MINUTE );
 
     if (wllFMSConfigJsonObj.contains(LEGACY_DELTA_MINS_JSON_KEY)) {
 
       this.deltaTMinutes= wllFMSConfigJsonObj.
-         getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue();
+        getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue();
     }
 
     this.ssfMergeDurationHours=
@@ -116,7 +118,7 @@ abstract public class FMSConfig extends LegacyFMSDT {
     if (wllFMSConfigJsonObj.contains(LEGACY_MERGE_HOURS_JSON_KEY)) {
 
       this.ssfMergeDurationHours= wllFMSConfigJsonObj.
-         getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).doubleValue();
+        getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).doubleValue();
     }
 
     this.fmsResidualConfig= new
@@ -140,20 +142,20 @@ abstract public class FMSConfig extends LegacyFMSDT {
     return this.stationHBCoords;
   }
 
-  final public getFMSResidualConfig() {
-    return this.FMSResidualConfig;
+  final public FMSResidualConfig getFMSResidualConfig() {
+    return this.fmsResidualConfig;
   }
 
   final public FMSTidalRemnantConfig getFMSTidalRemnantConfig() {
-    return this.FMSTidalRemnantConfig;
+    return this.fmsTidalRemnantConfig;
   }
 
   final public Instant getReferenceTime() {
-    return this referenceTime;
+    return this.referenceTime;
   }
 
   final public long getReferenceTimeInSeconds() {
-    return this referenceTime.getEpochSecond();
+    return this.referenceTime.getEpochSecond();
   }
 
   final public String getMergeWithSSFModel() {

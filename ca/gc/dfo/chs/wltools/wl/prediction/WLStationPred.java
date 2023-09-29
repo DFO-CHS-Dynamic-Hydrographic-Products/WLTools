@@ -25,6 +25,7 @@ import javax.json.JsonReader;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -64,8 +65,7 @@ final public class WLStationPred extends WLStationPredFactory {
    */
   public WLStationPred(/*NotNull*/ final HashMap<String,String> argsMap) {
 
-    final String mmi=
-      "WLStationPred(final HasMap<String,String> mainProgramOptions) constructor: ";
+    final String mmi= "WLStationPred main constructor: ";
 
     slog.info(mmi+"start");
 
@@ -159,7 +159,7 @@ final public class WLStationPred extends WLStationPredFactory {
     //WLStationPredFactory wlStnPrdFct= null;
 
     final String [] stationPredTypeSplit=
-      stationPredType.split(IStageIO.LOCATION_ID_SPLIT_CHAR);
+      stationPredType.split(IWLLocation.ID_SPLIT_CHAR);
 
     final String mainPredType= stationPredTypeSplit[0];
 

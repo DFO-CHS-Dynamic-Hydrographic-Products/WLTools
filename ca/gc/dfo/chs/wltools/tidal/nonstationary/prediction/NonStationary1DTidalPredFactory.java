@@ -8,6 +8,7 @@ package ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction;
  */
 
 //---
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -56,7 +57,7 @@ final public class NonStationary1DTidalPredFactory
   /**
    * log utility.
    */
-  private final Logger slog = LoggerFactory.getLogger(whoAmI);
+  private final Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * List of HashMap objects of tidal constituents information for the non-stationary(river discharge and-or atmospheric)
@@ -234,12 +235,12 @@ final public class NonStationary1DTidalPredFactory
     // --- TODO: add fool-proof checks on all the Json dict keys.
 
     final JsonObject channelGridPointJsonObj=
-       mainJsonTcDataInputObj.getJsonObject(LOCATION_INFO_JSON_DICT_KEY);
+       mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
 
     //this.log.info("channelGridPointInfo="+channelGridPointInfo.toString());
 
     final double stnLatInDecDeg= channelGridPointJsonObj.
-      getJsonNumber(LOCATION_INFO_JSON_LATCOORD_KEY).doubleValue();
+      getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
 
     slog.info(mmi+"stnLatInDecDeg="+stnLatInDecDeg);
 

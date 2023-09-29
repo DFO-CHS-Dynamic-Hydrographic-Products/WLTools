@@ -29,12 +29,14 @@ import java.util.Locale;
  * specific class for ASCII files IO:
  */
 public abstract class ASCIIFileIO implements IASCIIFileIO {
-  
+
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.util.ASCIIFileIO";
+
   /**
    * static log utility
    */
-   private final static Logger log = LoggerFactory.getLogger("ca.gc.dfo.iwls.fmservice.modeling.util.ASCIIFileIO");
-   //private final Logger log = LoggerFactory.getLogger(this.getClass());  
+   private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+   //private final Logger log = LoggerFactory.getLogger(this.getClass());
 
   /**
    * @param aSCIIFilePath : Complete file path of an ASCII input file.
@@ -42,73 +44,72 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
    */
   //final public static List<String> getFileLinesAsArrayList(@NotNull final String aSCIIFilePath) {
   final public static List<String> getFileLinesAsArrayList(final String aSCIIFilePath) {
-  
-    
+
+    final String mmi= "getFileLinesAsArrayList: ";
+
     String tmpLine = null;
     FileReader fr = null;
     BufferedReader br = null;
-    
+
     final List<String> allLines = new ArrayList<>();
-    
+
     try {
-      
+
       aSCIIFilePath.length();
-      
+
     } catch (NullPointerException e) {
-      
-      log.error("ASCIIFileIO getFileLinesAsArrayList: aSCIIFilePath==null!!");
+
+      slog.error(mmi+"aSCIIFilePath==null!!");
       throw new RuntimeException(e);
     }
-    
-    log.debug("getFileLinesAsArrayList Start: aSCIIFilePath=" + aSCIIFilePath);
-    
+
+    slog.info(mmi+"aSCIIFilePath=" + aSCIIFilePath);
+
     try {
-      
-      fr = new FileReader(aSCIIFilePath);
-      
+
+      fr= new FileReader(aSCIIFilePath);
+
     } catch (FileNotFoundException e) {
-      
-      log.error("ASCIIFileIO getFileLinesAsArrayList: ASCII file " + aSCIIFilePath + " not found !!");
-      throw new RuntimeException(e);
+
+      slog.info(mmi+"ASCII file " + aSCIIFilePath + " not found !!");
+      throw new RuntimeException(mmi+e);
     }
-    
+
     if ((br = new BufferedReader(fr)) == null) {
-      
-      log.error("ASCIIFileIO getFileLinesAsArrayList: Cannot create BufferedReader for file " + aSCIIFilePath);
-      throw new RuntimeException("ASCIIFileIO getFileLinesAsArrayList.");
+
+      slog.error(mmi+"Cannot create BufferedReader for file " + aSCIIFilePath);
+      throw new RuntimeException(mmi);
     }
-    
+
     try {
-      
+
       while ((tmpLine = br.readLine()) != null) {
-        
         allLines.add(tmpLine);
-        
       } //---- while loop
-      
+
     } catch (IOException e) {
-      
-      log.error("ASCIIFileIO getFileLinesAsArrayList: Problem reading ASCII file " + aSCIIFilePath);
+
+      slog.error(mmi+"Problem reading ASCII file " + aSCIIFilePath);
       throw new RuntimeException(e);
     }
-    
+
     try {
-      
+
       br.close();
-      
+
     } catch (IOException e) {
-      
-      log.error("ASCIIFileIO getFileLinesAsArrayList: Cannot close file " + aSCIIFilePath);
-      throw new RuntimeException(e);
+
+      slog.error(mmi+"Cannot close file " + aSCIIFilePath);
+      throw new RuntimeException(mmi+e);
     }
-    
-    log.debug("getFileLinesAsArrayList end");
-    
+
+    slog.info(mmi+"end");
+
     return allLines;
   }
-  
+
   /**
-   * @param stationCode      : sineco station String Id
+   * @param stationId      : station String Id
    * @param stationTimeNode0 : The 1st item of a List of WLStationTimeNode objects
    * @param updatedForecast  : A new WL forecast Measurement data List (could be null or empty).
    * @param outDir           : The complete path of the directory where to write the WL ODIN DB ASCII format files
@@ -117,192 +118,191 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
   //                                         @NotNull final WLStationTimeNode stationTimeNode0,
   //                                       final List<MeasurementCustom> updatedForecast,
   //                                         @NotNull final String outDir) {
-  public static void writeOdinAsciiFmtFile(final String stationCode,
+  public static void writeOdinAsciiFmtFile(final String stationId,
                                            final WLStationTimeNode stationTimeNode0,
                                            final List<MeasurementCustom> updatedForecast,
                                            /*@NotNull*/ final String outDir) {
 
+    final String mmi= "writeOdinAsciiFmtFile: ";
 
     try {
-      stationCode.length();
-      
+      stationId.length();
     } catch (NullPointerException e) {
-      
-      log.error("ASCIIFileIO writeOdinAsciiFmtFile: stationCode==null !!");
-      throw new RuntimeException(e);
+
+      slog.error(mmi+"ASCIIFileIO writeOdinAsciiFmtFile: stationId==null !!");
+      throw new RuntimeException(MMi+e);
     }
-    
-    log.debug("ASCIIFileIO writeOdinAsciiFmtFile start: station=" + stationCode);
-    
+
+    slog.debug(mmi+"start: station=" + stationId);
+
     try {
       stationTimeNode0.getSse();
-      
+
     } catch (NullPointerException e) {
-      
-      log.error("ASCIIFileIO writeOdinAsciiFmtFile: stationTimeNode0==null !!");
-      throw new RuntimeException(e);
+
+      sog.error(mmi+"stationTimeNode0==null !!");
+      throw new RuntimeException(mmi+e);
     }
-    
-    final SecondsSinceEpoch dt0 = stationTimeNode0.getSse();
-    
-    final FileWriter[] fwra = new FileWriter[IWL.WLType.values().length];
-    
+
+    final SecondsSinceEpoch dt0= stationTimeNode0.getSse();
+
+    final FileWriter[] fwra= new FileWriter[IWL.WLType.values().length];
+
     for (final IWL.WLType type : IWL.WLType.values()) {
-      
-      final String fpath = outDir + "\\" + stationCode + "-" +
+
+      final String fpath= outDir + "\\" + stationCode + "-" +
                    dt0.dateTimeString() + "." + type.asciiFileExt;
-      
-      log.debug("ASCIIFileIO writeOdinAsciiFmtFile: Opening odin format " + type + " output file: " + fpath);
-      
+
+      slog.info(mmi+"Opening odin format " + type + " output file: " + fpath);
+
       try {
-        
+
         fwra[type.ordinal()] = new FileWriter(fpath);
-        
+
       } catch (IOException e) {
-        
-        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot open output file: " + fpath);
-        
+
+        sog.error(mmi+"Cannot open output file: " + fpath);
+
         e.printStackTrace();
-        throw new RuntimeException(e);
+        throw new RuntimeException(mmi+e);
       }
-      
+
       try {
-        
-        log.debug("ASCIIFileIO writeOdinAsciiFmtFile: write header: " + AsciiFormats.ODIN.header + " in " + fpath);
+
+        slog.debug(mmi+"write header: " + AsciiFormats.ODIN.header + " in " + fpath);
         fwra[type.ordinal()].write(AsciiFormats.ODIN.header + type.asciiFileExt.toUpperCase() + ";\n");
-        
+
       } catch (IOException e) {
-        
+
         e.printStackTrace();
-        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write header in " + fpath);
-        throw new RuntimeException(e);
+        slog.error(mmi+"Cannot write header in " + fpath);
+        throw new RuntimeException(mmi+e);
       }
     }
-    
+
     WLStationTimeNode iter = stationTimeNode0;
-    
+
     while (iter != null) {
-      
-      final String odinDtFmtString = SecondsSinceEpoch.odinDtFmtString(iter.getSse());
-      
+
+      final String odinDtFmtString= SecondsSinceEpoch.odinDtFmtString(iter.getSse());
+
       //staticLog.debug("FileIO writeOdinAsciiFmtFile: iter.getSse() dt="+iter.getSse().dateTimeString(true));
       //staticLog.debug("FileIO writeOdinAsciiFmtFile: odinDtFmtString="+odinDtFmtString);
-      
+
       for (final IWL.WLType type : IWL.WLType.values()) {
-        
+
         //staticLog.debug("FileIO writeOdinAsciiFmtFile: type="+ type +", iter.get(type)="+ iter.get(type));
         //staticLog.debug("FileIO writeOdinAsciiFmtFile: iter.get(type).zDValue()="+iter.get(type).zDValue());
-        
+
         if (iter.get(type) != null) {
-          
+
           try {
-            
+
             fwra[type.ordinal()].write(odinDtFmtString + ";   " +
                 String.format(Locale.ROOT, AsciiFormats.ODIN.numericFormat, iter.get(type).getDoubleZValue()) + ";\n");
-            
+
           } catch (IOException e) {
-            
-            log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write data line in output file type: " + type);
+
+            slog.error(mmi+"annot write data line in output file type: " + type);
             e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new RuntimeException(mmi+e);
           }
         }
       }
-      
-      iter = (WLStationTimeNode) iter.getFutr();
-      
+
+      iter= (WLStationTimeNode) iter.getFutr();
+
       //staticLog.debug("FileIO writeOdinAsciiFmtFile: next iter="+iter);
     }
-    
-    for (final IWL.WLType type : IWL.WLType.values()) {
-      
-      log.debug("ASCIIFileIO writeOdinAsciiFmtFile: closing output file type: " + type);
-      
+
+    for (final IWL.WLType type: IWL.WLType.values()) {
+
+      slog.info(mmi+"closing output file type: " + type);
+
       try {
-        
+
         fwra[type.ordinal()].close();
-        
+
       } catch (IOException e) {
-        
-        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot close output file for WL type: " + type.toString());
-        
+
+        slog.error(mmi+"Cannot close output file for WL type: " + type.toString());
         e.printStackTrace();
-        throw new RuntimeException(e);
+        throw new RuntimeException(mmi+e);
       }
     }
-    
-    //--- Updated forecast could be null or empty:
-    if ((updatedForecast != null) && (updatedForecast.size() != 0)) {
-      
-      log.debug("ASCIIFileIO writeOdinAsciiFmtFile: writing udpdated forecast data for station: " + stationCode);
-      
-      final String fpath= outDir + "\\" + stationCode + "-" +
-          dt0.dateTimeString() + "-updated." + IWL.WLType.FORECAST.asciiFileExt;
-      
-      log.debug("ASCIIFileIO writeOdinAsciiFmtFile: Opening odin format updated " +
-                 IWL.WLType.FORECAST + " " +"output file: " + fpath);
-      
-      FileWriter fw = null;
-      
-      try {
-        fw = new FileWriter(fpath);
-        
-      } catch (IOException e) {
-        
-        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot open output file: " + fpath);
-        
-        e.printStackTrace();
-        throw new RuntimeException(e);
-      }
-      
-      try {
-        
-        log.debug("ASCIIFileIO writeOdinAsciiFmtFile: write header: " + AsciiFormats.ODIN.header + " in " + fpath);
-        fw.write(AsciiFormats.ODIN.header + IWL.WLType.FORECAST.asciiFileExt.toUpperCase() + ";\n");
-        
-      } catch (IOException e) {
-        
-        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write header in " + fpath);
-        
-        e.printStackTrace();
-        throw new RuntimeException(e);
-      }
-  
-      for (final MeasurementCustom msm : updatedForecast) {
-        
-        final String odinDtFmtString = SecondsSinceEpoch.odinDtFmtString(msm.getEventDate().getEpochSecond());
-        
-        try {
-          
-          //--- NOTE: Need to use the arg. Locale.ROOT in String.format to get the decimal point in the results:
-          fw.write(odinDtFmtString + ";   " + String.format(Locale.ROOT, AsciiFormats.ODIN.numericFormat,
-              msm.getValue().doubleValue()) + ";\n");
-          
-        } catch (IOException e) {
-          
-          log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write data line in output file: " + fpath);
-          
-          e.printStackTrace();
-          throw new RuntimeException(e);
-        }
-      }
-      
-      try {
-        fw.close();
-        
-      } catch (IOException e) {
-        
-        log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot close file " + fpath);
-        
-        e.printStackTrace();
-        throw new RuntimeException(e);
-      }
-      
-    } else {
-      
-      log.warn("ASCIIFileIO writeOdinAsciiFmtFile: updatedForecast is null or empty !");
-    }
-    
-    log.debug("ASCIIFileIO writeOdinAsciiFmtFile: end for station=" + stationCode);
+
+    ////--- Updated forecast could be null or empty:
+    //if ((updatedForecast != null) && (updatedForecast.size() != 0)) {
+    //
+    //  slog.info(mmi+"writing udpdated forecast data for station: " + stationId);
+    //
+    //  final String fpath= outDir + "\\" + stationCode + "-" +
+    ///      dt0.dateTimeString() + "-updated." + IWL.WLType.FORECAST.asciiFileExt;
+    //
+    //  slog.info(mmi+"Opening odin format updated " +
+    //             IWL.WLType.FORECAST + " " +"output file: " + fpath);
+    //
+    //  FileWriter fw = null;
+    //
+    //  try {
+    //    fw = new FileWriter(fpath);
+    //
+    //  } catch (IOException e) {
+    //
+    //    log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot open output file: " + fpath);
+    //
+    //    e.printStackTrace();
+    //    throw new RuntimeException(e);
+    //  }
+    //
+    //  try {
+    //
+    //    log.debug("ASCIIFileIO writeOdinAsciiFmtFile: write header: " + AsciiFormats.ODIN.header + " in " + fpath);
+    //    fw.write(AsciiFormats.ODIN.header + IWL.WLType.FORECAST.asciiFileExt.toUpperCase() + ";\n");
+    //
+    //  } catch (IOException e) {
+    //
+    //    log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write header in " + fpath);
+    //
+    //    e.printStackTrace();
+    //    throw new RuntimeException(e);
+    //  }
+    //
+    //  for (final MeasurementCustom msm : updatedForecast) {
+    //
+    //    final String odinDtFmtString = SecondsSinceEpoch.odinDtFmtString(msm.getEventDate().getEpochSecond());
+    //
+    //    try {
+    //
+    //      //--- NOTE: Need to use the arg. Locale.ROOT in String.format to get the decimal point in the results:
+    //      fw.write(odinDtFmtString + ";   " + String.format(Locale.ROOT, AsciiFormats.ODIN.numericFormat,
+    //          msm.getValue().doubleValue()) + ";\n");
+    //
+    //    } catch (IOException e) {
+    //
+    //      log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write data line in output file: " + fpath);
+    //
+    //      e.printStackTrace();
+    //      throw new RuntimeException(e);
+    //    }
+    //  }
+    //
+    //  try {
+    //    fw.close();
+    //
+    //  } catch (IOException e) {
+    //
+    //    log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot close file " + fpath);
+    //
+    //    e.printStackTrace();
+    //    throw new RuntimeException(e);
+    //  }
+    //
+    //} else {
+    //
+    //  log.warn("ASCIIFileIO writeOdinAsciiFmtFile: updatedForecast is null or empty !");
+    //}
+
+    slog.info(mmi+"end for station=" + stationCode);
   }
 }

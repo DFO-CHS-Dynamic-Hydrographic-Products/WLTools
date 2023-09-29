@@ -39,12 +39,14 @@ abstract public class WLLocation extends HBCoords implements IWLLocation {
 
   protected double zcVsVertDatum= 0.0;
 
-  public WLConfig(final String identity) {
+  // ---
+  public WLLocation(final String identity) {
 
     super();
     this.identity= identity;
   }
 
+  // ---
   public WLLocation(final String identity, final double zcVsVertDatum,
                     final double locationLon, final double locationLat ) {
 
@@ -76,7 +78,7 @@ abstract public class WLLocation extends HBCoords implements IWLLocation {
   public WLLocation setConfig(final JsonObject wllJsonObj) {
 
     this.zcVsVertDatum= wllJsonObj.
-      getJsonNumber(IWLConfig.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
+      getJsonNumber(IWLLocatiom.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
     this.setHBCoords(wllJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
                      wllJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());

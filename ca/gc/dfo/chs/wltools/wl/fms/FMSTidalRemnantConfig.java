@@ -67,7 +67,7 @@ final public class FMSTidalRemnantConfig extends LegacyFMSTime {
   }
 
   final public void setMaxEps2(final double maxEps2) {
-    this.maxEps2= maxEps2
+    this.maxEps2= maxEps2;
   }
 
   @Override

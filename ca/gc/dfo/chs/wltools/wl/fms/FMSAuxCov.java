@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
+import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
@@ -18,12 +19,12 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
  */
 abstract public class FMSAuxCov implements IFMS {
 
-   final private static whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSAuxCov";
+  final private static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSAuxCov";
 
   /**
    * static log utility.
    */
-  final private static Logger slog = LoggerFactory.getLogger(whoAmI);
+  final private static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * The FMResidualFactory related to this temporal errors covariances computations data.

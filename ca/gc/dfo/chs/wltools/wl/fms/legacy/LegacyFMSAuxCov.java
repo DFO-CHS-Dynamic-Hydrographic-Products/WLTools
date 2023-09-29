@@ -19,12 +19,13 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
  */
 final public class LegacyFMSAuxCov extends FMSAuxCov implements ILegacyFMS {
 
-  private final static whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSAuxCov";
+  private final static String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSAuxCov";
 
   /**
    * static log utility.
    */
-  private final static Logger log = LoggerFactory.getLogger(whoAmI);
+  private final static Logger slog = LoggerFactory.getLogger(whoAmI);
 
   /**
    * The Legacy forecast method fall back coefficient in case the time-weighted WL surge (or offset) is small.
@@ -70,10 +71,9 @@ final public class LegacyFMSAuxCov extends FMSAuxCov implements ILegacyFMS {
   //@Override
   public final void showMe() {
 
-    final String mmi= "showMe: ":
+    final String mmi= "showMe: ";
 
     super.showMe();
-
     slog.info(mmi+"this.fallBack=" + this.fallBack);
   }
 }

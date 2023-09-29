@@ -7,7 +7,7 @@ import ca.gc.dfo.chs.wltools.wl.IWLLocation;
  *
  */
 
-public interface ITideGaugeConfig implements IWLLocation {
+public interface ITideGaugeConfig extends IWLLocation {
 
   String INFO_FOLDER_NAME= "tideGaugeInfo";
 

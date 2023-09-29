@@ -5,15 +5,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-package ca.gc.dfo.chs.wltools.wl.IWL;
-package ca.gc.dfo.chs.wltools.wl.WLZE;
-package ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
-package ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-package ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
-package ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
-package ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
-package ca.gc.dfo.chs.wltools.numbercrunching.ScalarOps;
-package ca.gc.dfo.chs.wltools.wl.fms.FMSStationCovarianceConfig;
+import ca.gc.dfo.chs.wltools.wl.IWL;
+import ca.gc.dfo.chs.wltools.wl.WLZE;
+import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
+import ca.gc.dfo.chs.wltools.numbercrunching.ScalarOps;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSStationCovarianceConfig;
 
 /**
  *
@@ -45,7 +45,8 @@ package ca.gc.dfo.chs.wltools.wl.fms.FMSStationCovarianceConfig;
  */
 public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyFMSResidual, IWL {
 
-  private final static whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyResidual: ";
+  private final static String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyResidual: ";
 
   /**
    * log utility.

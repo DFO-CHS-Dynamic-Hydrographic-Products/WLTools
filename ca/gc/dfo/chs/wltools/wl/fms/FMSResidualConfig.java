@@ -1,5 +1,6 @@
 package ca.gc.dfo.chs.wltools.wl.fms;
 
+import java.util.List;
 import org.slf4j.Logger;
 import javax.json.JsonObject;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
         "method=" + this.getMethod() + ", " +
         "tauhours=" + this.getTauHours() + ", " +
         "deltatminutes=" + this.getDeltaTMinutes() + ", " +
-        "fallbackerror=" + this.getFallBackError() // + ", " +
+        "fallbackerror=" + this.getFallBackError() +
         //"stationCovariance=" + Arrays.toString(this.covariance.toArray()) +
         "}";
   }

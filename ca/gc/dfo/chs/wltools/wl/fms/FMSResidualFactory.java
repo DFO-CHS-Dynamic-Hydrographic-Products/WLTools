@@ -87,7 +87,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
   /**
    * Missing WLOs data counter. It logged at the end of the computations.
    */
-  private int nbMissingWLO = 0;
+  private int nbMissingWLO= 0;
 
   //--- constructors for possible future usage.
 //    public FMResidualFactory() { }
@@ -129,7 +129,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
    */
   //@NotNull
  // protected static IFMSResidual getIFMSResidual(@NotNull final ForecastingContext forecastingContext,
-  protected static IFMSResidual getIFMSResidual(@NotNull final FMSInput fmsInput, /*@Min(0)*/ final long lastWLOSse) {
+  protected static IFMSResidual getIFMSResidual(/*@NotNull*/ final FMSInput fmsInput, /*@Min(0)*/ final long lastWLOSse) {
 
     try {
       //forecastingContext.getFmsParameters();

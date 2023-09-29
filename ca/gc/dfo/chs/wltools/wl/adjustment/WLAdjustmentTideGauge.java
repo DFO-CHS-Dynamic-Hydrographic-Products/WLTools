@@ -131,7 +131,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     if (!IWLStationPredIO.allowedFormats.contains(tideGaugePredictInputDataInfo[0])) {
 
       throw new RuntimeException(mmi+"Invalid tideGaugePredictInputData file format -> "+
-                                 tideGaugePredictInputDataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
+        tideGaugePredictInputDataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
     }
 
     this.predictInputDataFormat=
@@ -150,7 +150,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     if (!IWLStationPredIO.allowedFormats.contains(tideGaugeWLODataInfo[0])) {
 
       throw new RuntimeException(mmi+"Invalid TG WLO Input Data file format -> "+
-                                 tideGaugeWLODataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
+        tideGaugeWLODataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
     }
 
     this.obsInputDataFormat=
@@ -288,7 +288,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       this.nearestObsData.put(this.location.getIdentity(), this.getWLDataInJsonFmt(tideGaugeWLODataFile));
 
     } else {
-       throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
+      throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
     }
 
     // ---
@@ -300,15 +300,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                 IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()+" is allowed for now !");
       }
 
-     this.stormSurgeForecastModelName=
-       (argsMapKeysSet.contains("--stormSurgeForecastModelName") ? argsMap.get("--stormSurgeForecastModelName") : IWLAdjustment.DEFAULT_H2D2_NAME;
+     this.fullForcingsForecastModelName= argsMapKeysSet.
+       contains("--fullForcingsForecastModelName") ? argsMap.get("--fullForcingsForecastModelName") : IWLAdjustment.DEFAULT_H2D2_NAME;
 
       if (this.modelForecastInputDataInfo == null) {
         throw new RuntimeException(mmi+
                   "this.modelForecastInputDataInfo attribute cannot be null at this point if this.forecastAdjType is not null !");
       }
 
-      if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) 
+      if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
 
         // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
         //     method call.
@@ -332,7 +332,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // --- Instantiate the FMSInput object using the argsMap and this object.
     this.fmsInputObj= new FMSInput(this);
     this.fmsObj= new FMS(this.fmsInputObj);
-    //this.fmsObj= new FMS(new FMSInput(this));
+    //this.fmsObj= new FMS(new FMSInput(this));O
 
     slog.info(mmi+"end");
 

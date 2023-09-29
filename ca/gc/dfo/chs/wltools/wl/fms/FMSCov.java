@@ -26,7 +26,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSAuxCov;
  */
 abstract public class FMSCov implements IFMS {
 
-  private static final whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSCov";
+  private static final String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSCov";
 
   /**
    * static log utility.

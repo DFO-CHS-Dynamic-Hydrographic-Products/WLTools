@@ -21,6 +21,7 @@ import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 //import ca.gc.dfo.chs.wltools.util.ITrigonometry;
 //import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
@@ -71,7 +72,7 @@ abstract public class WLStationPredFactory extends WLStationPredIO implements IW
    * so we have to apply a time zone offset to the results in order to have the
    * tidal predictions defined in UTC(a.k.a. ZULU).
    */
-  protected long unfortunateUTCOffsetSeconds = 0L;
+  protected long unfortunateUTCOffsetSeconds= 0L;
 
   /**
    *  Simple climatology (yearly average normally) prediction object.
@@ -198,7 +199,7 @@ abstract public class WLStationPredFactory extends WLStationPredIO implements IW
     }
 
     //--- To avoid SNAFU mix-up between WL stations data:
-    this.stationId = stationId;
+    this.stationId= stationId;
 
     // ---
     if ( method == ITidal.Method.STATIONARY_FOREMAN || method == ITidal.Method.NON_STATIONARY_FOREMAN) {
@@ -224,8 +225,8 @@ abstract public class WLStationPredFactory extends WLStationPredIO implements IW
 
           if (stationTcInputFileLocal == null) {
 
-            final String [] stationIdSplit=
-              this.stationId.split(IStageIO.LOCATION_ID_SPLIT_CHAR);
+            final String [] stationIdSplit= this.
+              stationId.split(IWLLocation.ID_SPLIT_CHAR);
 
             if (stationIdSplit.length != 3) {
               throw new RuntimeException(mmi+"ERROR: stationIdSplit.length != 3 !!");
@@ -239,7 +240,7 @@ abstract public class WLStationPredFactory extends WLStationPredIO implements IW
             //     inner cfg DB.
             stationTcInputFileLocal= WLToolsIO.getMainCfgDir() + "/tidal/nonStationary/" + regionIdInfo +
               "/dischargeClusters/" + subRegionIdInfo + File.separator + INonStationaryIO.CLUSTER_TFHA_MAIN_SUBDIR_NAME + //"/dischargeClimatoTFHA/"+
-              File.separator + stationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IStageIO.LOCATION_INFO_JSON_FNAME_EXT;
+              File.separator + stationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLLocation.INFO_JSON_FNAME_EXT;
           }
 
           //slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);

@@ -5,10 +5,10 @@ package ca.gc.dfo.chs.wltools.wl.fms.legacy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-package ca.gc.dfo.chs.wltools.numbercrunching.D1Data;
-package ca.gc.dfo.chs.wltools.numbercrunching.D2Data;
-package ca.gc.dfo.chs.wltools.numbercrunching.ScalarOps;
-package ca.gc.dfo.chs.wltools.numbercrunching.D2RowMajorData;
+import ca.gc.dfo.chs.wltools.numbercrunching.D1Data;
+import ca.gc.dfo.chs.wltools.numbercrunching.D2Data;
+import ca.gc.dfo.chs.wltools.numbercrunching.ScalarOps;
+import ca.gc.dfo.chs.wltools.numbercrunching.D2RowMajorData;
 
 /**
  *
@@ -30,7 +30,7 @@ package ca.gc.dfo.chs.wltools.numbercrunching.D2RowMajorData;
  */
 public class LegacyResidualData implements ILegacyFMS {
 
-  private final static whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy";
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy";
 
   /**
    * static log utility.

@@ -8,7 +8,7 @@ package ca.gc.dfo.chs.wltools.wl.fms;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
-import ca.gc.dfo.chs.wltool.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 
 //---
 //import ca.gc.dfo.iwls.fmservice.modeling.wl.WLMeasurement;

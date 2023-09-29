@@ -6,7 +6,7 @@ package ca.gc.dfo.chs.wltools.wl.fms.legacy;
  * Modified-adapted for the Spine 2.0 API system by G. Mercier on 2023-09-26
  */
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
-import ca.gc.dfo.chs.wltools.wl.fms.legacyILegacyFMS;
+import ca.gc.dfo.chs.wltools.wl.fms.legacy.ILegacyFMS;
 
 //---
 //import javax.validation.constraints.Max;

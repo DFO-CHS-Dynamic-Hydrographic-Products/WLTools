@@ -31,12 +31,12 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSTidalRemnantConfig;
  */
 final public class TidalRemnantData extends LegacyResidualData implements ILegacyFMS {
 
-  private final static whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy";
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy";
 
   /**
    * static log utility.
    */
-  private final static Logger slog= LoggerFactory.getLogger(this.getClass());
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * Mean compensation (Using the same variable name as Legacy DVFM nomenclature).
@@ -98,7 +98,7 @@ final public class TidalRemnantData extends LegacyResidualData implements ILegac
   public TidalRemnantData(final FMSTidalRemnantConfig tidalRemnantCfg, final double timeIncrMinutes) {
 
     this(tidalRemnantCfg.getTauHours(), tidalRemnantCfg.getDeltaTMinutes(),
-        tidalRemnantCfg.getMaxEps1(), tidalRemnantCfg.getMaxEps2(), timeIncrMinutes);
+         tidalRemnantCfg.getMaxEps1(), tidalRemnantCfg.getMaxEps2(), timeIncrMinutes);
   }
 
   /**
@@ -133,11 +133,11 @@ final public class TidalRemnantData extends LegacyResidualData implements ILegac
 
     final String mmi= "init: ";
 
-    this.k1 = 0.0;
-    this.k2 = 0.0;
+    this.k1= 0.0;
+    this.k2= 0.0;
 
-    this.eps1 = 0.0;
-    this.eps2 = 0.0;
+    this.eps1= 0.0;
+    this.eps2= 0.0;
 
     if (eps1Max <= 0.0) {
       slog.error(mmi+"eps1Max <= 0.0 !");
@@ -268,7 +268,7 @@ final public class TidalRemnantData extends LegacyResidualData implements ILegac
    * @param wlStationTimeNode : A WLStationTimeNode object.
    * @return this TidalRemnantData object.
    */
-  protected final TidalRemnantData zXSetup(@NotNull final WLStationTimeNode wlStationTimeNode) {
+  protected final TidalRemnantData zXSetup(/*@NotNull*/ final WLStationTimeNode wlStationTimeNode) {
 
     //--- Shortcut to the previous-in-time WLStationNode:
     final WLStationTimeNode pstr= (WLStationTimeNode) wlStationTimeNode.getPstr();

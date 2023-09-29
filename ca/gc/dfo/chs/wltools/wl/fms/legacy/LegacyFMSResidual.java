@@ -14,12 +14,13 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.IFMSResidual;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSTidalRemnantConfig;
-import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSResidualFactory;
 import ca.gc.dfo.chs.wltools.wl.fms.legacy.TidalRemnantResidual;
+import ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSResidualFactory;
 
 //--
 //import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
@@ -73,7 +74,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
    * @return true if all the FMSConfig objects are ok, false otherwise.
    */
   //public final static boolean validateFMSConfig(@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextsList) {
-  public final static boolean validateFMSConfig(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) [
+  public final static boolean validateFMSConfig(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
 
     final String mmi= "validateFMSConfig; ";
 
@@ -285,8 +286,8 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
   //@NotNull
   //@Override
   public final WLStationTimeNode newFMSTimeNode(final WLStationTimeNode pstrWLStationTimeNode,
-                                                @NotNull final SecondsSinceEpoch secondsSinceEpoch,
-                                                @NotNull @Size(min = 4) final FMSWLMeasurement[] data) {
+                                                /*@NotNull*/ final SecondsSinceEpoch secondsSinceEpoch,
+                                                /*@NotNull @Size(min = 4)*/ final FMSWLMeasurement[] data) {
 
     final String mmi= "newFMSTimeNode: ";
 
@@ -307,16 +308,16 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
    * @return The processed WLStationTimeNode taken as last argument.
    */
   //@NotNull
-  //@Override
+  @Override
   public final WLStationTimeNode processWLStationTimeNode(/*@NotNull*/ final String stationId,
                                                           final boolean stillGotWLOs,
                                                           /*@NotNull*/ final WLStationTimeNode wlStationTimeNode) {
-    final String "processWLStationTimeNode: ";
+    final String mmi= "processWLStationTimeNode: ";
 
     final String dts= wlStationTimeNode.getSse().dateTimeString(true);
 
-   slog.info(mmi+"Computing Legacy residual at at time stamp: " + dts +
-             " for station: " + stationCode + ", stillGotWLO=" + stillGotWLOs);
+    slog.info(mmi+"Computing Legacy residual at at time stamp: " + dts +
+              " for station: " + stationCode + ", stillGotWLO=" + stillGotWLOs);
 
     if (wlStationTimeNode.get(WLType.OBSERVATION) != null) {
 

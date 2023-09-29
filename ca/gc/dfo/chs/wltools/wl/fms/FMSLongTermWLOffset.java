@@ -31,7 +31,7 @@ import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
  */
 abstract public class FMSLongTermWLOffset implements IFMS {
 
-  private final static whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSLongTermWLOffset";
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSLongTermWLOffset";
 
   /**
    * static log utility.
@@ -71,7 +71,7 @@ abstract public class FMSLongTermWLOffset implements IFMS {
   /**
    * Default constructor.
    */
-  public FMSLongTermWLOffser() {
+  public FMSLongTermWLOffset() {
     this.init();
   }
 

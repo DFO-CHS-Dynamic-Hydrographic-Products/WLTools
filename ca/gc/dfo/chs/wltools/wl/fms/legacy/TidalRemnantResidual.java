@@ -5,15 +5,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-package ca.gc.dfo.chs.wltools.wl.WLMeasurement;
-package ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
-package ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
-package ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-package ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
-package ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
-package ca.gc.dfo.chs.wltools.numbercrunching.ScalarOps;
-package ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyResidual;
-package ca.gc.dfo.chs.wltools.wl.fms.FMSTidalRemnantConfig;
+import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
+import ca.gc.dfo.chs.wltools.numbercrunching.ScalarOps;
+import ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyResidual;
+import ca.gc.dfo.chs.wltools.wl.fms.FMSTidalRemnantConfig;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.fms.FMSWLMeasurement;
 //import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.ScalarOps;
@@ -37,13 +37,13 @@ package ca.gc.dfo.chs.wltools.wl.fms.FMSTidalRemnantConfig;
  */
 final public class TidalRemnantResidual extends LegacyResidual implements ILegacyFMSResidual {
 
-  private final static whoAmI=
+  private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.fms.legacy.TidalRemnantResidual; ";
 
   /**
    * log utility.
    */
-  private final static Logger log= LoggerFactory.getLogger(whoAmI);
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * The time stamp used to start the tidal remnant computations.
@@ -68,7 +68,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
 
     super(residualCfg, stationId);
 
-    final String mmi= "TidalRemnantResidual:";
+    final String mmi= "TidalRemnantResidual: ";
 
     slog.info(mmi+"start");
 
@@ -178,7 +178,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
   public final long setup(/*@Min(0)*/ final long lastWLOSse,
                           /*@NotNull @Size(min = 1)*/ final List<MeasurementCustom> predictionsMeasurementsList) {
 
-    final String mmi= "setup: "
+    final String mmi= "setup: ";
 
     final long superSseStart= super.setup(lastWLOSse, predictionsMeasurementsList);
 
@@ -217,7 +217,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
    * @return this.trSseStart after being set.
    */
   @Override
-  protected final long setSseStart(@Min(0) final long superSseStart) {
+  protected final long setSseStart(/*@Min(0)*/ final long superSseStart) {
 
     //--- Subtract this.trData.tau from this.sseStart which have just been computed in super.setSseStart();
     return (this.trSseStart = (superSseStart - (long) this.trData.tau));
@@ -232,7 +232,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
    */
   //@NotNull
   @Override
-  public final WLStationTimeNode update(@NotNull final WLStationTimeNode wlStationTimeNode) {
+  public final WLStationTimeNode update(/*@NotNull*/ final WLStationTimeNode wlStationTimeNode) {
 
     final String mmi= "update: ";
 
@@ -333,7 +333,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
     //this.log.debug("updateAlphaParameters start.");
 
     //--- Handy shorcut reference to this.trData TidalRemnantData Object:
-    final TidalRemnantData trd = this.trData;
+    final TidalRemnantData trd= this.trData;
 
     //this.log.debug("updateAlphaParameters start: trd.alpha="+trd.alpha);
 

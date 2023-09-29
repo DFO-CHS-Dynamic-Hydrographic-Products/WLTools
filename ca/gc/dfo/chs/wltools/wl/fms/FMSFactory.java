@@ -13,7 +13,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLData;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
-import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
 //import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
@@ -76,8 +76,7 @@ abstract public class FMSFactory implements IFMS {
   //FMSFactory(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
   //FMSFactory(final Map<String,String> argsMap, final WLAdjustmentType wlAdjType) {
 
-    final String mmi=
-      "FMSFactory(final List<FMSConfig> fmsConfigList) constructor: ";
+    final String mmi= "FMSFactory main constructor: ";
 
     slog.debug(mmi+"start");
 
@@ -88,7 +87,7 @@ abstract public class FMSFactory implements IFMS {
     if (!checkFMSConfig(fc0)) {
 
       slog.error(mmi+"checkFMSConfig(lfc0)==false!");
-      throw new RuntimeException(mmi+:"Cannot update the WLF-QC !!");
+      throw new RuntimeException(mmi+"Cannot update the WLF-QC !!");
     }
 
     //final String station0Id = fc0.getStationCode();
@@ -140,7 +139,7 @@ abstract public class FMSFactory implements IFMS {
     for (final FMSConfig fc: FMSConfigList.subList(1, fmsConfigList.size())) {
 
       try {
-        fc.getStationid();
+        fc.getStationId();
 
       } catch (NullPointerException npe) {
 
@@ -190,7 +189,7 @@ abstract public class FMSFactory implements IFMS {
 
   // ---
   final List<MeasurementCustom> getNewForecastData() {
-    return this.data.getUpdatedForecastDataForTGStn0()
+    return this.data.getUpdatedForecastDataForTGStn0();
   }
 
   ///**

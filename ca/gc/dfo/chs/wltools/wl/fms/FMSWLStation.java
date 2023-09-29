@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.IWL;
+import ca.gc.dfo.chs.wltools.util.IGeo;
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
@@ -62,7 +63,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   /**
    * Index of the WL station in the List of FMWLStation objects of the FMWLData class.
    */
-  private int stationNodeIndex = 0;
+  private int stationNodeIndex= 0;
 
   /**
    * The time-stamp(seconds since the epoch) used to mark the time of the complete merge of the default WLF-QC
@@ -102,9 +103,9 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   //                     @NotNull final GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
 
   private FMSWLStation(/*@Min(0)*/ final int stationNodeIndex, /*@NotNull*/ final FMSInput fmsInput,
-                       /*@NotNull*/ final GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
+                       /*@NotNull*/ final IGeo.GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
 
-    final String mmi= "FMSWLStation main constructor: "
+    final String mmi= "FMSWLStation main constructor: ";
 
     //super(forecastingContext, globalVerticalDatum, globalVerticalOffset);
    super(fmsInput, globalVerticalDatum, globalVerticalOffset);
@@ -279,9 +280,9 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
    * @return A WLStationTimeNode which have been processed by the FMResidualFactory.processFMSWLStation method.
    */
   //@NotNull
-  public final WLStationTimeNode getNewWLStationFMTimeNode(@NotNull final WLTimeNode pstrWLTimeNode,
-                                                           @NotNull final SecondsSinceEpoch sse,
-                                                           @Min(0) final long sseFutureThreshold) {
+  public final WLStationTimeNode getNewWLStationFMTimeNode(/*@NotNull*/ final WLTimeNode pstrWLTimeNode,
+                                                           /*@NotNull*/ final SecondsSinceEpoch sse,
+                                                           /*(@Min(0)*/ final long sseFutureThreshold) {
 
     //final String dts= sse.dateTimeString(true);
     //final String stationId= this.stationId;
@@ -303,8 +304,8 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     //  slog.debug(mmi+"psr dt= " + psr.getSse().dateTimeString(true));
     //}
 
-    slog.debug(mmi+"this.ssfMergeCompleteSse dt=" + SecondsSinceEpoch.dtFmtString(this.ssfMergeCompleteSse, true));
-    slog.debug(mmi+"this.tiForecastMergeWeight=" + this.tiForecastMergeWeight);
+    slog.info(mmi+"this.ssfMergeCompleteSse dt=" + SecondsSinceEpoch.dtFmtString(this.ssfMergeCompleteSse, true));
+    slog.info(mmi+"this.tiForecastMergeWeight=" + this.tiForecastMergeWeight);
 
     return FMSResidualFactory.processFMSWLStation(psr, sse, sseFutureThreshold, this);
   }
@@ -317,7 +318,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   //---
   // @NotNull
   protected final WLStationTimeNode mergeWithFullModelForecast(/*@Min(0)*/  final long seconds,
-                                                               /*@Min(0)*/  final long fmfThreshold
+                                                               /*@Min(0)*/  final long fmfThreshold,
                                                                /*@NotNull*/ final WLStationTimeNode wlstn) {
     final String mmi= "mergeWithFullModelForecast: ";
 

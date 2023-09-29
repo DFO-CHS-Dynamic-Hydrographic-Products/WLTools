@@ -43,29 +43,29 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
   /**
    * log utility.
    */
-  private static final Logger slog = LoggerFactory.getLogger(whoAmI);
+  private static final Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * List of WLTimeNode object(s). Either one(default case) or possibly more WLTimeNode objects.
    */
-  List<WLTimeNode> timeNodes = null;
+  List<WLTimeNode> timeNodes= null;
 
   /**
    * List of FMWLStation objects for one or more WL station(s).
    */
-  List<FMSWLStation> allStationsData = null;
+  List<FMSWLStation> allStationsData= null;
 
   /**
    * The seconds since epoch representing the time at which the ForecastingContext was issued (i.e. it separates the
    * past from the future time-stamps in real tine regardless of the time stamp of the last available valid WLOs)
    */
-  private long referenceSse = 0L;
+  private long referenceSse= 0L;
 
   /**
    * List of WLStationTimeNode object(s) used as a temporary storage for subsequent usage.(see method FMWLData
    * .newFMSTimeNode below in this src file).
    */
-  private List<WLStationTimeNode> wlsnaTmp = null;
+  private List<WLStationTimeNode> wlsnaTmp= null;
 
   /**
    * @param fcstsTimeIncrMinutes   : Time increment between each WLF data
@@ -144,7 +144,7 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
    * @return This FMWLData object fully populated.
    */
   //@NotNull
-  private final FMSWLData populateFMSWLStationsData(@Min(0) final int fcstsTimeIncrMinutes,
+  private final FMSWLData populateFMSWLStationsData(/*@Min(0)*/ final int fcstsTimeIncrMinutes,
                                                     /*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputList) {
                                                     //@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
 
@@ -252,13 +252,13 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
                     stationId + ", the resulting forecast will not be optimal !");
         }
 
-        final MeasurementCustom wlo0 = wloList.get(0);
-        final long firstWloSeconds = wlo0.getEventDate().getEpochSecond();
+        final MeasurementCustom wlo0= wloList.get(0);
+        final long firstWloSeconds= wlo0.getEventDate().getEpochSecond();
 
         slog.info(mmi+"WLO size=" + wloList.size());
         slog.info(mmi+"1st retreived WLO Instant=" + wlo0.getEventDate().toString());
         slog.info(mmi+"1st retreived WLO SSE=" + SecondsSinceEpoch.dtFmtString(firstWloSeconds, true));
-        slog.info(mmi+"FMWLData populateFMSWLStationsData: 1st retreived WLO dt0 Z value=" + wlo0.getValue());
+        slog.info(mmi+"1st retreived WLO dt0 Z value=" + wlo0.getValue());
 
         final MeasurementCustom wloLast= wloList.get(wloList.size() - 1);
 
@@ -281,15 +281,15 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
 
         if (!FMSWLStationData.validate(fmsInputItem.getModelForecasts(), tauHours)) {
 
-         slog.warn(mmi+"FMSWLStationData.validate failed for last model forecast data !");
-         slog.warn(mmi+"model forecast data seems not usable!");
+         slog.info(mmi+"FMSWLStationData.validate failed for last model forecast data !");
+         slog.info(mmi+"model forecast data seems not usable!");
         }
 
       } else {
-        slog.warn(mmi+"fmsInputItem.getModelForecasts().size()==0 for station:" + stationId);
+        slog.info(mmi+"fmsInputItem.getModelForecasts().size()==0 for station:" + stationId);
       }
 
-      this.allStationsData.add(new FMSWLStation(sit++, fmsInputItem); //forecastingContext));
+      this.allStationsData.add(new FMSWLStation(sit++, fmsInputItem)); //forecastingContext));
 
       slog.info(mmi+"Adding station:"+stationId + " residual to stationsResiduals");
 
