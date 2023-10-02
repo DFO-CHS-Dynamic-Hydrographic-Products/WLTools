@@ -10,7 +10,7 @@ time java WLTools \
 \
 --locationIdInfo=03335 \
 \
---fullForcingsForecastModelName=ECCC_H2D2_SLFE \
+--fullForecastModelName=ECCC_H2D2_SLFE \
 \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
 \

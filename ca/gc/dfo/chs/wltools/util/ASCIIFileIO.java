@@ -130,7 +130,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
     } catch (NullPointerException e) {
 
       slog.error(mmi+"ASCIIFileIO writeOdinAsciiFmtFile: stationId==null !!");
-      throw new RuntimeException(MMi+e);
+      throw new RuntimeException(mmi+e);
     }
 
     slog.debug(mmi+"start: station=" + stationId);
@@ -140,7 +140,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
     } catch (NullPointerException e) {
 
-      sog.error(mmi+"stationTimeNode0==null !!");
+      slog.error(mmi+"stationTimeNode0==null !!");
       throw new RuntimeException(mmi+e);
     }
 
@@ -150,7 +150,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
     for (final IWL.WLType type : IWL.WLType.values()) {
 
-      final String fpath= outDir + "\\" + stationCode + "-" +
+      final String fpath= outDir + "\\" + stationId + "-" +
                    dt0.dateTimeString() + "." + type.asciiFileExt;
 
       slog.info(mmi+"Opening odin format " + type + " output file: " + fpath);
@@ -161,7 +161,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
       } catch (IOException e) {
 
-        sog.error(mmi+"Cannot open output file: " + fpath);
+        slog.error(mmi+"Cannot open output file: " + fpath);
 
         e.printStackTrace();
         throw new RuntimeException(mmi+e);
@@ -303,6 +303,6 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
     //  log.warn("ASCIIFileIO writeOdinAsciiFmtFile: updatedForecast is null or empty !");
     //}
 
-    slog.info(mmi+"end for station=" + stationCode);
+    slog.info(mmi+"end for station=" + stationId);
   }
 }

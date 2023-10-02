@@ -70,7 +70,7 @@ public final class FMS extends FMSFactory implements IFMS {
   /**
    * @param legacyFMSContextList : A List(min size==1) of LegacyFMSContext objects
    */
-  private FMS(/*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputist) {
+  private FMS(/*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputList) {
     super(fmsInputList);
   }
 
@@ -132,8 +132,8 @@ public final class FMS extends FMSFactory implements IFMS {
       throw new RuntimeException(npe);
     }
 
-    final String station0Id=
-      this.data.allStationsData.get(0).getStationId();
+    final String station0Id= this.data.
+      allStationsData.get(0).getStationId();
 
     slog.info(mmi+"station0Id=" + station0Id);
 
@@ -194,7 +194,7 @@ public final class FMS extends FMSFactory implements IFMS {
     for (final FMSWLStation station : this.data.allStationsData) {
 
      slog.info(mmi+"Nb. missing WLO Measurement objects for station: "+
-        station.getStationCode() + " is " + station.residual.getNbMissingWLO());
+               station.getStationId() + " is " + station.getIFMSResidual().getNbMissingWLO());
     }
 
     slog.info(mmi+"t0 dt=" + SecondsSinceEpoch.dtFmtString(t0 / SEC_TO_MILLISEC, true));

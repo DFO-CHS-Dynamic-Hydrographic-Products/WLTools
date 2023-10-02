@@ -22,6 +22,8 @@ abstract public class LegacyFMSDT {
 
   protected double deltaTMinutes= 0.0;
 
+  public LegacyFMSDT() { };
+
   /**
    * Default constructor.
    */

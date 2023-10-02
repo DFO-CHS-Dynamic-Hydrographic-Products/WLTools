@@ -1,9 +1,13 @@
 package ca.gc.dfo.chs.wltools.wl.fms;
 
 import java.util.List;
-import org.slf4j.Logger;
+import java.util.LinkedList;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSTime;
@@ -30,12 +34,17 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
 
   private double fallBackError;
 
-  private List<FMSStationCovarianceConfig> stationsCovCfgList= new LinkedList<FMSStationCovarianceConfig>();
+  private List<FMSStationCovarianceConfig>
+    stationCovCfgList= new LinkedList<FMSStationCovarianceConfig>();
 
   /**
    *
    */
-   public FMSResidualConfig(final JsonObject fmsResCfgJsonObj) {
+   public FMSResidualConfig(final double tauHours,
+                            final double deltaTMinutes,
+                            final JsonObject fmsResCfgJsonObj) {
+
+     super(tauHours,deltaTMinutes);
 
      this.method= fmsResCfgJsonObj.
        getString(LEGACY_RESIDUAL_METH_JSON_KEY);
@@ -45,8 +54,13 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
 
      //this.stationCovCfg= new
 
-     for (final JsonObject stnCovCfgJsonObj: fmsResCfgJsonObj.getJsonArray()) {
-       this.stationCovCfg.add( new FMSStationCovarianceConfig(stnCovCfgJsonObj) );
+     final JsonArray fmsResCovCfgJsonArray=
+       fmsResCfgJsonObj.getJsonArray(LEGACY_STN_COV_JSON_KEY);
+
+     //for (final JsonObject stnCovCfgJsonObj: fmsResCfgJsonObj.getJsonArray()) {
+     for (int objIter= 0; objIter < fmsResCovCfgJsonArray.size(); objIter++) {
+
+       this.stationCovCfgList.add( new FMSStationCovarianceConfig( fmsResCovCfgJsonArray.getJsonObject(objIter))); //stnCovCfgJsonObj) );
      }
    }
 
@@ -69,7 +83,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
   }
 
   final public List<FMSStationCovarianceConfig> getFMSStationCovarianceConfigList() {
-    return this.stationsCovCfgList;
+    return this.stationCovCfgList;
   }
 
   final public void setMethod(final String method) {
@@ -82,7 +96,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
 
   @Override
   final public String toString() {
-    return whoAmi+"{" +
+    return whoAmI+"{" +
         "method=" + this.getMethod() + ", " +
         "tauhours=" + this.getTauHours() + ", " +
         "deltatminutes=" + this.getDeltaTMinutes() + ", " +

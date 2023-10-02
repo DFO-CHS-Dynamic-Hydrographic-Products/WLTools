@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WLStationTimeNode extends TimeNodeFactory implements IWL {
 
-  final private String whoAmI= "ca.gc.dfo.chs.wltools.wl.WLStationTimeNode";
+  final private static String whoAmI= "ca.gc.dfo.chs.wltools.wl.WLStationTimeNode";
 
   /**
    * static private log utility
@@ -127,7 +127,7 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
     //}
 
     //--- RECALL: this.dbData is just a reference to na already existing array of WLMeasurement objects:
-    this.wlmata= wlmData;
+    this.wlmData= wlmData;
 
     this.updatedForecast = null;
 
@@ -157,7 +157,7 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
     }
 
     if (this.wlmData[MODEL_FORECAST].measurement != null) {
-      ret= (ret && (prdSse == this.dbData[MODEL_FORECAST].seconds()));
+      ret= (ret && (prdSse == this.wlmData[MODEL_FORECAST].seconds()));
     }
 
     ret= (ret && (this.sse.seconds() == prdSse));
@@ -206,8 +206,8 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
     //this.log.debug("this.dbData[FORECAST]="+this.dbData[FORECAST]);
     //this.log.debug("this.dbData[PREDICTION]="+this.dbData[PREDICTION]);
 
-    return this.surge.setZw(this.dbData[QC_FORECAST].getDoubleZValue() -
-                             this.dbData[PREDICTION].getDoubleZValue());
+    return this.surge.setZw(this.wlmData[QC_FORECAST].getDoubleZValue() -
+                            this.wlmData[PREDICTION].getDoubleZValue());
   }
 
   /**
@@ -262,7 +262,7 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
 
     //--- Only need to add time weighted de-tided storm-surge to the forecast signal data:
     final double mergedValue= (this.updatedForecast.getValue() +
-                               fmfWeight * this.dbData[MODEL_FORECAST].getDoubleZValue());
+                               fmfWeight * this.wlmData[MODEL_FORECAST].getDoubleZValue());
 
     this.updatedForecast.setValue(mergedValue);
 

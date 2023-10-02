@@ -75,7 +75,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   //protected String locationId= null;
   protected String locationIdInfo= null;
 
-  protected String stormSurgeForecastModelName= "UNKNOWN";
+  protected String fullForecastModelName= "UNKNOWN";
 
   //protected DataType inputDataType= null;
 
@@ -89,14 +89,14 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   protected double adjLocationZCVsVDatum= 0.0;
 
   //protected ArrayList<WLMeasurement> locationOriginalData= null;
-  protected ArrayList<MeasurementCustom> locationPredData= null;
-  protected ArrayList<MeasurementCustom> locationAdjustedData= null;
+  protected List<MeasurementCustom> locationPredData= null;
+  protected List<MeasurementCustom> locationAdjustedData= null;
 
   //protected Map<String, ArrayList<WLMeasurement>> nearestObsData= null;
   //protected Map<String, ArrayList<WLMeasurement>> nearestModelData= null;
 
-  protected Map<String, ArrayList<MeasurementCustom>> nearestObsData= null;
-  protected Map<String, ArrayList<MeasurementCustom>> nearestModelData= null;
+  protected Map<String, List<MeasurementCustom>> nearestObsData= null;
+  protected Map<String, List<MeasurementCustom>> nearestModelData= null;
 
   protected String modelForecastInputDataInfo= null;
   protected List<String> modelForecastInputDataFiles= null;
@@ -185,7 +185,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     //--- Create the this.nearestModelData object to store the H2D2 ASCII WL
     //      forecast data
-    this.nearestModelData= new HashMap<String, ArrayList<MeasurementCustom>>();
+    this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
 
     final List<String> H2D2ASCIIWLFProbesDataLines=
       ASCIIFileIO.getFileLinesAsArrayList(H2D2ASCIIWLFProbesDataFile); //(this.modelInputDataFiles);
@@ -302,17 +302,14 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   // --- IMPORTANT: Do not use this method for WL observation data since we could
   //     have missing data so the result of this method could be misleading for 
   //     that kind of WL data. 
-  final long getDataTimeIntervallSeconds(final List<MeasurementCuston> dataList) {
-
-    //long ret= IWLStationPred.TIME_NOT_DEFINED;
-
-    final long firstTimeStampSeconds= dataList.get(0).getEventDate().getEpochSeconds();
-    final long secondTimeStampSeconds= dataList.get(1).getEventDate().getEpochSeconds();
-
-   // --- Do not assume that the secondTimeStampSeconds value is larger than the
-   //     firstTimeStampSeconds value so usr Math.abs here.
-    return Math.abs(secondTimeStampSeconds - firstTimeStampSeconds);
-  }
+ //public static final long getDataTimeIntervallSeconds(final List<MeasurementCustom> dataList) {
+ //   //long ret= IWLStationPred.TIME_NOT_DEFINED;
+ //   final long firstTimeStampSeconds= dataList.get(0).getEventDate().getEpochSeconds();
+ //   final long secondTimeStampSeconds= dataList.get(1).getEventDate().getEpochSeconds();
+ //  // --- Do not assume that the secondTimeStampSeconds value is larger than the
+ //  //     firstTimeStampSeconds value so usr Math.abs here.
+ //   return Math.abs(secondTimeStampSeconds - firstTimeStampSeconds);
+  //}
 
   /**
    * Comments please!

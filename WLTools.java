@@ -116,7 +116,7 @@ final public class WLTools extends WLToolsIO {
 
       wlStationPred.getAllPredictions();
 
-      wlStationPred.writeIfNeeded(IWLStationPredIO.OutputFormats.JSON); //.writeResults(IWLStationPred.OutputFormat.JSON)
+      wlStationPred.writeIfNeeded(IWLStationPredIO.Format.CHS_JSON); //.writeResults(IWLStationPred.OutputFormat.JSON)
 
       //wlStationPred.writeResults(IWLStationPred.OutputFormat.JSON)
 

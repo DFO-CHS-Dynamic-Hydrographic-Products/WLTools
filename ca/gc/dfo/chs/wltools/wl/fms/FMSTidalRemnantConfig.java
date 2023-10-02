@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import javax.json.JsonObject;
 import org.slf4j.LoggerFactory;
 
+import ca.gc.dfo.chs.wltools.wl.fms.IFMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSTime;
 
 //---
@@ -13,7 +14,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSTime;
 /**
  * FM Service master class.
  */
-final public class FMSTidalRemnantConfig extends LegacyFMSTime {
+final public class FMSTidalRemnantConfig extends LegacyFMSTime implements IFMSConfig {
 
   private final static String whoAmI=
      "ca.gc.dfo.chs.wltools.wl.fms.FMSTidalRemnantConfig";
@@ -32,10 +33,13 @@ final public class FMSTidalRemnantConfig extends LegacyFMSTime {
   /**
    *
    */
-  public FMSTidalRemnantConfig(final JsonObject fmsTidalRemnantCfgJsonObj) {
+  public FMSTidalRemnantConfig(final double tauHours,
+                               final double deltaTMinutes,
+                               final JsonObject fmsTidalRemnantCfgJsonObj) {
 
-    super( fmsTidalRemnantCfgJsonObj.getJsonNumber(LEGACY_TAU_HOURS_JSON_KEY).doubleValue(),
-           fmsTidalRemnantCfgJsonObj.getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue() ) ;
+    super(tauHours,deltaTMinutes);
+    //super( fmsTidalRemnantCfgJsonObj.getJsonNumber(LEGACY_TAU_HOURS_JSON_KEY).doubleValue(),
+    //       fmsTidalRemnantCfgJsonObj.getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue() ) ;
 
     this.maxEps1= fmsTidalRemnantCfgJsonObj.
      getJsonNumber(LEGACY_TIDAL_REMNANT_EPS1MAX_JSON_KEY).doubleValue();

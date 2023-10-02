@@ -1,13 +1,16 @@
 package ca.gc.dfo.chs.wltools.wl.fms;
 
-import org.slf4j.Logger;
+import java.time.Clock;
 import java.time.Instant;
 import javax.json.JsonObject;
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
+import ca.gc.dfo.chs.wltools.wl.fms.IFMSConfig;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.wl.fms.LegacyFMSDT;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
@@ -20,7 +23,7 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType;
 /**
  * FM Service master class.
  */
-abstract public class FMSConfig extends LegacyFMSDT {
+abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
 
   private final static String whoAmI=
      "ca.gc.dfo.chs.wltools.wl.fms.FMSConfig";
@@ -54,12 +57,12 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   // --- fmsResidualConfig object must be defined (i.e. not null)
   //     and set for all TG stations.
-  private FMSResidualConfig fmsResidualConfig= null;
+  protected FMSResidualConfig fmsResidualConfig= null;
 
   // --- fmsTidalRemnantConfig is relevant only for TG stations where
   //     the tidal signal (or energy) is significant otherwise it is null
   //     (e.g. in the Great Lakes or upstream the Portneuf TG in the St. Lawrence.
-  private FMSTidalRemnantConfig fmsTidalRemnantConfig= null;
+  protected FMSTidalRemnantConfig fmsTidalRemnantConfig= null;
 
   /**
    *
@@ -75,59 +78,63 @@ abstract public class FMSConfig extends LegacyFMSDT {
 
   public FMSConfig(final WLLocation wlLocation) {
 
+    //super();
+
     final String mmi= "FMSConfig main constructor: ";
 
     // --- WLLocation extends the HBCoords class
     this.stationHBCoords= (HBCoords) wlLocation; //stationHBCoords;
 
+    try {
+      wlLocation.getIdentity();
+
+    } catch (NullPointerException npe) {
+       throw new RuntimeException(mmi+npe);
+    }
+
     this.stationId= wlLocation.getIdentity(); // stationId; //wlAdjObj.getIdentity();
 
-    final JsonObject wllFMSConfigJsonObj= wlLocation.getFmsJsonObject();
+    final JsonObject wllFMSConfigJsonObj= wlLocation.getJsonCfgObj();
 
     // --- TODO: Add code that calculates the estimated forecast uncertainty
     this.stdErrSigma= 0.0;
 
-    this.deltaTMinutes= wllFMSConfigJsonObj.getString(LEGACY_DELTA_MINS_JSON_KEY);
+    //this.deltaTMinutes= wllFMSConfigJsonObj.getString(LEGACY_DELTA_MINS_JSON_KEY);
 
-    this.mergeWithSSFModel= wllFMSConfigJsonObj.getString(LEGACY_MERGE_JSON_KEY); //wlAdjObj.getStormSurgeForecastModelName();
+    this.mergeWithFullModelForecast=
+      wllFMSConfigJsonObj.getString(LEGACY_MERGE_JSON_KEY); //wlAdjObj.getStormSurgeForecastModelName();
 
-    final long predDataTimeIntervallSeconds= wlAdjObj.
-      getDataTimeIntervallSeconds(wlAdjObj.getPredictions());
-
-    final long forecastDataTimeIntervallSeconds= wlAdjObj.
-      getDataTimeIntervallSeconds(wlAdjObj.getForecasts());
-
-    if (predDataTimeIntervallSeconds > forecastDataTimeIntervallSeconds) {
-      throw new RuntimeException(mmi+"Cannot have predDataTimeIntervallSeconds > forecastDataTimeIntervallSecond !!");
-    }
-
-    // --- We use the forecastDataTimeIntervallSeconds as the deltaTMinutes
-    //     for the legacy FMS deltaTMinutes attribute
-    this.deltaTMinutes= ( ((double)forecastDataTimeIntervallSeconds)/ITimeMachine.SECONDS_PER_MINUTE );
-
-    if (wllFMSConfigJsonObj.contains(LEGACY_DELTA_MINS_JSON_KEY)) {
-
-      this.deltaTMinutes= wllFMSConfigJsonObj.
-        getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue();
-    }
+    //final long predDataTimeIntervallSeconds= wlAdjObj.
+    //  getDataTimeIntervallSeconds(wlAdjObj.getPredictions());
+    //final long forecastDataTimeIntervallSeconds= wlAdjObj.
+    //  getDataTimeIntervallSeconds(wlAdjObj.getForecasts());
+    //if (predDataTimeIntervallSeconds > forecastDataTimeIntervallSeconds) {
+    //  throw new RuntimeException(mmi+"Cannot have predDataTimeIntervallSeconds > forecastDataTimeIntervallSecond !!");
+    //}
+    //// --- We use the forecastDataTimeIntervallSeconds as the deltaTMinutes
+    ////     for the legacy FMS deltaTMinutes attribute
+    //this.deltaTMinutes= ( ((double)forecastDataTimeIntervallSeconds)/ITimeMachine.SECONDS_PER_MINUTE );
+    //if (wllFMSConfigJsonObj.containsKey(LEGACY_DELTA_MINS_JSON_KEY)) {
+    //  this.deltaTMinutes= wllFMSConfigJsonObj.
+    //    getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue();
+    //}
 
     this.fmfMergeDurationHours=
       IFMS.DEFAULT_FULL_MODEL_FORECAST_MERGE_HOURS;
 
-    if (wllFMSConfigJsonObj.contains(LEGACY_MERGE_HOURS_JSON_KEY)) {
+    if (wllFMSConfigJsonObj.containsKey(LEGACY_MERGE_HOURS_JSON_KEY)) {
 
       this.fmfMergeDurationHours= wllFMSConfigJsonObj.
-        getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).longValue();
+        getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).intValue();
     }
 
-    this.fmsResidualConfig= new
-      FMSResidualConfig(wllFMSConfigJsonObj.getJsonObject(LEGACY_RESIDUAL_JSON_KEY));
-
-    if (wllFMSConfigJsonObj.contains(LEGACY_TIDAL_REMNANT_JSON_KEY)) {
-
-      this.fmsTidalRemnantConfig= new
-        FMSTidalRemnantConfig(wllFMSConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY));
-    }
+    // --- Now Done in super-class FMSInput
+    //this.fmsResidualConfig= new
+    //  FMSResidualConfig(wllFMSConfigJsonObj.getJsonObject(LEGACY_RESIDUAL_JSON_KEY));
+    //if (wllFMSConfigJsonObj.contains(LEGACY_TIDAL_REMNANT_JSON_KEY)) {
+    //  this.fmsTidalRemnantConfig= new
+    //    FMSTidalRemnantConfig(wllFMSConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY));
+    //}
 
     this.referenceTime= Instant.now(Clock.systemUTC());
   }

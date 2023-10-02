@@ -61,23 +61,22 @@ final public class WLTimeNode extends TimeNodeFactory implements IWL {
   public WLTimeNode(final WLTimeNode pstr,
                     /*@NotNull @Size(min = 1)*/ final List<WLStationTimeNode> wlsda) {
 
-    final String mmi=
-      "WLTimeNode(final List<WLStationTimeNode> wlsda) constructor: ";
-
     //---  NOTE: it is mandatory that all WLStationTimeNode Objects of wlsda have the same time-stamp
-    super(wlsda.get(0).dbData[PREDICTION].seconds());
+    super(wlsda.get(0).wlmData[PREDICTION].seconds());
+
+    final String mmi= "WLTimeNode main constructor: ";
 
     slog.debug(mmi+"this.sse dt=" + this.sse.dateTimeString(true));
 
     this.pstr= pstr;
-    this.stationsNodes= new ArrayList<>(wlsda.size());
+    this.stationsNodes= new ArrayList<WLStationTimeNode>(wlsda.size());
 
     int stnIdx = 0;
 
     for (final WLStationTimeNode wlsd : wlsda) {
 
       //--- Check if we have time-synchronization between stations:
-      if (wlsd.dbData[PREDICTION].seconds() != this.sse.seconds()) {
+      if (wlsd.wlmData[PREDICTION].seconds() != this.sse.seconds()) {
 
         slog.error(mmi+"wlsd.wlpr.seconds() != this.sse.seconds() !, stnIdx=" + stnIdx);
         throw new RuntimeException(mmi);

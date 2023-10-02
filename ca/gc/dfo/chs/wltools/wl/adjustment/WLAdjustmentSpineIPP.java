@@ -237,7 +237,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
     // --- Instantiate the this.nearestObsData Map for subsequent usage
     //this.nearestObsData= new HashMap<String, ArrayList<WLMeasurement>>();
-    this.nearestObsData= new HashMap<String, ArrayList<MeasurementCustom>>();
+    this.nearestObsData= new HashMap<String, List<MeasurementCustom>>();
 
     //--- And initialize it with the 3 nearest TG location and null
     //    ArrayList<WLMeasurement> object for now (the ArrayList<WLMeasurement>
@@ -347,16 +347,16 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
     // --- Redefine this.locationId to include its spineDomainName and
     //     its cluster name and also remove the unwanted file name suffix.
-    final String locIdStrWithoutSuffix=
-      this.locationId.replace(INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX,"");
+    final String locIdStrWithoutSuffix= this.location.getIdentity().
+      replace(INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX,"");
 
-    this.locationId= spineDomainName +
+    final String spinelocationId= spineDomainName +
       IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + spineLocationClusterName +
               IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + locIdStrWithoutSuffix;
 
-    slog.info(mmi+"Redefined this.locationId to "+this.locationId);
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"spinelocationId= "+spinelocationId);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     // --- Build the path to the main discharges cluster directory where to find all the
     //     WDS grid points definition.
@@ -452,9 +452,9 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
         final HBCoords tgHBCoordsObj= nearestsTGCoords.get(tgNumStrId);
 
-        final double tmpDist=
-          Trigonometry.getDistanceInRadians(tgHBCoordsObj.getLongitude(), tgHBCoordsObj.getLatitude(),
-                                            spineLocHBCoordsObj.getLongitude(), spineLocHBCoordsObj.getLatitude());
+        final double tmpDist= Trigonometry.
+          getDistanceInRadians(tgHBCoordsObj.getLongitude(), tgHBCoordsObj.getLatitude(),
+                               spineLocHBCoordsObj.getLongitude(), spineLocHBCoordsObj.getLatitude());
 
         if (tmpDist < tgVsSpineLocMinDists.get(tgNumStrId) ) {
 
@@ -495,22 +495,23 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       this.tgsNearestSpineLocationsPred.put(tgNumStrId,
                                             this.getWLDataInJsonFmt(nsTidePredDataJsonFile));
 
-      if (nearestSpineLocationId.equals(this.locationId)) {
+      if (nearestSpineLocationId.equals(this.location.getIdentity())) {
 
          slog.info(mmi+"The Spine target location is also the nearest spine location of the CHS TG -> "+tgNumStrId);
 
-         this.spineLocationNSTPred= this.tgsNearestSpineLocationsPred.get(tgNumStrId);
+         this.spineLocationNSTPred= this.
+           tgsNearestSpineLocationsPred.get(tgNumStrId);
       }
     }
 
-    slog.info(mmi+"this.locationId="+this.locationId);
+    //slog.info(mmi+"spinelocationId="+spinelocationId);
 
     if (this.spineLocationNSTPred == null) {
 
       slog.info(mmi+"Filling-up this.spineLocationNSTPred with its NS_TIDE prediction data");
 
       final String nsTidePredDataJsonFile= nsTidePredInputDataDir +
-        File.separator + this.locationId + IWLStationPredIO.JSON_FEXT;
+        File.separator + spinelocationId + IWLStationPredIO.JSON_FEXT;
 
       slog.info(mmi+"NS_TIDE prediction data file for the spine target location -> "+nsTidePredDataJsonFile);
 

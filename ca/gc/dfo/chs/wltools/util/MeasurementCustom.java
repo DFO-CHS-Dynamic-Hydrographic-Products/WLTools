@@ -4,11 +4,13 @@ package ca.gc.dfo.chs.wltools.util;
  *
  */
 
+import java.util.List;
+import java.time.Instant;
+
 //---
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
 
 /**
  * MeasurementCustom:
@@ -77,5 +79,18 @@ final public class MeasurementCustom {
 
   public final void setUncertainty(final Double uncertainty) {
      this.uncertainty= uncertainty;
+  }
+
+  // --- IMPORTANT: Do not use this method for obs MeasurementCustom data
+  //     since we could have missing data so the result of this method could
+  //     be dangerously misleading this kind of data.
+  public final static long getDataTimeIntervallSeconds(final List<MeasurementCustom> mcList) {
+
+    final long firstTimeStampSeconds= mcList.get(0).getEventDate().getEpochSecond();
+    final long secondTimeStampSeconds= mcList.get(1).getEventDate().getEpochSecond();
+
+    // --- We do not assume that the secondTimeStampSeconds value is larger than the
+    //     firstTimeStampSeconds value so usr Math.abs here.
+    return Math.abs(secondTimeStampSeconds - firstTimeStampSeconds);
   }
 }

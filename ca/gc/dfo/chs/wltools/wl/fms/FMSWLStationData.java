@@ -73,7 +73,7 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
    * boolean flag to signal that we have some WL full model forecast to use for this WL station.
    */
   //boolean useSsf= false;
-   protected boolean useFullModelForecast= false;
+  protected boolean useFullModelForecast= false;
 
   /**
    * The time-increment(in seconds) between successive WL(O,P,F,SSF) data.
@@ -195,12 +195,15 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
 
     } else {
 
-      slog.warn(mmi+"No WL QC forecasts for station:"+
+      slog.info(mmi+"No WL QC forecasts for station:"+
                 this.stationId + ", replacing it with its prediction-climatology");
 
       this.wlMeasurementFinderList.add(QC_FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
 
-      throw new RuntimeException(mmi+"Debug exit here !!");
+      slog.info(mmi+"Debug exit 0 here !1");
+      System.exit(0);
+
+      //throw new RuntimeException(mmi+"Debug exit here !!");
     }
 
     //TODO : un-comment the following if-else block when the EXT_STORM_SURGE will be available in the DB
@@ -292,8 +295,10 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
     slog.info(mmi+"Will use " + this.secondsIncr + " seconds as the time increment in seconds");
 
     slog.info(mmi+"end");
+    slog.info(mmi+"System exit 0");
+    System.exit(0);
 
-    throw new RuntimeException(mmi+"Debug exit!");
+    //throw new RuntimeException(mmi+"Debug exit!");
   }
 
   // ----

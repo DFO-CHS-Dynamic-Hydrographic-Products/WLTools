@@ -49,14 +49,15 @@ abstract public class FMSFactory implements IFMS {
    */
   protected FMSWLData data;
 
-  /**
-   * The forecasts duration in seconds.
-   */
-  protected long fcstsDurationSeconds= (long) SECONDS_PER_HOUR * FORECASTS_DURATION_HOURS;
-  /**
-   * Equivalent of the forecast_interval C struct defined in the source file dvfm.c of the 1990 legacy ODIN C source
-   * code bundle.
-   */
+  ///**
+  // * The forecasts duration in seconds.
+  // */
+  //protected long fcstsDurationSeconds= (long) SECONDS_PER_HOUR * FORECASTS_DURATION_HOURS;
+
+  ///**
+  // * Equivalent of the forecast_interval C struct defined in the source file dvfm.c of the 1990 legacy ODIN C source
+  // * code bundle.
+  // */
   protected long fcstsTimeIncrSeconds= (long) SECONDS_PER_MINUTE * FORECASTS_TIME_INCR_MINUTES_MAX;
 
   /**
@@ -84,11 +85,10 @@ abstract public class FMSFactory implements IFMS {
     final FMSConfig fc0= fmsInputList.get(0);
 
     //if (!checkForecastingContext(fc0)) {
-    if (!checkFMSConfig(fc0)) {
-
-      slog.error(mmi+"checkFMSConfig(lfc0)==false!");
-      throw new RuntimeException(mmi+"Cannot update the WLF-QC !!");
-    }
+    //if (!checkFMSConfig(fc0)) {
+    //  slog.error(mmi+"checkFMSConfig(lfc0)==false!");
+    //  throw new RuntimeException(mmi+"Cannot update the WLF-QC !!");
+    //}
 
     //final String station0Id = fc0.getStationCode();
     //slog.debug(mmi+"station0Id=" + station0Id);
@@ -136,7 +136,7 @@ abstract public class FMSFactory implements IFMS {
 
     // --- Check the other LegacyFMSContext object (if any) in the legacyFMSContextList
     //for (final ForecastingContext fc : forecastingContextList.subList(1, forecastingContextList.size())) {
-    for (final FMSConfig fc: FMSConfigList.subList(1, fmsConfigList.size())) {
+    for (final FMSConfig fc: fmsInputList.subList(1, fmsInputList.size())) {
 
       try {
         fc.getStationId();
@@ -151,12 +151,11 @@ abstract public class FMSFactory implements IFMS {
 
       slog.info(mmi+"Now checking station: "+stationId);
 
-      //if (!checkForecastingContext(fc)) {
-      if (!checkFMSConfig(fc)) {
-
-        slog.error(mmi+"checkFMSConfig(fc)==false for station:" + stationId);
-        throw new RuntimeException("Cannot update WLF-QC (with or without WLF-SSE) for station=" + stationId);
-      }
+      ////if (!checkForecastingContext(fc)) {
+      //if (!checkFMSConfig(fc)) {
+      //  slog.error(mmi+"checkFMSConfig(fc)==false for station:" + stationId);
+      //  throw new RuntimeException("Cannot update WLF-QC (with or without WLF-SSE) for station=" + stationId);
+      //}
 
       slog.info(mmi+"Now checking station: "+stationId);
 
@@ -184,11 +183,11 @@ abstract public class FMSFactory implements IFMS {
 
     this.data= new FMSWLData(fcstsTimeIncrMinutes, fmsInputList); //forecastingContextList);
 
-    this.log.debug(mmi+"end\n");
+    slog.info(mmi+"end\n");
   }
 
   // ---
-  final List<MeasurementCustom> getNewForecastData() {
+  final public List<MeasurementCustom> getNewForecastData() {
     return this.data.getUpdatedForecastDataForTGStn0();
   }
 

@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  */
-abstract public class WLLocation extends HBCoords implements IWLLocation {
+public class WLLocation extends HBCoords implements IWLLocation {
 
   // --- For CHS TGs it is the CHS numeric string id. (e.g. "03248")
   protected String identity= null;
@@ -38,6 +38,8 @@ abstract public class WLLocation extends HBCoords implements IWLLocation {
   //protected HBCoords hbCoords= null;
 
   protected double zcVsVertDatum= 0.0;
+
+  protected JsonObject jsonCfgObj= null;
 
   // ---
   public WLLocation(final String identity) {
@@ -60,11 +62,15 @@ abstract public class WLLocation extends HBCoords implements IWLLocation {
   }
 
   final public String getIdentity() {
-    return this.Identity;
+    return this.identity;
   }
 
   final public double getZcVsVertDatum() {
     return this.zcVsVertDatum;
+  }
+
+  final public JsonObject getJsonCfgObj() {
+    return this.jsonCfgObj;
   }
 
   final public WLLocation setHBCoords(final double longitude, final double latitude) {
@@ -75,19 +81,30 @@ abstract public class WLLocation extends HBCoords implements IWLLocation {
     return this;
   }
 
-  public WLLocation setConfig(final JsonObject wllJsonObj) {
+  public WLLocation setConfig(final JsonObject wllJsonCfgObj) {
 
-    this.zcVsVertDatum= wllJsonObj.
-      getJsonNumber(IWLLocatiom.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
+    final String mmi= "setConfig: ";
 
-    this.setHBCoords(wllJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
-                     wllJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
+    try {
+      wllJsonCfgObj.size();
+
+    } catch (NullPointerException npe){
+      new RuntimeException(mmi+npe);
+    }
+
+    this.jsonCfgObj= wllJsonCfgObj;
+
+    this.zcVsVertDatum= this.jsonCfgObj.
+      getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
+
+    this.setHBCoords(this.jsonCfgObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
+                     this.jsonCfgObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
     return this;
   }
 
   //final public HBCoords getHBCoords() {
   //  return this.hbCoords;
-  //}
+  //}o
 
   //final public double getZcVsVertDatum() {
   //  return this.zcVsVertDatum;

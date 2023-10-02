@@ -72,7 +72,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
    * @param fcstsTimeIncrMinutes   : Time increment between each WLF data
    * @param forecastingContextList : List of ForecastingContext(Must have at least one item).
    */
-  FMSWLData(/*@Min(0)*/ final int fcstsTimeIncrMinutes,
+  FMSWLData(/*@Min(0)*/ final long fcstsTimeIncrMinutes,
             /*@NotNull @Size(min = 1) */ final List<FMSInput> fmsInputList) {
 
           // /*@NotNull @Size(min = 1) */ final List<FMSConfig> fmsConfigList) {
@@ -145,7 +145,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
    * @return This FMWLData object fully populated.
    */
   //@NotNull
-  private final FMSWLData populateFMSWLStationsData(/*@Min(0)*/ final int fcstsTimeIncrMinutes,
+  private final FMSWLData populateFMSWLStationsData(/*@Min(0)*/ final long fcstsTimeIncrMinutes,
                                                     /*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputList) {
                                                     //@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
 
@@ -168,7 +168,10 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
     if (fmsInputList.size() > 1) {
 
       // --- Stop exec here if fmsConfig.size() > 1 since this has not been tested yet
-      throw new RuntimeException(mmi+"Use of more than one TG station has not been tested yet!");
+      //throw new RuntimeException(mmi+"Use of more than one TG station has not been tested yet!");
+
+      slog.error(mmi+"fmsInputList.size() > 1: Usage of more than one TG station has not been tested yet!! exit 1!");
+      System.exit(1);
 
       slog.info(mmi+"fmsInputList.size() > 1: Need to validate all the related FMSConfig items with each other.");
 
@@ -299,7 +302,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
     } // --- for (final FMSInput fmsInputItem : FMSInputList) {
 
-    final long fcstsTimeIncrSeconds = SECONDS_PER_MINUTE * fcstsTimeIncrMinutes;
+    final long fcstsTimeIncrSeconds= SECONDS_PER_MINUTE * fcstsTimeIncrMinutes;
 
     //--- Check if the WLP time-increments are the same for all stations
     //    and set the stations statistics dependencies(Objects references).
