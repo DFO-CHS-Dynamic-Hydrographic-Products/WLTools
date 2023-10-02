@@ -112,7 +112,7 @@
       "nearestSpinePointId": "StLawrence-TroisRivieres-gridPoint-380",
       "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                      "residual": { "method": "LEGACY", "fallBackError": 0.1,
-                                   "covariance": [ { "stationId" : "03365", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
+                                   "covariance": [ { "stationId" : "03360", "fallBackCoeff": 0.95, "timeLagMinutes": 15.0 } ] }
      }
    },
 
