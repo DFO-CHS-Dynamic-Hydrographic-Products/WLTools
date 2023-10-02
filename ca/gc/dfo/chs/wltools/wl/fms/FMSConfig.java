@@ -37,21 +37,20 @@ abstract public class FMSConfig extends LegacyFMSDT {
   protected Instant referenceTime= null;
 
   // --- The name of the model used for the storm surge forecast signal.
-  private String mergeWithSSFModel= null;
+  private String mergeWithFullModelForecast= null;
 
   private double stdErrSigma;
 
   // --- The time duration in the future of the WLF-QC data.
+  //     AND also for the full forecast model data.
   //     TODO: Verify if it is really used, not yer clear if
   //           it is relevant or not (2023-09-20)
-  //private double durationHours;
+  protected double durationHoursInFuture;
 
   // --- ssfMergeDurationHours is the time duration in hours to use to
-  //     merge the FMS WLF-QC to a storm (and-or fresh water) surge WL
-  //     forecast (if any) coming from a numerical model result that
-  //     includes a storm (or fresh water) surge signal.
-  //     (ssf stands for Storm Surge Forecast)
-  private double ssfMergeDurationHours;
+  //     merge the FMS WLF-QC to a full (atmos forcings and-or fresh water)
+  //     model WL forecast (if any) coming from a numerical model output.
+  private int fmfMergeDurationHours;
 
   // --- fmsResidualConfig object must be defined (i.e. not null)
   //     and set for all TG stations.
@@ -112,13 +111,13 @@ abstract public class FMSConfig extends LegacyFMSDT {
         getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue();
     }
 
-    this.ssfMergeDurationHours=
-      IFMS.DEFAULT_STORM_SURGE_FORECAST_MERGE_HOURS;
+    this.fmfMergeDurationHours=
+      IFMS.DEFAULT_FULL_MODEL_FORECAST_MERGE_HOURS;
 
     if (wllFMSConfigJsonObj.contains(LEGACY_MERGE_HOURS_JSON_KEY)) {
 
-      this.ssfMergeDurationHours= wllFMSConfigJsonObj.
-        getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).doubleValue();
+      this.fmfMergeDurationHours= wllFMSConfigJsonObj.
+        getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).longValue();
     }
 
     this.fmsResidualConfig= new
@@ -158,20 +157,20 @@ abstract public class FMSConfig extends LegacyFMSDT {
     return this.referenceTime.getEpochSecond();
   }
 
-  final public String getMergeWithSSFModel() {
-    return this.mergeWithSSFModel;
+  final public String getMergeWithFullModelForecast() {
+    return this.mergeWithFullModelForecast;
   }
 
-  //final public double getDurationHours() {
-  //  return this.durationHours;
-  //}
+  final public double getDurationHoursInFuture() {
+    return this.durationHoursInFuture;
+  }
 
   final public double getStdErrSigma() {
     return this.stdErrSigma;
   }
 
-  final public double getSsfMergeDurationHours() {
-    return this.ssfMergeDurationHours;
+  final public int getFMFMergeDurationHours() {
+    return this.fmfMergeDurationHours;
   }
 
   //final public void setStationId(final String stationId) {

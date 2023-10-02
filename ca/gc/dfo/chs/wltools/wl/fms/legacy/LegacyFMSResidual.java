@@ -15,6 +15,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.IFMSResidual;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
@@ -74,7 +75,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
    * @return true if all the FMSConfig objects are ok, false otherwise.
    */
   //public final static boolean validateFMSConfig(@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextsList) {
-  public final static boolean validateFMSConfig(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
+  public final static boolean validateFMSConfig(/*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputList) {
 
     final String mmi= "validateFMSConfig; ";
 
@@ -83,7 +84,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
     boolean ret= true;
 
     //final ForecastingContext fc0 = forecastingContextsList.get(0);
-    final FMSConfig fc0= fmsConfigList.get(0);
+    final FMSConfig fc0= (FMSConfig)fmsInputList.get(0);
 
     final String referenceStationId= fc0.getStationId();
 
@@ -96,7 +97,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     //--- begin at item 1 to avoid comparing reference station with itself.
     //for (final ForecastingContext fc: forecastingContextsList.subList(1, forecastingContextsList.size())) {
-    for (final FMSConfig fc: fmsConfigList.subList(1, fmsConfigList.size())) {
+    for (final FMSConfig fc: fmsInputList.subList(1, fmsInputList.size())) {
 
       final String stationId= fc.getStationId();
 
@@ -119,12 +120,11 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
         break;
       }
 
-      if (fc.getDurationHours() != fc0.getDurationHours()) {
-
-        slog.error(mmi+"Must have the same Forecast duration hours for all FMSCnnfig objects, station in error: " + stationId);
-        ret= false;
-        break;
-      }
+      //if (fc.getDurationHours() != fc0.getDurationHours()) {
+      //  slog.error(mmi+"Must have the same Forecast duration hours for all FMSCnnfig objects, station in error: " + stationId);
+      //  ret= false;
+      //  break;
+      //}
 
 //            if (!rs.getMethod().equals(rs0.getMethod())) {
 //                this.log.error("Must have the same Residual method for all ForecastingContexts, station in error:
@@ -154,7 +154,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
       //--- Try to find a non-null TidalRemnant Object:
       //for (final ForecastingContext fc : forecastingContextsList) {
-      for (final FMSConfig fc : fmsConfigList) {
+      for (final FMSConfig fc : fmsInputList) {
 
         if ((tr0= fc.getFMSTidalRemnantConfig()) != null) {
           break;
@@ -167,7 +167,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
       slog.info(mmi+"Found a non-null FMSTidalRemnantConfig object, validate it with other FMSTidalRemnantConfig objects (if any)");
 
       //for (final ForecastingContext fc : forecastingContextsList) {
-      for (final FMSConfig fc : fmsConfigList) {
+      for (final FMSConfig fc: fmsInputList) {
 
         final FMSTidalRemnantConfig tr= fc.getFMSTidalRemnantConfig();
 
@@ -226,7 +226,8 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
     //final FmsParameters fmsParameters = forecastingContext.getFmsParameters();
     //final Forecast forecastCfg = fmsParameters.getForecast();
 
-    final double forecastDurationSeconds= SECONDS_PER_HOUR * fmsInput.getDurationHours();
+    final double forecastDurationSeconds=
+      SECONDS_PER_HOUR * fmsInput.getDurationHoursInFuture();
 
     if (fmsInput.getFMSTidalRemnantConfig() != null) {
 
@@ -291,10 +292,11 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     final String mmi= "newFMSTimeNode: ";
 
-    slog.info(info+"pstr=" + pstrWLStationTimeNode +
+    slog.info(mmi+"pstr=" + pstrWLStationTimeNode +
               ", sse.dt=" + secondsSinceEpoch.dateTimeString(true));
 
-    return this.residual.getFMSTimeNode(pstrWLStationTimeNode, secondsSinceEpoch, data);
+    return this.residual.
+      getFMSTimeNode(pstrWLStationTimeNode, secondsSinceEpoch, data);
   }
 
   /**
@@ -317,7 +319,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
     final String dts= wlStationTimeNode.getSse().dateTimeString(true);
 
     slog.info(mmi+"Computing Legacy residual at at time stamp: " + dts +
-              " for station: " + stationCode + ", stillGotWLO=" + stillGotWLOs);
+              " for station: " + stationId + ", stillGotWLO=" + stillGotWLOs);
 
     if (wlStationTimeNode.get(WLType.OBSERVATION) != null) {
 

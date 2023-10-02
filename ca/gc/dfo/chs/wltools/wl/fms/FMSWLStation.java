@@ -15,6 +15,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
+//import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.fms.IFMSResidual;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
@@ -53,7 +54,8 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   /**
    * Array of FMWLMeasurement objects references.
    */
-  private final FMSWLMeasurement[] dataReferences= new FMSWLMeasurement[WLType.values().length];
+  private final FMSWLMeasurement []
+    dataReferences= new FMSWLMeasurement[WLType.values().length];
 
   /**
    * The generic IFMResidual used for WL errors residuals computations.
@@ -89,7 +91,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
   FMSWLStation(/*@Min(0)*/ final int stationNodeIndex, /*@NotNull*/ final FMSInput fmsInput) {
 
-    this(stationNodeIndex, FMSInput, GlobalVerticalDatum.NAVD88, 0.0);
+    this(stationNodeIndex, fmsInput, GlobalVerticalDatum.NAVD88, 0.0);
   }
 
   /**
@@ -105,12 +107,12 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   private FMSWLStation(/*@Min(0)*/ final int stationNodeIndex, /*@NotNull*/ final FMSInput fmsInput,
                        /*@NotNull*/ final IGeo.GlobalVerticalDatum globalVerticalDatum, final double globalVerticalOffset) {
 
+    //super(forecastingContext, globalVerticalDatum, globalVerticalOffset);
+    super(fmsInput, globalVerticalDatum, globalVerticalOffset);
+
     final String mmi= "FMSWLStation main constructor: ";
 
-    //super(forecastingContext, globalVerticalDatum, globalVerticalOffset);
-   super(fmsInput, globalVerticalDatum, globalVerticalOffset);
-
-    this.log.debug(mmi+"Start: stationId:" + this.getStationId());
+    slog.info(mmi+"Start: stationId:" + this.getStationId());
 
     if (fmsInput == null) {
 
@@ -136,7 +138,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
     //--- Duration in seconds after which the merge to the storm surge forecast(if any) is complete:
     //final long mergeDurationSeconds = SECONDS_PER_HOUR * forecastParameters.getMergeHours().longValue();
-    final long mergeDurationSeconds= (long) SECONDS_PER_HOUR * fmsInput.getSsfMergeDurationHours();
+    final long mergeDurationSeconds= (long) SECONDS_PER_HOUR * fmsInput.getFMFMergeDurationHours();
 
     if (mergeDurationSeconds < 0L) {
       slog.error(mmi+"mergeDurationSeconds<0L");
@@ -225,6 +227,11 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     slog.debug(mmi+"End for station:" + this.getStationId());
   }
 
+  // ---
+  public final IFMSResidual getIFMSResidual() {
+    return this.fmsResidual;
+  }
+
   /**
    * @param timeStampSeconds : The time-stamp where we want the WL PREDICTION, OBSERVATION, FORECAST(if any) and
    *                         EXT_STORM_SURGE(if any).
@@ -284,6 +291,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
                                                            /*@NotNull*/ final SecondsSinceEpoch sse,
                                                            /*(@Min(0)*/ final long sseFutureThreshold) {
 
+    final String mmi= "getNewWLStationFMTimeNode: ";
     //final String dts= sse.dateTimeString(true);
     //final String stationId= this.stationId;
 
@@ -304,7 +312,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     //  slog.debug(mmi+"psr dt= " + psr.getSse().dateTimeString(true));
     //}
 
-    slog.info(mmi+"this.ssfMergeCompleteSse dt=" + SecondsSinceEpoch.dtFmtString(this.ssfMergeCompleteSse, true));
+    slog.info(mmi+"this.ssfMergeCompleteSse dt=" + SecondsSinceEpoch.dtFmtString(this.fmfMergeCompleteSse, true));
     slog.info(mmi+"this.tiForecastMergeWeight=" + this.tiForecastMergeWeight);
 
     return FMSResidualFactory.processFMSWLStation(psr, sse, sseFutureThreshold, this);

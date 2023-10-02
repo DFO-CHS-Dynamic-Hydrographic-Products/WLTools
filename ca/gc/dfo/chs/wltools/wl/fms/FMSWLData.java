@@ -7,9 +7,10 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.gc.dfo.chs.wltools.tidal.ITidal;
+//import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
-import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+//import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -36,7 +37,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData;
  * Group one (or more) WL station(s) data and configuration needed for the production of the default FM service
  * forecasts.
  */
-final public class FMSWLData implements IFMS, ITidal, ITidalIO {
+final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
   private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSWLData";
 
@@ -160,28 +161,29 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
     //final ForecastingContext fc0 = forecastingContextList.get(0);
     final FMSInput fmsInput0= fmsInputList.get(0);
 
-    final String residualMethod= fmsInput0.getFMSResidualConfig().getMethod();  //fc0.getFmsParameters().getResidual().getMethod();
+    final String residualMethod=
+      fmsInput0.getFMSResidualConfig().getMethod();  //fc0.getFmsParameters().getResidual().getMethod();
 
     //if (forecastingContextList.size() > 1) {
-    if (fmsInput0.size() > 1) {
+    if (fmsInputList.size() > 1) {
 
       // --- Stop exec here if fmsConfig.size() > 1 since this has not been tested yet
       throw new RuntimeException(mmi+"Use of more than one TG station has not been tested yet!");
 
-      slog.info(mmi+"fmsConfig.size()>1: Need to validate FMSConfig items with each other.");
+      slog.info(mmi+"fmsInputList.size() > 1: Need to validate all the related FMSConfig items with each other.");
 
-      if (! FMSResidualFactory.validateStationsFMSConfig(residualMethod, (List<FMSConfig>) fmsInputList)) { // forecastingContextList)) {
+      if (! FMSResidualFactory.validateStationsFMSConfig(residualMethod, fmsInputList)) { // forecastingContextList)) {
 
         slog.error(mmi+"fmsConfigList items validation failed");
         throw new RuntimeException(mmi+"Cannot update forecast !");
       }
 
-      slog.info(mmi+"fmsConfig.size() > 1: Success for ForecastingContext items validation.");
+      slog.info(mmi+"fmsInputList.size() > 1: Success for the FMSConfig items validation.");
     }
 
     //--- Create new FMWLStationData Objects in this.allStationsData:
     //for (final ForecastingContext forecastingContext : forecastingContextList) {
-    for (final FMSInput fmsInputItem : FMSInputList) {
+    for (final FMSInput fmsInputItem: fmsInputList) {
 
       if (fmsInputItem == null) {
 
@@ -189,7 +191,7 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
         throw new RuntimeException(mmi+"Cannot update forecast !");
       }
 
-      final String stationId = fmsInputItem.getStationId();
+      final String stationId= fmsInputItem.getStationId();
 
       slog.debug(mmi+"Populating residuals errors statistics data structures for station: " + stationId);
 
@@ -309,14 +311,14 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
       if (fmsd.secondsIncr != fcstsTimeIncrSeconds) {
 
         slog.error(mmi+"fmsd.secondsIncr=" + fmsd.secondsIncr +
-          "!= fcstsTimeIncrSeconds="+ fcstsTimeIncrSeconds + " for station:" + fmsd.getStationCode());
+          "!= fcstsTimeIncrSeconds="+ fcstsTimeIncrSeconds + " for station:" + fmsd.getStationId());
 
         throw new RuntimeException(mmi+"Cannot update forecast !");
       }
 
       //--- Set the FMResidualFactory objects references in the covariance statistics data stuctures
       //    of the underlying FMResidualFactory object of the current fmsd.residual
-      fmsd.residual.getFMSResidualFactory().
+      fmsd.getIFMSResidual().getFMSResidualFactory().
         setAuxCovsResiduals(fmsd.getStationId(), stationsResiduals);
     }
 
@@ -359,7 +361,7 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
       throw new RuntimeException(mmi+"Cannot update forecast !");
     }
 
-    return checkIt.residual;
+    return checkIt.getIFMSResidual();
   }
 
   /**
@@ -380,7 +382,7 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
 
       this.wlsnaTmp.add(station.getNewWLStationFMTimeNode(pstrWLTimeNode, sse, this.referenceSse));
 
-      slog.info(mmi+"station: " + station.getStationid()+
+      slog.info(mmi+"station: " + station.getStationId()+
                 " processed for time-stamp: " + sse.dateTimeString(true));
     }
 
@@ -451,7 +453,7 @@ final public class FMSWLData implements IFMS, ITidal, ITidalIO {
 
       ASCIIFileIO.writeOdinAsciiFmtFile(station.getStationId(),
                                         this.timeNodes.get(0).getStationNode(stn++),
-                                        station.udpatedForecastData, outDir);
+                                        station.getUpdatedForecastData(), outDir);
     }
 
     slog.info(mmi+"end");

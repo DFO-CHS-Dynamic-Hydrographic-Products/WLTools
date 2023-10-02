@@ -105,7 +105,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
       throw new RuntimeException(mmi);
     }
 
-    final double timeOffse= (double) (nts - this.lastUpdateSse.seconds());
+    final double timeOffset= (double) (nts - this.lastUpdateSse.seconds());
 
     slog.info(mmi+"timeOffset=" + timeOffset);
 
@@ -122,7 +122,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
     //--- Get the estimated tidal remnant for this node
     //    G. Mercier FMS 2018 modification:
     //    No time decay factor for remnant itself but we apply an increasing time factor for its error.
-    trn.remnant().
+    trn.getRemnant().
       set(trd.computeRemnant(), Math.sqrt(1.0 - trd.getErrorWeight(timeOffset * trd.tauInv)) * trd.eps);
 
     slog.info(mmi+"trn.remnant.getZw()=" + trn.remnant.getZw());

@@ -80,7 +80,7 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
    */
   public LegacyResidual(/*@NotNull*/ final FMSResidualConfig residualCfg, /*@NotNull*/ final String stationId) {
 
-    this(residualCfg, stationId, residualCfg.getDeltaTMinutes().doubleValue());
+    this(residualCfg, stationId, residualCfg.getDeltaTMinutes()) ; //.doubleValue());
   }
 
   /**
@@ -90,12 +90,11 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
    */
   public LegacyResidual(/*@NotNull*/ final FMSResidualConfig residualCfg,
                         /*@NotNull*/ final String stationId, /*@Min(1)*/ final double timeIncrDtMinutes) {
+    super(stationId);
 
     final String mmi= "LegacyResidual constructor: ";
 
-    super(stationId);
-
-    slog.info(mmi+"start for station:" + stationCode);
+    slog.info(mmi+"start for station:" + stationId);
 
     if (residualCfg == null) {
 
@@ -254,7 +253,7 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
       //--- G. Mercier FMS 2018 modification:
       //    Now let the "long term" surge to decay more slowly than the "short term" surge
       //    in cases where we have a tidal remnant signal to use:
-      this.longTermSurge *= Math.exp(-timeFactor * this.longTermOffsetFactor);
+      this.longTermOffset *= Math.exp(-timeFactor * this.longTermOffsetFactor);
     }
 
     slog.info(mmi+"this.longTermOffset=" + this.longTermOffset);
@@ -299,7 +298,8 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
     //    as it is.
     //    NOTE: estimatedSurgeError is always >= 0.0 see computeEstimatedSurge method in source file LegacyFMCov for
     //    details:
-    final double estimatedTotalSurgeError= Math.sqrt(estimatedSurgeError + ScalarOps.square(remnantError));
+    final double estimatedTotalSurgeError=
+      Math.sqrt(estimatedSurgeError + ScalarOps.square(remnantError));
 
     slog.info(mmi+"estimatedTotalSurgeZw=" + estimatedTotalSurgeZw);
     slog.info(mmi+"estimatedTotalSurgeError=" + estimatedTotalSurgeError);
@@ -476,7 +476,7 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
     slog.info(mmi+"wlstn dt=" + wlStationTimeNode.getSse().dateTimeString(true));
     slog.info(mmi+"rd.tau=" + resData.tau);
     slog.info(mmi+"rd.dt=" + resData.dt);
-    slog.info(mmi+"longTermSurge=" + this.longTermSurge);
+    slog.info(mmi+"longTermOffset=" + this.longTermOffset);
 
     //--- Always need to do time scaling:
     double e2 = resData.dataTimeScaling();
@@ -490,12 +490,12 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
       slog.info(mmi+"!cd.getValidAxSurgesInZX(node.seconds(),rd.zX) at"+
                 wlStationTimeNode.getSse().dateTimeString(true) + ", need to use WLF surge.");
 
-      slog.info(mmi+"wlstn.getWlfSurge()=" + wlStationTimeNode.getWlfSurge());
-      slog.info(mmi+"wlstn.get(WLType.FORECAST)=" + wlStationTimeNode.get(WLType.FORECAST));
+      slog.info(mmi+"wlstn.getQCFSurge()=" + wlStationTimeNode.getQCFSurge());
+      slog.info(mmi+"wlstn.get(WLType.QC_FORECAST)=" + wlStationTimeNode.get(WLType.QC_FORECAST));
 
       //--- The direct surge is then computed with the FORECAST and its error is also the FORECAST error:
-      wlStationTimeNode.setSurge(wlStationTimeNode.getWlfSurge(),
-          wlStationTimeNode.get(WLType.FORECAST).getDoubleZError());
+      wlStationTimeNode.
+        setSurge(wlStationTimeNode.getQCFSurge(),wlStationTimeNode.get(WLType.QC_FORECAST).getDoubleZError());
 
     } else {
 

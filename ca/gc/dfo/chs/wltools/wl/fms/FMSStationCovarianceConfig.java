@@ -25,9 +25,9 @@ final public class FMSStationCovarianceConfig implements IFMSConfig {
 
   private String stationId= null;
 
-  private double fallBackCoeff = null;
+  private double fallBackCoeff= 0.0; //null;
 
-  private double timeLagMinutes= null;
+  private double timeLagMinutes= 0.0; //null;
 
   /**
    *
@@ -55,7 +55,7 @@ final public class FMSStationCovarianceConfig implements IFMSConfig {
   //  this.timeLagMinutes= timeLagMinutes;
   //}
 
-  final String getStationId() {
+  final public String getStationId() {
     return this.stationId;
   }
 
@@ -77,7 +77,7 @@ final public class FMSStationCovarianceConfig implements IFMSConfig {
 
   @Override
   final public String toString() {
-    return whoAmi+"{" +
+    return whoAmI+"{" +
         "stationId='" + this.stationId + '\'' +
         ", timeLagMinutes=" + this.timeLagMinutes +
         ", fallBackCoeff=" + this.fallBackCoeff +

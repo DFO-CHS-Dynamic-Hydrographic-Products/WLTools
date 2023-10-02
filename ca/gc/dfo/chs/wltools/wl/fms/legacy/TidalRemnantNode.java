@@ -42,7 +42,7 @@ final public class TidalRemnantNode extends WLStationTimeNode implements ILegacy
   /**
    * WLZE object to store the tidal remnant component data
    */
-  protected WLZE remnant = null;
+  protected WLZE remnant= null;
 
   /**
    * @param pstrTidalRemnantNode : The WL station TidalRemnantNode(could be null for the 1st time iteration)
@@ -57,6 +57,9 @@ final public class TidalRemnantNode extends WLStationTimeNode implements ILegacy
                           /*@NotNull @Size(min = 4)*/ final FMSWLMeasurement[] data) {
 
     super(pstrTidalRemnantNode, secondsSinceEpoch, data);
+
+    final String mmi= "TidalRemnantNode main constructor: ";
+
     this.remnant= new WLZE(0.0, 0.0);
 
     slog.info(mmi+"this=" + this);
@@ -73,7 +76,7 @@ final public class TidalRemnantNode extends WLStationTimeNode implements ILegacy
    * @return this.remnant
    */
   //@NotNull
-  protected final WLZE remnant() {
+  protected final WLZE getRemnant() {
     return this.remnant;
   }
 }

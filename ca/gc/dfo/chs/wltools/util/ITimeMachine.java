@@ -36,6 +36,7 @@ public interface ITimeMachine {
   int DAYS_PER_NORMAL_YEAR = 365;
   int SECONDS_PER_DAY = HOURS_PER_DAY * SECONDS_PER_HOUR;
   int HOURS_PER_NORMAL_YEAR = HOURS_PER_DAY * DAYS_PER_NORMAL_YEAR;
+
   double HOURS_PER_NORMAL_YEAR_INVD = 1.0 / (double) HOURS_PER_NORMAL_YEAR;
   /**
    * INF_YEAR_LIMIT: Lower limit for tidal predictions

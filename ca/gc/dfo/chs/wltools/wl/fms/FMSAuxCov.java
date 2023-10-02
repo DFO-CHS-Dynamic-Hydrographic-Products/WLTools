@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
 
 //import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
@@ -106,6 +107,8 @@ abstract public class FMSAuxCov implements IFMS {
    * Print this FMAuxCov object contents on the log info stream.
    */
   public void showMe() {
+    final String mmi= "ShowMe: ";
+
     slog.info(mmi+"this.residual.stationId= "+this.residual.stationId+
               ": this.timeLagSeconds=" + this.timeLagSeconds);
   }

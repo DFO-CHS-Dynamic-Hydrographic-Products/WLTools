@@ -30,7 +30,7 @@ final public class LegacyFMSAuxCov extends FMSAuxCov implements ILegacyFMS {
   /**
    * The Legacy forecast method fall back coefficient in case the time-weighted WL surge (or offset) is small.
    */
-  protected double fallBack= 0.0; //--- fall-back coefficient (named "b" in model.h from the legacy ODIN-DVFM 1990 kit)
+  private double fallBack= 0.0; //--- fall-back coefficient (named "b" in model.h from the legacy ODIN-DVFM 1990 kit)
 
   /**
    * @param timeLagMinutes      : The time lag in minutes of the master FMResidualFactory object of the WL station for
@@ -63,6 +63,10 @@ final public class LegacyFMSAuxCov extends FMSAuxCov implements ILegacyFMS {
 
     super(timeLagMinutes, stationCovarianceId, fmsResidualFactory);
     this.fallBack= fallBack;
+  }
+
+  public final double getFallBack() {
+    return this.fallBack;
   }
 
   /**

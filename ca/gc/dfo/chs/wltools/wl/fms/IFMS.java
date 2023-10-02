@@ -29,13 +29,13 @@ public interface IFMS extends IWL, ITimeMachine, ITrigonometry {
   /**
    * Normal legacy WLF-QC "forecasts" (i.e. without external atmos. data forcings) duration in hours.
    */
-  int FORECASTS_DURATION_HOURS= 48;
+  int QC_FORECASTS_DURATION_HOURS= 48;
 
   // --- TODO: change FORECASTS_DURATION_HOURS_MAX to WLF_QC_DURATION_HOURS_MAX
   /**
    * Maximum legacy WLF-QC "forecasts" (i.e. without external atmos. data forcings) duration in hours.
    */
-  int FORECASTS_DURATION_HOURS_MAX= 96;
+  int QC_FORECASTS_DURATION_HOURS_MAX= 96;
 
   //--- For possible future usage.
   //int FORECASTS_DURATION_HOURS_MIN= FORECASTS_DURATION_HOURS;
@@ -60,13 +60,13 @@ public interface IFMS extends IWL, ITimeMachine, ITrigonometry {
    */
   int FORECASTS_TIME_INCR_MINUTES_MAX= 15;
 
-  int DEFAULT_STORM_SURGE_FORECAST_MERGE_HOURS= 6;
+  int DEFAULT_FULL_MODEL_FORECAST_MERGE_HOURS= 6;
 
   // --- TODO: Change FORECASTS_TIME_INCR_MINUTES_ALLOWED to WLF_QC_TIME_INCR_MINUTES_ALLOWED
   /**
    * Regroup the 3 FORECASTS_TIME_INCR_MINUTES* constants in an array.
    */
-  int[] FORECASTS_TIME_INCR_MINUTES_ALLOWED = {FORECASTS_TIME_INCR_MINUTES_MIN,
+  int [] FORECASTS_TIME_INCR_MINUTES_ALLOWED = {FORECASTS_TIME_INCR_MINUTES_MIN,
       FORECASTS_TIME_INCR_MINUTES,
       FORECASTS_TIME_INCR_MINUTES_MAX};
 

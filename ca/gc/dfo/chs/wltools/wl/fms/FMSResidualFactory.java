@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
+//import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
@@ -42,7 +43,8 @@ import ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSResidual;
  */
 abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements IFMS {
 
-  private static final String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory";
+  private static final String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory";
 
   /**
    * static log utility.
@@ -114,7 +116,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     this.nbMissingWLO = 0;
 
-    slog.info(mmi+"this.stationCode=" +this.stationCode+
+    slog.info(mmi+"this.stationId" +this.stationId+
               ", this.residualMethod=" + this.residualMethod);
   }
 
@@ -130,6 +132,8 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
   //@NotNull
  // protected static IFMSResidual getIFMSResidual(@NotNull final ForecastingContext forecastingContext,
   protected static IFMSResidual getIFMSResidual(/*@NotNull*/ final FMSInput fmsInput, /*@Min(0)*/ final long lastWLOSse) {
+
+    final String mmi= "getIFMSResidual: ";
 
     try {
       //forecastingContext.getFmsParameters();
@@ -152,7 +156,8 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     slog.info(mmi+"Start");
 
-    final String residualMethodCheck= fmsInput.getFMSResidualConfig().getMethod(); //forecastingContext.getFmsParameters().getResidual().getMethod();
+    final String residualMethodCheck=
+      fmsInput.getFMSResidualConfig().getMethod(); //forecastingContext.getFmsParameters().getResidual().getMethod();
 
     try {
       residualMethodCheck.length();
@@ -272,9 +277,17 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     final boolean stillGotWLOs= (seconds <= fmwlStation.lastWLOSse);
 
-    final WLStationTimeNode wlstn = fmwlStation.residual.
-      processWLStationTimeNode(stationCode, stillGotWLOs,
-        fmwlStation.residual.newFMSTimeNode(pstrWLStationTimeNode, sse, stationMeasurementsRef));
+    final IFMSResidual fmsResidual= fmwlStation.getIFMSResidual();
+
+    final WLStationTimeNode newWLStationTimeNode= fmsResidual.
+      newFMSTimeNode(pstrWLStationTimeNode, sse, stationMeasurementsRef);
+
+    final WLStationTimeNode wlstn= fmsResidual.
+      processWLStationTimeNode(stationId, stillGotWLOs, newWLStationTimeNode);
+
+    //final WLStationTimeNode wlstn=
+    //  fmwlStation.getIFMSResidual().processWLStationTimeNode(stationId, stillGotWLOs,
+    //    fmwlStation.getIFMSResidual().newFMSTimeNode(pstrWLStationTimeNode, sse, stationMeasurementsRef));
 
     if (seconds >= sseFutureThreshold) {
 
@@ -316,7 +329,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
    * otherwise.
    */
   protected static final boolean validateStationsFMSConfig(/*@NotNull*/ final String residualMethodCheck,
-                                                           /*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
+                                                           /*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputList) {
                                                            ///*@NotNull @Size(min = 1)*/ final List<ForecastingContext> forecastingContextList) {
 
     final String mmi= "validateStationsFMSConfig: ";
@@ -329,7 +342,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
       case LEGACY:
 
-        LegacyFMSResidual.validateFMSConfig(fmsConfigList);
+        LegacyFMSResidual.validateFMSConfig(fmsInputList);
         //LegacyFMSResidual.validateFMConfigParameters(forecastingContextList);
         break;
 

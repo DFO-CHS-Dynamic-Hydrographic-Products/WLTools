@@ -48,7 +48,7 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
   /**
    * static log utility.
    */
-  private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * fall-back model error. It is simply named "e" in C struct model_status defined
@@ -119,7 +119,7 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
         add(new LegacyFMSAuxCov(DEFAULT_AUX_COV_TIME_LAG_MINUTES, DEFAULT_AUX_COV_FALL_BACK_COEFF, stationId));
     }
 
-    slog.end(mmi+"nb. aux. cov=" + this.auxCovs.size());
+    slog.info(mmi+"nb. aux. cov=" + this.auxCovs.size());
   }
 
   /**
@@ -135,8 +135,12 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
    * @return The WLZE object with the newly estimated WL direct surge component.
    */
   //@NotNull
-  public final WLZE computeEstimatedSurge(final double surgeWeight, final double errorWeight, final double eps,
-                                          /*@NotNull*/ final D1Data zX, /*@NotNull*/ final D1Data errBeta, /*@NotNull*/ final WLZE estimatedSurge) {
+  public final WLZE computeEstimatedSurge(final double surgeWeight,
+                                          final double errorWeight,
+                                          final double eps,
+                                          /*@NotNull*/ final D1Data zX,
+                                          /*@NotNull*/ final D1Data errBeta,
+                                          /*@NotNull*/ final WLZE estimatedSurge) {
 
     final String mmi= "computeEstimatedSurge: ";
 
@@ -155,7 +159,8 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
     double value= 0.0;
 
     //--- Init surge error according to Equation 4.16 of the original DVFM documentation:
-    double error= errorWeight * ScalarOps.square(eps) + (1.0 - errorWeight) * this.squareFallBackError;  //ScalarOps
+    double error= errorWeight * ScalarOps.square(eps) +
+      (1.0 - errorWeight) * this.squareFallBackError;  //ScalarOps
     // .square(this.fallBackError);
 
     //--- The following loop is the equivalent of the loop used to compute the estimated surge value
