@@ -32,6 +32,10 @@ import org.slf4j.LoggerFactory;
  */
 public class WLLocation extends HBCoords implements IWLLocation {
 
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.WLLocation";
+
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
+
   // --- For CHS TGs it is the CHS numeric string id. (e.g. "03248")
   protected String identity= null;
 
@@ -85,6 +89,8 @@ public class WLLocation extends HBCoords implements IWLLocation {
 
     final String mmi= "setConfig: ";
 
+    slog.info(mmi+"start");
+
     try {
       wllJsonCfgObj.size();
 
@@ -97,8 +103,15 @@ public class WLLocation extends HBCoords implements IWLLocation {
     this.zcVsVertDatum= this.jsonCfgObj.
       getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
+    //slog.info(mmi+"this.zcVsVertDatum="+this.zcVsVertDatum);
+
     this.setHBCoords(this.jsonCfgObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
                      this.jsonCfgObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
+
+    slog.info(mmi+"end");
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
+
     return this;
   }
 

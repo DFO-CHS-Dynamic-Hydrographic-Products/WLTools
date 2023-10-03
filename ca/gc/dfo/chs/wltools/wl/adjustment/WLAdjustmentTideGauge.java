@@ -63,7 +63,7 @@ import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
   private final static String whoAmI=
-    "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentTideGauge: ";
+    "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentTideGauge";
 
  /**
    * Usual class static log utility.
@@ -108,7 +108,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     super(IWLAdjustment.Type.TideGauge, argsMap);
 
-    final String mmi= "WLAdjustmentTideGauge main constructor ";
+    final String mmi= "WLAdjustmentTideGauge main constructor: ";
 
     slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
 
@@ -221,7 +221,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       jsonFileInputStream= new FileInputStream(tideGaugesInfoFile);
 
     } catch (FileNotFoundException e) {
-      throw new RuntimeException(mmi+"e");
+      throw new RuntimeException(mmi+e);
     }
 
     final JsonObject mainJsonMapObj= Json.
@@ -238,7 +238,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                                  " !! Must be one of ->"+tgStrNumIdKeysSet.toString());
     }
 
-    //slog.info(mmi+"tgStrNumIdKeysSet.toString()="+tgStrNumIdKeysSet.toString());
+    slog.info(mmi+"tgStrNumIdKeysSet.toString()="+tgStrNumIdKeysSet.toString());
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -248,13 +248,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //  mainJsonMapObj.getJsonObject(this.locationIdInfo).
     //    getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
-    this.location.setConfig(mainJsonMapObj);
+    this.location.setConfig(mainJsonMapObj.getJsonObject(this.locationIdInfo));
 
     slog.info(mmi+"this.location.getZcVsVertDatum()="+this.location.getZcVsVertDatum());
     //final JsonObject test= mainJsonMapObj.getJsonObject(this.locationIdInfo);
     //slog.info(mmi+"test:"+test.toString());
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- We can close the tide gauges info Json file now
     try {
@@ -276,10 +276,11 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     }
 
     slog.info(mmi+"Done with reading prediction input data from file -> "+tideGaugePredictInputDataFile);
+    slog.info(mmi+"this.locationPredData.size()="+this.locationPredData.size());
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    slog.info(mmi+"Reading the TG obs (WLO) at TG -> "+
+    slog.info(mmi+"Reading the TG obs (WLO) at location -> "+
               this.location.getIdentity()+" data using "+this.obsInputDataFormat.name());
 
     if (this.obsInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
@@ -287,6 +288,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
 
       this.nearestObsData.put(this.location.getIdentity(), this.getWLDataInJsonFmt(tideGaugeWLODataFile));
+
+      slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
+      slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
+                this.nearestObsData.get(this.location.getIdentity()).size());
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
 
     } else {
       throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
@@ -322,13 +329,19 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         //     format.
         this.getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo, uniqueTGMapObj, mainJsonMapObj); //nearestsTGEcccIds);
 
+        slog.info(mmi+"Done with reading the model full forecast at TG location -> "+this.location.getIdentity());
+        slog.info(mmi+"this.nearestModelData.get(this.location.getIdentity()).size()="+
+                this.nearestModelData.get(this.location.getIdentity()).size());
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
+
       } else {
         throw new RuntimeException(mmi+"Invalid this.modelForecastInputDataFormat -> "
                                    +this.modelForecastInputDataFormat.name() ); //+" for inputDataType ->"+this.inputDataType.name()+" !!");
       }
     }
 
-    slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy algo");
+    slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy wl adjustment algo");
 
     // --- Instantiate the FMSInput object using the argsMap and this object.
     this.fmsInputObj= new FMSInput(this);

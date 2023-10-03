@@ -54,7 +54,7 @@ final public class FMSInput extends FMSConfig {
 
     super(wlAdjObj.getLocation());
 
-    final String mmi= "FMSInput man constructor: ";
+    final String mmi= "FMSInput main constructor: ";
 
     this.predictions= wlAdjObj.getLocationPredData();
 

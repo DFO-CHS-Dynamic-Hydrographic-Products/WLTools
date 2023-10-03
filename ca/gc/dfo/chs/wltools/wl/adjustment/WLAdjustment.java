@@ -61,8 +61,7 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
    */
   public WLAdjustment(/*NotNull*/ final HashMap<String,String> argsMap) {
 
-    final String mmi=
-      "WLAdjustment(final HasMap<String,String> mainProgramOptions) constructor: ";
+    final String mmi= "WLAdjustment main constructor: ";
 
     slog.info(mmi+"start");
 

@@ -42,7 +42,10 @@ abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
   // --- The name of the model used for the storm surge forecast signal.
   private String mergeWithFullModelForecast= null;
 
-  private double stdErrSigma;
+  // --- The IWLS legacy (hard-coded) config defines
+  //     stdErrSigma at 2,0 as a default for all TG
+  //     locations.
+  private double stdErrSigma= 2.0;
 
   // --- The time duration in the future of the WLF-QC data.
   //     AND also for the full forecast model data.
@@ -82,6 +85,8 @@ abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
 
     final String mmi= "FMSConfig main constructor: ";
 
+    slog.info(mmi+"start");
+
     // --- WLLocation extends the HBCoords class
     this.stationHBCoords= (HBCoords) wlLocation; //stationHBCoords;
 
@@ -94,31 +99,50 @@ abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
 
     this.stationId= wlLocation.getIdentity(); // stationId; //wlAdjObj.getIdentity();
 
-    final JsonObject wllFMSConfigJsonObj= wlLocation.getJsonCfgObj();
+    slog.info(mmi+"this.stationId="+this.stationId);
+    //slog.info(mmi+"this.getClass().getSuperclass().getSimpleName()="+this.getClass().getSuperclass().getSimpleName());
+
+    // --- The Json object we want is using this class name string as a key.
+    //     (Need to use getSuperclass() because it is inherited by a child class.
+    final String thisClassSimpleName= this.
+      getClass().getSuperclass().getSimpleName();
+
+    //final JsonObject wllFMSConfigJsonObj= wlLocation.
+    //  getJsonCfgObj().getJsonObject(thisClassSimpleName)
+
+    final JsonObject tgJsonCfgObj= wlLocation.getJsonCfgObj();
+
+    if (!tgJsonCfgObj.containsKey(thisClassSimpleName)) {
+
+      throw new RuntimeException(mmi+"Invalid string key -> "+
+                                 thisClassSimpleName+" for tgJsonCfgObj !!");
+    }
+
+    final JsonObject wllFMSConfigJsonObj=
+       tgJsonCfgObj.getJsonObject(thisClassSimpleName);
+
+    try {
+      wllFMSConfigJsonObj.size();
+
+    } catch (NullPointerException npe) {
+       throw new RuntimeException(mmi+npe);
+    }
 
     // --- TODO: Add code that calculates the estimated forecast uncertainty
-    this.stdErrSigma= 0.0;
+    //this.stdErrSigma= 0.0;
+
+    slog.info(mmi+"Default this.stdErrSigma="+this.stdErrSigma);
 
     //this.deltaTMinutes= wllFMSConfigJsonObj.getString(LEGACY_DELTA_MINS_JSON_KEY);
 
     this.mergeWithFullModelForecast=
       wllFMSConfigJsonObj.getString(LEGACY_MERGE_JSON_KEY); //wlAdjObj.getStormSurgeForecastModelName();
 
-    //final long predDataTimeIntervallSeconds= wlAdjObj.
-    //  getDataTimeIntervallSeconds(wlAdjObj.getPredictions());
-    //final long forecastDataTimeIntervallSeconds= wlAdjObj.
-    //  getDataTimeIntervallSeconds(wlAdjObj.getForecasts());
-    //if (predDataTimeIntervallSeconds > forecastDataTimeIntervallSeconds) {
-    //  throw new RuntimeException(mmi+"Cannot have predDataTimeIntervallSeconds > forecastDataTimeIntervallSecond !!");
-    //}
-    //// --- We use the forecastDataTimeIntervallSeconds as the deltaTMinutes
-    ////     for the legacy FMS deltaTMinutes attribute
-    //this.deltaTMinutes= ( ((double)forecastDataTimeIntervallSeconds)/ITimeMachine.SECONDS_PER_MINUTE );
-    //if (wllFMSConfigJsonObj.containsKey(LEGACY_DELTA_MINS_JSON_KEY)) {
-    //  this.deltaTMinutes= wllFMSConfigJsonObj.
-    //    getJsonNumber(LEGACY_DELTA_MINS_JSON_KEY).doubleValue();
-    //}
+    slog.info(mmi+"this.mergeWithFullModelForecast="+this.mergeWithFullModelForecast);
 
+    // --- Get the duration in hours for the merge of the full
+    //     model forecast data with the simple QC forecast if
+    //     it is defined in the Json config. for this TG
     this.fmfMergeDurationHours=
       IFMS.DEFAULT_FULL_MODEL_FORECAST_MERGE_HOURS;
 
@@ -128,15 +152,17 @@ abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
         getJsonNumber(LEGACY_MERGE_HOURS_JSON_KEY).intValue();
     }
 
-    // --- Now Done in super-class FMSInput
-    //this.fmsResidualConfig= new
-    //  FMSResidualConfig(wllFMSConfigJsonObj.getJsonObject(LEGACY_RESIDUAL_JSON_KEY));
-    //if (wllFMSConfigJsonObj.contains(LEGACY_TIDAL_REMNANT_JSON_KEY)) {
-    //  this.fmsTidalRemnantConfig= new
-    //    FMSTidalRemnantConfig(wllFMSConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY));
-    //}
-
+    // --- Define this.referenceTime with the actual system UTC time
     this.referenceTime= Instant.now(Clock.systemUTC());
+
+    // --- Need to define time for debug here need to remove
+    //    this when debug and validation will be done.
+
+    slog.info(mmi+"this.referenceTime="+this.referenceTime.toString());
+
+    slog.info(mmi+"end");
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
   }
 
   // ---

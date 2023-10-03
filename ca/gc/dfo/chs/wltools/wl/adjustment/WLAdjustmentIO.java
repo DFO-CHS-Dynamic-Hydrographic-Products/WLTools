@@ -152,8 +152,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
    */
   public WLAdjustmentIO(/*@NotNull*/ final WLAdjustment.Type adjType,
                         /*@NotNull*/ final Map<String,String> argsMap) {
-    final String mmi=
-      "WLAdjustmentIO(final WLAdjustment.Type adjType,final Map<String,String> argsMap) construtor : ";
+
+    final String mmi= "WLAdjustmentIO main constructor : ";
 
     this.adjType= adjType;
 

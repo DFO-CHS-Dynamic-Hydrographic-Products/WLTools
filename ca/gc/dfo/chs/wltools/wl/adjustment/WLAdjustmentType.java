@@ -66,8 +66,7 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
     super(adjType, argsMap);
 
-    final String mmi=
-      "WLAdjustmentType( final WLAdjustment.Type adjType, final HashMap<String,String> mainProgramOptions) constructor: ";
+    final String mmi= "WLAdjustmentType main constructor: ";
 
     slog.info(mmi+"start");
 
@@ -133,8 +132,8 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
   }
 
   final public WLLocation getLocation() {

@@ -127,7 +127,7 @@ final public class WLTools extends WLToolsIO {
     //if (tool.equals("adjustment")) {
     if (tool.equals(IWLTools.Box.adjustment.name())) {
 
-       System.out.println(mmi+"Doing WL forecast or prediction"+
+       System.out.println(mmi+"Doing WL forecast or prediction "+
                           IWLTools.Box.adjustment.name()+" using the more recently validated CHS WLO TG data");
 
        final WLAdjustment wlAdjust= new WLAdjustment(argsMap);
