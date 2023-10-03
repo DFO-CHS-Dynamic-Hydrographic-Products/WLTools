@@ -100,7 +100,7 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
       jsonFileOutputStream= new FileOutputStream(jsonOutputFile);
 
     } catch (FileNotFoundException e) {
-      throw new RuntimeException(mmi+"e");
+      throw new RuntimeException(mmi+e);
     }
 
     JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
@@ -135,8 +135,8 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
 
     return this;
   }
