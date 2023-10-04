@@ -184,6 +184,8 @@ abstract public class FMSFactory implements IFMS {
     this.data= new FMSWLData(fcstsTimeIncrMinutes, fmsInputList); //forecastingContextList);
 
     slog.info(mmi+"end\n");
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
   }
 
   // ---

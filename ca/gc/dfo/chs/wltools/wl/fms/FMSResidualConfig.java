@@ -40,29 +40,70 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
   /**
    *
    */
-   public FMSResidualConfig(final double tauHours,
-                            final double deltaTMinutes,
-                            final JsonObject fmsResCfgJsonObj) {
+  public FMSResidualConfig(final double tauHours,
+                           final double deltaTMinutes,
+                           final String tgLocationId,
+                           final JsonObject fmsResCfgJsonObj) {
 
-     super(tauHours,deltaTMinutes);
+    super(tauHours,deltaTMinutes);
 
-     this.method= fmsResCfgJsonObj.
-       getString(LEGACY_RESIDUAL_METH_JSON_KEY);
+    final String mmi= "FMSResidualConfig main constructor: ";
 
-     this.fallBackError= fmsResCfgJsonObj.
-       getJsonNumber(LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY).doubleValue();
+    slog.info(mmi+"start");
 
-     //this.stationCovCfg= new
+    try {
+      fmsResCfgJsonObj.size();
 
-     final JsonArray fmsResCovCfgJsonArray=
-       fmsResCfgJsonObj.getJsonArray(LEGACY_STN_COV_JSON_KEY);
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
 
-     //for (final JsonObject stnCovCfgJsonObj: fmsResCfgJsonObj.getJsonArray()) {
-     for (int objIter= 0; objIter < fmsResCovCfgJsonArray.size(); objIter++) {
+    if (!fmsResCfgJsonObj.containsKey(LEGACY_RESIDUAL_METH_JSON_KEY)) {
+      throw new RuntimeException(mmi+"Invalid key -> "+"\""+
+                                 LEGACY_RESIDUAL_METH_JSON_KEY+"\""+ " for fmsResCfgJsonObj JsonObject !!");
+    }
 
-       this.stationCovCfgList.add( new FMSStationCovarianceConfig( fmsResCovCfgJsonArray.getJsonObject(objIter))); //stnCovCfgJsonObj) );
-     }
-   }
+    this.method= fmsResCfgJsonObj.
+      getString(LEGACY_RESIDUAL_METH_JSON_KEY);
+
+    slog.info(mmi+"this.method="+this.method);
+
+    if (!fmsResCfgJsonObj.containsKey(LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY)) {
+      throw new RuntimeException(mmi+"Invalid key -> "+"\""+
+                                 LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY+"\""+ " for fmsResCfgJsonObj JsonObject !!");
+    }
+
+    this.fallBackError= fmsResCfgJsonObj.
+      getJsonNumber(LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY).doubleValue();
+
+    slog.info(mmi+"this.fallBackError="+this.fallBackError);
+
+    if (!fmsResCfgJsonObj.containsKey(LEGACY_STN_COV_JSON_KEY)) {
+       throw new RuntimeException(mmi+"Invalid key -> "+"\""+
+                                  LEGACY_STN_COV_JSON_KEY+"\""+ " for fmsResCfgJsonObj JsonObject !!");
+    }
+
+    final JsonArray fmsResCovCfgJsonArray=
+      fmsResCfgJsonObj.getJsonArray(LEGACY_STN_COV_JSON_KEY);
+
+    if (fmsResCovCfgJsonArray.size() > 1) {
+      throw new RuntimeException(mmi+
+        "Legacy FMS covariance calculations have not been tested-validated for more than one covariance item yet!");
+    }
+
+    //for (final JsonObject stnCovCfgJsonObj: fmsResCfgJsonObj.getJsonArray()) {
+    for (int objIter= 0; objIter < fmsResCovCfgJsonArray.size(); objIter++) {
+
+      slog.info(mmi+"Getting legacy FMS covariance calculations parameters info at index= "+objIter);
+
+      this.stationCovCfgList.add( new FMSStationCovarianceConfig( tgLocationId, this.deltaTMinutes,
+                                                                  fmsResCovCfgJsonArray.getJsonObject(objIter)) ); //stnCovCfgJsonObj) );
+    }
+
+    slog.info(mmi+"end");
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
+  }
 
   /**
    *

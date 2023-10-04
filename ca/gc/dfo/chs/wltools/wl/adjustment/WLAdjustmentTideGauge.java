@@ -269,14 +269,19 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       //this.tgLocationWLPData=
       this.locationPredData= this.
-        getWLDataInJsonFmt(tideGaugePredictInputDataFile);
+        getWLDataInJsonFmt(tideGaugePredictInputDataFile,-1L);
 
     } else {
        throw new RuntimeException(mmi+"Invalid prediction input data format -> "+this.predictInputDataFormat.name());
     }
 
+    // --- Need to get the WL predictions data time intervall increment here.
+    final long prdTimeIncrSeconds= MeasurementCustom.
+      getDataTimeIntervallSeconds(this.locationPredData);
+
     slog.info(mmi+"Done with reading prediction input data from file -> "+tideGaugePredictInputDataFile);
     slog.info(mmi+"this.locationPredData.size()="+this.locationPredData.size());
+    slog.info(mmi+"this.locationPredData time increment intervall="+prdTimeIncrSeconds);
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -287,13 +292,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
 
-      this.nearestObsData.put(this.location.getIdentity(), this.getWLDataInJsonFmt(tideGaugeWLODataFile));
+      this.nearestObsData.put(this.location.getIdentity(),
+                              this.getWLDataInJsonFmt(tideGaugeWLODataFile, prdTimeIncrSeconds));
 
       slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
       slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
                 this.nearestObsData.get(this.location.getIdentity()).size());
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
+
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
 
     } else {
       throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
@@ -302,7 +309,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // ---
     if (this.forecastAdjType != null) {
 
-      if (this.forecastAdjType != IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG) {
+      if (this.forecastAdjType !=
+           IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG) {
 
         slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
                 IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()+" is allowed for now !");
@@ -345,6 +353,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     // --- Instantiate the FMSInput object using the argsMap and this object.
     this.fmsInputObj= new FMSInput(this);
+
+    // --- and instantiate the FMS object itself with the FMSInput object
     this.fmsObj= new FMS(this.fmsInputObj);
     //this.fmsObj= new FMS(new FMSInput(this));O
 

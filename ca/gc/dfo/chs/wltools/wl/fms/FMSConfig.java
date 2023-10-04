@@ -94,7 +94,7 @@ abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
       wlLocation.getIdentity();
 
     } catch (NullPointerException npe) {
-       throw new RuntimeException(mmi+npe);
+      throw new RuntimeException(mmi+npe);
     }
 
     this.stationId= wlLocation.getIdentity(); // stationId; //wlAdjObj.getIdentity();
@@ -157,12 +157,13 @@ abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
 
     // --- Need to define time for debug here need to remove
     //    this when debug and validation will be done.
+    this.referenceTime= Instant.parse("2023-10-04T11:45:00Z");
 
     slog.info(mmi+"this.referenceTime="+this.referenceTime.toString());
 
     slog.info(mmi+"end");
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
   }
 
   // ---

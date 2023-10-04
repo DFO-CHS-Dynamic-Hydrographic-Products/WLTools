@@ -23,12 +23,14 @@ import java.util.TimeZone;
  * abstract class TimeMachine to manage time related data.
  */
 abstract public class TimeMachine implements ITimeMachine {
-  
+
+  private static final String whoAmI= "ca.gc.dfo.chs.wltools.util.TimeMachine";
+
   /**
    * static log utility.
    */
-  private static final Logger staticLogger = LoggerFactory.getLogger("TimeMachine");
-  
+  private static final Logger slog = LoggerFactory.getLogger(whoAmI);
+
   /**
    * @param cld : A Calendar object
    * @param tz  : boolean flag to signal that the time-zone info should be appended to the returned String.
@@ -50,7 +52,7 @@ abstract public class TimeMachine implements ITimeMachine {
     //--- Append time zone ID to the returned String.
     return dateTimeStr + (tz ? ":(TZ:" + cld.getTimeZone().getID() + ")" : "");
   }
-  
+
   /**
    * @param integerString : String version of an integer.
    * @return "0" String prepended to integerString if needed(for date-time formatting stuff)
@@ -60,7 +62,7 @@ abstract public class TimeMachine implements ITimeMachine {
 
     return (integerString.length() < 2 ? "0" + integerString : integerString);
   }
-  
+
   /**
    * @param dateTimeData : { YYYY, MM, DD, hh, mm, ss } Year, Month, Day, Hour, minutes, seconds array.
    * @return long representing the UTC time-stamp in seconds since the epoch.
@@ -69,12 +71,12 @@ abstract public class TimeMachine implements ITimeMachine {
   public static long getUTCLongSinceEpoch(final int[] dateTimeData) {
 
     //--- JDK-1.7 and JDK-1.8
-    
+
     //---- We are only able to get milliseconds with Calendar interface so we have to
     //     divide dtsSinceEpoch.getTimeInMillis() by SEC_TO_MILLISEC to get seconds from 1970-01-01::00:00:00 UTC
     return getUTCCalendarSinceEpoch(dateTimeData).getTimeInMillis() / SEC_TO_MILLISEC;
   }
-  
+
   /**
    * @param dateTimeData : { YYYY, MM, DD, hh, mm, ss } Year, Month, Day, Hour, minutes, seconds array.
    * @return A Calendar object with its time-stamp set according to the date-time data.
@@ -84,7 +86,7 @@ abstract public class TimeMachine implements ITimeMachine {
 
     //--- JDK-1.7 and JDK-1.8
     checkDateTimeData(dateTimeData);
-    
+
     //--- ***IMPORTANT NOTE***: The GregorianCalendar constructor needs a month between 0 and 11
     //                          hence the dateTimeData[MONTH_INDEX]-GRGCAL_MONTH_OFFSET subtraction:
     final Calendar grgCld = new GregorianCalendar(dateTimeData[YEAR_INDEX],
@@ -93,29 +95,30 @@ abstract public class TimeMachine implements ITimeMachine {
         dateTimeData[HOURS_INDEX],
         dateTimeData[MINUTES_INDEX],
         dateTimeData[SECONDS_INDEX]);
-    
+
     //--- UTC time zone mandatory here !!
     grgCld.setTimeZone(TimeZone.getTimeZone(CALENDAR_ZULU_TIME_ZONE));
-    
+
     //---- We are only able to get time in milliseconds with Calendar interface so we have to
     //     divide dtsSinceEpoch.getTimeInMillis() by 1000 to get seconds from 1970-01-01::00:00:00 UTC
     return grgCld;
   }
-  
+
   /**
    * @param dateTimeData : { YYYY, MM, DD, hh, mm, ss } Year, Month, Day, Hour, minutes, seconds array.
    * @return a boolean to signal that the dateTime data is OK
    */
   //private static boolean checkDateTimeData(@NotNull @Size(min = 6) final int[] dateTimeData) {
   private static boolean checkDateTimeData(final int[] dateTimeData) {
-    
+
+    final String mmi= "checkDateTimeData: ";
+
     if (dateTimeData.length != DATE_TIME_FMT6_LEN) {
-      
-      staticLogger.error("TimeMachine checkDateTimeData:  : dateTimeData must have " + DATE_TIME_FMT6_LEN + " " +
-          "elements !");
-      throw new RuntimeException("TimeMachine checkDateTimeData");
+
+      //slog.error(mmi+"dateTimeData must have " + DATE_TIME_FMT6_LEN + " " + "elements !");
+      throw new RuntimeException(mmi+"dateTimeData must have " + DATE_TIME_FMT6_LEN + " " + "elements !");
     }
-    
+
     //---- We have to check if we can go before January 1 INF_YEAR_LIMIT(which is 1900 for now)
     //     at 00:00:00 UTC. M. Foreman's method uses time in gregorian days seconds since December
     //     31 1899 at 12:00 UTC.
@@ -123,19 +126,19 @@ abstract public class TimeMachine implements ITimeMachine {
     //     TODO: It would be interesting to test if M. Foreman's method could be applied for time stamps before
     //      December 31 1899 12:00:00 UTC.
     if (dateTimeData[YEAR_INDEX] < INF_YEAR_LIMIT) {
-      
-      staticLogger.error("TimeMachine checkDateTimeData: Invalid YEAR -> " + dateTimeData[YEAR_INDEX]);
-      throw new RuntimeException("TimeMachine checkDateTimeData");
+
+      //staticLogger.error("TimeMachine checkDateTimeData: Invalid YEAR -> " + dateTimeData[YEAR_INDEX]);
+      throw new RuntimeException(mmi+"Invalid YEAR -> " + dateTimeData[YEAR_INDEX]);
     }
-    
+
     if (dateTimeData[MONTH_INDEX] < 1 || dateTimeData[MONTH_INDEX] > 12) {
-      
-      staticLogger.error("TimeMachine checkDateTimeData: Invalid MONTH -> " + dateTimeData[MONTH_INDEX]);
-      throw new RuntimeException("TimeMachine checkDateTimeData");
+
+      //staticLogger.error("TimeMachine checkDateTimeData: Invalid MONTH -> " + dateTimeData[MONTH_INDEX]);
+      throw new RuntimeException(mmi+"Invalid MONTH -> " + dateTimeData[MONTH_INDEX]);
     }
-    
+
     int monthDays = NORMAL_NUM_OF_DAYS_PER_MONTH[dateTimeData[MONTH_INDEX]];
-    
+
     //--- Dealing with leap years:
     //    Recall that Calendar.JANUARY == 0
     //                Calendar.FEBRUARY== 1
@@ -146,47 +149,47 @@ abstract public class TimeMachine implements ITimeMachine {
     if ((dateTimeData[MONTH_INDEX] == Calendar.FEBRUARY + GRGCAL_MONTH_OFFSET) && isThisALeapYear(dateTimeData[YEAR_INDEX])) {
       monthDays = 29;
     }
-    
+
     if ((dateTimeData[MDAY_INDEX] < 1) || (dateTimeData[MDAY_INDEX] > monthDays)) {
-      
-      staticLogger.error("TimeMachine checkDateTimeData: Invalid DAY -> " + dateTimeData[MDAY_INDEX]);
-      throw new RuntimeException("TimeMachine checkDateTimeData");
+
+      //staticLogger.error("TimeMachine checkDateTimeData: Invalid DAY -> " + dateTimeData[MDAY_INDEX]);
+      throw new RuntimeException(mmi+"Invalid DAY -> " + dateTimeData[MDAY_INDEX]);
     }
-    
+
     if ((dateTimeData[HOURS_INDEX] < 0) || (dateTimeData[HOURS_INDEX] > HOURS_PER_DAY - 1)) {
-      
-      staticLogger.error("TimeMachine checkDateTimeData: Invalid HOUR -> " + dateTimeData[HOURS_INDEX]);
-      throw new RuntimeException("TimeMachine checkDateTimeData");
+
+      //staticLogger.error("TimeMachine checkDateTimeData: Invalid HOUR -> " + dateTimeData[HOURS_INDEX]);
+      throw new RuntimeException(mmi+"Invalid HOUR -> " + dateTimeData[HOURS_INDEX]);
     }
-    
+
     if ((dateTimeData[MINUTES_INDEX] < 0) || (dateTimeData[MINUTES_INDEX] > MINUTES_PER_HOUR - 1)) {
-      
-      staticLogger.error("TimeMachine checkDateTimeData: Invalid MINUTES -> " + dateTimeData[MINUTES_INDEX]);
-      throw new RuntimeException("TimeMachine checkDateTimeData");
+
+      //staticLogger.error("TimeMachine checkDateTimeData: Invalid MINUTES -> " + dateTimeData[MINUTES_INDEX]);
+      throw new RuntimeException(mmi+"Invalid MINUTES -> " + dateTimeData[MINUTES_INDEX]);
     }
-    
+
     if ((dateTimeData[SECONDS_INDEX] < 0) || (dateTimeData[SECONDS_INDEX] > SECONDS_PER_MINUTE - 1)) {
-      
-      staticLogger.error("TimeMachine checkDateTimeData: Invalid SECONDS -> " + dateTimeData[SECONDS_INDEX]);
-      throw new RuntimeException("TimeMachine checkDateTimeData");
+
+      //staticLogger.error("TimeMachine checkDateTimeData: Invalid SECONDS -> " + dateTimeData[SECONDS_INDEX]);
+      throw new RuntimeException(mmi+"Invalid SECONDS -> " + dateTimeData[SECONDS_INDEX]);
     }
-    
+
     return true;
   }
-  
+
   /**
    * @param year : YYYY four digit year.
    * @return true if year is a leap year false otherwise.
    */
   public static boolean isThisALeapYear(final long year) {
-    
+
     //---- Is year argument a leap year ?
     //     Taken from the book "THE ART AND SCIENCE OF C" written
     //     by E. S. Roberts, ADDISON WESLEY PUBLISHING COMPANY
-    
+
     return (((year % 4L == 0L) && (year % 100L != 0L)) || (year % 400L == 0L));
   }
-  
+
   /**
    * @param timeIncrSeconds : A time increment in seconds
    * @param timeSeconds     : A time-stamp in seconds since the epoch.
@@ -194,17 +197,42 @@ abstract public class TimeMachine implements ITimeMachine {
    * divisible by timeIncrSeconds
    */
   public static long roundPastToTimeIncrSeconds(final long timeIncrSeconds, final long timeSeconds) {
-    
-    long ret = timeSeconds;
-    
-    //--- NOTE: recursive call here:
-    
+
+    // --- NOTE: The user need to use a reasonable timeIncreSeconds not larger than 3600
+    //     and not smaller than 60 (not tested for values outside of the range)
+
+    long ret= timeSeconds;
+
+    //--- NOTE: tail recursive call here:
     if (!(ret % timeIncrSeconds == 0L)) {
-      
+
       //---
       ret = roundPastToTimeIncrSeconds(timeIncrSeconds, (timeSeconds - 1L));
     }
-    
+
+    return ret;
+  }
+
+  /**
+   * @param timeIncrSeconds : A time increment in seconds
+   * @param timeSeconds     : A time-stamp in seconds since the epoch.
+   * @return The time-stamp in seconds since the epoch which is the nearest in the future from timeSeconds and is also
+   * divisible by timeIncrSeconds
+   */
+  public static long roundFutureToTimeIncrSeconds(final long timeIncrSeconds, final long timeSeconds) {
+
+    // --- NOTE: The user need to use a reasonable timeIncreSeconds not larger than 3600
+    //     and not smaller than 60 (not tested for values outside of the range)
+
+    long ret= timeSeconds;
+
+    //--- NOTE: tail recursive call here:
+    if (!(ret % timeIncrSeconds == 0L)) {
+
+      //---
+      ret= roundPastToTimeIncrSeconds(timeIncrSeconds, (timeSeconds + 1L));
+    }
+
     return ret;
   }
 

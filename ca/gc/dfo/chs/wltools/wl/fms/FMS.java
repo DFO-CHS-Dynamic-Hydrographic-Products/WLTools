@@ -31,8 +31,7 @@ import java.util.List;
  */
 public final class FMS extends FMSFactory implements IFMS {
 
-  private final static String whoAmI=
-     "ca.gc.dfo.chs.wltools.wl.fms.FMS";
+  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMS";
 
   /**
    * static log utility.
