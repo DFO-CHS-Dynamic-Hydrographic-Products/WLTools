@@ -30,7 +30,8 @@ import ca.gc.dfo.chs.wltools.numbercrunching.D2RowMajorData;
  */
 public class LegacyResidualData implements ILegacyFMS {
 
-  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy";
+  private final static String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyResidualData";
 
   /**
    * static log utility.
@@ -155,6 +156,7 @@ public class LegacyResidualData implements ILegacyFMS {
 
     final String mmi= "LegacyResidualData constructor: ";
 
+    slog.info(mmi+"nbAuxCov="+nbAuxCov);
     slog.info(mmi+"tauHours=" + tauHours);
     slog.info(mmi+"dtMinutes=" + dtMinutes);
 

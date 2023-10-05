@@ -33,6 +33,7 @@ import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
 
+import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
@@ -282,7 +283,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
          //slog.info(mmi+"timeStampSeconds="+timeStampSeconds+", tgWLValue="+tgWLValue);
          //--- Store the H2D2 WLF value for this CHS TG for this timestamp.
          this.nearestModelData.get(chsTGId).
-           add( new MeasurementCustom(timeStampInstant,tgWLFValue,0.0) );
+           add( new MeasurementCustom(timeStampInstant, tgWLFValue, IWL.MAXIMUM_UNCERTAINTY_METERS) );
        }
 
        //slog.info(mmi+"Debug System.exit(0)");
@@ -429,13 +430,15 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
 
-      double uncertainty= 0.0;
+      double uncertainty= MeasurementCustom.UNDEFINED_UNCERTAINTY;
 
       if (jsonWLDataObj.containsKey(IWLStationPredIO.UNCERTAINTY_JSON_JEY)) {
 
         uncertainty= jsonWLDataObj.
           getJsonNumber(IWLStationPredIO.UNCERTAINTY_JSON_JEY).doubleValue();
       }
+
+      uncertainty= (uncertainty > IWL.MINIMUM_UNCERTAINTY_METERS) ? uncertainty: IWL.MAXIMUM_UNCERTAINTY_METERS;
 
       // --- Add this WL pred Instant and value as a MeasurementCustom object
       //    in the returned list

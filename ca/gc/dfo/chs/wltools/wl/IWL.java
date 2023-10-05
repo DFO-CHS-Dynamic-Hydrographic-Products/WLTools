@@ -36,6 +36,10 @@ public interface IWL {
    * Constant default number of WLType for array size allocation.
    */
   int NB_WL_TYPES = WLType.values().length;
+
+  double MINIMUM_UNCERTAINTY_METERS= 0.005; // --- Half-centimeter
+  double MAXIMUM_UNCERTAINTY_METERS= 1.5;
+
   double PREDICTIONS_ERROR_ESTIMATE_METERS = 0.5;
 
   /**

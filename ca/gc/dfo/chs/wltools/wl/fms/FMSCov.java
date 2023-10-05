@@ -76,7 +76,7 @@ abstract public class FMSCov implements IFMS {
 
     final String mmi= "gotDuplicate: ";
 
-    boolean ret = false;
+    boolean ret= false;
 
     // this.log.debug("Start: stationCode="+stationCode);
     for (final FMSAuxCov fmAuxCov : this.auxCovs) {
@@ -151,7 +151,7 @@ abstract public class FMSCov implements IFMS {
     }
 
     slog.info(mmi+"Got "+this.auxCovs.size()+
-              " valid auxiliary covariance item(s) for station:" + stationId);
+              " valid auxiliary covariance item(s) for station: " + stationId);
 
     return this;
   }

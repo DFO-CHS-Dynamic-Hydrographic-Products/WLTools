@@ -19,21 +19,6 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSStationCovarianceConfig;
  *
  */
 
-////---
-//import ca.gc.dfo.iwls.fmservice.modeling.fms.FMSWLMeasurement;
-//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.ScalarOps;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.IWL;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLZE;
-//import ca.gc.dfo.iwls.modeling.fms.Residual;
-//import ca.gc.dfo.iwls.modeling.fms.StationCovariance;
-//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-//import javax.validation.constraints.Min;
-//import javax.validation.constraints.NotNull;
-//import javax.validation.constraints.Size;
-
-//---
 //---
 //---
 //---
@@ -94,7 +79,7 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
 
     final String mmi= "LegacyResidual constructor: ";
 
-    slog.info(mmi+"start for station:" + stationId);
+    slog.info(mmi+"start for station: " + stationId);
 
     if (residualCfg == null) {
 
@@ -107,13 +92,13 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
 
     if (stationsCovarianceCfgList == null) {
 
-      slog.error(mmi+"stationsCovarianceCfgList == null ! for station:" + stationId);
+      slog.error(mmi+"stationsCovarianceCfgList == null ! for station: " + stationId);
       throw new RuntimeException(mmi);
     }
 
     if (stationsCovarianceCfgList.size() == 0) {
 
-      slog.error(mmi+"stationsCovarianceList.size() <= 0 ! for station:" + stationId);
+      slog.error(mmi+"stationsCovarianceList.size() <= 0 ! for station: " + stationId);
       throw new RuntimeException(mmi);
     }
 
@@ -138,7 +123,7 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
     this.resData= new
       LegacyResidualData(nbAuxCov, residualCfg.getTauHours(), timeIncrDtMinutes);
 
-    slog.info(mmi+"end for station:" + stationId);
+    slog.info(mmi+"end for station: " + stationId);
   }
 
   /**
@@ -429,19 +414,24 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
     //--- In case wlpa.get(0).getUncertainty()== null;
     double errDenom= PREDICTIONS_ERROR_ESTIMATE_METERS;
 
-    if (predictionMeasurementsList.get(0).getUncertainty() != null) {
+    if (predictionMeasurementsList.get(0).getUncertainty() >= IWL.MINIMUM_UNCERTAINTY_METERS) {  //!= null) {
       errDenom= predictionMeasurementsList.get(0).getUncertainty(); // .doubleValue();
     }
+
+    slog.info(mmi+"errDenom="+errDenom);
 
     //--- Check for an error value near 0.0 with an epsilon here ?
     final double squWlpErrInv= 1.0 / ScalarOps.square(errDenom);
 
     //--- Need to put 1.0/(wlp.error()*wlp.error()) in the diagonal for this.resdata.invXpX
-    for (int d = 0; d < this.resData.invXpX.ncols(); d++) {
+    for (int d= 0; d< this.resData.invXpX.ncols(); d++) {
       this.resData.invXpX.put(d, d, squWlpErrInv);
     }
 
     slog.info(mmi+"this.resData.invXpX=" + this.resData.invXpX.toString());
+
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
   }

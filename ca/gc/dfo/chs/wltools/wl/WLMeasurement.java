@@ -121,6 +121,9 @@ abstract public class WLMeasurement implements IWLMeasurement {
     slog.info(mmi+"start: seconds dt="+
               SecondsSinceEpoch.dtFmtString(seconds, true) + ", startIndex=" + startIndex);
 
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
+
     if (startIndex == (msma.size() - 1)) {
 
       final MeasurementCustom ms= msma.get(startIndex);
@@ -154,8 +157,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
       this.trackIndex= 0;
     }
 
-    slog.info(mmi+"start: seconds dt="+
-               SecondsSinceEpoch.dtFmtString(seconds, true)+", this.measurement=" + this.measurement);
+    //slog.info(mmi+"start: seconds dt="+
+    //           SecondsSinceEpoch.dtFmtString(seconds, true)+", this.measurement=" + this.measurement);
 
     return this;
   }

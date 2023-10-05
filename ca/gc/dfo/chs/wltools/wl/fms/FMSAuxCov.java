@@ -51,7 +51,7 @@ abstract public class FMSAuxCov implements IFMS {
    * @param fmResidualFactory   : The FMResidualFactory of the WL station SINECO Id related to this temporal errors
    *                            covariances computations data.
    */
-  public FMSAuxCov(/*@Min(0)*/ final long timeLagMinutes,
+  public FMSAuxCov(/*@Min(0)*/ final int timeLagMinutes,
                    /*@NotNull*/ final String stationCovarianceId,
                    /*@NotNull*/ final FMSResidualFactory fmResidualFactory) {
 
@@ -59,14 +59,11 @@ abstract public class FMSAuxCov implements IFMS {
 
     //this.stationIndex= stationIndex;
 
-    slog.info(mmi+"timeLagMinutes=" + timeLagMinutes + ", stationCovarianceId=" + stationCovarianceId);
-
-    if (timeLagMinutes <= 0L) {
-
-      slog.error(mmi+"lagMinutes <= 0L !");
-
-      throw new RuntimeException(mmi+"Cannot update forecast !!");
-    }
+    //slog.info(mmi+"timeLagMinutes=" + timeLagMinutes + ", stationCovarianceId=" + stationCovarianceId);
+    //if (timeLagMinutes <= 0) {
+    //  slog.error(mmi+"lagMinutes <= 0 !");
+    //  throw new RuntimeException(mmi+"Cannot update forecast !!");
+    //}
 
     slog.info(mmi+"timeLagMinutes=" + timeLagMinutes + ", stationCovarianceId=" + stationCovarianceId);
 

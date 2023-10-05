@@ -37,6 +37,9 @@ final public class MeasurementCustom {
   private double value;
   private double uncertainty;
 
+  //public final static double MINIMUM_UNCERTAINTY_METERS= 0.005; // --- Half centimeters 
+  public final static double UNDEFINED_UNCERTAINTY= -77777.0;
+
   public MeasurementCustom() {
 
      this.eventDate= null;

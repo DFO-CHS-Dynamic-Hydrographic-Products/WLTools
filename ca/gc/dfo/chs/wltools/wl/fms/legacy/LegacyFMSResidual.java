@@ -231,7 +231,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     if (fmsInput.getFMSTidalRemnantConfig() != null) {
 
-      slog.info(mmi+"Will use residual computation with tidal remnant component for station:" + stationId);
+      slog.info(mmi+"Will use residual computation with tidal remnant component for station: " + stationId);
 
       this.residual= new TidalRemnantResidual(fmsInput.getFMSResidualConfig(),
                                               fmsInput.getFMSTidalRemnantConfig(),
@@ -239,9 +239,10 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     } else {
 
-      slog.info(mmi+"Will use residual computation without tidal remnant componentfor station:" + stationId);
+      slog.info(mmi+"Will use residual computation without tidal remnant component for station: " + stationId);
 
-      this.residual= new LegacyResidual(fmsInput.getFMSResidualConfig(), stationId);
+      this.residual= new
+        LegacyResidual(fmsInput.getFMSResidualConfig(), stationId);
     }
 
     final List<MeasurementCustom> wlpl= fmsInput.getPredictions();

@@ -25,7 +25,7 @@ final public class LegacyFMSAuxCov extends FMSAuxCov implements ILegacyFMS {
   /**
    * static log utility.
    */
-  private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * The Legacy forecast method fall back coefficient in case the time-weighted WL surge (or offset) is small.
@@ -40,7 +40,7 @@ final public class LegacyFMSAuxCov extends FMSAuxCov implements ILegacyFMS {
    * @param stationCovarianceId : The WL station SINECO Id related to this Legacy temporal errors covariances
    *                            computations data.
    */
-  public LegacyFMSAuxCov(/*@Min(0)*/  final long timeLagMinutes,
+  public LegacyFMSAuxCov(/*@Min(0)*/  final int timeLagMinutes,
                                       final double fallBack,
                          /*@NotNull*/ final String stationCovarianceId) {
 
@@ -56,7 +56,7 @@ final public class LegacyFMSAuxCov extends FMSAuxCov implements ILegacyFMS {
    *                            computations data.
    * @param fmsResidualFactory  : A FMSResidualFactory type object.
    */
-  public LegacyFMSAuxCov(/*@Min(0)*/  final long timeLagMinutes,
+  public LegacyFMSAuxCov(/*@Min(0)*/  final int timeLagMinutes,
                                       final double fallBack,
                          /*@NotNull*/ final String stationCovarianceId,
                          /*@NotNull*/ final FMSResidualFactory fmsResidualFactory) {

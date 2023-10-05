@@ -41,7 +41,8 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
    * To store the newly updated full (i.e. with storm surge and-or river discharge effects)
    * WL forecast data in the future for the processed CHS TG.
    */
-  final List<MeasurementCustom> updatedForecastData= new ArrayList<MeasurementCustom>();
+  final List<MeasurementCustom>
+    updatedForecastData= new ArrayList<MeasurementCustom>();
 
   /**
    * One WLMeasurementFinder object for each PREDICTION, OBSERVATION, MODEL_FORECAST, QC_FORECAST WLType.
@@ -175,6 +176,7 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
 
         this.wlMeasurementFinderList.add(QC_FORECAST, new WLMeasurementFinder(qcfDataList));
 
+        slog.info(mmi+"Ingestion of WL QC forecast data Nnt tested yet!!");
         throw new RuntimeException(mmi+"Debug exit here !!");
       }
 
@@ -191,16 +193,7 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
       //throw new RuntimeException(mmi+"Debug exit here !!");
     }
 
-    //TODO : un-comment the following if-else block when the EXT_STORM_SURGE will be available in the DB
-//        final List<Measurement> dbSsfList= fc.getStormSurge();
-//        if ((dbSsfList != null) && (dbSsfList.size() > 0) ) {
-//
-//            this.log.debug("Got "+checkSsf.size()+" WL storm surges from the DB for station:"+this.stationCode);
-//            this.WLMeasurementFinderList.add(EXT_STORM_SURGE, new WLMeasurementFinder(dbSsfList));
-//        } else {
-//    this.log.warn("FMSWLStationDBObjects constructor: No WL storm surges retreived from the DB for station:" +
-//        this.stationCode + ", replacing it with WLP");
-
+    // --- Add the model full forecast WL data.
     final List<MeasurementCustom> mfDataList= fmsInput.getModelForecasts();
 
     if ( (mfDataList != null ) && (mfDataList.size() > 0 ) ) {
@@ -238,7 +231,8 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
     }
 
     //--- this.wlMeasurementFinderList.get(PREDICTION).getSecondsIncrement() returns an absolute value:
-    this.secondsIncr= this.wlMeasurementFinderList.get(PREDICTION).getSecondsIncrement();
+    this.secondsIncr= this.
+      wlMeasurementFinderList.get(PREDICTION).getSecondsIncrement();
 
     if (this.secondsIncr == 0L) {
 
@@ -281,8 +275,8 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
     slog.info(mmi+"Will use " + this.secondsIncr + " seconds as the time increment in seconds");
 
     slog.info(mmi+"end");
-    slog.info(mmi+"System exit 0");
-    System.exit(0);
+    //slog.info(mmi+"System exit 0");
+    //System.exit(0);
 
     //throw new RuntimeException(mmi+"Debug exit!");
   }
@@ -312,7 +306,12 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
 
     final int durationHours= ((int) (sseEnd - sseBeg)) / SECONDS_PER_HOUR;
 
-   slog.info(mmi+"end");
+    slog.info(mmi+"tauHours="+tauHours);
+    slog.info(mmi+"durationHours="+durationHours);
+
+    slog.info(mmi+"end");
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     return (durationHours >= tauHours);
   }

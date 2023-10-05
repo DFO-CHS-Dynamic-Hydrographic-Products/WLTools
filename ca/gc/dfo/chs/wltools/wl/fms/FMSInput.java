@@ -138,14 +138,33 @@ final public class FMSInput extends FMSConfig {
     final long firstPrdSeconds= this.
       predictions.get(0).getEventDate().getEpochSecond();
 
-    if ( firstPrdSeconds >= refTimeSeconds) {
-      throw new RuntimeException(mmi+"Cannot have firstPrdSeconds >= refTimeSeconds !!");
+    if ( firstPrdSeconds > refTimeSeconds) {
+      throw new RuntimeException(mmi+"Cannot have firstPrdSeconds > refTimeSeconds !!");
     }
 
-    final double residualTauHours= (double)
-      (refTimeSeconds - firstPrdSeconds)/ITimeMachine.SECONDS_PER_HOUR;
+    //final double residualTauHours= (double)
+    //  (refTimeSeconds - firstPrdSeconds)/ITimeMachine.SECONDS_PER_HOUR;
 
+    final long firstObsSeconds= firstObsMcInstant.getEpochSecond();
+
+    if ( firstObsSeconds > refTimeSeconds) {
+      throw new RuntimeException(mmi+"Cannot have firstObsSeconds > refTimeSeconds !!");
+    }
+
+    if (firstPrdSeconds > firstObsSeconds) {
+      throw new RuntimeException(mmi+"Cannot have firstPrdSeconds > firstObsSeconds !!");
+    }
+
+    //--- Need to use the 1st obs. data timestamp seconds to define the
+    //    residualTauHours
+    final double residualTauHours= (double)
+      (refTimeSeconds - firstObsSeconds)/ITimeMachine.SECONDS_PER_HOUR;
+
+    //slog.info(mmi+"refTimeSeconds="+refTimeSeconds);
+    //slog.info(mmi+"residualTauSeconds="+residualTauSeconds);
     slog.info(mmi+"residualTauHours="+residualTauHours);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     try {
       wlLocation.getJsonCfgObj();

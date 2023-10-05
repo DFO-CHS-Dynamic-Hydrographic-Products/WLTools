@@ -43,7 +43,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSStationCovarianceConfig;
  */
 final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 
-  final private static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy";
+  final private static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSCov";
 
   /**
    * static log utility.
@@ -59,41 +59,45 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
   /**
    * A vector(which could be unary if we only have one auxiliary covariance item) to store OLS regression parameter(s).
    */
-  protected D1Data beta = null;
+  protected D1Data beta= null;
 
   /**
    * @param fallBackError          : To set this.fallBackError. It is defined in the Residual configuration object.
    * @param stationCode            : The CHS TG station usual string id.
    * @param stationsCovarianceCfgList A List of FMSStationCovarianceConfig configuration object(s).
    */
-  public LegacyFMSCov(final double fallBackError, /*@NotNull*/ final String stationId,
+  public LegacyFMSCov(final double fallBackError,
+                      /*@NotNull*/ final String targetStationId,
                       /*@NotNull @Size(min = 4) */ final List<FMSStationCovarianceConfig> stationsCovarianceCfgList) {
 
     super(stationsCovarianceCfgList.size());
 
     final String mmi= "LegacyFMSCov main constructor: ";
 
+    slog.info(mmi+"start: targetStationId="+targetStationId);
+
     this.squareFallBackError= ScalarOps.square(fallBackError);
 
     this.beta= new D1Data(stationsCovarianceCfgList.size(), 0.0);
 
-    slog.info(mmi+"start");
-
-    final FMSStationCovarianceConfig stationCovarianceCfg0 = stationsCovarianceCfgList.get(0);
+    final FMSStationCovarianceConfig stationCovarianceCfg0= stationsCovarianceCfgList.get(0);
 
     final String firstStationInList= stationCovarianceCfg0.getStationId();
 
-    if (!firstStationInList.equals(stationId)) {
+    if (!firstStationInList.equals(targetStationId)) {
 
       slog.error(mmi+"The first auxiliary covariance station found in stationsCovarianceCfgList MUST be the same as the station being processed !");
-      slog.error(mmi+"Found -> " + firstStationInList + " as first station instead of -> " + stationId + " as it should be");
+      slog.error(mmi+"Found -> " + firstStationInList + " as first station instead of -> " + targetStationId + " as it should be");
 
       throw new RuntimeException(mmi+"Cannot update forecast !!");
     }
 
+    // ---
     for (final FMSStationCovarianceConfig sc : stationsCovarianceCfgList) {
 
       final String auxCovStationId= sc.getStationId();
+
+      slog.info(mmi+"auxCovStationId="+auxCovStationId);
 
       if (this.gotDuplicate(auxCovStationId)) {
 
@@ -101,25 +105,27 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
                   " in stationsCovarianceList ! Ignoring this TG station duplicate");
       } else {
 
-        slog.info(mmi+"Adding TG station:" + auxCovStationId + " to this.auxCovs");
+        slog.info(mmi+"Adding TG station: " + auxCovStationId + " to this.auxCovs");
 
         this.auxCovs.
-          add(new LegacyFMSAuxCov((int)sc.getTimeLagMinutes(), sc.getFallBackCoeff(), auxCovStationId) );
+          add(new LegacyFMSAuxCov( (int) sc.getTimeLagMinutes(), sc.getFallBackCoeff(), auxCovStationId) );
       }
     }
 
-    //--- Verify if the processed station is itself in this.auxCovs.
-    //    If it is not there then log a warning and add it with default auxiliary covariance parameters
-    if (!this.gotDuplicate(stationId)) {
-
-      slog.info(mmi+"The TGstation " + stationId +
-          " was not found in stationsCovarianceList then add it to this.auxCovs with default auxiliary covariance parameters");
-
-      this.auxCovs.
-        add(new LegacyFMSAuxCov(DEFAULT_AUX_COV_TIME_LAG_MINUTES, DEFAULT_AUX_COV_FALL_BACK_COEFF, stationId));
-    }
+    ////--- Verify if the processed station is itself in this.auxCovs.
+    ////    If it is not there then log a warning and add it with default auxiliary covariance parameters
+    //if (!this.gotDuplicate(targetStationId)) {
+    //  slog.info(mmi+"The TG station " + targetStationId +
+    //      " was not found in stationsCovarianceList then add it to this.auxCovs with default auxiliary covariance parameters");
+    //  this.auxCovs.
+    //    add(new LegacyFMSAuxCov(DEFAULT_AUX_COV_TIME_LAG_MINUTES, DEFAULT_AUX_COV_FALL_BACK_COEFF, stationId));
+    //}
 
     slog.info(mmi+"nb. aux. cov=" + this.auxCovs.size());
+    slog.info(mmi+"end");
+
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
   }
 
   /**

@@ -26,14 +26,16 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualFactory;
  * NOTE: This class seems not needed for now because it adds no attributes to the base class
  * FMSResidualFactory but it could be used to extend it if there is a need to do so.
  */
-abstract public class LegacyFMSResidualFactory extends FMSResidualFactory implements ILegacyFMSResidual {
+abstract public class LegacyFMSResidualFactory
+   extends FMSResidualFactory implements ILegacyFMSResidual {
 
-  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.legacy";
+  private final static String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSResidualFactory";
 
   /**
    * log utility
    */
-  private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * @param stationCode : CHS TG station Id.

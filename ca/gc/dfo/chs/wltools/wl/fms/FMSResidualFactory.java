@@ -116,7 +116,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     this.nbMissingWLO = 0;
 
-    slog.info(mmi+"this.stationId" +this.stationId+
+    slog.info(mmi+"this.stationId: " +this.stationId+
               ", this.residualMethod=" + this.residualMethod);
   }
 
@@ -125,8 +125,8 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
   }
 
   /**
-   * @param forecastingContext : A WL station ForecastingContext object.
-   * @param lastWLOSse         : The  time-stamp seconds of the last available valid WLO data of the same WL station.
+   * @param fmsInput : FMSInput object
+   * @param lastWLOSse  : The  time-stamp seconds of the last available valid WLO data of the same WL station.
    * @return The IFMResidual object of the WL station.
    */
   //@NotNull
@@ -134,6 +134,8 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
   protected static IFMSResidual getIFMSResidual(/*@NotNull*/ final FMSInput fmsInput, /*@Min(0)*/ final long lastWLOSse) {
 
     final String mmi= "getIFMSResidual: ";
+
+    slog.info(mmi+"start");
 
     try {
       //forecastingContext.getFmsParameters();
@@ -146,15 +148,13 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
     }
 
     try {
-    //  //forecastingContext.getFmsParameters().getResidual();
       fmsInput.getFMSResidualConfig().getMethod();
 
     } catch (NullPointerException npe) {
+
       slog.error(mmi+"fmsInput.getFMSResidualConfig() returns null !!");
       throw new RuntimeException(mmi+npe);
     }
-
-    slog.info(mmi+"Start");
 
     final String residualMethodCheck=
       fmsInput.getFMSResidualConfig().getMethod(); //forecastingContext.getFmsParameters().getResidual().getMethod();
@@ -274,6 +274,10 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     final FMSWLMeasurement[] stationMeasurementsRef= FMSWLMeasurement.
       getMeasurementsRefs(fmwlStation.getDataReferences(seconds), new FMSWLMeasurement[WLType.values().length]);
+
+    slog.info(mmi+"after getMeasurementsRefs");
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     final boolean stillGotWLOs= (seconds <= fmwlStation.lastWLOSse);
 
