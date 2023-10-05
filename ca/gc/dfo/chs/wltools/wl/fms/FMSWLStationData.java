@@ -16,21 +16,6 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurementFinder;
 
-//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-//import ca.gc.dfo.iwls.fmservice.modeling.geo.GlobalRefPoint;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.IWL;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLMeasurementFinder;
-//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-//import lombok.extern.slf4j.Slf4j;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//import javax.validation.constraints.Min;
-//import javax.validation.constraints.NotNull;
-//import javax.validation.constraints.Size;
-//import java.util.ArrayList;
-//import java.util.List;
-
 //---
 //import com.vividsolutions.jts.geom.Point;
 //---
@@ -176,9 +161,9 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
 
       if (qcfDataSize != prdDataSize) {
 
-        slog.warn(mmi+"qcfDataSize=" + qcfDataSize + ", prdDataSize=" + prdDataSize);
-        slog.warn(mmi+"qcfDataSize != prdDataSize for station: " + this.stationId);
-        slog.warn(mmi+"QC forecasts and predictions are not synchronized ! QC forecasts will be replaced by predictions !");
+        slog.info(mmi+"qcfDataSize=" + qcfDataSize + ", prdDataSize=" + prdDataSize);
+        slog.info(mmi+"qcfDataSize != prdDataSize for station: " + this.stationId);
+        slog.info(mmi+"QC forecasts and predictions are not synchronized ! QC forecasts will be replaced by predictions !");
 
         this.wlMeasurementFinderList.add(QC_FORECAST, new WLMeasurementFinder(prdDataList)); //this.wlMeasurementFinderList.get(PREDICTION));
 
@@ -195,13 +180,13 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
 
     } else {
 
-      slog.info(mmi+"No WL QC forecasts for station:"+
+      slog.info(mmi+"No WL QC forecasts for station: "+
                 this.stationId + ", replacing it with its prediction-climatology");
 
       this.wlMeasurementFinderList.add(QC_FORECAST, this.wlMeasurementFinderList.get(PREDICTION));
 
-      slog.info(mmi+"Debug exit 0 here !1");
-      System.exit(0);
+      //slog.info(mmi+"Debug exit 0 here !");
+      //System.exit(0);
 
       //throw new RuntimeException(mmi+"Debug exit here !!");
     }
@@ -225,8 +210,8 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
       slog.info(mmi+"Got "+mfDataList.size()+
                 " model WL forecasts data for station: " + this.stationId);
 
-      slog.info(mmi+"Debug exit0");
-      System.exit(0);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
 
       //final int mfDataSize= mfDataList.size();
       //if (mfDataSize != prdDataSize) {
@@ -256,6 +241,7 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
     this.secondsIncr= this.wlMeasurementFinderList.get(PREDICTION).getSecondsIncrement();
 
     if (this.secondsIncr == 0L) {
+
       slog.error(mmi+"this.secondsIncr <= 0L for station: " + this.stationId);
       throw new RuntimeException(mmi+"Cannot update forecast!");
     }

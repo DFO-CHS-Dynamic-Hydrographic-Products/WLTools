@@ -106,6 +106,10 @@ abstract public class FMSLongTermWLOffset implements IFMS {
 
     final String mmi= "updateFMSLongTermWLOffset: ";
 
+    slog.info(mmi+"Need to implement RMSE or MAE calculation to be able to detect that the obs have a tidal-like signa behavior over 48 hours in the past !!");
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
+
     this.nbWLP++;
 
     this.wlpAcc += wlStationTimeNode.

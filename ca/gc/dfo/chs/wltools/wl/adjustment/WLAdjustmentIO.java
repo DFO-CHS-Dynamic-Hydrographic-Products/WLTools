@@ -411,33 +411,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       final long checkTimeIncr= wlDataTimeStamp.getEpochSecond();
 
       // --- Could have time stamps that are not defined with the "normal" time
-      //      increment difference so just adjust the time stamps accordingly.
-      //      (it's a lind of nearest time interpolation, the time difference should be
-      //       no more than 3-5mins obviously otherwise it can cause problems.
-      if ( (timeIncrToUse > 0L) {
-
-        final long checkRemainder= (long)Math.IEEERemainder(checkTimeIncr,timeIncrToUse);
-
-        if ( (long)Math.IEEERemainder(checkTimeIncr,timeIncrToUse) != 0L &&  ) {  //(checkTimeIncr % timeIncrToUse) != 0L) {
-
-        final long nearestPastValidTimeStamp= TimeMachine.
-          roundPastToTimeIncrSeconds(timeIncrToUse, checkTimeIncr);
-
-        final long nearestFutureValidTimeStamp= TimeMachine.
-          roundFutureToTimeIncrSeconds(timeIncrToUse, checkTimeIncr);
-
-        final long pastValidTimeStampDiff= checkTimeIncr - nearestPastValidTimeStamp;
-        final long futureValidTimeStampDiff= nearestFutureValidTimeStamp - checkTimeIncr;
-
-        slog.info(mmi+"Timestamp to change:"+wlDataTimeStamp.toString());
-
-        wlDataTimeStamp= (pastValidTimeStampDiff < futureValidTimeStampDiff) ?
-                            wlDataTimeStamp.minusSeconds(pastValidTimeStampDiff) :
-                              wlDataTimeStamp.plusSeconds(futureValidTimeStampDiff);
-
-        slog.info(mmi+"new valid time stamp="+wlDataTimeStamp.toString());
-        slog.info(mmi+"Debug exit 0: remoove when tests are okay!");
-        System.exit(0);
+      //     increment difference so just get rid of the related WL data.
+      //       e.g.: When WL obs data have 1mins time incr. intervalls (CHS TGs)
+      //             OR WL obs data have 5mins time incr. intervalls (ECCC TGs)
+      //             it means that for ECCC TGs we only use WL obs data at 15mins
+      //             time intervals if timeIncrToUse is 3mins (180 seconds)
+      if ( (timeIncrToUse > 0L) && (checkTimeIncr % timeIncrToUse != 0L)) {
+        continue;
       }
 
       //slog.info(mmi+"wlPredTimeStamp="+wlPredTimeStamp.toString());
