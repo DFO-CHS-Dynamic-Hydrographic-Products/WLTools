@@ -302,13 +302,17 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
 
     final String mmi= "validate: ";
 
-    slog.info(mmi+"Start: wlList=" + measurementsList + ", wList.size()=" + measurementsList.size());
+    slog.info(mmi+"start: wList.size()=" + measurementsList.size()); // wlList=" + measurementsList + ", wList.size()=" + measurementsList.size());
 
     //--- We must have at least tauHours between the 1st and the last WL DB data
     final long sseBeg= measurementsList.get(0).getEventDate().getEpochSecond();
-    final long sseEnd= measurementsList.get(measurementsList.size() - 1).getEventDate().getEpochSecond();
 
-    final int durationHours = ((int) (sseEnd - sseBeg)) / SECONDS_PER_HOUR;
+    final long sseEnd= measurementsList.
+      get(measurementsList.size() - 1).getEventDate().getEpochSecond();
+
+    final int durationHours= ((int) (sseEnd - sseBeg)) / SECONDS_PER_HOUR;
+
+   slog.info(mmi+"end");
 
     return (durationHours >= tauHours);
   }
