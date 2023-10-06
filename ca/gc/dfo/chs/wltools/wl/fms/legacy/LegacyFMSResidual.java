@@ -249,7 +249,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     if (wlpl.get(0).getUncertainty() == null) {
 
-      slog.info(mmi+"wlpl.get(0).getUncertainty()==null for station:" + stationId + " !");
+      slog.info(mmi+"wlpl.get(0).getUncertainty()==null for station: " + stationId + " !");
 
       slog.info(mmi+"the default predictions error of "+
                 PREDICTIONS_ERROR_ESTIMATE_METERS + " will be used for the residual setup.");
@@ -364,7 +364,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
     this.residual.udpateLagNode(wlStationTimeNode);
 
     slog.info(mmi+"nb. missing WLO up-to-now="+
-              this.residual.getNbMissingWLO()+ "at TG atation: "+stationId);
+              this.residual.getNbMissingWLO()+ " at TG station: "+stationId);
 
     return wlStationTimeNode;
   }

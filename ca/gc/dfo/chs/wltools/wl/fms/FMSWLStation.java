@@ -141,6 +141,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     final long mergeDurationSeconds= (long) SECONDS_PER_HOUR * fmsInput.getFMFMergeDurationHours();
 
     if (mergeDurationSeconds < 0L) {
+
       slog.error(mmi+"mergeDurationSeconds<0L");
       throw new RuntimeException(mmi+"Cannot update forecast !");
     }
@@ -217,7 +218,8 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     }
 
     //--- Set this.residual IFMResidual object according to the ForecastingContext configuration Object of the station
-    this.fmsResidual= FMSResidualFactory.getIFMSResidual(fmsInput, this.lastWLOSse); //getIFMSResidual(forecastingContext, this.lastWLOSse);
+    this.fmsResidual= FMSResidualFactory.
+      getIFMSResidual(fmsInput, this.lastWLOSse); //getIFMSResidual(forecastingContext, this.lastWLOSse);
 
     //--- Create the FMWLMeasurement objects contained in this.dataReferences array:
     for (final WLType wlt : WLType.values()) {
@@ -260,7 +262,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     // the case.
     if (this.dataReferences[PREDICTION].measurement() == null) {
 
-      slog.error("this.dataReferences[PREDICTION].measurement()==null at time-stamp: "+
+      slog.error(mmi+"this.dataReferences[PREDICTION].measurement()==null at time-stamp: "+
                  SecondsSinceEpoch.dtFmtString(timeStampSeconds, true));
 
       throw new RuntimeException(mmi+"Cannot update forecast !");

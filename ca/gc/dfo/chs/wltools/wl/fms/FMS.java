@@ -104,12 +104,12 @@ public final class FMS extends FMSFactory implements IFMS {
 
     final String mmi= "update: ";
 
-    final long t0 = Instant.now().toEpochMilli();
+    final long t0= Instant.now().toEpochMilli();
 
     slog.info(mmi+"start.");
 
     //--- Get the 1st WLTimeNode which must be already processed.
-    WLTimeNode wlTimeNodeIter = this.timeNodes().get(0);
+    WLTimeNode wlTimeNodeIter= this.timeNodes().get(0);
 
     try {
       wlTimeNodeIter.getSse();
@@ -181,10 +181,13 @@ public final class FMS extends FMSFactory implements IFMS {
 
       //--- Build a new and processed FMS time node with the previous FMS time node as argument.
 
-      wlTimeNodeIter = this.getNewFMSTimeNode(wlTimeNodeIter);
+      wlTimeNodeIter= this.getNewFMSTimeNode(wlTimeNodeIter);
 
       slog.info(mmi+"done with WLTimeNode date-time processing: "+
         wlTimeNodeIter.getSse().dateTimeString(true) + "\n");
+
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
     }
 
     final long tf= Instant.now().toEpochMilli();
@@ -202,6 +205,9 @@ public final class FMS extends FMSFactory implements IFMS {
 
     //--- Results Validation, remove for production code.
     //this.data.writeResults("C:\\Users\\MercierGi\\Data\\tmp");
+
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     return this;
   }

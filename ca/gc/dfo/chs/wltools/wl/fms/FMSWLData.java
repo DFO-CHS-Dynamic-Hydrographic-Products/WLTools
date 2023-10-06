@@ -108,7 +108,8 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
     }
 
     try {
-      fmsInputList.get(0).getReferenceTime().getEpochSecond();
+      fmsInputList.get(0).
+        getReferenceTime().getEpochSecond();
 
     } catch (NullPointerException npe) {
 
@@ -116,7 +117,8 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
       throw new RuntimeException(npe);
     }
 
-    this.referenceSse= fmsInputList.get(0).getReferenceTimeInSeconds(); //forecastingContextList.get(0).getReferenceTime().getEpochSecond();
+    this.referenceSse= fmsInputList.
+      get(0).getReferenceTimeInSeconds(); //forecastingContextList.get(0).getReferenceTime().getEpochSecond();
 
     slog.info(mmi+"this.referenceSse date-time is: "+
               SecondsSinceEpoch.dtFmtString(this.referenceSse, true));
@@ -128,8 +130,8 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
     this.populateFMSWLStationsData(fcstsTimeIncrMinutes, fmsInputList); //forecastingContextList);
 
     slog.info(mmi+"end: this.timeNodes.size()=" + this.timeNodes.size());
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
   }
 
   // --- Return the updatedForecastData List<MeasurementCustom> object
@@ -332,8 +334,8 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
     //--- 1st time-stamp of the WL prediction data retreived from the DB:
     final SecondsSinceEpoch sseStart= new
-      SecondsSinceEpoch(fmsInput0.getObservations().get(0).getEventDate().getEpochSecond());
-      //SecondsSinceEpoch(fmsInput0.getPredictions().get(0).getEventDate().getEpochSecond());
+      //SecondsSinceEpoch(fmsInput0.getObservations().get(0).getEventDate().getEpochSecond());
+      SecondsSinceEpoch(fmsInput0.getPredictions().get(0).getEventDate().getEpochSecond());
 
     slog.info(mmi+
               "Starting new QC forecast(s) residuals errors statistics at date time-stamp: " + sseStart.dateTimeString(true));
@@ -349,8 +351,9 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
     this.newFMSTimeNode(null, sseStart);
 
     slog.info(mmi+"end");
-    slog.debug(mmi+"Debug exit 0");
-    System.exit(0);
+
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
   }

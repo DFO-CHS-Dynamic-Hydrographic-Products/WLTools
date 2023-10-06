@@ -248,7 +248,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //  mainJsonMapObj.getJsonObject(this.locationIdInfo).
     //    getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
-    this.location.setConfig(mainJsonMapObj.getJsonObject(this.locationIdInfo));
+    this.location.
+      setConfig(mainJsonMapObj.getJsonObject(this.locationIdInfo));
 
     slog.info(mmi+"this.location.getZcVsVertDatum()="+this.location.getZcVsVertDatum());
     //final JsonObject test= mainJsonMapObj.getJsonObject(this.locationIdInfo);
@@ -259,6 +260,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // --- We can close the tide gauges info Json file now
     try {
       jsonFileInputStream.close();
+
     } catch (IOException e) {
       throw new RuntimeException(mmi+e);
     }
@@ -368,8 +370,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
   }
 
   ///**
@@ -387,7 +389,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //         the result of the adjustment-correction for the model forecast done at the
     //         previous step with it.
     //final fmsContext fmsContextObj= this.getFmsContext(this);
-    this.locationAdjustedData= this.fmsObj.update().getNewForecastData();
+    this.locationAdjustedData= this.
+       fmsObj.update().getNewForecastData();
 
     slog.info(mmi+"end");
 

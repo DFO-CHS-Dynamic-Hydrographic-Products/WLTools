@@ -137,10 +137,10 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
 
     //slog.info(mmi+"Test dist. rad="+Trigonometry.getDistanceInRadians(-73.552528,45.5035,-73.5425,45.528667));
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
-
     slog.info(mmi+"end");
+
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
   }
 
   /**

@@ -36,15 +36,15 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
   public WLMeasurement() {
 
-    this.trackIndex = 0;
-    this.measurement = null;
+    this.trackIndex= 0;
+    this.measurement= null;
   }
 
   /**
    * @param measurement :  The wrapped Measurement object.
    */
   public WLMeasurement(final MeasurementCustom measurement) {
-    this.measurement = measurement;
+    this.measurement= measurement;
   }
 
   /**
@@ -52,6 +52,7 @@ abstract public class WLMeasurement implements IWLMeasurement {
    * @return String : The date-time-stamp String representation of the time-stamp of the  Measurement object argument.
    */
   public static String dateTimeString(/*@NotNull*/ final MeasurementCustom msm) {
+
     return SecondsSinceEpoch.dtFmtString(msm.getEventDate().getEpochSecond(), true);
   }
 
@@ -68,6 +69,9 @@ abstract public class WLMeasurement implements IWLMeasurement {
                                                /*@Min(0)*/ final int startIndex,
                                                /*@NotNull @Size(min = 2)*/ final List<MeasurementCustom> msma) {
     final String mmi= "findWLBackward: ";
+
+    slog.info(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
+    System.exit(1);
 
     if (startIndex == 0) {
 
@@ -116,13 +120,13 @@ abstract public class WLMeasurement implements IWLMeasurement {
   protected final WLMeasurement findWLForward(/*@Min(0)*/ final long seconds,
                                               /*@Min(0)*/ final int startIndex,
                                               /*@NotNull @Size(min = 2)*/ final List<MeasurementCustom> msma) {
-    final String mmi= "findWLForward: ";
+    //final String mmi= "findWLForward: ";
 
-    slog.info(mmi+"start: seconds dt="+
-              SecondsSinceEpoch.dtFmtString(seconds, true) + ", startIndex=" + startIndex);
+    //slog.info(mmi+"start: seconds dt wanted="+seconds);
+    //          SecondsSinceEpoch.dtFmtString(seconds, true) + ", startIndex=" + startIndex);
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     if (startIndex == (msma.size() - 1)) {
 
@@ -151,14 +155,16 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
     } else {
 
-      slog.info(mmi+"startIndex>=msma.size() !");
+      //slog.info(mmi+"startIndex>=msma.size() !");
 
       this.measurement= null;
       this.trackIndex= 0;
     }
 
-    //slog.info(mmi+"start: seconds dt="+
-    //           SecondsSinceEpoch.dtFmtString(seconds, true)+", this.measurement=" + this.measurement);
+    //slog.info(mmi+"end: seconds dt wanted="+SecondsSinceEpoch.dtFmtString(seconds, true)+
+    //              ", this.trackIndex="+this.trackIndex+", this.measurement object=" + this.measurement.toString());
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
   }

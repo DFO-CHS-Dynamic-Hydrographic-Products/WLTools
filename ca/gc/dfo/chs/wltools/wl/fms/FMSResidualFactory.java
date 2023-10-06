@@ -102,19 +102,20 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
    * @param stationId    : The usual CHS TG station string Id.
    * @param residualMethod : The ResidualMethod type to use.
    */
-  public FMSResidualFactory(/*@NotNull*/ final String stationId, /*@NotNull*/ final IFMS.ResidualMethod residualMethod) {
+  public FMSResidualFactory(/*@NotNull*/ final String stationId,
+                            /*@NotNull*/ final IFMS.ResidualMethod residualMethod) {
 
     super();
 
     final String mmi= "FMSResidualFactory main constructor: ";
 
-    this.stationId = stationId;
-    this.residualMethod = residualMethod;
+    this.stationId= stationId;
+    this.residualMethod= residualMethod;
 
-    this.lastUpdateSse = new SecondsSinceEpoch(0L);
-    this.covData = null;
+    this.lastUpdateSse= new SecondsSinceEpoch(0L);
+    this.covData= null;
 
-    this.nbMissingWLO = 0;
+    this.nbMissingWLO= 0;
 
     slog.info(mmi+"this.stationId: " +this.stationId+
               ", this.residualMethod=" + this.residualMethod);
@@ -131,7 +132,8 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
    */
   //@NotNull
  // protected static IFMSResidual getIFMSResidual(@NotNull final ForecastingContext forecastingContext,
-  protected static IFMSResidual getIFMSResidual(/*@NotNull*/ final FMSInput fmsInput, /*@Min(0)*/ final long lastWLOSse) {
+  protected static IFMSResidual
+    getIFMSResidual(/*@NotNull*/ final FMSInput fmsInput, /*@Min(0)*/ final long lastWLOSse) {
 
     final String mmi= "getIFMSResidual: ";
 
@@ -276,8 +278,8 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
       getMeasurementsRefs(fmwlStation.getDataReferences(seconds), new FMSWLMeasurement[WLType.values().length]);
 
     slog.info(mmi+"after getMeasurementsRefs");
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     final boolean stillGotWLOs= (seconds <= fmwlStation.lastWLOSse);
 
@@ -322,6 +324,9 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
     }
 
     slog.info(mmi+"end: stationId=" + stationId + ", sse dts=" + dts);
+
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return wlstn;
   }

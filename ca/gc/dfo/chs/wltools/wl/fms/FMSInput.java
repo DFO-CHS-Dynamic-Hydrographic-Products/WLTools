@@ -101,14 +101,14 @@ final public class FMSInput extends FMSConfig {
     slog.info(mmi+"firstPredMcInstant="+firstPredMcInstant.toString());
     slog.info(mmi+"lastPredMcInstant="+lastPredMcInstant.toString()+"\n");
 
-    final Instant firstObsMcInstant=
-      this.observations.get(0).getEventDate();
+    //final Instant firstObsMcInstant=
+    //  this.observations.get(0).getEventDate();
 
-    final Instant lastObsMcInstant= this.
-      observations.get(this.observations.size()-1).getEventDate();
+    //final Instant lastObsMcInstant= this.
+    //  observations.get(this.observations.size()-1).getEventDate();
 
-    slog.info(mmi+"firstObsMcInstant="+firstObsMcInstant.toString());
-    slog.info(mmi+"lastObsMcInstant="+lastObsMcInstant.toString()+"\n");
+    //slog.info(mmi+"firstObsMcInstant="+firstObsMcInstant.toString());
+    //slog.info(mmi+"lastObsMcInstant="+lastObsMcInstant.toString()+"\n");
 
     final Instant firstFMFMcInstant=
       this.modelForecasts.get(0).getEventDate();
@@ -144,21 +144,21 @@ final public class FMSInput extends FMSConfig {
 
     //final double residualTauHours= (double)
     //  (refTimeSeconds - firstPrdSeconds)/ITimeMachine.SECONDS_PER_HOUR;
-
-    final long firstObsSeconds= firstObsMcInstant.getEpochSecond();
-
-    if ( firstObsSeconds > refTimeSeconds) {
-      throw new RuntimeException(mmi+"Cannot have firstObsSeconds > refTimeSeconds !!");
-    }
-
-    if (firstPrdSeconds > firstObsSeconds) {
-      throw new RuntimeException(mmi+"Cannot have firstPrdSeconds > firstObsSeconds !!");
-    }
+    // --- 1st timestamp of the WL obs. data
+    //final long firstObsSeconds= firstObsMcInstant.getEpochSecond();
+    //// --- 1st timestamp of the full model forecast WL data
+    //final long firstFMFSeconds= firstObsMcInstant.getEpochSecond();
+    //if ( firstObsSeconds > refTimeSeconds) {
+    //  throw new RuntimeException(mmi+"Cannot have firstObsSeconds > refTimeSeconds !!");
+    //}
+    //if (firstPrdSeconds > firstObsSeconds) {
+    //  throw new RuntimeException(mmi+"Cannot have firstPrdSeconds > firstObsSeconds !!");
+    //}
 
     //--- Need to use the 1st obs. data timestamp seconds to define the
     //    residualTauHours
     final double residualTauHours= (double)
-      (refTimeSeconds - firstObsSeconds)/ITimeMachine.SECONDS_PER_HOUR;
+      (refTimeSeconds - firstPrdSeconds)/ITimeMachine.SECONDS_PER_HOUR;  //firstObsSeconds)/ITimeMachine.SECONDS_PER_HOUR;
 
     //slog.info(mmi+"refTimeSeconds="+refTimeSeconds);
     //slog.info(mmi+"residualTauSeconds="+residualTauSeconds);

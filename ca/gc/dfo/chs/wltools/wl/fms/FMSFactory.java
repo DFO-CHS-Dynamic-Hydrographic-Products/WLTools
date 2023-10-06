@@ -58,7 +58,8 @@ abstract public class FMSFactory implements IFMS {
   // * Equivalent of the forecast_interval C struct defined in the source file dvfm.c of the 1990 legacy ODIN C source
   // * code bundle.
   // */
-  protected long fcstsTimeIncrSeconds= (long) SECONDS_PER_MINUTE * FORECASTS_TIME_INCR_MINUTES_MAX;
+  protected long fcstsTimeIncrSeconds= (long)
+    SECONDS_PER_MINUTE * FORECASTS_TIME_INCR_MINUTES_MAX;
 
   /**
    * Default constructor.
@@ -149,8 +150,7 @@ abstract public class FMSFactory implements IFMS {
 
       final String stationId= fc.getStationId();
 
-      slog.info(mmi+"Now checking station: "+stationId);
-
+      //slog.info(mmi+"Now checking station: "+stationId);
       ////if (!checkForecastingContext(fc)) {
       //if (!checkFMSConfig(fc)) {
       //  slog.error(mmi+"checkFMSConfig(fc)==false for station:" + stationId);
@@ -184,8 +184,9 @@ abstract public class FMSFactory implements IFMS {
     this.data= new FMSWLData(fcstsTimeIncrMinutes, fmsInputList); //forecastingContextList);
 
     slog.info(mmi+"end\n");
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
   }
 
   // ---

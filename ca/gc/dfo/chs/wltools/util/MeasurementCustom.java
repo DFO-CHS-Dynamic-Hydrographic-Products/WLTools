@@ -119,4 +119,12 @@ final public class MeasurementCustom {
   public final static long getDataTimeIntervallSecondsDiff(final MeasurementCustom mc1, final MeasurementCustom mc2) {
     return Math.abs(mc1.getEventDate().getEpochSecond() - mc2.getEventDate().getEpochSecond());
   }
+
+  @Override
+  public final String toString() {
+
+     return whoAmI + " -> { this.eventDate= " +
+                            this.eventDate.toString() + ", this.value= "+
+                            this.value+ ", this.uncertainty= "+this.uncertainty+"}";
+  }
 }
