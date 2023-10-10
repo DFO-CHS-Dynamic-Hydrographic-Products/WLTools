@@ -304,6 +304,9 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
 
       slog.info(mmi+"wlstn.get(WLType.PREDICTION).zDValue()=" + wlStationTimeNode.get(WLType.PREDICTION).getDoubleZValue());
       slog.info(mmi+"wlstn.getUpdatedForecast().getValue()=" + wlStationTimeNode.getUpdatedForecast().getValue());
+
+      slog.info(mmi+"Debug exit 0");
+      System.exit(0);
     }
 
     //--- Need to store the estimated surge( estimatedShortTermSurgeZw + this.longTermSurge WITHOUT tidal remnant)

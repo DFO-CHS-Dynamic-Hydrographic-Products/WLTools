@@ -31,7 +31,8 @@ import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
  */
 abstract public class FMSLongTermWLOffset implements IFMS {
 
-  private final static String whoAmI= "ca.gc.dfo.chs.wltools.wl.fms.FMSLongTermWLOffset";
+  private final static String whoAmI=
+    "ca.gc.dfo.chs.wltools.wl.fms.FMSLongTermWLOffset";
 
   /**
    * static log utility.
@@ -106,9 +107,9 @@ abstract public class FMSLongTermWLOffset implements IFMS {
 
     final String mmi= "updateFMSLongTermWLOffset: ";
 
-    slog.info(mmi+"Need to implement RMSE or MAE calculation to be able to detect that the obs have a tidal-like signa behavior over 48 hours in the past !!");
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Need to implement RMSE or MAE calculation to be able to detect that the obs have a tidal-like signa behavior over 48 hours in the past !!");
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     this.nbWLP++;
 
@@ -135,6 +136,8 @@ abstract public class FMSLongTermWLOffset implements IFMS {
     slog.info(mmi+"this.getWLPAvg()=" + this.getWLPAvg());
     slog.info(mmi+"this.longTermOffset=" + this.longTermOffset);
     slog.info(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this.longTermOffset;
   }
