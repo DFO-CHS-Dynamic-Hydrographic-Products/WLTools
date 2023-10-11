@@ -212,22 +212,23 @@ final public class FMSInput extends FMSConfig {
                                                   wlLocation.getIdentity(), fmsResidualCfgJsonObj);
 
     // --- Check if we have a tidal remnant config JsonObject to use for this TG location.
-    //    (only where the tidal energy is significant)
-    if (wllFMSConfigJsonObj.containsKey(LEGACY_TIDAL_REMNANT_JSON_KEY)) {
+    //    (only where the tidal influence is significant)
+    if (fmsConfigJsonObj.containsKey(LEGACY_TIDAL_REMNANT_JSON_KEY)) {
 
       slog.info(mmi+"Need to get tidal remnant config for TG location -> "+wlLocation.getIdentity());
 
       final JsonObject fmsTidalRemnantCfgJsonObj=
-        wllFMSConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY);
+        fmsConfigJsonObj.getJsonObject(LEGACY_TIDAL_REMNANT_JSON_KEY);
 
       this.fmsTidalRemnantConfig= new
         FMSTidalRemnantConfig( residualTauHours, this.getDeltaTMinutes(), fmsTidalRemnantCfgJsonObj);
 
-      slog.info(mmi+"Not tested yet! -> Debug exit 0");
-      System.exit(0);
+      //slog.info(mmi+"Not tested yet! -> Debug exit 0");
+      //System.exit(0);
     }
 
     slog.info(mmi+"end");
+
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
   }
