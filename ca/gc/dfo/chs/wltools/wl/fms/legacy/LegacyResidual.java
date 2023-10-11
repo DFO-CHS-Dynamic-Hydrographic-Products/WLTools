@@ -28,7 +28,8 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSStationCovarianceConfig;
  * legacy DVFM algorithm.
  * (NOTE: this class is inherited by the TidalRemnantResidual class).
  */
-public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyFMSResidual, IWL {
+public class LegacyResidual
+  extends LegacyFMSResidualFactory implements ILegacyFMSResidual, IWL {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyResidual: ";
@@ -63,7 +64,8 @@ public class LegacyResidual extends LegacyFMSResidualFactory implements ILegacyF
    * @param residualCfg : FMSResidualConfig object
    * @param stationId : The CHS TG station string id.
    */
-  public LegacyResidual(/*@NotNull*/ final FMSResidualConfig residualCfg, /*@NotNull*/ final String stationId) {
+  public LegacyResidual(/*@NotNull*/ final FMSResidualConfig residualCfg,
+                        /*@NotNull*/ final String stationId) {
 
     this(residualCfg, stationId, residualCfg.getDeltaTMinutes()) ; //.doubleValue());
   }

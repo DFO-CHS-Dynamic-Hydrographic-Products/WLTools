@@ -59,6 +59,10 @@ abstract public class FMSLongTermWLOffset implements IFMS {
    */
   protected double wlpAcc= 0.0;
 
+  protected double wlpVsWloRMSE= 0.0;
+
+  protected double wlpVsWloRMSEAcc= 0.0;
+
   /**
    * The computed long term WL offset value.
    */
@@ -91,8 +95,11 @@ abstract public class FMSLongTermWLOffset implements IFMS {
 
     this.wloAcc=
       this.wlpAcc=
-        this.longTermOffset=
-          this.longTermOffsetFactor= 0.0;
+          this.longTermOffset=
+            this.longTermOffsetFactor= 0.0;
+
+    this.wlpVsWloRMSE=
+      this.wlpVsWloRMSEAcc= 0.0;
 
     //slog.info(mmi+"end");
 
@@ -113,16 +120,22 @@ abstract public class FMSLongTermWLOffset implements IFMS {
 
     this.nbWLP++;
 
-    this.wlpAcc += wlStationTimeNode.
+    final double wlpValue= wlStationTimeNode.
       get(IWL.WLType.PREDICTION).getDoubleZValue();
+
+    this.wlpAcc += wlpValue;
 
     //--- Avoid(as much as we can!) null object SNAFUs
     if (wlStationTimeNode.get(IWL.WLType.OBSERVATION) != null) {
 
       this.nbValidWLO++;
 
-      this.wloAcc += wlStationTimeNode.
+      final double wloValue= wlStationTimeNode.
         get(IWL.WLType.OBSERVATION).getDoubleZValue();
+
+      this.wloAcc += wloValue;
+
+      this.wlpVsWloRMSEAcc += (wlpValue-wloValue)*(wlpValue-wloValue);
     }
 
     //--- No time-weighting stuff here, just plain average.
@@ -132,10 +145,16 @@ abstract public class FMSLongTermWLOffset implements IFMS {
 
     this.longTermOffsetFactor= 1.0 / (tfDenom * tfDenom);
 
+    if (this.nbValidWLO > 0) {
+      this.wlpVsWloRMSE= Math.sqrt(this.wlpVsWloRMSEAcc/this.nbValidWLO);
+    }
+
     slog.info(mmi+"this.getWLOAvg()=" + this.getWLOAvg());
     slog.info(mmi+"this.getWLPAvg()=" + this.getWLPAvg());
     slog.info(mmi+"this.longTermOffset=" + this.longTermOffset);
     slog.info(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
+    slog.info(mmi+"this.wlpVsWloRMSE="+this.wlpVsWloRMSE);
+
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 
