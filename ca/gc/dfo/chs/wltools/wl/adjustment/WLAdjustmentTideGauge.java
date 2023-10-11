@@ -157,7 +157,22 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     this.obsInputDataFormat=
       IWLStationPredIO.Format.valueOf(tideGaugeWLODataInfo[0]);
 
+    // --- Extract the path of the WLO data file for the TG.
     final String tideGaugeWLODataFile= tideGaugeWLODataInfo[1]; ;//argsMap.get("--tideGaugeWLODataFile");
+
+    // --- Verify that we have the same name id. for the TG between the file name and
+    //     the this.locationIdInfo attrbute.
+    final String [] tideGaugeWLODataFilePathSplit= tideGaugeWLODataFile.split(File.separator);
+
+    //--- Extract the 1st part of the WLO data file which MUST be the same string id. as for the
+    //    this.locationIdInfo attribute.
+    final String tideGaugeNameIdFromFileName=
+      tideGaugeWLODataFilePathSplit[tideGaugeWLODataFilePathSplit.length-1].split(IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
+
+   if (!tideGaugeNameIdFromFileName.equals(this.locationIdInfo)) {
+     throw new RuntimeException(mmi+"tideGaugeNameIdFromFileName="+tideGaugeNameIdFromFileName+
+                                " is NOT the same tg station id. as this.locationIdInfo="+this.locationIdInfo);
+   }
 
     slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
     slog.info(mmi+"tideGaugePredictInputDataFile="+tideGaugePredictInputDataFile);
@@ -171,7 +186,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         get("--tideGaugeAdjMethods").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
       if (!IWLAdjustment.allowedTideGaugeAdjMethods.contains(tideGaugeAdjMethodCheck[0]) ) {
-         throw new RuntimeException(mmi+"Invalid tide gauge WL adjustment method -> "+tideGaugeAdjMethodCheck[0]+
+        throw new RuntimeException(mmi+"Invalid tide gauge WL adjustment method -> "+tideGaugeAdjMethodCheck[0]+
                                     " Must be one of -> "+IWLAdjustment.allowedTideGaugeAdjMethods.toString());
       }
 

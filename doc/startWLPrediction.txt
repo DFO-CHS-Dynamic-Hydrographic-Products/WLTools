@@ -3,12 +3,12 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 
 time java WLTools \
 --tool=prediction \
---predDurationInDays=55 \
+--predDurationInDays=42 \
 --stageType=DISCHARGE_CFG_STATIC \
---startTimeISOFormat=2023-08-02T06:00:00Z \
+--startTimeISOFormat=2023-09-24T06:00:00Z \
 --stationPredType=TIDAL:NON_STATIONARY_FOREMAN \
 --tidalConstsInputFileFormat=NON_STATIONARY_JSON \
---outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/2023081706
+--outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/2023100406 # --- 2023100406 is the H2D2-SLFE synop run DATEO
 --stationIdInfo=StLawrence:Deschaillons:gridPoint-540 \ # Deschaillons
 
 # --stationIdInfo=StLawrence:Longueuil:gridPoint-0  # Jetee1
