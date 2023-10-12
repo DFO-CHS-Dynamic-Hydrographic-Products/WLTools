@@ -180,8 +180,7 @@ public class LegacyResidual
 
     //--- Quite unlikely to happen but we never know.
     if (nodeTimeStamp < this.lastUpdateSse.seconds()) {
-      slog.info(mmi+"nodeTimeStamp < this.lastUpdateSse.seconds() !!, nodeTimeStamp must be larger or equal to this.lastUpdateSse.seconds()");
-      throw new RuntimeException(mmi);
+      throw new RuntimeException(mmi+"nodeTimeStamp < this.lastUpdateSse.seconds() !!, nodeTimeStamp must be larger or equal to this.lastUpdateSse.seconds()");
     }
 
     //--- Get the time offset compared with the last time stamp of the last residual object update:
@@ -189,26 +188,48 @@ public class LegacyResidual
     //          in timeFactor computation but it is kept ther to report its value in the info logs.
     final long timeOffset= nodeTimeStamp - this.lastUpdateSse.seconds();
 
-    slog.info(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
+    //--- Now modulate the short term time decay factor with either the
+    //    long term offset or the WLP vs WLO RMSE value in order to avoid getting
+    //    back to the predictions values too fast in case that the WLO data
+    //    of a tide gauge that is located far away from tidal influence shows
+    //    a tidal like behavior over the last 48 hours (could happen sometimes
+    //    for TGs like Jetee1). This not so uncommon behavior can produce an
+    //    almost zero long term offset but the WLP vs WLO RMSE value is significantly
+    //    larger than zero in this case.
+    final double longTermOffsetAbsVal= Math.abs(this.longTermOffset);
 
-    //---
-    final double timeFactor = (double) (timeOffset) * resData.tauInv;
+    final double maxShortTermTimeDecayDenom=
+      (this.wlpVsWloRMSE > longTermOffsetAbsVal ) ? this.wlpVsWloRMSE : longTermOffsetAbsVal;
+
+    slog.info(mmi+"maxShortTermTimeDecayDenom="+maxShortTermTimeDecayDenom);
+
+    final double shortTermTimeDecayFactorAdj= 1.0/(1.0 + maxShortTermTimeDecayDenom);
+
+    final double shortTermTimeDecayFactor= ((double) timeOffset) * resData.tauInv * shortTermTimeDecayFactorAdj;
+
+    //slog.info(mmi+"shortTermTimeDecayFactor initial:"+shortTermTimeDecayFactor);
+    //final double shortTermTimeDecayFactor *= shortTermTimeDecayFactorAdj;
+
+    //slog.info(mmi+"shortTermTimeDecayFactor adj.:"+ shortTermTimeDecayFactor * shortTermTimeDecayFactorAdj);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     //final double timeFactor= (double) (nts - this.lastUpdateSse.seconds()) * rd.tauInv;
     //TODO: Test if we can use the forecast duration here as the denominator for the future time ratio
     //final double timeFactor= (double)(nts - this.lastUpdateSse.seconds())/forecastDuration;
 
-    final double surgeWeight= resData.getValueWeight(timeFactor);
-    final double errorWeight= resData.getErrorWeight(timeFactor);
+    final double surgeWeight= resData.getValueWeight(shortTermTimeDecayFactor); //(timeFactor);
+    final double errorWeight= resData.getErrorWeight(shortTermTimeDecayFactor);  //(timeFactor);
 
     //--- Keep the last surge computed at the previous time-stamp in a local variable
     //    for a possible local usage:
-    final double lastEstimatedSurge = resData.zX.at(0);
+    final double prevTSEstimatedSurge= resData.zX.at(0);
 
     slog.info(mmi+"rd.alpha=" + resData.alpha);
     slog.info(mmi+"rd.tauInv=" + resData.tauInv);
     slog.info(mmi+"timeOffset=" + timeOffset);
-    slog.info(mmi+"timeFactor=" + timeFactor);
+    slog.info(mmi+"shortTermTimeDecayFactor=" + shortTermTimeDecayFactor);
+    slog.info(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
 
     //this.log.debug("LegacyResidual estimate: timeFactor=" + (double)(nts - this.lastUpdateSse.seconds())
     // /forecastDuration);
@@ -216,7 +237,8 @@ public class LegacyResidual
     slog.info(mmi+"errorWeight=" + errorWeight);
 
     //--- Compute the WL estimated surge and its associated error:
-    //    NOTE: computeEstimatedSurge returns the "short term" surge(a.k.a. storm and-or outflow surge)
+    //    NOTE: computeEstimatedSurge returns the "short term" surge
+    //    (a.k.a. storm and-or freshwater outflow surge)
     covData.computeEstimatedSurge(surgeWeight, errorWeight, resData.eps,
                                   resData.zX, resData.beta, this.estimatedSurge);
 
@@ -240,13 +262,13 @@ public class LegacyResidual
       //--- G. Mercier FMS 2018 modification:
       //    Now let the "long term" surge to decay more slowly than the "short term" surge
       //    in cases where we have a tidal remnant signal to use:
-      this.longTermOffset *= Math.exp(-timeFactor * this.longTermOffsetFactor);
+      this.longTermOffset *= Math.exp(-shortTermTimeDecayFactor * this.longTermOffsetFactor); //(-timeFactor * this.longTermOffsetFactor);
     }
 
     slog.info(mmi+"this.longTermOffset=" + this.longTermOffset);
     slog.info(mmi+"estimatedShortTermSurgeZw=" + estimatedShortTermSurgeZw);
     slog.info(mmi+"1st estimatedSurge=" + estimatedSurge);
-    slog.info(mmi+"lastEstimatedSurge=" + lastEstimatedSurge);
+    slog.info(mmi+"prevTSEstimatedSurge=" + prevTSEstimatedSurge);
     slog.info(mmi+"estimatedSurgeError=" + estimatedSurgeError);
     slog.info(mmi+"remnantValue=" + remnantValue);
     slog.info(mmi+"remnantError=" + remnantError);
@@ -263,15 +285,15 @@ public class LegacyResidual
 
       slog.info(mmi+"Using last estimated surge as the newly estimated surge.");
 
-      estimatedSurge = lastEstimatedSurge;
+      estimatedSurge= prevTSEstimatedSurge;
 
     } else {
 
-      slog.info(mmi+"Setting the newly estimated surge as the mean between it and the last estimated surge.");
+      slog.info(mmi+"Setting the newly estimated surge as the mean between itself and the last estimated surge.");
 
       //--- Estimated short term surge >= long term surge: keep the last estimated surge information by
       //    setting the newly estimated surge as the mean betweem its newly computed value and the last estimated surge:
-      estimatedSurge = (estimatedSurge + lastEstimatedSurge) / 2.0;
+      estimatedSurge= (estimatedSurge + prevTSEstimatedSurge) / 2.0;
     }
 
     slog.info(mmi+"final estimatedSurge=" + estimatedSurge);
@@ -291,11 +313,18 @@ public class LegacyResidual
     slog.info(mmi+"estimatedTotalSurgeZw=" + estimatedTotalSurgeZw);
     slog.info(mmi+"estimatedTotalSurgeError=" + estimatedTotalSurgeError);
 
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
+
     //--- Apply estimated WL surge to get the full forecasted WL:
     if (apply) {
 
       slog.info(mmi+"Applying estimated surge to get the new forecasted water level at: "+
                 SecondsSinceEpoch.dtFmtString(nodeTimeStamp, true) + ",  for station: " + this.stationId);
+
+      slog.info(mmi+"Debug exit 0");
+      System.exit(0);
+
 
       //--- Set the new computed forecast by applying the estimated surge:
       final double updatedForecast= wlStationTimeNode.

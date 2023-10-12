@@ -141,19 +141,33 @@ abstract public class FMSLongTermWLOffset implements IFMS {
     //--- No time-weighting stuff here, just plain average.
     this.longTermOffset= this.getWLOAvg() - this.getWLPAvg();
 
-    final double tfDenom= (1.0 + Math.abs(this.longTermOffset));
+    final double timeDecayFactorDenom= (1.0 + Math.abs(this.longTermOffset));
 
-    this.longTermOffsetFactor= 1.0 / (tfDenom * tfDenom);
+    this.longTermOffsetFactor= 1.0 / (timeDecayFactorDenom * timeDecayFactorDenom);
 
     if (this.nbValidWLO > 0) {
       this.wlpVsWloRMSE= Math.sqrt(this.wlpVsWloRMSEAcc/this.nbValidWLO);
     }
 
+    //final double longTermOffsetAbsVal= Math.abs(this.longTermOffset);
+    //--- Take this.wlpVsWloRMSE as the long term offset abs value
+    //    if it is larger than longTermOffsetAbsVal. This is done
+    //    to avoid using a time decay factor that is too small when
+    //    the WLO data of a tide gauge that is located far away from
+    //    tidal influence shows a tidal like behavior over the last
+    //    48 hours (could happen sometimes for TGs like Jetee1). This
+    //    avoids having the WLF-QC signal to go back too quickly to the
+    //    predictions values.
+    //final double timeDecayFactorDenom=
+    //  ( this.wlpVsWloRMSE > longTermOffsetAbsVal) ?
+    //    (1.0 + this.wlpVsWloRMSE) : (1.0 + longTermOffsetAbsVal);
+    //this.longTermOffsetFactor= 1.0 / (timeDecayFactorDenom * timeDecayFactorDenom );
+
     slog.info(mmi+"this.getWLOAvg()=" + this.getWLOAvg());
     slog.info(mmi+"this.getWLPAvg()=" + this.getWLPAvg());
     slog.info(mmi+"this.longTermOffset=" + this.longTermOffset);
-    slog.info(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
     slog.info(mmi+"this.wlpVsWloRMSE="+this.wlpVsWloRMSE);
+    slog.info(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
 
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
