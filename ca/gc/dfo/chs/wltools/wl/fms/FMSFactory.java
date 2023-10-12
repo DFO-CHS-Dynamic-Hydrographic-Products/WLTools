@@ -261,6 +261,10 @@ abstract public class FMSFactory implements IFMS {
     return this.data.timeNodes;
   }
 
+  public final void writeAllDataInCSVFiles(final String outDir) {
+    this.data.writeCSVFiles(outDir);
+  }
+
   /**
    * FM Service forecast generic method update.
    *

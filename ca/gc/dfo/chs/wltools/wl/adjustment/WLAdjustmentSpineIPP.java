@@ -535,7 +535,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
   ///**
   // * Comments please.
   // */
-  final public List<MeasurementCustom> getAdjustment() {
+  final public List<MeasurementCustom> getAdjustment(final String outputDirectory) {
 
     final String mmi= "getAdjustment: ";
 

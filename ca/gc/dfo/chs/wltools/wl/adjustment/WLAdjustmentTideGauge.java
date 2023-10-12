@@ -392,7 +392,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
   ///**
   // * Comments please.
   // */
-  final public List<MeasurementCustom> getAdjustment() {
+  final public List<MeasurementCustom> getAdjustment(final String outputDirectory) {
 
     final String mmi= "getAdjustment: ";
 
@@ -406,6 +406,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //final fmsContext fmsContextObj= this.getFmsContext(this);
     this.locationAdjustedData= this.
        fmsObj.update().getNewForecastData();
+
+    if (outputDirectory != null) {
+      fmsObj.writeAllDataInCSVFiles(outputDirectory);
+    }
 
     slog.info(mmi+"end");
 

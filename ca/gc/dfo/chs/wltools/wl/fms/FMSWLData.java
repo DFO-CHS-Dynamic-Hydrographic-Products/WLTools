@@ -459,7 +459,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
    *
    * @param outDir : The local disk directory where to write the results.
    */
-  public final void writeCSVOnDisk(final String outDir) {
+  public final void writeCSVFiles(final String outDir) {
 
     final String mmi= "writeCSVOnDisk: ";
 

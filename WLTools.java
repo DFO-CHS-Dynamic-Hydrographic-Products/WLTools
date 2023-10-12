@@ -2,7 +2,7 @@
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
-//import java.util.Date;
+import java.util.List;
 import java.util.HashMap;
 import java.util.TimeZone;
 //import java.util.Calendar;
@@ -16,6 +16,7 @@ import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
@@ -73,7 +74,6 @@ final public class WLTools extends WLToolsIO {
     }
 
     //final [] String toolsIds= {  };
-
     if (!argsMap.keySet().contains("--tool")) {
 
       throw new RuntimeException(mmi+"Must have one of the --tool="+
@@ -101,7 +101,25 @@ final public class WLTools extends WLToolsIO {
 
     System.out.println(mmi+"Will use tool -> "+tool);
 
-    //WLStationPred wlStationPred= null;
+    //WLStationPred wlStationPred= null
+
+    if (!argsMap.keySet().contains("--outputDirectory")) {
+      throw new RuntimeException(mmi+"Must have the --outputDirectory=<path to the output dir.> defined in the args.!");
+    }
+
+    WLToolsIO.setOutputDirectory(argsMap.get("--outputDirectory"));
+
+    System.out.println(mmi+"WLToolsIO.getOutputDirectory()="+WLToolsIO.getOutputDirectory());
+
+    boolean writeAllData= false;
+
+    if (argsMap.keySet().contains("--writeAllData")) {
+      writeAllData= argsMap.get("--writeAllData").equals("true") ? true : false;
+    }
+
+    System.out.println(mmi+"writeAllData="+writeAllData);
+    //System.out.println(mmi+"Debug exit 0");
+    //System.exit(0);
 
     //if (tool.equals("prediction")) {
     if (tool.equals(IWLTools.Box.prediction.name())) {
@@ -132,7 +150,15 @@ final public class WLTools extends WLToolsIO {
 
        final WLAdjustment wlAdjust= new WLAdjustment(argsMap);
 
-       wlAdjust.getAdjustment(); //.writeResult(finak string outFile); //
+       //List<MeasurementCustom> adjustedWLForecast= null;
+
+       // --- Check if we need to write all WL data (input and results) on disk
+       final String outputDirArg= writeAllData ? WLToolsIO.getOutputDirectory() : null;
+
+       final List<MeasurementCustom> adjustedWLForecast= wlAdjust.getAdjustment(outputDirArg); //.writeResult(finak string outFile); //
+
+       // --- Only write the adjusted WL forecast data on disk
+       //WLToolsIO.write(adjustedWLForecast,WLToolsIO.getOutputFormat,WLToolsIO.getOutputDirectory())
 
        //System.out.println(mmi+"Debug System.exit(0)");
        //System.exit(0);

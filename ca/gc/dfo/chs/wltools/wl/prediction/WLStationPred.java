@@ -83,15 +83,24 @@ final public class WLStationPred extends WLStationPredFactory {
 
     final Instant startTimeInstant= Instant.parse(startTimeISOFormat); // ("2014-01-01T00:00:00Z");
 
-    final long startTimeSeconds= startTimeInstant.toEpochMilli() / ITimeMachine.SEC_TO_MILLISEC;
+    final long startTimeSeconds=
+      startTimeInstant.toEpochMilli() / ITimeMachine.SEC_TO_MILLISEC;
 
-    if (argsMapKeySet.contains("--outputDirectory")) {
+    try {
+      WLToolsIO.getOutputDirectory().length();
 
-      this.outputDirectory= argsMap.get("--outputDirectory");
-
-      slog.info(mmi+"Will use this.outputDirectory="+
-                this.outputDirectory+" to write prediction results");
+    } catch (NullPointerException e) {
+      throw new RuntimeException(mmi+e);
     }
+
+    this.outputDirectory= WLToolsIO.getOutputDirectory();
+
+    //if (argsMapKeySet.contains("--outputDirectory")) {
+    //this.outputDirectory= argsMap.get("--outputDirectory");
+    //}
+
+    slog.info(mmi+"Will use this.outputDirectory="+
+                this.outputDirectory+" to write prediction results");
 
     long predDurationInDays= IWLStationPred.DEFAULT_DAYS_DURATION_IN_FUTURE;
 

@@ -29,5 +29,6 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
  * Comments please!
  */
 public interface IWLAdjustmentType extends IWLAdjustmentIO {
-  public List<MeasurementCustom> getAdjustment();
+
+  public List<MeasurementCustom> getAdjustment(final String outputDirectory);
 }

@@ -146,13 +146,13 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
   /**
    * Comments please.
    */
-  final public List<MeasurementCustom> getAdjustment() {
+  final public List<MeasurementCustom> getAdjustment(final String outputDirectory) {
 
     //final String mmi= "getAdjustment: ";
     //List<MeasurementCustom> adjustmentRet= null;
     ///slog.info(mmi+"start: this.adjType.name()="+this.adjType.name());
 
-    return this.adjInstance.getAdjustment();
+    return this.adjInstance.getAdjustment(outputDirectory);
   }
 }
 

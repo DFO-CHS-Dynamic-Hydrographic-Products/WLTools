@@ -171,7 +171,7 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
   ///**
   // * Comments please.
   // */
-  //final public List<MeasurementCustom> getAdjustment() {
+  //public List<MeasurementCustom> getAdjustment(final String outputDirectory) { }
   //
   //  final String mmi= "getAdjustment: ";
   //
@@ -194,6 +194,5 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
   //
   //  return this.locationAdjustedData; //adjustmentRet;
   //}
-
 }
 

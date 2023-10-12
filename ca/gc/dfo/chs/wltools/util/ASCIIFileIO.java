@@ -129,19 +129,19 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       stationId.length();
     } catch (NullPointerException e) {
 
-      slog.error(mmi+"ASCIIFileIO writeOdinAsciiFmtFile: stationId==null !!");
+      //slog.error(mmi+"ASCIIFileIO writeOdinAsciiFmtFile: stationId==null !!");
       throw new RuntimeException(mmi+e);
     }
 
-    slog.debug(mmi+"start: station=" + stationId);
+    slog.info(mmi+"start: station id.=" + stationId);
 
     try {
       stationTimeNode0.getSse();
 
     } catch (NullPointerException e) {
 
-      slog.error(mmi+"stationTimeNode0==null !!");
-      throw new RuntimeException(mmi+e);
+      //slog.error(mmi+"stationTimeNode0==null !!");
+      throw new RuntimeException(mmi+"e");
     }
 
     final SecondsSinceEpoch dt0= stationTimeNode0.getSse();
@@ -156,8 +156,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       slog.info(mmi+"Opening odin format " + type + " output file: " + fpath);
 
       try {
-
-        fwra[type.ordinal()] = new FileWriter(fpath);
+        fwra[type.ordinal()]= new FileWriter(fpath);
 
       } catch (IOException e) {
 
@@ -180,7 +179,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       }
     }
 
-    WLStationTimeNode iter = stationTimeNode0;
+    WLStationTimeNode iter= stationTimeNode0;
 
     while (iter != null) {
 
@@ -220,7 +219,6 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       slog.info(mmi+"closing output file type: " + type);
 
       try {
-
         fwra[type.ordinal()].close();
 
       } catch (IOException e) {
@@ -231,77 +229,75 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       }
     }
 
-    ////--- Updated forecast could be null or empty:
-    //if ((updatedForecast != null) && (updatedForecast.size() != 0)) {
-    //
-    //  slog.info(mmi+"writing udpdated forecast data for station: " + stationId);
-    //
-    //  final String fpath= outDir + "\\" + stationCode + "-" +
-    ///      dt0.dateTimeString() + "-updated." + IWL.WLType.FORECAST.asciiFileExt;
-    //
-    //  slog.info(mmi+"Opening odin format updated " +
-    //             IWL.WLType.FORECAST + " " +"output file: " + fpath);
-    //
-    //  FileWriter fw = null;
-    //
-    //  try {
-    //    fw = new FileWriter(fpath);
-    //
-    //  } catch (IOException e) {
-    //
-    //    log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot open output file: " + fpath);
-    //
-    //    e.printStackTrace();
-    //    throw new RuntimeException(e);
-    //  }
-    //
-    //  try {
-    //
-    //    log.debug("ASCIIFileIO writeOdinAsciiFmtFile: write header: " + AsciiFormats.ODIN.header + " in " + fpath);
-    //    fw.write(AsciiFormats.ODIN.header + IWL.WLType.FORECAST.asciiFileExt.toUpperCase() + ";\n");
-    //
-    //  } catch (IOException e) {
-    //
-    //    log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write header in " + fpath);
-    //
-    //    e.printStackTrace();
-    //    throw new RuntimeException(e);
-    //  }
-    //
-    //  for (final MeasurementCustom msm : updatedForecast) {
-    //
-    //    final String odinDtFmtString = SecondsSinceEpoch.odinDtFmtString(msm.getEventDate().getEpochSecond());
-    //
-    //    try {
-    //
-    //      //--- NOTE: Need to use the arg. Locale.ROOT in String.format to get the decimal point in the results:
-    //      fw.write(odinDtFmtString + ";   " + String.format(Locale.ROOT, AsciiFormats.ODIN.numericFormat,
-    //          msm.getValue().doubleValue()) + ";\n");
-    //
-    //    } catch (IOException e) {
-    //
-    //      log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot write data line in output file: " + fpath);
-    //
-    //      e.printStackTrace();
-    //      throw new RuntimeException(e);
-    //    }
-    //  }
-    //
-    //  try {
-    //    fw.close();
-    //
-    //  } catch (IOException e) {
-    //
-    //    log.error("ASCIIFileIO writeOdinAsciiFmtFile: Cannot close file " + fpath);
-    //
-    //    e.printStackTrace();
-    //    throw new RuntimeException(e);
-    //  }
-    //
-    //} else {
-    //
-    //  log.warn("ASCIIFileIO writeOdinAsciiFmtFile: updatedForecast is null or empty !");
-    //}
+    //--- Updated forecast could be null or empty:
+    if ((updatedForecast != null) && (updatedForecast.size() != 0)) {
+
+      slog.info(mmi+"writing udpdated forecast data for station: " + stationId);
+
+      final String fpath= outDir + "\\" + stationId + "-" +
+        dt0.dateTimeString() + "-updated." + IWL.WLType.MODEL_FORECAST.asciiFileExt;
+
+      slog.info(mmi+"Opening odin format updated " +
+                IWL.WLType.MODEL_FORECAST + " " +"output file: " + fpath);
+
+      FileWriter fw= null;
+
+      try {
+        fw= new FileWriter(fpath);
+
+      } catch (IOException e) {
+
+        slog.error(mmi+"Cannot open output file: " + fpath);
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
+
+      try {
+
+        slog.info(mmi+"write header: " + AsciiFormats.ODIN.header + " in " + fpath);
+        fw.write(AsciiFormats.ODIN.header + IWL.WLType.MODEL_FORECAST.asciiFileExt.toUpperCase() + ";\n");
+
+      } catch (IOException e) {
+
+        slog.info(mmi+"Cannot write header in " + fpath);
+
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
+
+      for (final MeasurementCustom msm : updatedForecast) {
+
+        final String odinDtFmtString= SecondsSinceEpoch.
+          odinDtFmtString(msm.getEventDate().getEpochSecond());
+
+        try {
+
+          //--- NOTE: Need to use the arg. Locale.ROOT in String.format to get the decimal point in the results:
+          fw.write(odinDtFmtString + ";   " +
+                   String.format(Locale.ROOT, AsciiFormats.ODIN.numericFormat,
+                   msm.getValue().doubleValue()) + ";\n");
+
+        } catch (IOException e) {
+
+          slog.error(mmi+"Cannot write data line in output file: " + fpath);
+          e.printStackTrace();
+          throw new RuntimeException(mmi+e);
+        }
+      }
+
+      try {
+        fw.close();
+
+      } catch (IOException e) {
+
+        slog.error(mmi+"Cannot close file " + fpath);
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
+
+    } else {
+      slog.info(mmi+"updatedForecast is null or empty !");
+    }
 
     slog.info(mmi+"end for station=" + stationId);
   }
