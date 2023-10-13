@@ -408,7 +408,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
        fmsObj.update().getNewForecastData();
 
     if (outputDirectory != null) {
-      fmsObj.writeAllDataInCSVFiles(outputDirectory);
+      fmsObj.writeAllDataInCSVFiles(this.fmsInputObj.getFirstInstantForWriting(), outputDirectory);
     }
 
     slog.info(mmi+"end");

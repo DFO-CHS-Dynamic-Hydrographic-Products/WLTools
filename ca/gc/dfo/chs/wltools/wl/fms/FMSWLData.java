@@ -2,6 +2,7 @@
 package ca.gc.dfo.chs.wltools.wl.fms;
 
 import java.util.List;
+import java.time.Instant;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
@@ -459,7 +460,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
    *
    * @param outDir : The local disk directory where to write the results.
    */
-  public final void writeCSVFiles(final String outDir) {
+  public final void writeAllInCSVFiles(final Instant firstInstantForWriting, final String outDir) {
 
     final String mmi= "writeCSVOnDisk: ";
 
@@ -469,9 +470,9 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
     for (final FMSWLStation station : this.allStationsData) {
 
-      ASCIIFileIO.writeOdinAsciiFmtFile(station.getStationId(),
-                                        this.timeNodes.get(0).getStationNode(stn++),
-                                        station.getUpdatedForecastData(), outDir);
+      ASCIIFileIO.writeOdinAsciiFmtFiles(station.getStationId(),
+                                         this.timeNodes.get(0).getStationNode(stn++),
+                                         station.getUpdatedForecastData(), firstInstantForWriting, outDir);
     }
 
     slog.info(mmi+"end");

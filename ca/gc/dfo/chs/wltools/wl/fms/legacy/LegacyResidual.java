@@ -322,8 +322,8 @@ public class LegacyResidual
       slog.info(mmi+"Applying estimated surge to get the new forecasted water level at: "+
                 SecondsSinceEpoch.dtFmtString(nodeTimeStamp, true) + ",  for station: " + this.stationId);
 
-      slog.info(mmi+"Debug exit 0");
-      System.exit(0);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
 
 
       //--- Set the new computed forecast by applying the estimated surge:
@@ -336,8 +336,8 @@ public class LegacyResidual
       slog.info(mmi+"wlstn.get(WLType.PREDICTION).zDValue()=" + wlStationTimeNode.get(WLType.PREDICTION).getDoubleZValue());
       slog.info(mmi+"wlstn.getUpdatedForecast().getValue()=" + wlStationTimeNode.getUpdatedForecast().getValue());
 
-      slog.info(mmi+"Debug exit 0");
-      System.exit(0);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
     }
 
     //--- Need to store the estimated surge( estimatedShortTermSurgeZw + this.longTermSurge WITHOUT tidal remnant)

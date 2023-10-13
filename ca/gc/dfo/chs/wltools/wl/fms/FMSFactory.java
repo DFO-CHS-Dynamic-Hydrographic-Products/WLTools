@@ -2,6 +2,7 @@
 package ca.gc.dfo.chs.wltools.wl.fms;
 
 import java.util.List;
+import java.time.Instant;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,8 +76,6 @@ abstract public class FMSFactory implements IFMS {
   //FMSFactory(@NotNull @Size(min = 1) final List<ForecastingContext> forecastingContextList) {
 
   FMSFactory(/*@NotNull @Size(min = 1)*/ final List<FMSInput> fmsInputList) {
-  //FMSFactory(/*@NotNull @Size(min = 1)*/ final List<FMSConfig> fmsConfigList) {
-  //FMSFactory(final Map<String,String> argsMap, final WLAdjustmentType wlAdjType) {
 
     final String mmi= "FMSFactory main constructor: ";
 
@@ -261,8 +260,8 @@ abstract public class FMSFactory implements IFMS {
     return this.data.timeNodes;
   }
 
-  public final void writeAllDataInCSVFiles(final String outDir) {
-    this.data.writeCSVFiles(outDir);
+  public final void writeAllDataInCSVFiles(final Instant firstInstantForWriting, final String outDir) {
+    this.data.writeAllInCSVFiles(firstInstantForWriting,outDir);
   }
 
   /**

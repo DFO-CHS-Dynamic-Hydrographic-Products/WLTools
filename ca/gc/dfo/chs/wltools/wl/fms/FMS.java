@@ -206,8 +206,8 @@ public final class FMS extends FMSFactory implements IFMS {
     //--- Results Validation, remove for production code.
     //this.data.writeResults("C:\\Users\\MercierGi\\Data\\tmp");
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
   }

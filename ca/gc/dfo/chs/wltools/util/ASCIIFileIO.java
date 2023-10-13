@@ -5,23 +5,23 @@ package ca.gc.dfo.chs.wltools.util;
  * Created by Gilles Mercier on 2017-12-19.
  */
 
-//---
-
-import ca.gc.dfo.chs.wltools.wl.IWL;
-import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
-//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 //import javax.validation.constraints.NotNull;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.time.Instant;
+import java.util.ArrayList;
 
-//--
+// ---
+import ca.gc.dfo.chs.wltools.wl.IWL;
+import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
+//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+
+//---
 //---
 //---
 
@@ -54,7 +54,6 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
     final List<String> allLines = new ArrayList<>();
 
     try {
-
       aSCIIFilePath.length();
 
     } catch (NullPointerException e) {
@@ -118,10 +117,11 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
   //                                         @NotNull final WLStationTimeNode stationTimeNode0,
   //                                       final List<MeasurementCustom> updatedForecast,
   //                                         @NotNull final String outDir) {
-  public static void writeOdinAsciiFmtFile(final String stationId,
-                                           final WLStationTimeNode stationTimeNode0,
-                                           final List<MeasurementCustom> updatedForecast,
-                                           /*@NotNull*/ final String outDir) {
+  public static void writeOdinAsciiFmtFiles(final String stationId,
+                                            final WLStationTimeNode stationTimeNode0,
+                                            final List<MeasurementCustom> updatedForecast,
+                                            final Instant firstInstantForWriting,
+                                            /*@NotNull*/ final String outDir) {
 
     final String mmi= "writeOdinAsciiFmtFile: ";
 
@@ -141,16 +141,26 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
     } catch (NullPointerException e) {
 
       //slog.error(mmi+"stationTimeNode0==null !!");
-      throw new RuntimeException(mmi+"e");
+      throw new RuntimeException(mmi+e);
     }
 
-    final SecondsSinceEpoch dt0= stationTimeNode0.getSse();
+    SecondsSinceEpoch dt0= stationTimeNode0.getSse();
+
+    final long firstSecondsForWriting= firstInstantForWriting.getEpochSecond();
+
+    // --- Replace the seconds since epoch of dt0 with the seconds since epoch
+    //     of the firstInstantForWriting if the latter is larger. It ensure that
+    //     predictions and full model forecast (and possibly obs. also) WL data
+    //     begin at the same time stamp in the output files.
+    if (firstSecondsForWriting > dt0.seconds() ) {
+      dt0.set(firstSecondsForWriting);
+    }
 
     final FileWriter[] fwra= new FileWriter[IWL.WLType.values().length];
 
     for (final IWL.WLType type : IWL.WLType.values()) {
 
-      final String fpath= outDir + "\\" + stationId + "-" +
+      final String fpath= outDir + File.separator + stationId + "-" +
                    dt0.dateTimeString() + "." + type.asciiFileExt;
 
       slog.info(mmi+"Opening odin format " + type + " output file: " + fpath);
@@ -168,8 +178,10 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
       try {
 
-        slog.debug(mmi+"write header: " + AsciiFormats.ODIN.header + " in " + fpath);
+        slog.info(mmi+"write header: " + AsciiFormats.ODIN.header + " in " + fpath);
+
         fwra[type.ordinal()].write(AsciiFormats.ODIN.header + type.asciiFileExt.toUpperCase() + ";\n");
+        fwra[type.ordinal()].flush();
 
       } catch (IOException e) {
 
@@ -179,11 +191,28 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       }
     }
 
-    WLStationTimeNode iter= stationTimeNode0;
+    slog.info(mmi+"All files opened and their headers have been written");
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
-    while (iter != null) {
+    WLStationTimeNode wlsTNIter= stationTimeNode0;
 
-      final String odinDtFmtString= SecondsSinceEpoch.odinDtFmtString(iter.getSse());
+    while (wlsTNIter != null) {
+
+      final SecondsSinceEpoch wlsTNIterSse= wlsTNIter.getSse();
+
+      //--- Skip data write if the iterSse is in the past
+      //    compared to the dt0 seconds since epoch.
+      if (wlsTNIterSse.seconds() < dt0.seconds() ) {
+
+        // --- Need to get the next WLStationTimeNode object
+        //     for the next loop iteration.
+        wlsTNIter= (WLStationTimeNode) wlsTNIter.getFutr();
+        continue;
+      }
+
+      final String odinDtFmtString=
+        SecondsSinceEpoch.odinDtFmtString(wlsTNIterSse);
 
       //staticLog.debug("FileIO writeOdinAsciiFmtFile: iter.getSse() dt="+iter.getSse().dateTimeString(true));
       //staticLog.debug("FileIO writeOdinAsciiFmtFile: odinDtFmtString="+odinDtFmtString);
@@ -193,12 +222,13 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
         //staticLog.debug("FileIO writeOdinAsciiFmtFile: type="+ type +", iter.get(type)="+ iter.get(type));
         //staticLog.debug("FileIO writeOdinAsciiFmtFile: iter.get(type).zDValue()="+iter.get(type).zDValue());
 
-        if (iter.get(type) != null) {
+        if (wlsTNIter.get(type) != null) {
 
           try {
 
+            //--- NOTE: Need to use the arg. Locale.ROOT in String.format to get the decimal point in the result
             fwra[type.ordinal()].write(odinDtFmtString + ";   " +
-                String.format(Locale.ROOT, AsciiFormats.ODIN.numericFormat, iter.get(type).getDoubleZValue()) + ";\n");
+                String.format(Locale.ROOT, AsciiFormats.ODIN.numericFormat, wlsTNIter.get(type).getDoubleZValue()) + ";\n");
 
           } catch (IOException e) {
 
@@ -209,7 +239,9 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
         }
       }
 
-      iter= (WLStationTimeNode) iter.getFutr();
+      // --- Get the next WLStationTimeNode object in future
+      //     for the next loop iteration
+      wlsTNIter= (WLStationTimeNode) wlsTNIter.getFutr();
 
       //staticLog.debug("FileIO writeOdinAsciiFmtFile: next iter="+iter);
     }
@@ -232,12 +264,12 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
     //--- Updated forecast could be null or empty:
     if ((updatedForecast != null) && (updatedForecast.size() != 0)) {
 
-      slog.info(mmi+"writing udpdated forecast data for station: " + stationId);
+      slog.info(mmi+"writing adjusted forecast data for station: " + stationId);
 
-      final String fpath= outDir + "\\" + stationId + "-" +
-        dt0.dateTimeString() + "-updated." + IWL.WLType.MODEL_FORECAST.asciiFileExt;
+      final String fpath= outDir + File.separator + stationId + "-" +
+        dt0.dateTimeString() + "-adjusted." + IWL.WLType.MODEL_FORECAST.asciiFileExt;
 
-      slog.info(mmi+"Opening odin format updated " +
+      slog.info(mmi+"Opening odin format adjusted " +
                 IWL.WLType.MODEL_FORECAST + " " +"output file: " + fpath);
 
       FileWriter fw= null;
@@ -255,7 +287,9 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       try {
 
         slog.info(mmi+"write header: " + AsciiFormats.ODIN.header + " in " + fpath);
+
         fw.write(AsciiFormats.ODIN.header + IWL.WLType.MODEL_FORECAST.asciiFileExt.toUpperCase() + ";\n");
+        fw.flush();
 
       } catch (IOException e) {
 
@@ -267,8 +301,16 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
       for (final MeasurementCustom msm : updatedForecast) {
 
-        final String odinDtFmtString= SecondsSinceEpoch.
-          odinDtFmtString(msm.getEventDate().getEpochSecond());
+        final long checkSeconds= msm.getEventDate().getEpochSecond();
+
+        // --- Skip data write if the checkSeconds is in the
+        //     past compared to the dt0 seconds.
+        if (checkSeconds < dt0.seconds()) {
+          continue;
+        }
+
+        final String odinDtFmtString=
+          SecondsSinceEpoch.odinDtFmtString(checkSeconds); //(msm.getEventDate().getEpochSecond());
 
         try {
 

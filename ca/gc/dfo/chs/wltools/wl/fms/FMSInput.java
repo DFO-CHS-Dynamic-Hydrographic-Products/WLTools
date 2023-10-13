@@ -32,6 +32,12 @@ final public class FMSInput extends FMSConfig {
    */
   final static private Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  // --- To store the Instant object that define the time at which
+  //     the data can be written on disk (the full model forecast data
+  //     is not going really far in the past so its 1st Instant is normally
+  //     taken for it.
+  private Instant firstInstantForWriting= null;
+
   private List<MeasurementCustom> observations= null;
 
   private List<MeasurementCustom> predictions= null;
@@ -101,8 +107,8 @@ final public class FMSInput extends FMSConfig {
     slog.info(mmi+"firstPredMcInstant="+firstPredMcInstant.toString());
     slog.info(mmi+"lastPredMcInstant="+lastPredMcInstant.toString()+"\n");
 
-    //final Instant firstObsMcInstant=
-    //  this.observations.get(0).getEventDate();
+    final Instant firstObsMcInstant=
+      this.observations.get(0).getEventDate();
 
     //final Instant lastObsMcInstant= this.
     //  observations.get(this.observations.size()-1).getEventDate();
@@ -116,9 +122,15 @@ final public class FMSInput extends FMSConfig {
     final Instant lastFMFMcInstant= this.
       modelForecasts.get(this.modelForecasts.size()-1).getEventDate();
 
+    slog.info(mmi+"firstObsMcInstant="+firstObsMcInstant.toString());
     slog.info(mmi+"firstFMFMcInstant="+firstFMFMcInstant.toString());
     slog.info(mmi+"lastFMFMcInstant="+lastFMFMcInstant.toString()+"\n");
     slog.info(mmi+"this.referenceTime="+this.referenceTime.toString()+"\n");
+
+    this.firstInstantForWriting= firstFMFMcInstant;
+
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     // ---
     final long lastPrdSeconds= lastPredMcInstant.getEpochSecond();
@@ -231,6 +243,10 @@ final public class FMSInput extends FMSConfig {
 
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
+  }
+
+  public Instant getFirstInstantForWriting() {
+    return this.firstInstantForWriting;
   }
 
   // ---
