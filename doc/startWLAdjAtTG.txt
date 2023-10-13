@@ -16,7 +16,7 @@ time java WLTools \
 \
 --tideGaugeAdjMethods=ECCC_H2D2_FORECAST_AUTOREG:CHS_IWLS_QC \
 \
---tideGaugeWLODataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/tgObs/2023100406000/03335-wloIGLD.json \
+--tideGaugeWLODataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/tgObs/2023100406000/03335-wloZC.json \
 \
 --modelForecastInputDataInfo=ECCC_H2D2_ASCII:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2ASCII/2023100406/2023100406_SLFE_NMM.csv \
 \

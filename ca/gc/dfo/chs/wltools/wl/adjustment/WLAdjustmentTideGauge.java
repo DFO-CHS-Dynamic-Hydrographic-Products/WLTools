@@ -169,10 +169,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final String tideGaugeNameIdFromFileName=
       tideGaugeWLODataFilePathSplit[tideGaugeWLODataFilePathSplit.length-1].split(IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
 
-   if (!tideGaugeNameIdFromFileName.equals(this.locationIdInfo)) {
-     throw new RuntimeException(mmi+"tideGaugeNameIdFromFileName="+tideGaugeNameIdFromFileName+
+    if (!tideGaugeNameIdFromFileName.equals(this.locationIdInfo)) {
+      throw new RuntimeException(mmi+"tideGaugeNameIdFromFileName="+tideGaugeNameIdFromFileName+
                                 " is NOT the same tg station id. as this.locationIdInfo="+this.locationIdInfo);
-   }
+    }
 
     slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
     slog.info(mmi+"tideGaugePredictInputDataFile="+tideGaugePredictInputDataFile);
@@ -257,18 +257,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    //--- Get the tide gauge ZC conversion (-this.adjLocationZCVsVDatum to convert to ZC)
-    //    from the json file.
-    //this.adjLocationZCVsVDatum=
-    //  mainJsonMapObj.getJsonObject(this.locationIdInfo).
-    //    getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
-
+    // --- Set this.location (WLLocation) object with the tide gauge
+    //     Json formatted config.
     this.location.
       setConfig(mainJsonMapObj.getJsonObject(this.locationIdInfo));
 
-    slog.info(mmi+"this.location.getZcVsVertDatum()="+this.location.getZcVsVertDatum());
-    //final JsonObject test= mainJsonMapObj.getJsonObject(this.locationIdInfo);
-    //slog.info(mmi+"test:"+test.toString());
+    // --- Get the tide gauge ZC conversion (-this.adjLocationZCVsVDatum to convert to ZC)
+    this.adjLocationZCVsVDatum= this.location.getZcVsVertDatum();
+
+    slog.info(mmi+"this.adjLocationZCVsVDatum="+this.adjLocationZCVsVDatum);
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -285,12 +282,19 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     if (this.predictInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
 
       //this.tgLocationWLPData=
-      this.locationPredData= this.
-        getWLDataInJsonFmt(tideGaugePredictInputDataFile,-1L);
+      this.locationPredData= WLAdjustmentIO.
+        getWLDataInJsonFmt(tideGaugePredictInputDataFile,-1L,0.0);
 
     } else {
        throw new RuntimeException(mmi+"Invalid prediction input data format -> "+this.predictInputDataFormat.name());
     }
+
+    //double predVal0= this.locationPredData.get(0).getValue();
+    //double predVal1= this.locationPredData.get(1).getValue();
+    //slog.info(mmi+"predVal0="+predVal0);
+    //slog.info(mmi+"predVal1="+predVal1);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     // --- Need to get the WL predictions data time intervall increment here.
     final long prdTimeIncrSeconds= MeasurementCustom.
@@ -310,8 +314,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
 
       // --- Read the WLO data in a temp. List<MeasurementCustom> object
-      final List<MeasurementCustom> tmpWLOMcList= this.
-        getWLDataInJsonFmt(tideGaugeWLODataFile, prdTimeIncrSeconds);
+      final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
+        getWLDataInJsonFmt(tideGaugeWLODataFile, prdTimeIncrSeconds, this.adjLocationZCVsVDatum);
 
       // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
       //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations

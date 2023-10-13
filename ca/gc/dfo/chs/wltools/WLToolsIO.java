@@ -4,10 +4,6 @@ package ca.gc.dfo.chs.wltools;
 /**
  *
  */
-
-/**
- * 
- */
 public class WLToolsIO implements IWLToolsIO {
 
    static private String mainCfgDir= null;

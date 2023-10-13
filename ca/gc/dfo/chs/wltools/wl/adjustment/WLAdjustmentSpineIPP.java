@@ -49,6 +49,7 @@ import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
@@ -416,7 +417,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
         final String spineLocationJsonInfoFileStr= spineDomainName +
           IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + clusterSubDir +
-          IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + spineLocationIdStr;
+            IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + spineLocationIdStr;
 
         //slog.info(mmi+"spineLocationJsonInfoFileStr="+spineLocationJsonInfoFileStr);
         //slog.info(mmi+"Debug System.exit(0)");
@@ -493,7 +494,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       slog.info(mmi+"nsTidePredDataJsonFile="+nsTidePredDataJsonFile);
 
       this.tgsNearestSpineLocationsPred.put( tgNumStrId,
-                                             this.getWLDataInJsonFmt(nsTidePredDataJsonFile,-1L) );
+                                             WLAdjustmentIO.getWLDataInJsonFmt(nsTidePredDataJsonFile, -1L, 0.0) );
 
       if (nearestSpineLocationId.equals(this.location.getIdentity())) {
 
@@ -516,8 +517,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       slog.info(mmi+"NS_TIDE prediction data file for the spine target location -> "+nsTidePredDataJsonFile);
 
       // --- fill up the this.spineLocationNSTPred with its NS_TIDE prediction
-      this.spineLocationNSTPred= this.
-        getWLDataInJsonFmt(nsTidePredDataJsonFile,-1L);
+      this.spineLocationNSTPred= WLAdjustmentIO.
+        getWLDataInJsonFmt(nsTidePredDataJsonFile, -1L, 0.0);
 
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);

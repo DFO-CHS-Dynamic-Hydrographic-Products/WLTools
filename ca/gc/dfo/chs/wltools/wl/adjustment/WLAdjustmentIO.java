@@ -369,8 +369,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final ArrayList<MeasurementCustom>
-    getWLDataInJsonFmt(/*@NotNull*/ final String WLDataJsonFile, final long timeIncrToUse) {
+  final static ArrayList<MeasurementCustom> getWLDataInJsonFmt(/*@NotNull*/ final String WLDataJsonFile,
+                                                               final long timeIncrToUse, final double fromZCToOtherDatumConvValue) {
 
     final String mmi= "getWLDataInJsonFmt: ";
 
@@ -386,7 +386,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"start: WLDataJsonFile=" + WLDataJsonFile);
+    slog.info(mmi+"start: WLDataJsonFile=" + WLDataJsonFile+
+              ", fromZCToOtherDatumConvValue="+fromZCToOtherDatumConvValue);
 
     FileInputStream jsonFileInputStream= null;
 
@@ -423,8 +424,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
       //slog.info(mmi+"wlPredTimeStamp="+wlPredTimeStamp.toString());
 
+      //--- NOTE: converting to the other vertical datum from the ZC by adding
+      //    fromZCToOtherDatumConvValue from the WLO value read from the json
+      //    input file. Users have just to pass the same value but with the
+      //    opposite sign to get the value being converted to the ZC. 
       final double wlDataValue= jsonWLDataObj.
-        getJsonNumber(IWLStationPredIO.VALUE_JSON_KEY).doubleValue();
+        getJsonNumber(IWLStationPredIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
 
       //slog.info(mmi+"wlPredValue="+wlPredValue);
       //slog.info(mmi+"Debug System.exit(0)");

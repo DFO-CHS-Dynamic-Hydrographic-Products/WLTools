@@ -5,18 +5,6 @@ package ca.gc.dfo.chs.wltools.wl;
  *
  */
 
-import ca.gc.dfo.chs.wltools.wl.WLLocation;
-//import ca.gc.dfo.chs.wltools.wl.IWLLocation;
-import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
-//import ca.gc.dfo.chs.wltools.util.HBCoords;
-
-//---
-//import ca.gc.dfo.chs.wltools.numbercrunching.D1Data;
-//import ca.gc.dfo.chs.wltools.numbercrunching.D2Data;
-
-//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D1Data;
-//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D2Data;
-
 //import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +18,18 @@ import javax.json.JsonReader;
 //import javax.validation.constraints.Min;
 //import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Size;
+
+import ca.gc.dfo.chs.wltools.wl.WLLocation;
+//import ca.gc.dfo.chs.wltools.wl.IWLLocation;
+import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
+//import ca.gc.dfo.chs.wltools.util.HBCoords;
+
+//---
+//import ca.gc.dfo.chs.wltools.numbercrunching.D1Data;
+//import ca.gc.dfo.chs.wltools.numbercrunching.D2Data;
+
+//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D1Data;
+//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D2Data;
 
 //---
 //---
@@ -67,7 +67,7 @@ final public class TideGaugeConfig extends WLLocation implements ITideGaugeConfi
     //  getJsonNumber(IWLConfig.LOCATION_INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
     //this.setHBCoords(tgJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
-    //                  tgJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
+    //                 tgJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
 
     return this;
   }
