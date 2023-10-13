@@ -144,17 +144,20 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       throw new RuntimeException(mmi+e);
     }
 
-    SecondsSinceEpoch dt0= stationTimeNode0.getSse();
-
+    //--- Get the seconds since epoch for the timestamp at which
+    //      the data need to be written.
     final long firstSecondsForWriting= firstInstantForWriting.getEpochSecond();
+
+    // --- Local SecondsSinceEpoch object for building output files names.
+    final SecondsSinceEpoch dt0= new SecondsSinceEpoch(firstSecondsForWriting);
 
     // --- Replace the seconds since epoch of dt0 with the seconds since epoch
     //     of the firstInstantForWriting if the latter is larger. It ensure that
     //     predictions and full model forecast (and possibly obs. also) WL data
     //     begin at the same time stamp in the output files.
-    if (firstSecondsForWriting > dt0.seconds() ) {
-      dt0.set(firstSecondsForWriting);
-    }
+    //if (firstSecondsForWriting > dt0.seconds() ) {
+    //  dt0.set(firstSecondsForWriting);
+    //}
 
     final FileWriter[] fwra= new FileWriter[IWL.WLType.values().length];
 
@@ -197,13 +200,17 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
     WLStationTimeNode wlsTNIter= stationTimeNode0;
 
+    slog.info(mmi+"wlsTNIter0="+wlsTNIter);
+
+    List<String> checkTimeStamps= new ArrayList<String>();
+
     while (wlsTNIter != null) {
 
       final SecondsSinceEpoch wlsTNIterSse= wlsTNIter.getSse();
 
       //--- Skip data write if the iterSse is in the past
       //    compared to the dt0 seconds since epoch.
-      if (wlsTNIterSse.seconds() < dt0.seconds() ) {
+      if (wlsTNIterSse.seconds() < firstSecondsForWriting ) {
 
         // --- Need to get the next WLStationTimeNode object
         //     for the next loop iteration.
@@ -214,13 +221,10 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       final String odinDtFmtString=
         SecondsSinceEpoch.odinDtFmtString(wlsTNIterSse);
 
-      //staticLog.debug("FileIO writeOdinAsciiFmtFile: iter.getSse() dt="+iter.getSse().dateTimeString(true));
-      //staticLog.debug("FileIO writeOdinAsciiFmtFile: odinDtFmtString="+odinDtFmtString);
-
+      // --- Loop on the WL types.
       for (final IWL.WLType type : IWL.WLType.values()) {
 
-        //staticLog.debug("FileIO writeOdinAsciiFmtFile: type="+ type +", iter.get(type)="+ iter.get(type));
-        //staticLog.debug("FileIO writeOdinAsciiFmtFile: iter.get(type).zDValue()="+iter.get(type).zDValue());
+        //slog.info(mmi+"Writing data at:"+odinDtFmtString+" for type="+ type +", wlsTNIter="+wlsTNIter); //", iter.get(type)="+ wlsTNIter.get(type));
 
         if (wlsTNIter.get(type) != null) {
 
@@ -230,12 +234,16 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
             fwra[type.ordinal()].write(odinDtFmtString + ";   " +
                 String.format(Locale.ROOT, AsciiFormats.ODIN.numericFormat, wlsTNIter.get(type).getDoubleZValue()) + ";\n");
 
+            fwra[type.ordinal()].flush();
+
           } catch (IOException e) {
 
-            slog.error(mmi+"annot write data line in output file type: " + type);
+            slog.error(mmi+"Cannot write data line in output file type: " + type);
             e.printStackTrace();
             throw new RuntimeException(mmi+e);
           }
+
+          //slog.info(mmi+"Done with Writing data at:"+odinDtFmtString+" for type="+ type);
         }
       }
 
@@ -305,7 +313,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
         // --- Skip data write if the checkSeconds is in the
         //     past compared to the dt0 seconds.
-        if (checkSeconds < dt0.seconds()) {
+        if (checkSeconds < firstSecondsForWriting) {
           continue;
         }
 

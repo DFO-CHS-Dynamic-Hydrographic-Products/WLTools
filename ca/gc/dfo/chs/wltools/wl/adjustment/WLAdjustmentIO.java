@@ -395,11 +395,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       jsonFileInputStream= new FileInputStream(WLDataJsonFile);
 
     } catch (FileNotFoundException e) {
-      throw new RuntimeException(mmi+"e");
+      throw new RuntimeException(mmi+e);
     }
 
     final JsonArray jsonWLDataArray= Json.
       createReader(jsonFileInputStream).readArray();  //tmpJsonTcDataInputObj;
+
+    //List<String> checkTimeStamps= new ArrayList<String>();
 
     //for (final JsonObject jsonObj: jsonPredDataArray.toArray()) {
     for (int itemIter= 0; itemIter< jsonWLDataArray.size(); itemIter++) {
@@ -407,10 +409,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       final JsonObject jsonWLDataObj=
         jsonWLDataArray.getJsonObject(itemIter);
 
-      Instant wlDataTimeStamp= Instant.
+      Instant wlDataInstant= Instant.
         parse(jsonWLDataObj.getString(IWLStationPredIO.INSTANT_JSON_KEY));
 
-      final long checkTimeIncr= wlDataTimeStamp.getEpochSecond();
+      final long checkTimeIncr= wlDataInstant.getEpochSecond();
 
       // --- Could have time stamps that are not defined with the "normal" time
       //     increment difference so just get rid of the related WL data.
@@ -422,6 +424,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
         continue;
       }
 
+      //if (checkTimeStamps.contains(wlDataInstant.toString())) {
+      //  throw new RuntimeException(mmi+"The time stamp: "+wlDataInstant.toString()+" is duplicated !! ");
+      //}
+
+      //checkTimeStamps.add(wlDataInstant.toString());
       //slog.info(mmi+"wlPredTimeStamp="+wlPredTimeStamp.toString());
 
       //--- NOTE: converting to the other vertical datum from the ZC by adding
@@ -447,7 +454,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
       // --- Add this WL pred Instant and value as a MeasurementCustom object
       //    in the returned list
-      retList.add(new MeasurementCustom(wlDataTimeStamp, wlDataValue, uncertainty));
+      retList.add(new MeasurementCustom(wlDataInstant, wlDataValue, uncertainty));
     }
 
     try {
