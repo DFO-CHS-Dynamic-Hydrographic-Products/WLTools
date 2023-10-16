@@ -67,9 +67,9 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
   protected long secondsIncr= FORECASTS_TIME_INCR_SECONDS_MAX;
 
   /**
-   * WL storm surge type to use.
+   * WL surge offset type to use.
    */
-  protected StormSurgeWLType ssfType= StormSurgeWLType.WLSSF_FULL;
+  protected SurgeOffsetWLType ssfType= SurgeOffsetWLType.WLSO_FULL;
 
   /**
    * The String id. of the stationIt MUST be the String returned by the FMSConfig.getStationId() method.

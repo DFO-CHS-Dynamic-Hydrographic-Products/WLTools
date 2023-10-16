@@ -83,18 +83,20 @@ public interface IWL {
   }
 
   /**
-   * Define the two possible storm surge WL types.
+   * Define the two possible WL surge offset types.
    */
-  enum StormSurgeWLType {
+  enum SurgeOffsetWLType {
 
     /**
-     * Full storm-surge Z value including tidal component.
+     * Full surge offset Z value including tidal and or climatologic component.
      */
-    WLSSF_FULL,
+    WLSO_FULL,
+
     /**
-     * De-tided storm-surge Z value without tidal component.
+     * De-tided surge offset Z value without tidal component.
      */
-    WLSSF_DE_TIDED
+    WLSO_DE_TIDED
   }
+
   //int DEFAULT_NB_STATIONS= 1;
 }

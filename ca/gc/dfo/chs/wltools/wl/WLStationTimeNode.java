@@ -6,6 +6,10 @@ package ca.gc.dfo.chs.wltools.wl;
  */
 
 //---
+import org.slf4j.Logger;
+import java.time.Instant;
+import org.slf4j.LoggerFactory;
+//import javax.validation.constraints.NotNull;
 
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.TimeNodeFactory;
@@ -19,19 +23,6 @@ import ca.gc.dfo.chs.wltools.util.TimeNodeFactory;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 
-//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.TimeNodeFactory;
-//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-
-import java.time.Instant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-//import javax.validation.constraints.NotNull;
-
-
-//import java.util.Map;
-//import java.util.EnumMap;
 //---
 //---
 //---
@@ -129,7 +120,7 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
     //--- RECALL: this.dbData is just a reference to na already existing array of WLMeasurement objects:
     this.wlmData= wlmData;
 
-    this.updatedForecast = null;
+    this.updatedForecast= null;
 
     this.surge= new WLZE(0.0, 0.0);
   }
@@ -228,9 +219,9 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
    * @return WLStationTimeNode
    */
   //@NotNull
-  final public WLStationTimeNode mergeWithFullModelForecast(/*@NotNull*/ final StormSurgeWLType stormSurgeWLType, final double fmfWeight) {
+  final public WLStationTimeNode mergeWithFullModelForecast(/*@NotNull*/ final SurgeOffsetWLType surgeOffsetWLType, final double fmfWeight) {
 
-    return ( (stormSurgeWLType == StormSurgeWLType.WLSSF_FULL) ?
+    return ( (surgeOffsetWLType == SurgeOffsetWLType.WLSO_FULL) ?
              this.mergeFullModelForecast(fmfWeight) : this.mergeDeTidedFMF(fmfWeight) );
   }
 
