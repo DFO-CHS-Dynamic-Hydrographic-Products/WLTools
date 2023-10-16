@@ -302,7 +302,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
     //--- Get the previous WLStationTimeNode reference if any
     final WLStationTimeNode psr= (pstrWLTimeNode != null) ?
-       pstrWLTimeNode.getStationNode(this.stationNodeIndex) : null;
+      pstrWLTimeNode.getStationNode(this.stationNodeIndex) : null;
 
     //if (pstrWLTimeNode != null) {
     //  slog.debug(mmi+"pstr dt= " + pstrWLTimeNode.getSse().dateTimeString(true));
@@ -332,11 +332,12 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
                                                                /*@NotNull*/ final WLStationTimeNode wlstn) {
     final String mmi= "mergeWithFullModelForecast: ";
 
-    slog.info(mmi+"Merging QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+    //slog.info(mmi+"Merging QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
 
     if (seconds < this.fmfMergeCompleteSse) {
 
-      final double fmfWeight= this.tiForecastMergeWeight * (seconds - fmfThreshold);
+      final double fmfWeight=
+        this.tiForecastMergeWeight * (seconds - fmfThreshold);
 
       slog.info(mmi+"merge dt="+SecondsSinceEpoch.dtFmtString (seconds, true)+", fmfWeight=" + fmfWeight);
 
@@ -346,6 +347,9 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
       wlstn.mergeWithFullModelForecast(this.ssfType, 1.0);
     }
+
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     return wlstn;
   }

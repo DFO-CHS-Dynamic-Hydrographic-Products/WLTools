@@ -131,7 +131,7 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
 
     this.updatedForecast = null;
 
-    this.surge = new WLZE(0.0, 0.0);
+    this.surge= new WLZE(0.0, 0.0);
   }
 
   /**

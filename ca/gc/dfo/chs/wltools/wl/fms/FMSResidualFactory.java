@@ -297,7 +297,11 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     if (seconds >= sseFutureThreshold) {
 
-      slog.debug(mmi+"seconds >= sseFutureThreshold: updating station: " + stationId + " forecast.");
+      slog.info(mmi+"seconds >= sseFutureThreshold: updating station: " + stationId + " forecast.");
+
+      slog.info(mmi+"fmwlStation.useFullModelForecast="+fmwlStation.useFullModelForecast);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
 
       if (fmwlStation.useFullModelForecast) {
 
@@ -306,9 +310,13 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
         //  throw new RuntimeException("FMResidualFactory processFMSWLStation method");
         //--- Uncomment the following two lines when the merge of the default forecast with an external storm surge
         // forecast will be implemented.
-        slog.info(mmi+"Merging the QC forecast with a full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true) );
+        slog.info(mmi+"Merging the short-term QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true) );
 
         fmwlStation.mergeWithFullModelForecast( seconds, sseFutureThreshold, wlstn);
+
+        //slog.info(mmi+"Done with Merging the QC forecast with a full model forecast" );
+        //slog.info(mmi+"Debug exit 0");
+        //System.exit(0);
       }
 
       //--- Populate the updated WL forecasts data.
