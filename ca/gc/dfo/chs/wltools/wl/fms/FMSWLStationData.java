@@ -61,6 +61,13 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
   //boolean useSsf= false;
   protected boolean useFullModelForecast= false;
 
+  // --- Store the last MeasurementCustom object reference in
+  //     lastFullModelForecastMcObj to us it for the merge with
+  //     the 32 days NS_TIDE prediction data (which is simply the
+  //     remaining prediction data after the full model forecast
+  //     last timestamp
+  protected MeasurementCustom lastFullModelForecastMcObj= null;
+
   /**
    * The time-increment(in seconds) between successive WL(O,P,F,SSF) data.
    */
@@ -69,7 +76,7 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
   /**
    * WL surge offset type to use.
    */
-  protected SurgeOffsetWLType ssfType= SurgeOffsetWLType.WLSO_FULL;
+  protected SurgeOffsetWLType surgeOffsetType= SurgeOffsetWLType.WLSO_FULL;
 
   /**
    * The String id. of the stationIt MUST be the String returned by the FMSConfig.getStationId() method.
@@ -216,6 +223,10 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
 
       this.useFullModelForecast= true;
 
+      this.lastFullModelForecastMcObj= mfDataList.get(mfDataList.size()-1);
+
+      slog.info(mmi+"this.lastFullModelForecastMcObj timestamp="+
+                this.lastFullModelForecastMcObj.getEventDate().toString());
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
 

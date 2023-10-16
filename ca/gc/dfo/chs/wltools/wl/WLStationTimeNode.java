@@ -61,15 +61,15 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
   /**
    * Measurement object for storing the updated forecasted WL value for a given time-stamp.
    */
-  private MeasurementCustom updatedForecast = null;
+  private MeasurementCustom updatedForecast= null;
 
   public WLStationTimeNode() {
 
-    this.wlmData = null;
+    this.wlmData= null;
 
-    this.surge = new WLZE(0.0, 0.0);
+    this.surge= new WLZE(0.0, 0.0);
 
-    this.updatedForecast = null;
+    this.updatedForecast= null;
   }
 
   //--- for possible future usage:
@@ -219,10 +219,20 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
    * @return WLStationTimeNode
    */
   //@NotNull
-  final public WLStationTimeNode mergeWithFullModelForecast(/*@NotNull*/ final SurgeOffsetWLType surgeOffsetWLType, final double fmfWeight) {
+  final public WLStationTimeNode
+    mergeWithFullModelForecast(/*@NotNull*/ final SurgeOffsetWLType surgeOffsetWLType, final double fmfWeight) {
 
     return ( (surgeOffsetWLType == SurgeOffsetWLType.WLSO_FULL) ?
              this.mergeFullModelForecast(fmfWeight) : this.mergeDeTidedFMF(fmfWeight) );
+  }
+
+  final public WLStationTimeNode
+    mergeWithFullModelForecastZValue(/*@NotNull*/ final SurgeOffsetWLType surgeOffsetWLType,
+                                                 final double fmfWeight, final double fullModelForecastZValue) {
+
+    return ( (surgeOffsetWLType == SurgeOffsetWLType.WLSO_FULL) ?
+             this.mergeFullModelForecastZValue(fmfWeight,fullModelForecastZValue) :
+                       this.mergeDeTidedFMFZValue(fmfWeight,fullModelForecastZValue) );
   }
 
   /**
@@ -234,8 +244,20 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
   //@NotNull
   final private WLStationTimeNode mergeFullModelForecast(final double fmfWeight) {
 
-    final double mergedValue = ((1.0 - fmfWeight) * this.updatedForecast.getValue() +
-                                fmfWeight * this.wlmData[MODEL_FORECAST].getDoubleZValue());
+    final double mergedValue= ((1.0 - fmfWeight) * this.updatedForecast.getValue() +
+                              fmfWeight * this.wlmData[MODEL_FORECAST].getDoubleZValue());
+
+    this.updatedForecast.setValue(mergedValue);
+
+    return this;
+  }
+
+  // ---
+  final private WLStationTimeNode
+    mergeFullModelForecastZValue(final double fmfWeight, final double fullModelForecastZValue) {
+
+    final double mergedValue= ((1.0 - fmfWeight) *
+      this.updatedForecast.getValue() + fmfWeight * fullModelForecastZValue );
 
     this.updatedForecast.setValue(mergedValue);
 
@@ -254,6 +276,19 @@ public class WLStationTimeNode extends TimeNodeFactory implements IWL {
     //--- Only need to add time weighted de-tided storm-surge to the forecast signal data:
     final double mergedValue= (this.updatedForecast.getValue() +
                                fmfWeight * this.wlmData[MODEL_FORECAST].getDoubleZValue());
+
+    this.updatedForecast.setValue(mergedValue);
+
+    return this;
+  }
+
+  //@NotNull
+  final public WLStationTimeNode
+    mergeDeTidedFMFZValue(final double fmfWeight, final double fullModelForecastZValue) {
+
+    //--- Only need to add time weighted de-tided storm-surge to the forecast signal data:
+    final double mergedValue= (this.updatedForecast.getValue() +
+                               fmfWeight * fullModelForecastZValue);
 
     this.updatedForecast.setValue(mergedValue);
 

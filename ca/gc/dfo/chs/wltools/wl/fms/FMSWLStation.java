@@ -6,6 +6,8 @@ package ca.gc.dfo.chs.wltools.wl.fms;
  */
 
 //---
+import java.lang.Math;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,10 +78,16 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   private long fmfMergeCompleteSse= 0L;
 
   /**
-   * Time weight for  merge of the default forecasts(without external storm surge component)
-   * with the external storm surge component(if any).
+   * Time weight for merging the default QC forecast data
+   * with the full model forecast data (if any).
    */
-  private double tiForecastMergeWeight= 0.0;
+  private double tiFMFMergeWeight= 0.0;
+
+  /**
+   * Time weight for merging the full model forecast data (if any)
+   * with the long term (~30 days) prediction data
+   */
+  private double tiLongTermPredMergeWeight= 0.0;
 
   /**
    * @param stationNodeIndex   : The WL station index in the allStationsData List attribute of class FMWLData.
@@ -153,10 +161,17 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
     //--- The time stamp in seconds after which the merge to the storm surge forecast(if any) is complete:
     //this.mergeCompleteSse = forecastingContext.getReferenceTime().getEpochSecond() + mergeDurationSeconds;
-    this.fmfMergeCompleteSse= fmsInput.getReferenceTimeInSeconds() + mergeDurationSeconds;
+    this.fmfMergeCompleteSse= fmsInput.
+      getReferenceTimeInSeconds() + mergeDurationSeconds;
 
-    //--- time interpolation weight factor for merging verification forecast with a storm surge forecast(if any).
-    this.tiForecastMergeWeight = 1.0 / mergeDurationSeconds;
+    //--- time interpolation weight factor for merging QC forecast data
+    //    with full model forecast data (if any).
+    this.tiFMFMergeWeight= 1.0 / mergeDurationSeconds;
+
+    // --- time interpolation weight factor for merging the full model forecast data (if any)
+    //     with the long term prediction data. This merge is 3 * slower than for the
+    //     merge with the QC forecast data.
+    this.tiLongTermPredMergeWeight= this.tiFMFMergeWeight/3.0;
 
     //this.log.debug("this.lastWLOSse time-stamp="+SecondsSinceEpoch.dtFmtString(this.lastWLOSse,true));
 
@@ -315,7 +330,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     //}
 
     slog.info(mmi+"this.fmfMergeCompleteSse dt=" + SecondsSinceEpoch.dtFmtString(this.fmfMergeCompleteSse, true));
-    slog.info(mmi+"this.tiForecastMergeWeight=" + this.tiForecastMergeWeight);
+    slog.info(mmi+"this.tiFMFMergeWeight=" + this.tiFMFMergeWeight);
 
     return FMSResidualFactory.processFMSWLStation(psr, sse, sseFutureThreshold, this);
   }
@@ -334,22 +349,61 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
     //slog.info(mmi+"Merging QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
 
+    final long lastFullModelForecastDataSse= this.
+      lastFullModelForecastMcObj.getEventDate().getEpochSecond();
+
+    if (fmfThreshold > this.fmfMergeCompleteSse ) {
+      throw new RuntimeException(mmi+"Cannot have fmfThreshold > this.fmfMergeCompleteSse !!");
+    }
+
     if (seconds < this.fmfMergeCompleteSse) {
 
+      // --- Ensure that fmfWeight is between 0.0 and 1.0 (inclusive).
       final double fmfWeight=
-        this.tiForecastMergeWeight * (seconds - fmfThreshold);
+        Math.max(0.0, Math.min(1.0, this.tiFMFMergeWeight * (seconds - fmfThreshold) ));
 
-      slog.info(mmi+"merge dt="+SecondsSinceEpoch.dtFmtString (seconds, true)+", fmfWeight=" + fmfWeight);
+      slog.info(mmi+"merge dt="+SecondsSinceEpoch.dtFmtString (seconds, true)+
+                ", fmfThreshold=" + fmfThreshold + ", fmfWeight=" + fmfWeight +", fmfMergeCompleteSse="+fmfMergeCompleteSse);
 
-      wlstn.mergeWithFullModelForecast(this.ssfType, fmfWeight);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
+
+      wlstn.mergeWithFullModelForecast(this.surgeOffsetType, fmfWeight);
+
+    } else if (seconds <= lastFullModelForecastDataSse ) {
+
+      // --- At this point we use %100 of the full model forecast data for the updated forecast data.
+      wlstn.mergeWithFullModelForecast(this.surgeOffsetType, 1.0);
 
     } else {
 
-      wlstn.mergeWithFullModelForecast(this.ssfType, 1.0);
+      // --- Here at seconds > lastFullModelForecastDataSse we need to merge the full
+      //     model forecast with the 32 days NS_TIDE prediction data but the merge is
+      //     done in the opposite sense compared to when seconds < this.fmfMergeCompleteSse
+      //     so we need to define the fmfWeightInv as being calculated as follows:
+      //     1.0 - this.tiPredMergeWeight * (seconds - lastFullModelForecastDataSse)
+      final double fmfWeightInv=
+        Math.max(0.0, Math.min(1.0, 1.0 - this.tiLongTermPredMergeWeight * (seconds - lastFullModelForecastDataSse)));
+
+      slog.info(mmi+"fmfWeightInv="+fmfWeightInv);
+      slog.info(mmi+"tiLongTermPredMergeWeight="+this.tiLongTermPredMergeWeight);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
+
+      slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.info(mmi+"lastFullModelForecastMcObj.getValue()="+lastFullModelForecastMcObj.getValue());
+
+      wlstn.mergeWithFullModelForecastZValue(this.surgeOffsetType,
+                                             fmfWeightInv, lastFullModelForecastMcObj.getValue());
+
+      slog.info(mmi+"aft. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.info(mmi+"Debug exit 0");
+      System.exit(0);
+
     }
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return wlstn;
   }
