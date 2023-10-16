@@ -314,7 +314,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     //  slog.debug(mmi+"psr dt= " + psr.getSse().dateTimeString(true));
     //}
 
-    slog.info(mmi+"this.ssfMergeCompleteSse dt=" + SecondsSinceEpoch.dtFmtString(this.fmfMergeCompleteSse, true));
+    slog.info(mmi+"this.fmfMergeCompleteSse dt=" + SecondsSinceEpoch.dtFmtString(this.fmfMergeCompleteSse, true));
     slog.info(mmi+"this.tiForecastMergeWeight=" + this.tiForecastMergeWeight);
 
     return FMSResidualFactory.processFMSWLStation(psr, sse, sseFutureThreshold, this);
