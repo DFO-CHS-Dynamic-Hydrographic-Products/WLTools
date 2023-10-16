@@ -214,6 +214,8 @@ abstract public class FMSWLStationData extends GlobalRefPoint implements IFMS, I
       slog.info(mmi+"Got "+mfDataList.size()+
                 " model WL forecasts data for station: " + this.stationId);
 
+      this.useFullModelForecast= true;
+
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
 
