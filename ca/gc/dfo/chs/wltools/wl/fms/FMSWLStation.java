@@ -70,28 +70,33 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
   private int stationNodeIndex= 0;
 
   /**
-   * The time-stamp(seconds since the epoch) used to mark the time of the complete merge of the default WLF-QC
-   * (made with prediction data without external storm surge and-or fresh water discharge component) with the
-   *  full model forecast component coming from a full-fledged model that includes atmos. forcings and-or
-   *  fresh-water discharge effects.
+   * The time-stamp(seconds since the epoch) used to mark the time of the initial merge of the default WLF-QC
+   * (made with prediction data without external storm surge and-or fresh water discharge information) with the
+   *  full model forecast data coming from a full-fledged model that includes atmos. forcings and-or
+   *  fresh-water discharge effects. This merge is done not too far in time after the last valid obs. data
+   *  has been used to adjust the prediction for the QC forecast.
    */
   private long fmfMergeCompleteSse= 0L;
 
   /**
-   * Time weight for merging the default QC forecast data
+   * Time weight for the initial merge the default QC forecast data
    * with the full model forecast data (if any).
    */
   private double tiFMFMergeWeight= 0.0;
 
   /**
    * Time weight for merging the full model forecast data (if any)
-   * with the long term (~30 days) prediction data
+   * with the long term (~30 days) prediction data. This is the final
+   * merge that begins after the last timestamp of the full model forecast
+   * data.
    */
   private double tiLongTermPredMergeWeight= 0.0;
 
-  //--- Need to have the WL difference between the last full model forecast WL
-  //    and the QC forecast WL at the same timestamp to merge the  full model
-  //    forecast data with the long term NS_TIDE or climato prediction data
+  /**
+   * Need to have the WL difference between the last full model forecast WL
+   * and the long term prediction WL data at the same timestamp to merge the
+   * full model forecast data with the long term NS_TIDE or climato prediction data
+   */
   private double lastQCFVsFMFDiff= 0.0;
 
   /**
