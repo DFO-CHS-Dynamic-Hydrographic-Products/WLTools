@@ -89,6 +89,11 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
    */
   private double tiLongTermPredMergeWeight= 0.0;
 
+  //--- Need to have the WL difference between the last full model forecast WL
+  //    and the QC forecast WL at the same timestamp to merge the  full model
+  //    forecast data with the long term NS_TIDE or climato prediction data
+  private double lastQCFVsFMFDiff= 0.0;
+
   /**
    * @param stationNodeIndex   : The WL station index in the allStationsData List attribute of class FMWLData.
    * @param forecastingContext : The ForecastingContext object of a given WL station.
@@ -352,6 +357,8 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     final long lastFullModelForecastDataSse= this.
       lastFullModelForecastMcObj.getEventDate().getEpochSecond();
 
+    //double lastQCFVsFMFDiff= 0.0;
+
     if (fmfThreshold > this.fmfMergeCompleteSse ) {
       throw new RuntimeException(mmi+"Cannot have fmfThreshold > this.fmfMergeCompleteSse !!");
     }
@@ -367,13 +374,30 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
 
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
+      slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
 
       wlstn.mergeWithFullModelForecast(this.surgeOffsetType, fmfWeight);
 
+      slog.info(mmi+"aft. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
+
     } else if (seconds <= lastFullModelForecastDataSse ) {
+
+      // --- Need to subtract the wlstn.getUpdatedForecast().getValue()
+      //     from the his.lastFullModelForecastMcObj.getValue() to get the
+      //    correct merge value.
+      this.lastQCFVsFMFDiff=
+        this.lastFullModelForecastMcObj.getValue() - wlstn.getUpdatedForecast().getValue();
+
+      slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
 
       // --- At this point we use %100 of the full model forecast data for the updated forecast data.
       wlstn.mergeWithFullModelForecast(this.surgeOffsetType, 1.0);
+
+      slog.info(mmi+"aft. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
 
     } else {
 
@@ -390,15 +414,26 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
 
-      slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
-      slog.info(mmi+"lastFullModelForecastMcObj.getValue()="+lastFullModelForecastMcObj.getValue());
+      //slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      //slog.info(mmi+"lastFullModelForecastMcObj.getValue()="+ this.lastFullModelForecastMcObj.getValue());
+      //slog.info(mmi+"this.lastQCFVsFMFDiff=="+ this.lastQCFVsFMFDiff);
 
-      wlstn.mergeWithFullModelForecastZValue(this.surgeOffsetType,
-                                             fmfWeightInv, lastFullModelForecastMcObj.getValue());
+     // --- NOTE: We have to use the WLSO_DE_TIDED surge offet type because we only need
+     //     to apply the time-decaying this.lastQCFVsFMFDiff WL difference in the future
+     //     to the QC forecast WL data in order to smoothly merge its signal with the full
+     //     forecast model WL data.
+      wlstn.mergeWithFullModelForecastZValue(SurgeOffsetWLType.WLSO_DE_TIDED,
+                                             fmfWeightInv, this.lastQCFVsFMFDiff);
+
+     //--- Now set this.lastFullModelForecastMcObj WL value to the value of the
+     //    newly merged updated forecast for the next loop iteration on future timestamps for
+     //    the next merge calculation
+     //this.lastFullModelForecastMcObj.
+     //   setValue(wlstn.getUpdatedForecast().getValue());
 
       slog.info(mmi+"aft. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
-      slog.info(mmi+"Debug exit 0");
-      System.exit(0);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
 
     }
 
