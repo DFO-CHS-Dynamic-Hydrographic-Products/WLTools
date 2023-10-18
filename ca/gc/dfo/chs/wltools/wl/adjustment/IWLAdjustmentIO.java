@@ -22,6 +22,9 @@ public interface IWLAdjustmentIO {
 
   String OUTPUT_DATA_FMT_SPLIT_CHAR= "-";
 
+  String ISO8601_DATETIME_SEP_CHAR= "T";
+  String ISO8601_YYYYMMDD_SEP_CHAR= OUTPUT_DATA_FMT_SPLIT_CHAR;
+
   // ---
   enum DataTypesFormatsDef {
     DHP_S104_DCF3,

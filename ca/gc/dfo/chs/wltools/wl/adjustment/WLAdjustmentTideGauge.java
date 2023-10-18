@@ -367,43 +367,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII
         //     format. It should be the H2D2 model forecast data of the last synoptic run.
-        this.getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo, uniqueTGMapObj, mainJsonMapObj); //nearestsTGEcccIds);
+        final String previousFMFASCIIDataFilePath= this.
+          getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo, uniqueTGMapObj, mainJsonMapObj); //nearestsTGEcccIds);
 
         slog.info(mmi+"Done with reading the model full forecast at TG location -> "+this.location.getIdentity());
-        //slog.info(mmi+"this.nearestModelData.get(this.location.getIdentity()).size()="+ this.nearestModelData.get(this.location.getIdentity()).size());
 
-        final long nearestModelDataSize= this.
-          nearestModelData.get(this.location.getIdentity()).size();
-
-        slog.info(mmi+"nearestModelDataSize="+ nearestModelDataSize);
-
-        //--- Now need to read the full H2D2 model forecast data produced previously in time compared to the
-        //    last H2D2 forecast lead time (a.k.a. zero'th hour) and for which we have enough WLO data to use
-        //    to compute WLO-WLF error stats.
-
-        //--- Get the time incr. interval of the full model forecast data:
-        this.fmfDataTimeIntervalSeconds= MeasurementCustom.
-          getDataTimeIntervallSeconds( this.nearestModelData.get(this.location.getIdentity()) );
-
-        // --- Need to use (double) cast to get what we want in terms of hours to go
-        //     in past
-        final long nbHoursToGoInPast= (long) ( (double) nearestModelDataSize *
-          (double) this.fmfDataTimeIntervalSeconds/ITimeMachine.SECONDS_PER_HOUR );
-
-        slog.info(mmi+"this.fmfDataTimeIntervalSeconds="+this.fmfDataTimeIntervalSeconds);
-        slog.info(mmi+"nbHoursToGoInPast="+nbHoursToGoInPast);
-
-        // --- Build the complete path to the full H2D2 model forecast data ASCII format file
-        //    produced previously in time. It must be in the same directory where the last
-        //    forecast data that was produced.
-
-        final String [] modelForecastInputDataInfoSplit=
-          this.modelForecastInputDataInfo.split(File.separator);
-
-        final String modelForecastInputDataInfoFName=
-          modelForecastInputDataInfoSplit[modelForecastInputDataInfoSplit.length-1];
-
-        slog.info(mmi+"modelForecastInputDataInfoFName="+modelForecastInputDataInfoFName);
+        slog.info(mmi+"previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
 
         slog.info(mmi+"Debug System.exit(0)");
         System.exit(0);

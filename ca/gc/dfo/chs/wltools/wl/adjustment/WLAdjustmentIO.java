@@ -43,6 +43,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -167,9 +168,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final void getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
-                                        /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
-                                        /*@NotNull*/ final JsonObject       mainJsonMapObj     ) {
+  final String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
+                                          /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
+                                          /*@NotNull*/ final JsonObject       mainJsonMapObj     ) {
 
                                        ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
 
@@ -221,23 +222,31 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     //System.exit(0);
 
     // --- Get the forecast zero'th hour timestamp to discard the analysis
-    //     (a.k.a nowcast) WL data part. Need to use the input file name
-    //      to do so.
-    final String zerothHourYYYYMMDDhh= new
-      File(H2D2ASCIIWLFProbesDataFile).getName().split(H2D2_ASCII_FMT_FNAME_SPLITSTR)[0];
+    //     (a.k.a nowcast) WL data part. Need to use the input file path
+    //     to do so.
+    final File inputFileNameFileObj= new File(H2D2ASCIIWLFProbesDataFile);
+
+    final String inputFileName= inputFileNameFileObj.getName();
+
+    //final String [] tmpInputFileNameSplit= new
+    //  File(H2D2ASCIIWLFProbesDataFile).getName().split(H2D2_ASCII_FMT_FNAME_SPLITSTR)
+
+    final String zerothHourYYYYMMDDhh=
+      inputFileName.split(H2D2_ASCII_FMT_FNAME_SPLITSTR)[0];
+   //  File(H2D2ASCIIWLFProbesDataFile).getName().split(H2D2_ASCII_FMT_FNAME_SPLITSTR)[0];
 
     slog.info(mmi+"zerothHourYYYYMMDDhh="+zerothHourYYYYMMDDhh);
 
-    final String zerothHourISO8601= zerothHourYYYYMMDDhh.substring(0,4)  + "-" +
-                                    zerothHourYYYYMMDDhh.substring(4,6)  + "-" +
-                                    zerothHourYYYYMMDDhh.substring(6,8)  + "T" +
+    final String zerothHourISO8601= zerothHourYYYYMMDDhh.substring(0,4)  + IWLAdjustmentIO.ISO8601_YYYYMMDD_SEP_CHAR +
+                                    zerothHourYYYYMMDDhh.substring(4,6)  + IWLAdjustmentIO.ISO8601_YYYYMMDD_SEP_CHAR +
+                                    zerothHourYYYYMMDDhh.substring(6,8)  + IWLAdjustmentIO.ISO8601_DATETIME_SEP_CHAR +
                                     zerothHourYYYYMMDDhh.substring(8,10) + ":00:00Z"; //.000Z";
 
     slog.info(mmi+"zerothHourISO8601="+zerothHourISO8601);
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    final Instant zerothHourInstant= Instant.parse(zerothHourISO8601);
+    final Instant zeroThHourInstant= Instant.parse(zerothHourISO8601);
 
     //slog.info(mmi+"zerothHourInstant check="+zerothHourInstant.toString());
     //slog.info(mmi+"Debug System.exit(0)");
@@ -267,7 +276,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
          ofEpochSecond(Long.parseLong(inputDataLineSplit[timeStampColumnIndex]));
 
        // --- Discard analysis-nowcast WL data (i.e. for timestamps smaller than zerothHourInstant)
-       if (timeStampInstant.compareTo(zerothHourInstant) < 0 ) {
+       if (timeStampInstant.compareTo(zeroThHourInstant) < 0 ) {
          //slog.info(mmi+"Skipping nowcast data at timestamp: "+timeStampInstant.toString());
          //slog.info(mmi+"Debug System.exit(0)");
          //System.exit(0);
@@ -290,15 +299,54 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
        //System.exit(0);
     }
 
-    final int nbTimeStamps= this.nearestModelData.
-      get(nearestsTGCoordsIds.toArray()[0]).size();
+    final List<MeasurementCustom> tg0McList= this.
+      nearestModelData.get(nearestsTGCoordsIds.toArray()[0]);
+
+    final int nbTimeStamps= tg0McList.size();
 
     slog.info(mmi+"model results nbTimeStamps="+nbTimeStamps);
 
+    //--- Get the time incr. interval of the full model forecast data
+    this.fmfDataTimeIntervalSeconds=
+      MeasurementCustom.getDataTimeIntervallSeconds(tg0McList);
+
+    // --- Need to use (double) cast to get what we want in terms of hours to go
+    //     in past
+    final long nbHoursToGoInPast= (long) ( (double) nbTimeStamps *
+      (double) this.fmfDataTimeIntervalSeconds/ITimeMachine.SECONDS_PER_HOUR );
+
+    slog.info(mmi+"this.fmfDataTimeIntervalSeconds="+this.fmfDataTimeIntervalSeconds);
+    slog.info(mmi+"nbHoursToGoInPast="+nbHoursToGoInPast);
+
+    //--- Get the Instant object that define the timestamp of the previous
+    //    full model forecast data file to use for the (WLO-WLF) error stats.
+    final Instant prevFMFInstantInPast= zeroThHourInstant.
+      plusSeconds(-nbHoursToGoInPast*ITimeMachine.SECONDS_PER_HOUR);
+
+    slog.info(mmi+"prevFMFInstantInPast="+prevFMFInstantInPast.toString());
+
+    final String tmpPrevFMFInstantInPastStr= prevFMFInstantInPast.
+      toString().split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR)[0];
+
+    slog.info(mmi+"tmpPrevFMFInstantInPastStr="+tmpPrevFMFInstantInPastStr);
+
+    // --- Replace the ISO8601 date time string separators by the empty string
+    //    for the timestamp of the previous full model forecast data file.
+    final String prevFMFInputFNamePrfx= tmpPrevFMFInstantInPastStr.
+      replace(IWLAdjustmentIO.ISO8601_YYYYMMDD_SEP_CHAR,"").replace(IWLAdjustmentIO.ISO8601_DATETIME_SEP_CHAR,"");
+
+    //--- Build the complete file path for the previous full model forecast ASCII
+    //    input data file that could be used later for (WL0-WLF) error stats
+    final String previousFMFASCIIDataFilePath= inputFileNameFileObj.getParent() +
+      File.separator + inputFileName.replace(zerothHourYYYYMMDDhh,prevFMFInputFNamePrfx);
+
+    slog.info(mmi+"returned previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
     slog.info(mmi+"end");
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
+
+    return previousFMFASCIIDataFilePath;
   }
 
   // --- IMPORTANT: Do not use this method for WL observation data since we could
