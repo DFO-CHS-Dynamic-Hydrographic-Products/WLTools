@@ -105,8 +105,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   //protected String= modelForecastInputDataInfo= null;
 
   //protected long obsDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
-  protected long predDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
-  protected long forecastDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
+  protected long prdDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
+  protected long fmfDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
 
   protected FMS fmsObj= null;
   protected FMSInput fmsInputObj= null;
