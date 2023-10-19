@@ -160,12 +160,12 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
     return (List<MeasurementCustom>) this.nearestObsData.get(locationId);
   }
 
-  final public List<MeasurementCustom> getNearestModelData() {
-    return (List<MeasurementCustom>) this.nearestModelData.get(this.location.getIdentity());
+  final public List<MeasurementCustom> getNearestModelData(final int whichType) {
+    return (List<MeasurementCustom>) this.nearestModelData.get(whichType).get(this.location.getIdentity());
   }
 
-  final public List<MeasurementCustom> getNearestModelData(final String locationId) {
-    return (List<MeasurementCustom>) this.nearestModelData.get(locationId);
+  final public List<MeasurementCustom> getNearestModelData(final int whichType, final String locationId) {
+    return (List<MeasurementCustom>) this.nearestModelData.get(whichType).get(locationId);
   }
 
   ///**

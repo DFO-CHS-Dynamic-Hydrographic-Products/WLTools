@@ -52,7 +52,7 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
-import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
+//import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
 
 /**
  * Comments please!
@@ -99,18 +99,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   //protected Map<String, ArrayList<WLMeasurement>> nearestModelData= null;
 
   protected Map<String, List<MeasurementCustom>> nearestObsData= null;
+  //protected Map<String, List<MeasurementCustom>> nearestModelData= null; // []= { null, null };
 
-  // --- nearestModelData:
-  //     Used to store the previous full model forecast data
-  //     for some specific location(s) whatever it is at a some
-  //     tide gauge(s) or at a model grid point.
-  protected Map<String, List<MeasurementCustom>> nearestModelData= null;
-
-  // --- nearestPrevModelData:
-  //     Used to store the previous full model forecast data to be used to calculate
-  //     the related (WLO-WLF) error stats. It is normally located (or near to) at
-  //     at tide gauge(s).
-  protected Map<String, List<MeasurementCustom>> nearestPrevModelData= null;
+  protected List< Map<String, List<MeasurementCustom>> > nearestModelData=
+    new ArrayList< Map<String, List<MeasurementCustom>> > (FullModelForecastType.values().length);
 
   protected String modelForecastInputDataInfo= null;
   protected List<String> modelForecastInputDataFiles= null;
@@ -150,8 +142,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     this.locationPredData= null;
     this.locationAdjustedData= null;
 
-    this.nearestObsData=
-      this.nearestModelData= null;
+    this.nearestObsData= null;
+    //this.nearestModelData= new Map<String, List<MeasurementCustom>> [2];
 
     this.modelForecastInputDataInfo= null;
     this.modelForecastInputDataFiles= null;
@@ -179,10 +171,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final static String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
-                                                 /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
-                                                 /*@NotNull*/ final JsonObject       mainJsonMapObj,
-                                                 /*@NotNull*/ Map<String, List<MeasurementCustom>> fullModelForecastData ) {
+  final String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
+                                          /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
+                                          /*@NotNull*/ final JsonObject       mainJsonMapObj,
+                                                       final FullModelForecastType fmfType ) {
 
                                        ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
 
@@ -191,30 +183,17 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     final String mmi= "getH2D2ASCIIWLProbeData: ";
 
-    //try {
-    //  nearestsTGCoordsIds.hash();
-    //} catch (NullPointerException npe){
-    //  new RuntimeException(mmi+npe);
-    //}
-
-    try {
-      fullModelForecastData.size();
-
-    } catch (NullPointerException npe){
-      new RuntimeException(mmi+npe);
-    }
-
     final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
 
-    slog.info(mmi+"start: nearestsTGCoordsIds="+nearestsTGCoordsIds.toString());
+    slog.info(mmi+"start: nearestsTGCoordsIds="+nearestsTGCoordsIds.toString()+", fmfType="+fmfType.name());
 
     slog.info(mmi+"H2D2ASCIIWLFProbesDataFile="+H2D2ASCIIWLFProbesDataFile);
     //slog.info(mmi+"this.modelInputDataFiles="+this.modelInputDataFiles);
 
     //--- Create the this.nearestModelData object to store the H2D2 ASCII WL
     //      forecast data
-    //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
-    fullModelForecastData= new HashMap<String, List<MeasurementCustom>>();
+    this.nearestModelData.add( fmfType.ordinal(),
+                               new HashMap<String, List<MeasurementCustom>>() );
 
     final List<String> H2D2ASCIIWLFProbesDataLines=
       ASCIIFileIO.getFileLinesAsArrayList(H2D2ASCIIWLFProbesDataFile); //(this.modelInputDataFiles);
@@ -241,8 +220,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
                " H2D2 data line index is="+tgDataColumnIndices.get(chsTGId));
 
       // --- Create the Map entry for this CHS TG.
-      //this.nearestModelData.put(chsTGId, new ArrayList<MeasurementCustom>() );
-      fullModelForecastData.put(chsTGId, new ArrayList<MeasurementCustom>() );
+      this.nearestModelData.get(fmfType.ordinal()).
+        put(chsTGId, new ArrayList<MeasurementCustom>() );
     }
 
     //slog.info(mmi+"Debug System.exit(0)");
@@ -318,8 +297,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
          //slog.info(mmi+"timeStampSeconds="+timeStampSeconds+", tgWLValue="+tgWLValue);
          //--- Store the H2D2 WLF value for this CHS TG for this timestamp.
-         //this.nearestModelData.get(chsTGId).
-         fullModelForecastData.get(chsTGId).
+         this.nearestModelData.get(fmfType.ordinal()).get(chsTGId).
            add( new MeasurementCustom(timeStampInstant, tgWLFValue, IWL.MAXIMUM_UNCERTAINTY_METERS) );
        }
 
@@ -327,12 +305,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
        //System.exit(0);
     }
 
-    // --- Done with reading the full model forecast data now build
-    //     the complete file path to a previous full model forecast data
-    //     that could be used for (WLO-WLF) error stats
-    final List<MeasurementCustom> tg0McList=
-      fullModelForecastData.get(nearestsTGCoordsIds.toArray()[0]);
-      //this.nearestModelData.get(nearestsTGCoordsIds.toArray()[0]);
+    final List<MeasurementCustom> tg0McList= this.
+      nearestModelData.get(fmfType.ordinal()).get(nearestsTGCoordsIds.toArray()[0]);
+
+    //final List<MeasurementCustom> tg0McList=
+    //  fullModelForecastData.get(nearestsTGCoordsIds.toArray()[0]);
 
     final int nbTimeStamps= tg0McList.size();
 
@@ -377,7 +354,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     slog.info(mmi+"end");
 
     //slog.info(mmi+"Debug System.exit(0)");
-   //System.exit(0);
+    //System.exit(0);
 
     return previousFMFASCIIDataFilePath;
   }

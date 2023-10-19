@@ -12,7 +12,7 @@ import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-//import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType;
 
 //---
@@ -78,7 +78,8 @@ final public class FMSInput extends FMSConfig {
 
     this.observations= wlAdjObj.getNearestObsData();
 
-    this.modelForecasts= wlAdjObj.getNearestModelData();
+    this.modelForecasts= wlAdjObj.
+      getNearestModelData(IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal());
 
     this.qualityControlForecasts= null;
 
