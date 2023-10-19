@@ -367,12 +367,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII
         //     format. It should be the H2D2 model forecast data of the last synoptic run.
-        final String previousFMFASCIIDataFilePath= this.
-          getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo, uniqueTGMapObj, mainJsonMapObj); //nearestsTGEcccIds);
+        final String previousFMFASCIIDataFilePath= WLAdjustmentIO.
+          getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo, uniqueTGMapObj, mainJsonMapObj, this.nearestModelData); //nearestsTGEcccIds);
 
         slog.info(mmi+"Done with reading the model full forecast at TG location -> "+this.location.getIdentity());
 
         slog.info(mmi+"previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
+
+        WLAdjustmentIO.getH2D2ASCIIWLFProbesData( previousFMFASCIIDataFilePath, uniqueTGMapObj,
+                                                  mainJsonMapObj, this.nearestPrevModelData );
 
         slog.info(mmi+"Debug System.exit(0)");
         System.exit(0);

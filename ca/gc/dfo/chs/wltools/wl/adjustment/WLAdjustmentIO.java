@@ -99,7 +99,18 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   //protected Map<String, ArrayList<WLMeasurement>> nearestModelData= null;
 
   protected Map<String, List<MeasurementCustom>> nearestObsData= null;
+
+  // --- nearestModelData:
+  //     Used to store the previous full model forecast data
+  //     for some specific location(s) whatever it is at a some
+  //     tide gauge(s) or at a model grid point.
   protected Map<String, List<MeasurementCustom>> nearestModelData= null;
+
+  // --- nearestPrevModelData:
+  //     Used to store the previous full model forecast data to be used to calculate
+  //     the related (WLO-WLF) error stats. It is normally located (or near to) at
+  //     at tide gauge(s).
+  protected Map<String, List<MeasurementCustom>> nearestPrevModelData= null;
 
   protected String modelForecastInputDataInfo= null;
   protected List<String> modelForecastInputDataFiles= null;
@@ -107,7 +118,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
   //protected long obsDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
   protected long prdDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
-  protected long fmfDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
+  //protected long fmfDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
 
   protected FMS fmsObj= null;
   protected FMSInput fmsInputObj= null;
@@ -168,9 +179,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   /**
    * Comments please!
    */
-  final String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
-                                          /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
-                                          /*@NotNull*/ final JsonObject       mainJsonMapObj     ) {
+  final static String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
+                                                 /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
+                                                 /*@NotNull*/ final JsonObject       mainJsonMapObj,
+                                                 /*@NotNull*/ Map<String, List<MeasurementCustom>> fullModelForecastData ) {
 
                                        ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
 
@@ -178,6 +190,19 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     //     because the HBCoords object is useless for this method.
 
     final String mmi= "getH2D2ASCIIWLProbeData: ";
+
+    //try {
+    //  nearestsTGCoordsIds.hash();
+    //} catch (NullPointerException npe){
+    //  new RuntimeException(mmi+npe);
+    //}
+
+    try {
+      fullModelForecastData.size();
+
+    } catch (NullPointerException npe){
+      new RuntimeException(mmi+npe);
+    }
 
     final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
 
@@ -188,7 +213,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     //--- Create the this.nearestModelData object to store the H2D2 ASCII WL
     //      forecast data
-    this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
+    //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
+    fullModelForecastData= new HashMap<String, List<MeasurementCustom>>();
 
     final List<String> H2D2ASCIIWLFProbesDataLines=
       ASCIIFileIO.getFileLinesAsArrayList(H2D2ASCIIWLFProbesDataFile); //(this.modelInputDataFiles);
@@ -215,7 +241,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
                " H2D2 data line index is="+tgDataColumnIndices.get(chsTGId));
 
       // --- Create the Map entry for this CHS TG.
-      this.nearestModelData.put(chsTGId, new ArrayList<MeasurementCustom>() );
+      //this.nearestModelData.put(chsTGId, new ArrayList<MeasurementCustom>() );
+      fullModelForecastData.put(chsTGId, new ArrayList<MeasurementCustom>() );
     }
 
     //slog.info(mmi+"Debug System.exit(0)");
@@ -291,7 +318,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
          //slog.info(mmi+"timeStampSeconds="+timeStampSeconds+", tgWLValue="+tgWLValue);
          //--- Store the H2D2 WLF value for this CHS TG for this timestamp.
-         this.nearestModelData.get(chsTGId).
+         //this.nearestModelData.get(chsTGId).
+         fullModelForecastData.get(chsTGId).
            add( new MeasurementCustom(timeStampInstant, tgWLFValue, IWL.MAXIMUM_UNCERTAINTY_METERS) );
        }
 
@@ -299,23 +327,28 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
        //System.exit(0);
     }
 
-    final List<MeasurementCustom> tg0McList= this.
-      nearestModelData.get(nearestsTGCoordsIds.toArray()[0]);
+    // --- Done with reading the full model forecast data now build
+    //     the complete file path to a previous full model forecast data
+    //     that could be used for (WLO-WLF) error stats
+    final List<MeasurementCustom> tg0McList=
+      fullModelForecastData.get(nearestsTGCoordsIds.toArray()[0]);
+      //this.nearestModelData.get(nearestsTGCoordsIds.toArray()[0]);
 
     final int nbTimeStamps= tg0McList.size();
 
     slog.info(mmi+"model results nbTimeStamps="+nbTimeStamps);
 
     //--- Get the time incr. interval of the full model forecast data
-    this.fmfDataTimeIntervalSeconds=
+    //this.fmfDataTimeIntervalSeconds=
+    final long fmfDataTimeIntervalSeconds=
       MeasurementCustom.getDataTimeIntervallSeconds(tg0McList);
 
     // --- Need to use (double) cast to get what we want in terms of hours to go
     //     in past
     final long nbHoursToGoInPast= (long) ( (double) nbTimeStamps *
-      (double) this.fmfDataTimeIntervalSeconds/ITimeMachine.SECONDS_PER_HOUR );
+      (double) fmfDataTimeIntervalSeconds/ITimeMachine.SECONDS_PER_HOUR );
 
-    slog.info(mmi+"this.fmfDataTimeIntervalSeconds="+this.fmfDataTimeIntervalSeconds);
+    slog.info(mmi+"fmfDataTimeIntervalSeconds="+fmfDataTimeIntervalSeconds);
     slog.info(mmi+"nbHoursToGoInPast="+nbHoursToGoInPast);
 
     //--- Get the Instant object that define the timestamp of the previous
@@ -344,7 +377,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
     slog.info(mmi+"end");
 
     //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+   //System.exit(0);
 
     return previousFMFASCIIDataFilePath;
   }
