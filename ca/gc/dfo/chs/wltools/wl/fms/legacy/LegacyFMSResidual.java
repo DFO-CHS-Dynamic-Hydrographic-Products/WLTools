@@ -327,7 +327,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
       slog.info(mmi+"Valid OBSERVATION DB data at time stamp: "+dts+" for station: "+
                 stationId + ", updating residuals errors statistics and long term surge");
 
-      //--- Update the long term surge if we have a valid WLO.
+      //--- Update the medium-long term (could be just 48 hours) WL offset if we have a valid WLO.
       this.residual.updateFMSLongTermWLOffset(wlStationTimeNode);
 
       //--- Update residual temporal errors covariances stats:

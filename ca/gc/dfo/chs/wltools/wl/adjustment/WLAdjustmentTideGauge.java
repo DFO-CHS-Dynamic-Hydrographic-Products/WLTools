@@ -78,8 +78,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
   // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG
   //     for the forecast (WLF) data.
-  private IWLAdjustment.TideGaugeAdjMethod
-    forecastAdjType= IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG;
+  private IWLAdjustment.TideGaugeAdjMethod forecastAdjType=
+    IWLAdjustment.TideGaugeAdjMethod.SIMPLE_TIMEDEP_FCST_ERROR_STATS; //ECCC_H2D2_FORECAST_AUTOREG;
 
   //private List<MeasurementCustom> tgLocationWLOData= null;
 
@@ -340,14 +340,14 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     if (this.forecastAdjType != null) {
 
       if (this.forecastAdjType != IWLAdjustment.
-            TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG) {
+            TideGaugeAdjMethod.SIMPLE_TIMEDEP_FCST_ERROR_STATS) {
 
         slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
-                IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()+" is allowed for now !");
+                IWLAdjustment.TideGaugeAdjMethod.SIMPLE_TIMEDEP_FCST_ERROR_STATS.name()+" is allowed for now !");
       }
 
      this.fullForecastModelName= argsMapKeysSet.
-       contains("--fullForecastModelName") ? argsMap.get("--fullForecastModelName") : IWLAdjustment.DEFAULT_H2D2_NAME;
+       contains("--fullForecastModelName") ? argsMap.get("--fullForecastModelName") : IWLAdjustment.DEFAULT_MODEL_NAME;
 
       if (this.modelForecastInputDataInfo == null) {
         throw new RuntimeException(mmi+
@@ -377,16 +377,16 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         slog.info(mmi+"Done with reading the model full forecast at TG location -> "+this.location.getIdentity());
 
         //slog.info(mmi+"this.nearestModelData.size()="+this.nearestModelData.size());
-        slog.info(mmi+"this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.ACTUAL).get(this.location.getIdentity()).get(0).getValue()="+
-                      this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()).get(this.location.getIdentity()).get(0).getValue());
+        //slog.info(mmi+"this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.ACTUAL).get(this.location.getIdentity()).get(0).getValue()="+
+        //              this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()).get(this.location.getIdentity()).get(0).getValue());
 
         //slog.info(mmi+"previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
 
-        //WLAdjustmentIO.getH2D2ASCIIWLFProbesData( previousFMFASCIIDataFilePath, uniqueTGMapObj,
-        //                                          mainJsonMapObj, this.nearestPrevModelData );
+        this.getH2D2ASCIIWLFProbesData( previousFMFASCIIDataFilePath, uniqueTGMapObj,
+                                        mainJsonMapObj,IWLAdjustmentIO.FullModelForecastType.PREVIOUS );
 
-        //slog.info(mmi+"this.nearestPrevModelData.get(this.location.getIdentity()).get(0).getValue()"+
-        //          this.nearestPrevModelData.get(this.location.getIdentity()).get(0).getValue());
+        //slog.info(mmi+"this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.PREVIOUS).get(this.location.getIdentity()).get(0).getValue()="+
+        //              this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.PREVIOUS.ordinal()).get(this.location.getIdentity()).get(0).getValue());
 
         slog.info(mmi+"Debug System.exit(0)");
         System.exit(0);

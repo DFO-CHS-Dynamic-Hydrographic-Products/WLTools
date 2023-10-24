@@ -9,13 +9,15 @@ import java.util.Set;
  */
 public interface IWLAdjustment {
 
+  String DEFAULT_MODEL_NAME= "MODEL_NAME_NOT_DEFINED";
+
+  String DEFAULT_H2D2_NAME= "ECCC_H2D2";
+
   enum StormSurgeForecastModel {
     ECCC_H2D2_SLFE //,
     //DFO_NEMO_SJ100,
     //DFO_NEMO_VH20,
   }
-
-  String DEFAULT_H2D2_NAME= "ECCC_H2D2";
 
   enum Type {
     TideGauge, // --- Implies doing adjustments at one tide gauge only.
@@ -41,12 +43,14 @@ public interface IWLAdjustment {
 
   enum TideGaugeAdjMethod {
     CHS_IWLS_QC,
-    ECCC_H2D2_FORECAST_AUTOREG
+    SIMPLE_TIMEDEP_FCST_ERROR_STATS
+    //ECCC_H2D2_FORECAST_AUTOREG
   }
 
   String [] TideGaugeAdjMethodsDef= {
     TideGaugeAdjMethod.CHS_IWLS_QC.name(),
-    TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()
+    TideGaugeAdjMethod.SIMPLE_TIMEDEP_FCST_ERROR_STATS.name()
+    //TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()
   };
 
   Set<String> allowedTideGaugeAdjMethods= Set.of(TideGaugeAdjMethodsDef);
