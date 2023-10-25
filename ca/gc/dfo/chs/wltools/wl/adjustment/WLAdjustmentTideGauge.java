@@ -71,22 +71,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC
-  //     for the prediction (WLP) data.
-  private IWLAdjustment.TideGaugeAdjMethod
-    predictAdjType= IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC;
-
-  // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG
-  //     for the forecast (WLF) data.
-  private IWLAdjustment.TideGaugeAdjMethod forecastAdjType=
-    IWLAdjustment.TideGaugeAdjMethod.SIMPLE_TIMEDEP_FCST_ERROR_STATS; //ECCC_H2D2_FORECAST_AUTOREG;
-
   //private List<MeasurementCustom> tgLocationWLOData= null;
-
-  // ---
   //private ArrayList<MeasurementCustom> tgLocationWLPData= null;
-
-  // ---
   //private List<MeasurementCustom> tgLocationWLFData= null;
 
   /**
@@ -340,10 +326,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     if (this.forecastAdjType != null) {
 
       if (this.forecastAdjType != IWLAdjustment.
-            TideGaugeAdjMethod.SIMPLE_TIMEDEP_FCST_ERROR_STATS) {
+            TideGaugeAdjMethod.SIMPLE_TIMEDEP_FMF_ERROR_STATS) {
 
         slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
-                IWLAdjustment.TideGaugeAdjMethod.SIMPLE_TIMEDEP_FCST_ERROR_STATS.name()+" is allowed for now !");
+                  IWLAdjustment.TideGaugeAdjMethod.SIMPLE_TIMEDEP_FMF_ERROR_STATS.name()+" is allowed for now !");
       }
 
      this.fullForecastModelName= argsMapKeysSet.
@@ -388,14 +374,19 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         //slog.info(mmi+"this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.PREVIOUS).get(this.location.getIdentity()).get(0).getValue()="+
         //              this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.PREVIOUS.ordinal()).get(this.location.getIdentity()).get(0).getValue());
 
-        slog.info(mmi+"Debug System.exit(0)");
-        System.exit(0);
-
       } else {
         throw new RuntimeException(mmi+"Invalid this.modelForecastInputDataFormat -> "
                                    +this.modelForecastInputDataFormat.name() ); //+" for inputDataType ->"+this.inputDataType.name()+" !!");
       }
-    }
+
+      slog.info(mmi+"Now doing full model forecast correction-adjustment before the FMS legacy part");
+
+      this.adjustFullModelForecast();
+
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
+
+    } // --- this.forecastAdjType != null
 
     slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy wl adjustment algo");
 

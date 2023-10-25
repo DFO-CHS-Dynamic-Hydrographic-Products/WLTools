@@ -29,13 +29,15 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentFMF;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO.InputDataType;
 
 /**
  * Comments please!
  */
-abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdjustmentType { // implements IWLAdjustment {
+abstract public class WLAdjustmentType
+  extends WLAdjustmentFMF implements IWLAdjustmentType {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentType";
@@ -46,6 +48,16 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   //private IWLAdjustment.Type adjType= null;
+
+  // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC
+  //     for the prediction (WLP) data.
+  protected IWLAdjustment.TideGaugeAdjMethod
+    predictAdjType= IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC;
+
+  // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG
+  //     for the forecast (WLF) data.
+  protected IWLAdjustment.TideGaugeAdjMethod forecastAdjType=
+    IWLAdjustment.TideGaugeAdjMethod.SIMPLE_TIMEDEP_FMF_ERROR_STATS; //ECCC_H2D2_FORECAST_AUTOREG;
 
   /**
    * Comments please!
@@ -166,6 +178,31 @@ abstract public class WLAdjustmentType extends WLAdjustmentIO implements IWLAdju
 
   final public List<MeasurementCustom> getNearestModelData(final int whichType, final String locationId) {
     return (List<MeasurementCustom>) this.nearestModelData.get(whichType).get(locationId);
+  }
+
+  // ---
+  final public WLAdjustmentType adjustFullModelForecast() {
+
+    final String mmi= "adjustFullModelForecast: ";
+
+    slog.info(mmi+"start");
+
+    switch (this.forecastAdjType) {
+
+      case SIMPLE_TIMEDEP_FMF_ERROR_STATS:
+
+        this.simpleTimeDepFMFErrorStatsAdj();
+        break;
+
+      default:
+       throw new RuntimeException(mmi+"Invalid this.forecastAdjType -> "+this.forecastAdjType.name());
+    }
+
+   slog.info(mmi+"end");
+   slog.info(mmi+"Debug exit 0");
+   System.exit(0);
+
+    return this;
   }
 
   ///**

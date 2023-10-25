@@ -43,13 +43,13 @@ public interface IWLAdjustment {
 
   enum TideGaugeAdjMethod {
     CHS_IWLS_QC,
-    SIMPLE_TIMEDEP_FCST_ERROR_STATS
+    SIMPLE_TIMEDEP_FMF_ERROR_STATS
     //ECCC_H2D2_FORECAST_AUTOREG
   }
 
   String [] TideGaugeAdjMethodsDef= {
     TideGaugeAdjMethod.CHS_IWLS_QC.name(),
-    TideGaugeAdjMethod.SIMPLE_TIMEDEP_FCST_ERROR_STATS.name()
+    TideGaugeAdjMethod.SIMPLE_TIMEDEP_FMF_ERROR_STATS.name()
     //TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()
   };
 
