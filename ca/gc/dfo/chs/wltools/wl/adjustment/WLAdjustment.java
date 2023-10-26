@@ -98,7 +98,6 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
                                  Type.SpineFPP.name()+" is not yet ready to be used !!");
     }
 
-
     //slog.info(mmi+"Will use WL location adjustment type "+locationAdjType);
     //if (!argsMapKeySet.contains("--locationIdInfo")) {
     //  throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
@@ -155,4 +154,3 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
     return this.adjInstance.getAdjustment(outputDirectory);
   }
 }
-

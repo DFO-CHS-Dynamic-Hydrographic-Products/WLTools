@@ -21,6 +21,7 @@ import javax.json.JsonReader;
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
+import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
@@ -57,7 +58,7 @@ abstract public class WLAdjustmentType
   // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG
   //     for the forecast (WLF) data.
   protected IWLAdjustment.TideGaugeAdjMethod forecastAdjType=
-    IWLAdjustment.TideGaugeAdjMethod.SIMPLE_TIMEDEP_FMF_ERROR_STATS; //ECCC_H2D2_FORECAST_AUTOREG;
+    IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS; //ECCC_H2D2_FORECAST_AUTOREG;
 
   /**
    * Comments please!
@@ -181,17 +182,46 @@ abstract public class WLAdjustmentType
   }
 
   // ---
-  final public WLAdjustmentType adjustFullModelForecast() {
+  final public WLAdjustmentType adjustFullModelForecast(final String prevFMFASCIIDataFilePath,
+                                                        final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj) {
 
     final String mmi= "adjustFullModelForecast: ";
 
-    slog.info(mmi+"start");
+    slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
+
+    try {
+      prevFMFASCIIDataFilePath.length();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"prevFMFASCIIDataFilePath is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    try {
+      uniqueTGMapObj.size();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"uniqueTGMapObj is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    try {
+      mainJsonMapObj.size();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"mainJsonMapObj is null !!");
+      throw new RuntimeException(mmi+e);
+    }
 
     switch (this.forecastAdjType) {
 
-      case SIMPLE_TIMEDEP_FMF_ERROR_STATS:
+      case SINGLE_TIMEDEP_FMF_ERROR_STATS:
 
-        this.simpleTimeDepFMFErrorStatsAdj();
+        this.singleTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
+                                           uniqueTGMapObj, mainJsonMapObj);
         break;
 
       default:

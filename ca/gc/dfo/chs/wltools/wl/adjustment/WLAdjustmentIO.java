@@ -174,7 +174,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
   final String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
                                           /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
                                           /*@NotNull*/ final JsonObject       mainJsonMapObj,
-                                                       final FullModelForecastType fmfType ) {
+                                                       final int              fmfTypeIndex ) {
+                                                       //final FullModelForecastType fmfType ) {
 
                                        ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
 
@@ -185,14 +186,14 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
     final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
 
-    slog.info(mmi+"start: nearestsTGCoordsIds="+nearestsTGCoordsIds.toString()+", fmfType="+fmfType.name());
+    slog.info(mmi+"start: nearestsTGCoordsIds="+nearestsTGCoordsIds.toString()+", fmfTypeIndex="+fmfTypeIndex);  //fmfType="+fmfType.name());
 
     slog.info(mmi+"H2D2ASCIIWLFProbesDataFile="+H2D2ASCIIWLFProbesDataFile);
     //slog.info(mmi+"this.modelInputDataFiles="+this.modelInputDataFiles);
 
     //--- Create the this.nearestModelData object to store the H2D2 ASCII WL
     //      forecast data
-    this.nearestModelData.add( fmfType.ordinal(),
+    this.nearestModelData.add( fmfTypeIndex, //fmfType.ordinal(),
                                new HashMap<String, List<MeasurementCustom>>() );
 
     final List<String> H2D2ASCIIWLFProbesDataLines=
@@ -214,13 +215,14 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
       final String ecccTGId= mainJsonMapObj.
         getJsonObject(chsTGId).getString(ITideGaugeConfig.INFO_ECCC_ID_JSON_KEY); //nearestsTGEcccIds.get(chsTGId);
 
-      tgDataColumnIndices.put(chsTGId,headerLineList.indexOf(ecccTGId));
+      tgDataColumnIndices.put(chsTGId, headerLineList.indexOf(ecccTGId));
 
       slog.info(mmi+"CHS TG:"+chsTGId+", ECCC TG Id:"+ecccTGId+
                " H2D2 data line index is="+tgDataColumnIndices.get(chsTGId));
 
       // --- Create the Map entry for this CHS TG.
-      this.nearestModelData.get(fmfType.ordinal()).
+      //this.nearestModelData.get(fmfType.ordinal()).
+      this.nearestModelData.get(fmfTypeIndex).
         put(chsTGId, new ArrayList<MeasurementCustom>() );
     }
 
@@ -292,12 +294,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
        for (final String chsTGId: nearestsTGCoordsIds) {
 
-         final double tgWLFValue=
-           Double.parseDouble(inputDataLineSplit[tgDataColumnIndices.get(chsTGId)]);
+         final double tgWLFValue= Double.
+           parseDouble(inputDataLineSplit[tgDataColumnIndices.get(chsTGId)]);
 
          //slog.info(mmi+"timeStampSeconds="+timeStampSeconds+", tgWLValue="+tgWLValue);
          //--- Store the H2D2 WLF value for this CHS TG for this timestamp.
-         this.nearestModelData.get(fmfType.ordinal()).get(chsTGId).
+         //this.nearestModelData.get(fmfType.ordinal()).get(chsTGId).
+         this.nearestModelData.get(fmfTypeIndex).get(chsTGId).
            add( new MeasurementCustom(timeStampInstant, tgWLFValue, IWL.MAXIMUM_UNCERTAINTY_METERS) );
        }
 
@@ -305,8 +308,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
        //System.exit(0);
     }
 
+    // --- Get the the List<MeasurementCustom> objec of the 1st TG
+    //    to extract its timestamp info
     final List<MeasurementCustom> tg0McList= this.
-      nearestModelData.get(fmfType.ordinal()).get(nearestsTGCoordsIds.toArray()[0]);
+      nearestModelData.get(fmfTypeIndex).get(nearestsTGCoordsIds.toArray()[0]);
+      //nearestModelData.get(fmfType.ordinal()).get(nearestsTGCoordsIds.toArray()[0]);
 
     //final List<MeasurementCustom> tg0McList=
     //  fullModelForecastData.get(nearestsTGCoordsIds.toArray()[0]);

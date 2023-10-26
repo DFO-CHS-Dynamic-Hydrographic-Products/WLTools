@@ -326,10 +326,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     if (this.forecastAdjType != null) {
 
       if (this.forecastAdjType != IWLAdjustment.
-            TideGaugeAdjMethod.SIMPLE_TIMEDEP_FMF_ERROR_STATS) {
+            TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) {
 
         slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
-                  IWLAdjustment.TideGaugeAdjMethod.SIMPLE_TIMEDEP_FMF_ERROR_STATS.name()+" is allowed for now !");
+                  IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS.name()+" is allowed for now !");
       }
 
      this.fullForecastModelName= argsMapKeysSet.
@@ -342,23 +342,30 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
 
+      // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
+      //     method call.
+      final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
+      uniqueTGMapObj.put(this.location.getIdentity(), null);
+
+      String prevFMFASCIIDataFilePath= null;
+
       if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
 
         // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
         //     method call.
-        final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
-
-        uniqueTGMapObj.put(this.location.getIdentity(), null);
+        //final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
+        //uniqueTGMapObj.put(this.location.getIdentity(), null);
 
         //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
 
         // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII
-        //     format. It should be the H2D2 model forecast data of the last synoptic run.
-        //final String previousFMFASCIIDataFilePath= WLAdjustmentIO.
-        //  getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo, uniqueTGMapObj, mainJsonMapObj, this.nearestModelData); //nearestsTGEcccIds);
-        final String previousFMFASCIIDataFilePath= this.getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo, uniqueTGMapObj,
-                                                                                  mainJsonMapObj, IWLAdjustmentIO.FullModelForecastType.ACTUAL); // , this.nearestModelData);
+        //     format. It should be the H2D2 model forecast data of the actual synoptic run as
+        //     it is specified with the IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()
+        //     argument to this method.
+        prevFMFASCIIDataFilePath= this.getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo,
+                                                                 uniqueTGMapObj, mainJsonMapObj,
+                                                                 IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()); // , this.nearestModelData);
 
         slog.info(mmi+"Done with reading the model full forecast at TG location -> "+this.location.getIdentity());
 
@@ -368,8 +375,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
         //slog.info(mmi+"previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
 
-        this.getH2D2ASCIIWLFProbesData( previousFMFASCIIDataFilePath, uniqueTGMapObj,
-                                        mainJsonMapObj,IWLAdjustmentIO.FullModelForecastType.PREVIOUS );
+        //this.getH2D2ASCIIWLFProbesData( prevFMFASCIIDataFilePath,
+        //                                uniqueTGMapObj, mainJsonMapObj,
+        //                                IWLAdjustmentIO.FullModelForecastType.PREVIOUS.ordinal() );
 
         //slog.info(mmi+"this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.PREVIOUS).get(this.location.getIdentity()).get(0).getValue()="+
         //              this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.PREVIOUS.ordinal()).get(this.location.getIdentity()).get(0).getValue());
@@ -379,9 +387,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                                    +this.modelForecastInputDataFormat.name() ); //+" for inputDataType ->"+this.inputDataType.name()+" !!");
       }
 
-      slog.info(mmi+"Now doing full model forecast correction-adjustment before the FMS legacy part");
+      slog.info(mmi+"Now doing full model forecast correction-adjustment using previous forecast(s) data: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
 
-      this.adjustFullModelForecast();
+      this.adjustFullModelForecast(prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
 
       slog.info(mmi+"Debug System.exit(0)");
       System.exit(0);

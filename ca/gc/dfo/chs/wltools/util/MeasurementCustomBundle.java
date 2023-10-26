@@ -4,6 +4,7 @@ package ca.gc.dfo.chs.wltools.util;
  *
  */
 
+import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
@@ -60,5 +61,10 @@ final public class MeasurementCustomBundle {
 
     //final MeasurementCustom mcRet= this.mcData.containsKey() ? this.mcData.get(eventDate): null;
     return this.mcData.containsKey(eventDate) ? this.mcData.get(eventDate) : null;
+  }
+
+  // ---
+  public Set<Instant> getInstantsKeySet() {
+    return this.mcData.keySet();
   }
 }

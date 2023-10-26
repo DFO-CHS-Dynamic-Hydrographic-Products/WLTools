@@ -21,6 +21,7 @@ import javax.json.JsonReader;
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
+import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
@@ -28,6 +29,7 @@ import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO.InputDataType;
@@ -75,12 +77,72 @@ abstract public class WLAdjustmentFMF
     //System.exit(0);
   }
 
-  // --
-  final public WLAdjustmentFMF simpleTimeDepFMFErrorStatsAdj() {
+  // ---
+  final public WLAdjustmentFMF singleTimeDepFMFErrorStatsAdj(final String prevFMFASCIIDataFilePath,
+                                                             final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj) {
 
-    final String mmi= "simpleTimeDepFMFErrorStatsAdj: ";
+    final String mmi= "singleTimeDepFMFErrorStatsAdj: ";
 
-    slog.info(mmi+"start");
+    slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
+
+    try {
+      this.nearestObsData.size();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"this.nearestObsData is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    try {
+      this.nearestObsData.get(this.location.getIdentity()).size();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"this.nearestObsData.get(this.location.getIdentity()) is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    // --- Create a local MeasurementCustomBundle object with the WLO data
+    //     List<MeasurementCustom> object for this TG location.
+    final MeasurementCustomBundle mcbWLO= new
+      MeasurementCustomBundle( this.nearestObsData.get(this.location.getIdentity()) );
+
+    final Set<Instant> wloInstantsSet= mcbWLO.getInstantsKeySet();
+
+    slog.info(mmi+"wloInstantsSet.size()="+wloInstantsSet.size());
+
+    if (wloInstantsSet.size() > 0 ) {
+
+      final int prevFMFIndex= IWLAdjustmentIO.FullModelForecastType.PREVIOUS.ordinal();
+
+      //String prevPrevFMFASCIIDataFilePath=
+      this.getH2D2ASCIIWLFProbesData(prevFMFASCIIDataFilePath,
+                                   uniqueTGMapObj, mainJsonMapObj, prevFMFIndex);
+
+      //slog.info(mmi+"prevPrevFMFASCIIDataFilePath="+prevPrevFMFASCIIDataFilePath);
+
+      // --- Create a local MeasurementCustomBundle object with the full model
+      //     forecast data List<MeasurementCustom> object for this TG location.
+      final MeasurementCustomBundle mcbWLFMF= new
+         MeasurementCustomBundle( this.nearestModelData.get(prevFMFIndex).get(this.location.getIdentity()) );
+
+      final Set<Instant> wlFMFInstantsSet= mcbWLFMF.getInstantsKeySet();
+
+      double shortTermResErrorsAcc= 0.0;
+
+      // --- Get the WLO-WLFMF residual errors for the PREVIOUS full model forecast data for
+      //     its timestamps that are less than SHORT_TERM_FORECAST_TS_THRESHOLD.
+      for (final Instant wlFMFInstant: wlFMFInstantsSet) {
+
+        slog.info(mmi+"wlFMFInstant="+wlFMFInstant.toString());
+        slog.info(mmi+"Debug exit 0");
+        System.exit(0);
+      }
+
+    } else {
+      slog.info(mmi+"wloInstantsSet.size()== 0 !! No correction will be done for the full model forecast data ");
+    }
 
     slog.info(mmi+"end");
     slog.info(mmi+"Debug exit 0");

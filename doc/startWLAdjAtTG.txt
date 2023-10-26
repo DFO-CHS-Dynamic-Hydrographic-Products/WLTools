@@ -14,7 +14,7 @@ time java WLTools \
 \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
 \
---tideGaugeAdjMethods=CHS_IWLS_QC:SIMPLE_TIMEDEP_FCST_ERROR_STATS \
+--tideGaugeAdjMethods=CHS_IWLS_QC:SINGLE_TIMEDEP_FMF_ERROR_STATS \
 \
 --tideGaugeWLODataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/tgObs/2023100406000/03335-wloZC.json \
 \
