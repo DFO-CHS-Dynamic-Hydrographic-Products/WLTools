@@ -48,6 +48,7 @@ final public class MeasurementCustom {
        this.uncertainty= 0.0;
   }
 
+  // ---
   public MeasurementCustom(final MeasurementCustom mc) {
 
     final String mmi= "MeasurementCustom copy constructor: ";
@@ -64,6 +65,7 @@ final public class MeasurementCustom {
     this.uncertainty= mc.getUncertainty();
   }
 
+  // ---
   public MeasurementCustom(final Instant eventDate,
                            final Double value, final Double uncertainty) {
 
@@ -118,6 +120,31 @@ final public class MeasurementCustom {
   // ---
   public final static long getDataTimeIntervallSecondsDiff(final MeasurementCustom mc1, final MeasurementCustom mc2) {
     return Math.abs(mc1.getEventDate().getEpochSecond() - mc2.getEventDate().getEpochSecond());
+  }
+
+  // ---
+  public final static double getValuesArithMean(final List<MeasurementCustom> mcDataList) {
+
+    final String mmi= "getValuesArithMean: ";
+
+    try {
+      mcDataList.size();
+
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    if (mcDataList.size() == 0) {
+      throw new RuntimeException(mmi+"mcDataList.size() == 0 !!");
+    }
+
+    double valuesAcc= 0.0;
+
+    for(final MeasurementCustom mcObj: mcDataList) {
+      valuesAcc += mcObj.getValue();
+    }
+
+    return valuesAcc/mcDataList.size();
   }
 
   @Override

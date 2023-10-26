@@ -4,10 +4,14 @@ package ca.gc.dfo.chs.wltools.wl.adjustment;
 import java.util.Set;
 //import java.util.Map;
 
+import ca.gc.dfo.chs.wltools.util.ITimeMachine;
+
 /**
  * Comments please!
  */
-public interface IWLAdjustment {
+public interface IWLAdjustment extends ITimeMachine {
+
+  long SHORT_TERM_FORECAST_TS_OFFSET= 6 * SECONDS_PER_HOUR;
 
   String DEFAULT_MODEL_NAME= "MODEL_NAME_NOT_DEFINED";
 

@@ -28,6 +28,7 @@ import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
+import ca.gc.dfo.chs.wltools.numbercrunching.Statistics;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
@@ -38,7 +39,7 @@ import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
  * Comments please!
  */
 abstract public class WLAdjustmentFMF
-  extends WLAdjustmentIO implements IWLAdjustmentType {
+  extends WLAdjustmentIO implements IWLAdjustment, IWLAdjustmentType {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentFMF";
@@ -114,36 +115,108 @@ abstract public class WLAdjustmentFMF
 
     if (wloInstantsSet.size() > 0 ) {
 
-      final int prevFMFIndex= IWLAdjustmentIO.FullModelForecastType.PREVIOUS.ordinal();
+      final int prevFMFIndex= IWLAdjustmentIO.
+        FullModelForecastType.PREVIOUS.ordinal();
+
+      final int actuFMFIndex= IWLAdjustmentIO.
+        FullModelForecastType.ACTUAL.ordinal();
 
       //String prevPrevFMFASCIIDataFilePath=
       this.getH2D2ASCIIWLFProbesData(prevFMFASCIIDataFilePath,
-                                   uniqueTGMapObj, mainJsonMapObj, prevFMFIndex);
+                                     uniqueTGMapObj, mainJsonMapObj, prevFMFIndex);
 
       //slog.info(mmi+"prevPrevFMFASCIIDataFilePath="+prevPrevFMFASCIIDataFilePath);
 
-      // --- Create a local MeasurementCustomBundle object with the full model
+      final List<MeasurementCustom> prevFMFData= this.
+        nearestModelData.get(prevFMFIndex).get(this.location.getIdentity());
+
+      final MeasurementCustom prevFMFDataMC0= prevFMFData.get(0);
+
+      final List<MeasurementCustom> actuFMFData= this.
+        nearestModelData.get(actuFMFIndex).get(this.location.getIdentity());
+
+      final MeasurementCustom actuFMFDataMC0= actuFMFData.get(0)
+
+      final long forecastsDurationSeconds=
+        actuFMFDataMC0.getEventDate().getEpochSeconds() -
+          prevFMFDataMC0.getEventDate().getEpochSeconds();
+
+      final Instant shortTermFMFTSThreshold= prevFMFDataMC0.
+        getEventDate().plusSeconds(SHORT_TERM_FORECAST_TS_OFFSET)
+
+      slog.info(mmi+"fmfDataMC0.getEvenDate()="+fmfDataMC0.getEventDate().toString());
+      slog.info(mmi+"shortTermFMFTSThreshold="+shortTermFMFTSThreshold.toString());
+      slog.info(mmi+"forecastsDurationSeconds="+forecastsDurationSeconds);
+      slog.info(mmi+"Debug exit 0");
+      System.exit(0);
+
+      // --- Create a local MeasurementCustomBundle object with the previous full model
       //     forecast data List<MeasurementCustom> object for this TG location.
-      final MeasurementCustomBundle mcbWLFMF= new
-         MeasurementCustomBundle( this.nearestModelData.get(prevFMFIndex).get(this.location.getIdentity()) );
+      final MeasurementCustomBundle mcbPrevFMF= new MeasurementCustomBundle( prevFMFData );
 
-      final Set<Instant> wlFMFInstantsSet= mcbWLFMF.getInstantsKeySet();
+      final Set<Instant> prevFMFInstantsSet= mcbPrevFMF.getInstantsKeySet();
 
-      double shortTermResErrorsAcc= 0.0;
+      //int shortTerm
+      //double shortTermResErrorsAcc= 0.0;
+      //double mediumTermResErrorsAcc= 0.0;
+
+      List<Double> shortTermResErrors= new ArrayList<Double>();
+      List<Double> mediumTermResErrors= new ArrayList<Double>();
 
       // --- Get the WLO-WLFMF residual errors for the PREVIOUS full model forecast data for
       //     its timestamps that are less than SHORT_TERM_FORECAST_TS_THRESHOLD.
-      for (final Instant wlFMFInstant: wlFMFInstantsSet) {
+      for (final Instant prevFMFInstant: prevFMFInstantsSet) {
 
-        slog.info(mmi+"wlFMFInstant="+wlFMFInstant.toString());
-        slog.info(mmi+"Debug exit 0");
-        System.exit(0);
+        //slog.info(mmi+"wlFMFInstant="+wlFMFInstant.toString());
+
+        final MeasurementCustom wloAtInstant= mcbWLO.getAtThisInstant(prevFMFInstant);
+
+        // --- Skip this timestamp when no valid WLO is available for it
+        if ( wloAtInstant == null) {
+          continue;
+        }
+
+        final double fmfResidualError= wloAtInstant.getValue() -
+          mcbPrevFMF.getAtThisInstant(prevFMFInstant).getValue();
+
+        if (wlFMFInstant.isBefore(shortTermFMFTSThreshold) ) {
+          shortTermResErrors.add(fmfResidualError);
+
+        } else {
+          mediumTermResErrors.add(fmfResidualError);
+        }
+
+        //slog.info(mmi+"fmfResidualError="+fmfResidualError);
+        //slog.info(mmi+"shortTermResErrors.size()="+shortTermResErrors.size());
+        //slog.info(mmi+"mediumTermResErrors.size()="+mediumTermResErrors.size());
+        //slog.info(mmi+"Debug exit 0");
+        //System.exit(0);
       }
 
+      slog.info(mmi+"shortTermResErrors.size()="+shortTermResErrors.size());
+      slog.info(mmi+"mediumTermResErrors.size()="+mediumTermResErrors.size());
+
+      final double shortTermResErrorsMean=
+        Statistics.getDListValuesAritMean(shortTermResErrors);
+
+      final double mediumTermResErrorsMean=
+        Statistics.getDListValuesAritMean(mediumTermResErrors);
+
+      slog.info(mmi+"shortTermResErrorsMean="+shortTermResErrorsMean);
+      slog.info(mmi+"mediumTermResErrorMean="+mediumTermResErrorsMean);
+
+      final double shortTermResErrorsTSMiddle= SHORT_TERM_FORECAST_TS_OFFSET/2.0;
+
+      final double mediumTermResErrorsTSMiddle= SHORT_TERM_FORECAST_TS_OFFSET + 
+
+      final double corrEquationSlope= 
+
     } else {
-      slog.info(mmi+"wloInstantsSet.size()== 0 !! No correction will be done for the full model forecast data ");
+      slog.info(mmi+"wloInstantsSet.size()== 0 !! No correction done for the full model forecast data ");
     }
 
+    ///slog.info(mmi+"shortTermResErrors.size()="+shortTermResErrors.size());
+    //slog.info(mmi+"mediumTermResErrors.size()="+mediumTermResErrors.size());
     slog.info(mmi+"end");
     slog.info(mmi+"Debug exit 0");
     System.exit(0);
@@ -151,4 +224,3 @@ abstract public class WLAdjustmentFMF
     return this;
   }
 }
-
