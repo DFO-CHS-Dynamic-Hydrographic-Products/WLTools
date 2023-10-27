@@ -135,20 +135,24 @@ abstract public class WLAdjustmentFMF
       final List<MeasurementCustom> actuFMFData= this.
         nearestModelData.get(actuFMFIndex).get(this.location.getIdentity());
 
-      final MeasurementCustom actuFMFDataMC0= actuFMFData.get(0)
+      final MeasurementCustom actuFMFDataMC0= actuFMFData.get(0);
 
       final long forecastsDurationSeconds=
-        actuFMFDataMC0.getEventDate().getEpochSeconds() -
-          prevFMFDataMC0.getEventDate().getEpochSeconds();
+        actuFMFDataMC0.getEventDate().getEpochSecond() -
+          prevFMFDataMC0.getEventDate().getEpochSecond();
+
+      if (forecastsDurationSeconds < MIN_FULL_FORECAST_DURATION_SECONDS) {
+        throw new RuntimeException(mmi+"forecastsDurationSeconds < MIN_FULL_FORECAST_DURATION_SECONDS");
+      }
 
       final Instant shortTermFMFTSThreshold= prevFMFDataMC0.
-        getEventDate().plusSeconds(SHORT_TERM_FORECAST_TS_OFFSET)
+        getEventDate().plusSeconds(SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
 
-      slog.info(mmi+"fmfDataMC0.getEvenDate()="+fmfDataMC0.getEventDate().toString());
+      slog.info(mmi+"prevFMFDataMC0.getEvenDate()="+prevFMFDataMC0.getEventDate().toString());
       slog.info(mmi+"shortTermFMFTSThreshold="+shortTermFMFTSThreshold.toString());
       slog.info(mmi+"forecastsDurationSeconds="+forecastsDurationSeconds);
-      slog.info(mmi+"Debug exit 0");
-      System.exit(0);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
 
       // --- Create a local MeasurementCustomBundle object with the previous full model
       //     forecast data List<MeasurementCustom> object for this TG location.
@@ -163,23 +167,28 @@ abstract public class WLAdjustmentFMF
       List<Double> shortTermResErrors= new ArrayList<Double>();
       List<Double> mediumTermResErrors= new ArrayList<Double>();
 
+      int nbMissingWLO= 0;
+
       // --- Get the WLO-WLFMF residual errors for the PREVIOUS full model forecast data for
       //     its timestamps that are less than SHORT_TERM_FORECAST_TS_THRESHOLD.
       for (final Instant prevFMFInstant: prevFMFInstantsSet) {
 
         //slog.info(mmi+"wlFMFInstant="+wlFMFInstant.toString());
 
-        final MeasurementCustom wloAtInstant= mcbWLO.getAtThisInstant(prevFMFInstant);
+        final MeasurementCustom wloAtInstant=
+          mcbWLO.getAtThisInstant(prevFMFInstant);
 
         // --- Skip this timestamp when no valid WLO is available for it
         if ( wloAtInstant == null) {
+
+          nbMissingWLO++;
           continue;
         }
 
         final double fmfResidualError= wloAtInstant.getValue() -
           mcbPrevFMF.getAtThisInstant(prevFMFInstant).getValue();
 
-        if (wlFMFInstant.isBefore(shortTermFMFTSThreshold) ) {
+        if (prevFMFInstant.isBefore(shortTermFMFTSThreshold) ) {
           shortTermResErrors.add(fmfResidualError);
 
         } else {
@@ -193,23 +202,47 @@ abstract public class WLAdjustmentFMF
         //System.exit(0);
       }
 
+      slog.info(mmi+"nbMissingWLO="+nbMissingWLO);
       slog.info(mmi+"shortTermResErrors.size()="+shortTermResErrors.size());
       slog.info(mmi+"mediumTermResErrors.size()="+mediumTermResErrors.size());
 
+      // --- Get the WLO - WLFMF residual errors arithmetic mean
+      //     for the short term time period after the full forecast
+      //     zero'th hour (0.0 if shortTermResErrors.size() == 0)
       final double shortTermResErrorsMean=
-        Statistics.getDListValuesAritMean(shortTermResErrors);
+        (shortTermResErrors.size() > 0 ) ? Statistics.getDListValuesAritMean(shortTermResErrors) : 0.0 ;
 
+      // --- Get the WLO - WLFMF residual errors arithmetic mean
+      //     for the medium term time period after the full forecast
+      //     zero'th hour (0.0 if mediumTermResErrors.size() == 0)
       final double mediumTermResErrorsMean=
-        Statistics.getDListValuesAritMean(mediumTermResErrors);
+        (mediumTermResErrors.size() > 0 ) ? Statistics.getDListValuesAritMean(mediumTermResErrors) : 0.0 ;
 
       slog.info(mmi+"shortTermResErrorsMean="+shortTermResErrorsMean);
       slog.info(mmi+"mediumTermResErrorMean="+mediumTermResErrorsMean);
 
-      final double shortTermResErrorsTSMiddle= SHORT_TERM_FORECAST_TS_OFFSET/2.0;
+      // --- datetime mid point (in seconds since epoch) for the short term time period
+      //    after the full forecast zero'th hour
+      final double shortTermResErrorsTSMidPointSse= (double) shortTermFMFTSThreshold.
+        minusSeconds( (long) (0.5 * SHORT_TERM_FORECAST_TS_OFFSET_SECONDS)).getEpochSecond();
 
-      final double mediumTermResErrorsTSMiddle= SHORT_TERM_FORECAST_TS_OFFSET + 
+      //0.5 * SHORT_TERM_FORECAST_TS_OFFSET_SECONDS;
 
-      final double corrEquationSlope= 
+      final double mediumTermResErrorsDurationSeconds= 0.5 *
+        (forecastsDurationSeconds + SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
+
+      // --- datetime mid point (in seconds since epoch) for the medium term time period
+      //     after the full forecast zero'th hour.
+      final double mediumTermResErrorsTSMidPointSse= (double) prevFMFDataMC0.
+        getEventDate().plusSeconds( (long) mediumTermResErrorsDurationSeconds ).getEpochSecond();
+
+      final double correctionEquationSlope=
+        (mediumTermResErrorsMean - shortTermResErrorsMean)/
+          (mediumTermResErrorsTSMidPointSse - shortTermResErrorsTSMidPointSse);
+
+      slog.info(mmi+"shortTermResErrorsTSMidPointSse="+shortTermResErrorsTSMidPointSse);
+      slog.info(mmi+"mediumTermResErrorsTSMidPointSse="+mediumTermResErrorsTSMidPointSse);
+      slog.info(mmi+"correctionEquationSlope="+correctionEquationSlope);
 
     } else {
       slog.info(mmi+"wloInstantsSet.size()== 0 !! No correction done for the full model forecast data ");
