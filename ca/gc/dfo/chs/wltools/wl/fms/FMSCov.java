@@ -106,14 +106,14 @@ abstract public class FMSCov implements IFMS {
                                              /*@NotNull*/ final List<IFMSResidual> residualsList) {
     final String mmi= "setAuxCovsResiduals: ";
 
-    slog.info(mmi+"Setting auxiliary residuals references for station: "+stationId+
+    slog.debug(mmi+"Setting auxiliary residuals references for station: "+stationId+
               ", this.auxCovs.size()=" + this.auxCovs.size() + ", residualsList.size()=" + residualsList.size());
 
     for (final FMSAuxCov fmAuxCov : this.auxCovs) {
 
       final String stationCovarianceId = fmAuxCov.getStationCovarianceId();
 
-      slog.info(mmi+"Processing stationCovarianceId=" + stationCovarianceId);
+      slog.debug(mmi+"Processing stationCovarianceId=" + stationCovarianceId);
 
       for (final IFMSResidual ifmResidual: residualsList) {
 
@@ -123,7 +123,7 @@ abstract public class FMSCov implements IFMS {
 
         if ( stationCovarianceId.equals(fmResidualFactory.getStationId()) ) {
 
-          slog.info("Setting residual covariance item: " + stationCovarianceId + " for station: " + stationId);
+          slog.debug("Setting residual covariance item: " + stationCovarianceId + " for station: " + stationId);
 
           fmAuxCov.residual= fmResidualFactory;
           break;
@@ -140,17 +140,17 @@ abstract public class FMSCov implements IFMS {
 
       if (fmAuxCov.residual == null) {
 
-        slog.info(mmi+"fmAuxCov.residual==null for stationCovarianceId="+
+        slog.debug(mmi+"fmAuxCov.residual==null for stationCovarianceId="+
                   stationCovarianceId + " for station: " + stationId);
 
-        slog.info(mmi+"Removing covariance item: " + stationCovarianceId +" from station:"+
+        slog.debug(mmi+"Removing covariance item: " + stationCovarianceId +" from station:"+
                   stationId+ " covariance computations which incidently will not be optimal !");
 
         this.auxCovs.remove(fmAuxCov);
       }
     }
 
-    slog.info(mmi+"Got "+this.auxCovs.size()+
+    slog.debug(mmi+"Got "+this.auxCovs.size()+
               " valid auxiliary covariance item(s) for station: " + stationId);
 
     return this;

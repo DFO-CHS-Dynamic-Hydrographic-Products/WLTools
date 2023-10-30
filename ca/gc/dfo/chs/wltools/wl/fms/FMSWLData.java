@@ -81,7 +81,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
     final String mmi= "FMSWLData main constructor: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     //--- Check forecastingContextList before doing anything else with it.
     try {
@@ -121,7 +121,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
     this.referenceSse= fmsInputList.
       get(0).getReferenceTimeInSeconds(); //forecastingContextList.get(0).getReferenceTime().getEpochSecond();
 
-    slog.info(mmi+"this.referenceSse date-time is: "+
+    slog.debug(mmi+"this.referenceSse date-time is: "+
               SecondsSinceEpoch.dtFmtString(this.referenceSse, true));
 
     this.allStationsData= new ArrayList<FMSWLStation>(fmsInputList.size());
@@ -130,8 +130,8 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
     this.populateFMSWLStationsData(fcstsTimeIncrMinutes, fmsInputList); //forecastingContextList);
 
-    slog.info(mmi+"end: this.timeNodes.size()=" + this.timeNodes.size());
-    //slog.info(mmi+"Debug exit 0");
+    slog.debug(mmi+"end: this.timeNodes.size()=" + this.timeNodes.size());
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
   }
 
@@ -180,7 +180,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
       slog.error(mmi+"fmsInputList.size() > 1: Usage of more than one TG station has not been tested yet!! exit 1!");
       System.exit(1);
 
-      slog.info(mmi+"fmsInputList.size() > 1: Need to validate all the related FMSConfig items with each other.");
+      slog.debug(mmi+"fmsInputList.size() > 1: Need to validate all the related FMSConfig items with each other.");
 
       if (! FMSResidualFactory.validateStationsFMSConfig(residualMethod, fmsInputList)) { // forecastingContextList)) {
 
@@ -188,7 +188,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
         throw new RuntimeException(mmi+"Cannot update forecast !");
       }
 
-      slog.info(mmi+"fmsInputList.size() > 1: Success for the FMSConfig items validation.");
+      slog.debug(mmi+"fmsInputList.size() > 1: Success for the FMSConfig items validation.");
     }
 
     //--- Create new FMWLStationData Objects in this.allStationsData:
@@ -207,7 +207,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
       final int tauHours= (int) fmsInputItem.getFMSResidualConfig().getTauHours();
 
-      slog.info(mmi+"tauHours="+tauHours);
+      slog.debug(mmi+"tauHours="+tauHours);
 
       //if (forecastingContext.getPredictions().size() == 0) {
       if (fmsInputItem.getPredictions().size() == 0) {
@@ -218,7 +218,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
       }
 //else {
-//        //slog.info(mmi+"checking if WLP uncertainty data exists.");
+//        //slog.debug(mmi+"checking if WLP uncertainty data exists.");
 //        for (final MeasurementCustom msr : fmsInputItem.getPredictions()) {
 //          if (msr.getUncertainty() == null) {
 //                        this.log.debug("FMWLData populateFMSWLStationsData: msr.getUncertainty()==null at
@@ -247,10 +247,10 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
       final long firstWlpSeconds= wlp0.getEventDate().getEpochSecond();
 
-      slog.info(mmi+"WLP size=" + wlpList.size());
-      slog.info(mmi+"WLP dt0 Instant=" + wlp0.getEventDate().toString());
-      slog.info(mmi+"WLP dt0 SSE=" + SecondsSinceEpoch.dtFmtString(firstWlpSeconds, true));
-      slog.info(mmi+"WLP dt0 Z value=" + wlp0.getValue());
+      slog.debug(mmi+"WLP size=" + wlpList.size());
+      slog.debug(mmi+"WLP dt0 Instant=" + wlp0.getEventDate().toString());
+      slog.debug(mmi+"WLP dt0 SSE=" + SecondsSinceEpoch.dtFmtString(firstWlpSeconds, true));
+      slog.debug(mmi+"WLP dt0 Z value=" + wlp0.getValue());
 
       //--- Control WLO data:
       final List<MeasurementCustom> wloList= fmsInputItem.getObservations();
@@ -265,16 +265,16 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
         final MeasurementCustom wlo0= wloList.get(0);
         final long firstWloSeconds= wlo0.getEventDate().getEpochSecond();
 
-        slog.info(mmi+"WLO size=" + wloList.size());
-        slog.info(mmi+"1st retreived WLO Instant=" + wlo0.getEventDate().toString());
-        slog.info(mmi+"1st retreived WLO SSE=" + SecondsSinceEpoch.dtFmtString(firstWloSeconds, true));
-        slog.info(mmi+"1st retreived WLO dt0 Z value=" + wlo0.getValue());
+        slog.debug(mmi+"WLO size=" + wloList.size());
+        slog.debug(mmi+"1st retreived WLO Instant=" + wlo0.getEventDate().toString());
+        slog.debug(mmi+"1st retreived WLO SSE=" + SecondsSinceEpoch.dtFmtString(firstWloSeconds, true));
+        slog.debug(mmi+"1st retreived WLO dt0 Z value=" + wlo0.getValue());
 
         final MeasurementCustom wloLast= wloList.get(wloList.size() - 1);
 
-        slog.info(mmi+"more recent WLO dt Instant retreived=" + wloLast.getEventDate().toString());
+        slog.debug(mmi+"more recent WLO dt Instant retreived=" + wloLast.getEventDate().toString());
 
-        slog.info(mmi+"more recent WLO dt SSE retreived="+
+        slog.debug(mmi+"more recent WLO dt SSE retreived="+
                   SecondsSinceEpoch.dtFmtString(wloLast.getEventDate().getEpochSecond(), true));
 
         slog.debug(mmi+"more recent WLO dt Z value retreived=" + wloLast.getValue());
@@ -289,8 +289,8 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
       ////    Serious erros errors with WLF data are handled later in FMSWLStationDBObjects constru.
       //if (fmsInputItem.getModelForecasts().size() > 0) {
       //  if (!FMSWLStationData.validate(fmsInputItem.getModelForecasts(), tauHours)) {
-      //   slog.info(mmi+"FMSWLStationData.validate failed for last model forecast data !");
-      //   slog.info(mmi+"model forecast data seems not usable!");
+      //   slog.debug(mmi+"FMSWLStationData.validate failed for last model forecast data !");
+      //   slog.debug(mmi+"model forecast data seems not usable!");
       //  }
       //} else {
 
@@ -300,7 +300,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
       this.allStationsData.add(new FMSWLStation(sit++, fmsInputItem)); //forecastingContext));
 
-      slog.info(mmi+"Adding station:"+stationId + " residual to stationsResiduals");
+      slog.debug(mmi+"Adding station:"+stationId + " residual to stationsResiduals");
 
       stationsResiduals.add(this.getFMSWLStationResidual(stationId));
 
@@ -312,7 +312,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
     //    and set the stations statistics dependencies(Objects references).
     for (final FMSWLStation fmsd : this.allStationsData) {
 
-      slog.info(mmi+"fcstsTimeIncrSeconds="+fcstsTimeIncrSeconds+", station="+
+      slog.debug(mmi+"fcstsTimeIncrSeconds="+fcstsTimeIncrSeconds+", station="+
         fmsd.getStationId() + ", fmsd" + ".secondsIncr=" + fmsd.secondsIncr);
 
       if (fmsd.secondsIncr != fcstsTimeIncrSeconds) {
@@ -329,8 +329,8 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
         setAuxCovsResiduals(fmsd.getStationId(), stationsResiduals);
     }
 
-    slog.info(mmi+"After fmsd.getIFMSResidual().getFMSResidualFactory()");
-    //slog.info(mmi+"Debug exit 0");
+    slog.debug(mmi+"After fmsd.getIFMSResidual().getFMSResidualFactory()");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     //--- 1st time-stamp of the WL prediction data retreived from the DB:
@@ -338,10 +338,10 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
       //SecondsSinceEpoch(fmsInput0.getObservations().get(0).getEventDate().getEpochSecond());
       SecondsSinceEpoch(fmsInput0.getPredictions().get(0).getEventDate().getEpochSecond());
 
-    slog.info(mmi+
+    slog.debug(mmi+
               "Starting new QC forecast(s) residuals errors statistics at date time-stamp: " + sseStart.dateTimeString(true));
 
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     this.timeNodes= new
@@ -351,9 +351,9 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
     //    NOTE: the WLTimeNode argument is null here because we have no past data before sseStart time-stamp:
     this.newFMSTimeNode(null, sseStart);
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     return this;
@@ -370,7 +370,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
     final String mmi= "getFMSWLStationResidual: ";
 
-    slog.info(mmi+"Getting stationId: " + stationId + " WL IFMSResidual object");
+    slog.debug(mmi+"Getting stationId: " + stationId + " WL IFMSResidual object");
 
     //--- Check if this.getFMSWLStation(stationId) found what we want.
     final FMSWLStation checkIt= this.getFMSWLStation(stationId);
@@ -395,20 +395,20 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
     final String mmi= "newFMSTimeNode: ";
 
-    slog.info(mmi+"sse dt=" + sse.dateTimeString(true));
+    slog.debug(mmi+"sse dt=" + sse.dateTimeString(true));
 
     for (final FMSWLStation station: this.allStationsData) {
 
       this.wlsnaTmp.add(station.getNewWLStationFMTimeNode(pstrWLTimeNode, sse, this.referenceSse));
 
-      slog.info(mmi+"station: " + station.getStationId()+
+      slog.debug(mmi+"station: " + station.getStationId()+
                 " processed for time-stamp: " + sse.dateTimeString(true));
     }
 
     final WLTimeNode wltn= new WLTimeNode(pstrWLTimeNode, this.wlsnaTmp);
 
     //slog.debug(mmi+"wltn=" + wltn);
-    slog.info(mmi+"wltn dt=" + wltn.getSse().dateTimeString(true));
+    slog.debug(mmi+"wltn dt=" + wltn.getSse().dateTimeString(true));
 
     this.timeNodes.add(wltn);
 
@@ -424,9 +424,9 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
     //--- MUST clear this.wlsnaTmp List here for the next time-stamp iteration:
     this.wlsnaTmp.clear();
 
-    slog.info(mmi+"this.timeNodes.size()=" + this.timeNodes.size());
+    slog.debug(mmi+"this.timeNodes.size()=" + this.timeNodes.size());
 
-    slog.info(mmi+"end.");
+    slog.debug(mmi+"end.");
 
     return wltn;
   }
@@ -464,7 +464,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
 
     final String mmi= "writeCSVOnDisk: ";
 
-    slog.info(mmi+"start.");
+    slog.debug(mmi+"start.");
 
     int stn = 0;
 
@@ -475,6 +475,6 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
                                          station.getUpdatedForecastData(), firstInstantForWriting, outDir);
     }
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
   }
 }

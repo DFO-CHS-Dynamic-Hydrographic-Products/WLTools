@@ -59,19 +59,19 @@ abstract public class FMSAuxCov implements IFMS {
 
     //this.stationIndex= stationIndex;
 
-    //slog.info(mmi+"timeLagMinutes=" + timeLagMinutes + ", stationCovarianceId=" + stationCovarianceId);
+    //slog.debug(mmi+"timeLagMinutes=" + timeLagMinutes + ", stationCovarianceId=" + stationCovarianceId);
     //if (timeLagMinutes <= 0) {
     //  slog.error(mmi+"lagMinutes <= 0 !");
     //  throw new RuntimeException(mmi+"Cannot update forecast !!");
     //}
 
-    slog.info(mmi+"timeLagMinutes=" + timeLagMinutes + ", stationCovarianceId=" + stationCovarianceId);
+    slog.debug(mmi+"timeLagMinutes=" + timeLagMinutes + ", stationCovarianceId=" + stationCovarianceId);
 
     this.residual= fmResidualFactory;
     this.timeLagSeconds= SECONDS_PER_MINUTE * timeLagMinutes;
     this.stationCovarianceId= stationCovarianceId;
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
   }
 
   /**
@@ -83,7 +83,7 @@ abstract public class FMSAuxCov implements IFMS {
 
     final String mmi= "getLagFMSWLStationTimeNode: ";
 
-    slog.info(mmi+"this.residual.getStationId()="+this.residual.getStationId()+", seconds dt="+
+    slog.debug(mmi+"this.residual.getStationId()="+this.residual.getStationId()+", seconds dt="+
               SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.timeLagSeconds=" + this.timeLagSeconds);
 
     return this.residual.getLagFMSWLStationTimeNode(seconds - this.timeLagSeconds);
@@ -101,12 +101,12 @@ abstract public class FMSAuxCov implements IFMS {
   }
 
   /**
-   * Print this FMAuxCov object contents on the log info stream.
+   * Print this FMAuxCov object contents on the log.debug stream.
    */
   public void showMe() {
     final String mmi= "ShowMe: ";
 
-    slog.info(mmi+"this.residual.stationId= "+this.residual.stationId+
+    slog.debug(mmi+"this.residual.stationId= "+this.residual.stationId+
               ": this.timeLagSeconds=" + this.timeLagSeconds);
   }
 }

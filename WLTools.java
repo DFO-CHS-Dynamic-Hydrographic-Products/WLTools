@@ -10,6 +10,10 @@ import java.net.URISyntaxException;
 //import java.util.GregorianCalendar;
 
 // ---
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+// ---
 import ca.gc.dfo.chs.wltools.IWLTools;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
@@ -41,9 +45,14 @@ final public class WLTools extends WLToolsIO {
 
   static public void main (String[] args) {
 
+    //System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
+    //System.setProperty(org.slf4j.impl.SimpleLogger.defaultLogLevel,"ERROR");
+
     final String mmi= "WLTools main: ";
 
-    System.out.println(mmi+"start");
+    final Logger mlog= LoggerFactory.getLogger(mmi);
+
+    mlog.info(mmi+"start");
 
     //--- tmp File object to be used to automagically determine the directory
     //    where the main program class is located.
@@ -58,15 +67,15 @@ final public class WLTools extends WLToolsIO {
       throw new RuntimeException(e);
     }
 
-    System.out.println(mmi+"binDir="+binDir);
+    mlog.info(mmi+"binDir="+binDir);
 
     // --- TODO: add an option arg. to define the mainCfgDir
     WLToolsIO.setMainCfgDir(binDir+ "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
 
-    System.out.println(mmi+"mainCfgDir= "+WLToolsIO.getMainCfgDir());
+    mlog.info(mmi+"mainCfgDir= "+WLToolsIO.getMainCfgDir());
 
     // --- Now get the --<option name>=<option value> from the args
-    HashMap<String, String> argsMap = new HashMap<String,String>();
+    HashMap<String, String> argsMap= new HashMap<String,String>();
 
     for (final String arg: args) {
       String[] parts = arg.split("=");
@@ -99,7 +108,7 @@ final public class WLTools extends WLToolsIO {
                                  IWLTools.Box.analysis.name()+" part is not ready to be used !!");
     }
 
-    System.out.println(mmi+"Will use tool -> "+tool);
+    mlog.info(mmi+"Will use tool -> "+tool);
 
     //WLStationPred wlStationPred= null
 
@@ -109,7 +118,7 @@ final public class WLTools extends WLToolsIO {
 
     WLToolsIO.setOutputDirectory(argsMap.get("--outputDirectory"));
 
-    System.out.println(mmi+"WLToolsIO.getOutputDirectory()="+WLToolsIO.getOutputDirectory());
+    mlog.info(mmi+"WLToolsIO.getOutputDirectory()="+WLToolsIO.getOutputDirectory());
 
     boolean writeAllData= false;
 
@@ -117,15 +126,15 @@ final public class WLTools extends WLToolsIO {
       writeAllData= argsMap.get("--writeAllData").equals("true") ? true : false;
     }
 
-    System.out.println(mmi+"writeAllData="+writeAllData);
+    mlog.info(mmi+"writeAllData="+writeAllData);
     //System.out.println(mmi+"Debug exit 0");
     //System.exit(0);
 
     //if (tool.equals("prediction")) {
     if (tool.equals(IWLTools.Box.prediction.name())) {
 
-      System.out.println(mmi+"Doing WL "+
-                         IWLTools.Box.prediction.name()+" for a station or grid point.");
+      mlog.info(mmi+"Doing WL "+
+                IWLTools.Box.prediction.name()+" for a station or grid point.");
 
       final WLStationPred wlStationPred= new WLStationPred(argsMap); //.parseArgsOptions(argsMap);
 
@@ -138,24 +147,24 @@ final public class WLTools extends WLToolsIO {
 
       //wlStationPred.writeResults(IWLStationPred.OutputFormat.JSON)
 
-      System.out.println(mmi+"Done with WL  "+
-                         IWLTools.Box.prediction.name()+" at a station or grid point.");
+      mlog.info(mmi+"Done with WL  "+
+                IWLTools.Box.prediction.name()+" at a station or grid point.");
     }
 
     //if (tool.equals("adjustment")) {
     if (tool.equals(IWLTools.Box.adjustment.name())) {
 
-       System.out.println(mmi+"Doing WL forecast or prediction "+
-                          IWLTools.Box.adjustment.name()+" using the more recently validated CHS WLO TG data");
+      mlog.info(mmi+"Doing WL forecast or prediction "+
+                IWLTools.Box.adjustment.name()+" using the more recently validated CHS WLO TG data");
 
-       final WLAdjustment wlAdjust= new WLAdjustment(argsMap);
+      final WLAdjustment wlAdjust= new WLAdjustment(argsMap);
 
-       //List<MeasurementCustom> adjustedWLForecast= null;
+      //List<MeasurementCustom> adjustedWLForecast= null;
 
-       // --- Check if we need to write all WL data (input and results) on disk
-       final String outputDirArg= writeAllData ? WLToolsIO.getOutputDirectory() : null;
+      // --- Check if we need to write all WL data (input and results) on disk
+      final String outputDirArg= writeAllData ? WLToolsIO.getOutputDirectory() : null;
 
-       final List<MeasurementCustom> adjustedWLForecast= wlAdjust.getAdjustment(outputDirArg); //.writeResult(finak string outFile); //
+      final List<MeasurementCustom> adjustedWLForecast= wlAdjust.getAdjustment(outputDirArg); //.writeResult(finak string outFile); //
 
        // --- Only write the adjusted WL forecast data on disk
        //WLToolsIO.write(adjustedWLForecast,WLToolsIO.getOutputFormat,WLToolsIO.getOutputDirectory())
@@ -165,6 +174,6 @@ final public class WLTools extends WLToolsIO {
 
      }
 
-    System.out.println(mmi+"end");
+    mlog.info(mmi+"end");
   }
 }

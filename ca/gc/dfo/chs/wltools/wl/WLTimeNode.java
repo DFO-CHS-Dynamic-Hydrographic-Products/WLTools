@@ -90,7 +90,7 @@ final public class WLTimeNode extends TimeNodeFactory implements IWL {
       }
 
       //--- Set the sse of the WLStationTimeNode as a reference to this.sse
-      //    (No need to create a new Object with the same time info it it)
+      //    (No need to create a new Object with the same time.debug it it)
       wlsd.setSseRef(this.sse);
 
       if (pstr != null) {
@@ -103,8 +103,8 @@ final public class WLTimeNode extends TimeNodeFactory implements IWL {
         }
       }
 
-      slog.info(mmi+"wlsd=" + wlsd);
-      slog.info(mmi+"wlsd dt=" + wlsd.getSse().dateTimeString(true));
+      slog.debug(mmi+"wlsd=" + wlsd);
+      slog.debug(mmi+"wlsd dt=" + wlsd.getSse().dateTimeString(true));
 
       this.stationsNodes.add(wlsd);
 
@@ -122,7 +122,7 @@ final public class WLTimeNode extends TimeNodeFactory implements IWL {
 
     final String mmi="getStationNode: ";
 
-    slog.info(mmi+"stationIndex=" + stationIndex);
+    slog.debug(mmi+"stationIndex=" + stationIndex);
 
     WLStationTimeNode ret= null;
 

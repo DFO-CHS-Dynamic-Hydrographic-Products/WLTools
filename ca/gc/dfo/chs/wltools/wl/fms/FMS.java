@@ -183,7 +183,7 @@ public final class FMS extends FMSFactory implements IFMS {
 
       wlTimeNodeIter= this.getNewFMSTimeNode(wlTimeNodeIter);
 
-      slog.info(mmi+"done with WLTimeNode date-time processing: "+
+      slog.debug(mmi+"done with WLTimeNode date-time processing: "+
         wlTimeNodeIter.getSse().dateTimeString(true) + "\n");
 
       //slog.info(mmi+"Debug exit 0");

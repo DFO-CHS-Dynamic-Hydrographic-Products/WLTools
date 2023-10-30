@@ -153,11 +153,11 @@ abstract public class TimeNodeFactory implements ITimeMachine {
       //--- Set past Object future reference as this TimeNodeFactory.
       this.pstr.futr= this;
 
-      slog.info(mmi+"this=" + this);
-      slog.info(mmi+"this dt=" + this.sse.dateTimeString(true));
+      slog.debug(mmi+"this=" + this);
+      slog.debug(mmi+"this dt=" + this.sse.dateTimeString(true));
 
-      slog.info(mmi+"this.pstr=" + this.pstr);
-      slog.info(mmi+"this.pstr.futr=" + this.pstr.futr);
+      slog.debug(mmi+"this.pstr=" + this.pstr);
+      slog.debug(mmi+"this.pstr.futr=" + this.pstr.futr);
     }
 
     //--- future TimeNodeFactory Object reference(could be null):

@@ -301,8 +301,8 @@ abstract public class WLAdjustmentFMF
     ///slog.info(mmi+"shortTermResErrors.size()="+shortTermResErrors.size());
     //slog.info(mmi+"mediumTermResErrors.size()="+mediumTermResErrors.size());
     slog.info(mmi+"end");
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
   }

@@ -117,7 +117,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     this.nbMissingWLO= 0;
 
-    slog.info(mmi+"this.stationId: " +this.stationId+
+    slog.debug(mmi+"this.stationId: " +this.stationId+
               ", this.residualMethod=" + this.residualMethod);
   }
 
@@ -137,7 +137,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     final String mmi= "getIFMSResidual: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     try {
       //forecastingContext.getFmsParameters();
@@ -207,7 +207,7 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
       throw new RuntimeException(mmi+"ret==null !");
 
     } else {
-      slog.info(mmi+"Will use ResidualMethod -> " + residualMethodWanted.toString());
+      slog.debug(mmi+"Will use ResidualMethod -> " + residualMethodWanted.toString());
     }
 
     slog.debug(mmi+"end");
@@ -267,18 +267,18 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     final String dts= sse.dateTimeString(true);
 
-    slog.info(mmi+"start: stationId=" + stationId + ", sse dts=" + dts);
-    slog.info(mmi+"psr=" + pstrWLStationTimeNode);
-    slog.info(mmi+"sseFutureThreshold dt=" + SecondsSinceEpoch.dtFmtString(sseFutureThreshold, true));
-    slog.info(mmi+"station.lastWLOSse dt=" + SecondsSinceEpoch.dtFmtString(fmwlStation.lastWLOSse, true));
+    slog.debug(mmi+"start: stationId=" + stationId + ", sse dts=" + dts);
+    slog.debug(mmi+"psr=" + pstrWLStationTimeNode);
+    slog.debug(mmi+"sseFutureThreshold dt=" + SecondsSinceEpoch.dtFmtString(sseFutureThreshold, true));
+    slog.debug(mmi+"station.lastWLOSse dt=" + SecondsSinceEpoch.dtFmtString(fmwlStation.lastWLOSse, true));
 
     final long seconds= sse.seconds();
 
     final FMSWLMeasurement[] stationMeasurementsRef= FMSWLMeasurement.
       getMeasurementsRefs(fmwlStation.getDataReferences(seconds), new FMSWLMeasurement[WLType.values().length]);
 
-    slog.info(mmi+"after getMeasurementsRefs");
-    //slog.info(mmi+"Debug exit 0");
+    slog.debug(mmi+"after getMeasurementsRefs");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     final boolean stillGotWLOs= (seconds <= fmwlStation.lastWLOSse);
@@ -297,10 +297,10 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     if (seconds >= sseFutureThreshold) {
 
-      slog.info(mmi+"seconds >= sseFutureThreshold: updating station: " + stationId + " forecast.");
+      slog.debug(mmi+"seconds >= sseFutureThreshold: updating station: " + stationId + " forecast.");
 
-      slog.info(mmi+"fmwlStation.useFullModelForecast="+fmwlStation.useFullModelForecast);
-      //slog.info(mmi+"Debug exit 0");
+      slog.debug(mmi+"fmwlStation.useFullModelForecast="+fmwlStation.useFullModelForecast);
+      //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
       if (fmwlStation.useFullModelForecast) {
@@ -310,12 +310,12 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
         //  throw new RuntimeException("FMResidualFactory processFMSWLStation method");
         //--- Uncomment the following two lines when the merge of the default forecast with an external storm surge
         // forecast will be implemented.
-        slog.info(mmi+"Merging the short-term QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true) );
+        slog.debug(mmi+"Merging the short-term QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true) );
 
         fmwlStation.mergeWithFullModelForecast( seconds, sseFutureThreshold, wlstn);
 
-        //slog.info(mmi+"Done with Merging the QC forecast with a full model forecast" );
-        //slog.info(mmi+"Debug exit 0");
+        //slog.debug(mmi+"Done with Merging the QC forecast with a full model forecast" );
+        //slog.debug(mmi+"Debug exit 0");
         //System.exit(0);
       }
 
@@ -331,9 +331,9 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     }
 
-    slog.info(mmi+"end: stationId=" + stationId + ", sse dts=" + dts);
+    slog.debug(mmi+"end: stationId=" + stationId + ", sse dts=" + dts);
 
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     return wlstn;
@@ -389,12 +389,12 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
 
     final String mmi= "getLagFMSWLStationTimeNode: ";
 
-    slog.info(mmi+"this.stationId=" + this.stationId + ", seconds " + "dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+    slog.debug(mmi+"this.stationId=" + this.stationId + ", seconds " + "dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
 
-    slog.info(mmi+"this.lastLagNodeAdded=" + this.lastLagNodeAdded);
+    slog.debug(mmi+"this.lastLagNodeAdded=" + this.lastLagNodeAdded);
 
     if (this.lastLagNodeAdded != null) {
-      slog.info(mmi+"this.lastLagNodeAdded dt=" + this.lastLagNodeAdded.getSse().dateTimeString(true));
+      slog.debug(mmi+"this.lastLagNodeAdded dt=" + this.lastLagNodeAdded.getSse().dateTimeString(true));
     }
 
     //--- NOTE: Using recursive function findInPastR(seconds) of class TimeNodeFactory.

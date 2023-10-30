@@ -70,11 +70,11 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
 
     final String mmi= "TidalRemnantResidual: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     this.trData= new TidalRemnantData(tidalRemnantCfg, timIncrDtMinutes.doubleValue());
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
   }
 
   /**
@@ -91,7 +91,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
 
     final String mmi= "estimate: ";
 
-    slog.info(mmi+"start, apply=" + apply);
+    slog.debug(mmi+"start, apply=" + apply);
 
     //--- Cast WLStationTimeNode in a TidalRemnantDVFMNode Object reference
     //    to be able to access specific TidalRemnantNode attributes
@@ -107,7 +107,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
 
     final double timeOffset= (double) (nts - this.lastUpdateSse.seconds());
 
-    slog.info(mmi+"timeOffset=" + timeOffset);
+    slog.debug(mmi+"timeOffset=" + timeOffset);
 
     final TidalRemnantData trd= this.trData;
 
@@ -125,8 +125,8 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
     trn.getRemnant().
       set(trd.computeRemnant(), Math.sqrt(1.0 - trd.getErrorWeight(timeOffset * trd.tauInv)) * trd.eps);
 
-    slog.info(mmi+"trn.remnant.getZw()=" + trn.remnant.getZw());
-    slog.info(mmi+"trn.remnant.getError()=" + trn.remnant.getError());
+    slog.debug(mmi+"trn.remnant.getZw()=" + trn.remnant.getZw());
+    slog.debug(mmi+"trn.remnant.getError()=" + trn.remnant.getError());
 
     //--- Set this.tidalRemnantRf reference for super class usage:
     this.tidalRemnantRf= trn.remnant;
@@ -134,7 +134,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
     //--- MUST use super class estimate !
     super.estimate(wlStationTimeNode, apply);
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return wlStationTimeNode;
   }
@@ -154,8 +154,8 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
                                                 /*@NotNull @Size(min = 4)*/ final FMSWLMeasurement[] data) {
     final String mmi= "getFMSTimeNode: ";
 
-    slog.info(mmi+"sse dt=" + secondsSinceEpoch.dateTimeString(true));
-    slog.info(mmi+"pstr=" + pstrWLStationTimeNode);
+    slog.debug(mmi+"sse dt=" + secondsSinceEpoch.dateTimeString(true));
+    slog.debug(mmi+"pstr=" + pstrWLStationTimeNode);
 
     return new TidalRemnantNode((TidalRemnantNode) pstrWLStationTimeNode, secondsSinceEpoch, data);
   }
@@ -182,11 +182,11 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
 
     final long superSseStart= super.setup(lastWLOSse, predictionsMeasurementsList);
 
-    slog.info(mmi+"superSseStart dt=" + SecondsSinceEpoch.dtFmtString(superSseStart));
+    slog.debug(mmi+"superSseStart dt=" + SecondsSinceEpoch.dtFmtString(superSseStart));
 
     this.initStats(predictionsMeasurementsList);
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return this.setSseStart(superSseStart);
   }
@@ -203,11 +203,11 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
 
     final String mmi= "initStats: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     this.trData.initInvXpx(predictionMeasurementsList);
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return this;
   }
@@ -242,10 +242,10 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
     //--- Handy shorcut reference to this.trData TidalRemnantData Object:
     final TidalRemnantData trd= this.trData;
 
-    slog.info(mmi+"wlstn=" + wlStationTimeNode);
-    slog.info(mmi+"wlstn dt=" + wlStationTimeNode.getSse().dateTimeString(true));
-    slog.info(mmi+"trd.tau=" + trd.tau);
-    slog.info(mmi+"trd.dt=" + trd.dt);
+    slog.debug(mmi+"wlstn=" + wlStationTimeNode);
+    slog.debug(mmi+"wlstn dt=" + wlStationTimeNode.getSse().dateTimeString(true));
+    slog.debug(mmi+"trd.tau=" + trd.tau);
+    slog.debug(mmi+"trd.dt=" + trd.dt);
 
     //--- WLStationTimeNode prediction WL value:
     final double wlpZw= wlStationTimeNode.get(WLType.PREDICTION).getDoubleZValue();
@@ -276,7 +276,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
     //--- Update OLS regression parameters in tr.beta
     trd.OLSRegression(zY, trd.beta);
 
-    slog.info(mmi+"trd.beta=" + trd.beta);
+    slog.debug(mmi+"trd.beta=" + trd.beta);
 
     final double beta0= trd.beta.at(0);
     final double beta1= trd.beta.at(1);
@@ -286,9 +286,9 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
 
     trd.k1= trd.eps2 * trd.beta.at(2) / beta1;
 
-    slog.info(mmi+"trd.eps1=" + trd.eps1);
-    slog.info(mmi+"trd.eps2=" + trd.eps2);
-    slog.info(mmi+"trd.k1=" + trd.k1);
+    slog.debug(mmi+"trd.eps1=" + trd.eps1);
+    slog.debug(mmi+"trd.eps2=" + trd.eps2);
+    slog.debug(mmi+"trd.k1=" + trd.k1);
 
     //--- Cast wlstn in a TidalRemnantNode Object reference
     //    to be able to access specific TidalRemnantNode attributes
@@ -299,7 +299,7 @@ final public class TidalRemnantResidual extends LegacyResidual implements ILegac
 
     trn.remnant.setZw(newRemnantValue);
 
-    slog.info(mmi+"newRemnantValue=" + newRemnantValue);
+    slog.debug(mmi+"newRemnantValue=" + newRemnantValue);
 
     //--- Sum of squares of remnants:
     er += ScalarOps.square(newRemnantValue);

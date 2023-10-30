@@ -49,7 +49,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
 
     final String mmi= "FMSResidualConfig main constructor: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     try {
       fmsResCfgJsonObj.size();
@@ -66,7 +66,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
     this.method= fmsResCfgJsonObj.
       getString(LEGACY_RESIDUAL_METH_JSON_KEY);
 
-    slog.info(mmi+"this.method="+this.method);
+    slog.debug(mmi+"this.method="+this.method);
 
     if (!fmsResCfgJsonObj.containsKey(LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY)) {
       throw new RuntimeException(mmi+"Invalid key -> "+"\""+
@@ -76,7 +76,7 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
     this.fallBackError= fmsResCfgJsonObj.
       getJsonNumber(LEGACY_RESIDUAL_FALLBACK_ERR_JSON_KEY).doubleValue();
 
-    slog.info(mmi+"this.fallBackError="+this.fallBackError);
+    slog.debug(mmi+"this.fallBackError="+this.fallBackError);
 
     if (!fmsResCfgJsonObj.containsKey(LEGACY_STN_COV_JSON_KEY)) {
        throw new RuntimeException(mmi+"Invalid key -> "+"\""+
@@ -94,14 +94,14 @@ final public class FMSResidualConfig extends LegacyFMSTime implements IFMSConfig
     //for (final JsonObject stnCovCfgJsonObj: fmsResCfgJsonObj.getJsonArray()) {
     for (int objIter= 0; objIter < fmsResCovCfgJsonArray.size(); objIter++) {
 
-      slog.info(mmi+"Getting legacy FMS covariance calculations parameters info at index= "+objIter);
+      slog.debug(mmi+"Getting legacy FMS covariance calculations parameters info at index= "+objIter);
 
       this.stationCovCfgList.add( new FMSStationCovarianceConfig( tgLocationId, this.deltaTMinutes,
                                                                   fmsResCovCfgJsonArray.getJsonObject(objIter)) ); //stnCovCfgJsonObj) );
     }
 
-    slog.info(mmi+"end");
-    //slog.info(mmi+"Debug exit 0");
+    slog.debug(mmi+"end");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
   }
 

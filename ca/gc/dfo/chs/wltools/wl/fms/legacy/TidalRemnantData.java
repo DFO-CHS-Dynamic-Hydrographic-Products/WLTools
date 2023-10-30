@@ -115,11 +115,11 @@ final public class TidalRemnantData extends LegacyResidualData implements ILegac
 
     final String mmi= "TidalRemnantData constructor: ";
 
-    slog.info(mmi+"tauHours=" + tauHours);
-    slog.info(mmi+"dtMinutes=" + dtMinutes);
-    slog.info(mmi+"eps1Max=" + eps1Max);
-    slog.info(mmi+"eps2Max=" + eps2Max);
-    slog.info(mmi+"timeIncrMinutes=" + timeIncrMinutes);
+    slog.debug(mmi+"tauHours=" + tauHours);
+    slog.debug(mmi+"dtMinutes=" + dtMinutes);
+    slog.debug(mmi+"eps1Max=" + eps1Max);
+    slog.debug(mmi+"eps2Max=" + eps2Max);
+    slog.debug(mmi+"timeIncrMinutes=" + timeIncrMinutes);
 
     this.init(eps1Max, eps2Max, timeIncrMinutes);
   }
@@ -229,7 +229,7 @@ final public class TidalRemnantData extends LegacyResidualData implements ILegac
     //int nbWlpNeeded= wlpa.size();
 
     if (nbWlpNeeded > predictionMeasurementsList.size()) {
-      slog.info(mmi+"nbWlpNeeded > wlpa.size() !");
+      slog.debug(mmi+"nbWlpNeeded > wlpa.size() !");
       nbWlpNeeded = predictionMeasurementsList.size();
     }
 

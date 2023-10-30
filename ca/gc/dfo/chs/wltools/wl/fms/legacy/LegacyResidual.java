@@ -81,7 +81,7 @@ public class LegacyResidual
 
     final String mmi= "LegacyResidual constructor: ";
 
-    slog.info(mmi+"start for station: " + stationId);
+    slog.debug(mmi+"start for station: " + stationId);
 
     if (residualCfg == null) {
 
@@ -115,7 +115,7 @@ public class LegacyResidual
     this.tidalRemnantRf= null;
     this.estimatedSurge= new WLZE(0.0, 0.0);
 
-    slog.info(mmi+"residualCfg=" + residualCfg.toString());
+    slog.debug(mmi+"residualCfg=" + residualCfg.toString());
 
     this.covData= new
       LegacyFMSCov(residualCfg.getFallBackError(), stationId, stationsCovarianceCfgList);
@@ -125,7 +125,7 @@ public class LegacyResidual
     this.resData= new
       LegacyResidualData(nbAuxCov, residualCfg.getTauHours(), timeIncrDtMinutes);
 
-    slog.info(mmi+"end for station: " + stationId);
+    slog.debug(mmi+"end for station: " + stationId);
   }
 
   /**
@@ -141,7 +141,7 @@ public class LegacyResidual
 
     final String mmi= "estimate: ";
 
-    slog.info(mmi+"start, wlstn="+wlStationTimeNode+
+    slog.debug(mmi+"start, wlstn="+wlStationTimeNode+
               ", apply=" + apply + ", stationId" +"=" + this.stationId);
 
     //--- Uncomment the following block for debugging purposes.
@@ -160,18 +160,18 @@ public class LegacyResidual
     final long nodeTimeStamp= wlStationTimeNode.seconds();
 
     //--- WARNING: The 3 following debugging logs calls can produce null objects exceptions
-    slog.info(mmi+"wlstn.sse dt=" + wlStationTimeNode.getSse().dateTimeString(true) +
+    slog.debug(mmi+"wlstn.sse dt=" + wlStationTimeNode.getSse().dateTimeString(true) +
               ", this.lastUpdateSse dt=" + this.lastUpdateSse.dateTimeString(true));
 
-    slog.info(mmi+"wlstn.get(WLType.PREDICTION).zDValue()=" +
+    slog.debug(mmi+"wlstn.get(WLType.PREDICTION).zDValue()=" +
               wlStationTimeNode.get(WLType.PREDICTION).getDoubleZValue());
 
-    slog.info(mmi+"wlstn.get(WLType.PREDICTION).seconds dt=" +
+    slog.debug(mmi+"wlstn.get(WLType.PREDICTION).seconds dt=" +
         SecondsSinceEpoch.dtFmtString(wlStationTimeNode.get(WLType.PREDICTION).seconds(), true));
 
     if (wlStationTimeNode.getPstr() != null) {
-      slog.info(mmi+"wlstn.pstr()=" + wlStationTimeNode.getPstr());
-      slog.info(mmi+"wlstn.pstr().sse dt=" + wlStationTimeNode.getPstr().getSse().dateTimeString(true));
+      slog.debug(mmi+"wlstn.pstr()=" + wlStationTimeNode.getPstr());
+      slog.debug(mmi+"wlstn.pstr().sse dt=" + wlStationTimeNode.getPstr().getSse().dateTimeString(true));
     }
 
     //--- Retreive previously computed direct surge(s) and the associated error(s) from the auxiliary temporal errors
@@ -185,7 +185,7 @@ public class LegacyResidual
 
     //--- Get the time offset compared with the last time stamp of the last residual object update:
     //    NOTE: Could be removed by putting nodeTimeStamp - this.lastUpdateSse.seconds() directly
-    //          in timeFactor computation but it is kept ther to report its value in the info logs.
+    //          in timeFactor computation but it is kept ther to report its value in the.debug logs.
     final long timeOffset= nodeTimeStamp - this.lastUpdateSse.seconds();
 
     //--- Now modulate the short term time decay factor with either the
@@ -201,17 +201,17 @@ public class LegacyResidual
     final double maxShortTermTimeDecayDenom=
       (this.wlpVsWloRMSE > longTermOffsetAbsVal ) ? this.wlpVsWloRMSE : longTermOffsetAbsVal;
 
-    slog.info(mmi+"maxShortTermTimeDecayDenom="+maxShortTermTimeDecayDenom);
+    slog.debug(mmi+"maxShortTermTimeDecayDenom="+maxShortTermTimeDecayDenom);
 
     final double shortTermTimeDecayFactorAdj= 1.0/(1.0 + maxShortTermTimeDecayDenom);
 
     final double shortTermTimeDecayFactor= ((double) timeOffset) * resData.tauInv * shortTermTimeDecayFactorAdj;
 
-    //slog.info(mmi+"shortTermTimeDecayFactor initial:"+shortTermTimeDecayFactor);
+    //slog.debug(mmi+"shortTermTimeDecayFactor initial:"+shortTermTimeDecayFactor);
     //final double shortTermTimeDecayFactor *= shortTermTimeDecayFactorAdj;
 
-    //slog.info(mmi+"shortTermTimeDecayFactor adj.:"+ shortTermTimeDecayFactor * shortTermTimeDecayFactorAdj);
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"shortTermTimeDecayFactor adj.:"+ shortTermTimeDecayFactor * shortTermTimeDecayFactorAdj);
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     //final double timeFactor= (double) (nts - this.lastUpdateSse.seconds()) * rd.tauInv;
@@ -225,16 +225,16 @@ public class LegacyResidual
     //    for a possible local usage:
     final double prevTSEstimatedSurge= resData.zX.at(0);
 
-    slog.info(mmi+"rd.alpha=" + resData.alpha);
-    slog.info(mmi+"rd.tauInv=" + resData.tauInv);
-    slog.info(mmi+"timeOffset=" + timeOffset);
-    slog.info(mmi+"shortTermTimeDecayFactor=" + shortTermTimeDecayFactor);
-    slog.info(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
+    slog.debug(mmi+"rd.alpha=" + resData.alpha);
+    slog.debug(mmi+"rd.tauInv=" + resData.tauInv);
+    slog.debug(mmi+"timeOffset=" + timeOffset);
+    slog.debug(mmi+"shortTermTimeDecayFactor=" + shortTermTimeDecayFactor);
+    slog.debug(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
 
     //this.log.debug("LegacyResidual estimate: timeFactor=" + (double)(nts - this.lastUpdateSse.seconds())
     // /forecastDuration);
-    slog.info(mmi+"surgeWeight=" + surgeWeight);
-    slog.info(mmi+"errorWeight=" + errorWeight);
+    slog.debug(mmi+"surgeWeight=" + surgeWeight);
+    slog.debug(mmi+"errorWeight=" + errorWeight);
 
     //--- Compute the WL estimated surge and its associated error:
     //    NOTE: computeEstimatedSurge returns the "short term" surge
@@ -265,13 +265,13 @@ public class LegacyResidual
       this.longTermOffset *= Math.exp(-shortTermTimeDecayFactor * this.longTermOffsetFactor); //(-timeFactor * this.longTermOffsetFactor);
     }
 
-    slog.info(mmi+"this.longTermOffset=" + this.longTermOffset);
-    slog.info(mmi+"estimatedShortTermSurgeZw=" + estimatedShortTermSurgeZw);
-    slog.info(mmi+"1st estimatedSurge=" + estimatedSurge);
-    slog.info(mmi+"prevTSEstimatedSurge=" + prevTSEstimatedSurge);
-    slog.info(mmi+"estimatedSurgeError=" + estimatedSurgeError);
-    slog.info(mmi+"remnantValue=" + remnantValue);
-    slog.info(mmi+"remnantError=" + remnantError);
+    slog.debug(mmi+"this.longTermOffset=" + this.longTermOffset);
+    slog.debug(mmi+"estimatedShortTermSurgeZw=" + estimatedShortTermSurgeZw);
+    slog.debug(mmi+"1st estimatedSurge=" + estimatedSurge);
+    slog.debug(mmi+"prevTSEstimatedSurge=" + prevTSEstimatedSurge);
+    slog.debug(mmi+"estimatedSurgeError=" + estimatedSurgeError);
+    slog.debug(mmi+"remnantValue=" + remnantValue);
+    slog.debug(mmi+"remnantError=" + remnantError);
 
     //--- G. Mercier FMS 2018 modification:
     //    Now take care of the "short-term surge" (a.k.a. storm and-or outflow surge) effect:
@@ -283,20 +283,20 @@ public class LegacyResidual
     //    surge computed to deal with the slowly evolving total surge in both cases.
     if (estimatedShortTermSurgeZwAbsVal < Math.abs(this.longTermOffset)) {
 
-      slog.info(mmi+"Using last estimated surge as the newly estimated surge.");
+      slog.debug(mmi+"Using last estimated surge as the newly estimated surge.");
 
       estimatedSurge= prevTSEstimatedSurge;
 
     } else {
 
-      slog.info(mmi+"Setting the newly estimated surge as the mean between itself and the last estimated surge.");
+      slog.debug(mmi+"Setting the newly estimated surge as the mean between itself and the last estimated surge.");
 
-      //--- Estimated short term surge >= long term surge: keep the last estimated surge information by
+      //--- Estimated short term surge >= long term surge: keep the last estimated surge.debugrmation by
       //    setting the newly estimated surge as the mean betweem its newly computed value and the last estimated surge:
       estimatedSurge= (estimatedSurge + prevTSEstimatedSurge) / 2.0;
     }
 
-    slog.info(mmi+"final estimatedSurge=" + estimatedSurge);
+    slog.debug(mmi+"final estimatedSurge=" + estimatedSurge);
 
     //--- Total estimated surge for this time-stamp:
     final double estimatedTotalSurgeZw= estimatedSurge + remnantValue;
@@ -310,19 +310,19 @@ public class LegacyResidual
     final double estimatedTotalSurgeError=
       Math.sqrt(estimatedSurgeError + ScalarOps.square(remnantError));
 
-    slog.info(mmi+"estimatedTotalSurgeZw=" + estimatedTotalSurgeZw);
-    slog.info(mmi+"estimatedTotalSurgeError=" + estimatedTotalSurgeError);
+    slog.debug(mmi+"estimatedTotalSurgeZw=" + estimatedTotalSurgeZw);
+    slog.debug(mmi+"estimatedTotalSurgeError=" + estimatedTotalSurgeError);
 
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     //--- Apply estimated WL surge to get the full forecasted WL:
     if (apply) {
 
-      slog.info(mmi+"Applying estimated surge to get the new forecasted water level at: "+
+      slog.debug(mmi+"Applying estimated surge to get the new forecasted water level at: "+
                 SecondsSinceEpoch.dtFmtString(nodeTimeStamp, true) + ",  for station: " + this.stationId);
 
-      //slog.info(mmi+"Debug exit 0");
+      //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
 
@@ -333,10 +333,10 @@ public class LegacyResidual
       wlStationTimeNode.
         setUpdatedforecast(wlStationTimeNode.get(WLType.PREDICTION).getInstant(), updatedForecast, estimatedTotalSurgeError);
 
-      slog.info(mmi+"wlstn.get(WLType.PREDICTION).zDValue()=" + wlStationTimeNode.get(WLType.PREDICTION).getDoubleZValue());
-      slog.info(mmi+"wlstn.getUpdatedForecast().getValue()=" + wlStationTimeNode.getUpdatedForecast().getValue());
+      slog.debug(mmi+"wlstn.get(WLType.PREDICTION).zDValue()=" + wlStationTimeNode.get(WLType.PREDICTION).getDoubleZValue());
+      slog.debug(mmi+"wlstn.getUpdatedForecast().getValue()=" + wlStationTimeNode.getUpdatedForecast().getValue());
 
-      //slog.info(mmi+"Debug exit 0");
+      //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
     }
 
@@ -344,7 +344,7 @@ public class LegacyResidual
     //    in the time node for possible subsequent usage:
     wlStationTimeNode.setSurge(estimatedSurge, estimatedSurgeError);
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return wlStationTimeNode;
   }
@@ -368,8 +368,8 @@ public class LegacyResidual
     //final WLMeasurement [] data= new FMWLMeasurement[dbData.length] {new FMWLMeasurement(dbData[PREDICTION]), } ;
     //final FMWLMeasurement t = new FMWLMeasurement(dbData[PREDICTION].measurement());
 
-    slog.info(mmi+"sse dt=" + secondsSinceEpoch.dateTimeString(true));
-    slog.info(mmi+"pstr=" + pstrWLStationTimeNode);
+    slog.debug(mmi+"sse dt=" + secondsSinceEpoch.dateTimeString(true));
+    slog.debug(mmi+"pstr=" + pstrWLStationTimeNode);
 
     return new WLStationTimeNode(pstrWLStationTimeNode, secondsSinceEpoch, data);
   }
@@ -393,11 +393,11 @@ public class LegacyResidual
 
     final String mmi= "setupCheck: ";
 
-    slog.info(mmi+"start !");
+    slog.debug(mmi+"start !");
 
     this.resData.checkNumberCrunchingSize(this.covData.auxCovSize());
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return this;
   }
@@ -417,13 +417,13 @@ public class LegacyResidual
 
     final String mmi= "setup: ";
 
-    slog.info(mmi+"start: this.covData.auxCovSize()=" + this.covData.auxCovSize());
+    slog.debug(mmi+"start: this.covData.auxCovSize()=" + this.covData.auxCovSize());
 
     this.initStats(predictionsMeasurementsList);
 
     //this.resData.resize(this.covData.auxCovSize());
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return this.setSseStart(lastWLOSse);
   }
@@ -440,7 +440,7 @@ public class LegacyResidual
 
     final String mmi= "initStats: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     //--- Init this.resData.invXpX
     this.resData.invXpX.init(0.0);
@@ -452,7 +452,7 @@ public class LegacyResidual
       errDenom= predictionMeasurementsList.get(0).getUncertainty(); // .doubleValue();
     }
 
-    slog.info(mmi+"errDenom="+errDenom);
+    slog.debug(mmi+"errDenom="+errDenom);
 
     //--- Check for an error value near 0.0 with an epsilon here ?
     final double squWlpErrInv= 1.0 / ScalarOps.square(errDenom);
@@ -462,9 +462,9 @@ public class LegacyResidual
       this.resData.invXpX.put(d, d, squWlpErrInv);
     }
 
-    slog.info(mmi+"this.resData.invXpX=" + this.resData.invXpX.toString());
+    slog.debug(mmi+"this.resData.invXpX=" + this.resData.invXpX.toString());
 
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     return this;
@@ -481,7 +481,7 @@ public class LegacyResidual
   }
 
   /**
-   * Update the cumulative residual errors statistics with new WLO information(if available)
+   * Update the cumulative residual errors statistics with new WLO.debugrmation(if available)
    * at a new time stamp for a given WL station.
    *
    * @param wlStationTimeNode : A WLStationTimeNode object.
@@ -496,26 +496,26 @@ public class LegacyResidual
     final LegacyResidualData resData= this.resData;
     final LegacyFMSCov covData= (LegacyFMSCov) this.covData;
 
-    slog.info(mmi+"wlstn=" + wlStationTimeNode);
-    slog.info(mmi+"wlstn dt=" + wlStationTimeNode.getSse().dateTimeString(true));
-    slog.info(mmi+"rd.tau=" + resData.tau);
-    slog.info(mmi+"rd.dt=" + resData.dt);
-    slog.info(mmi+"longTermOffset=" + this.longTermOffset);
+    slog.debug(mmi+"wlstn=" + wlStationTimeNode);
+    slog.debug(mmi+"wlstn dt=" + wlStationTimeNode.getSse().dateTimeString(true));
+    slog.debug(mmi+"rd.tau=" + resData.tau);
+    slog.debug(mmi+"rd.dt=" + resData.dt);
+    slog.debug(mmi+"longTermOffset=" + this.longTermOffset);
 
     //--- Always need to do time scaling:
     double e2 = resData.dataTimeScaling();
 
-    slog.info(mmi+"e2=" + e2);
+    slog.debug(mmi+"e2=" + e2);
 
     //--- Method cd.getAxSurgesInZX(node.seconds(),rd.zX) returns false if a covariance surge data is missing.
     //    The retreived covariance surge data(if any) is returned in vector rd.zX
     if (!covData.getValidAxSurgesInZX(wlStationTimeNode.seconds(), resData.zX)) {
 
-      slog.info(mmi+"!cd.getValidAxSurgesInZX(node.seconds(),rd.zX) at"+
+      slog.debug(mmi+"!cd.getValidAxSurgesInZX(node.seconds(),rd.zX) at"+
                 wlStationTimeNode.getSse().dateTimeString(true) + ", need to use WLF surge.");
 
-      slog.info(mmi+"wlstn.getQCFSurge()=" + wlStationTimeNode.getQCFSurge());
-      slog.info(mmi+"wlstn.get(WLType.QC_FORECAST)=" + wlStationTimeNode.get(WLType.QC_FORECAST));
+      slog.debug(mmi+"wlstn.getQCFSurge()=" + wlStationTimeNode.getQCFSurge());
+      slog.debug(mmi+"wlstn.get(WLType.QC_FORECAST)=" + wlStationTimeNode.get(WLType.QC_FORECAST));
 
       //--- The direct surge is then computed with the FORECAST and its error is also the FORECAST error:
       wlStationTimeNode.
@@ -523,10 +523,10 @@ public class LegacyResidual
 
     } else {
 
-      slog.info(mmi+"wlstn.get(WLType.OBSERVATION).getDoubleZValue()="+
+      slog.debug(mmi+"wlstn.get(WLType.OBSERVATION).getDoubleZValue()="+
                 wlStationTimeNode.get(WLType.OBSERVATION).getDoubleZValue());
 
-      slog.info(mmi+"wlstn.get(WLType.PREDICTION).getDoubleZValue()="+
+      slog.debug(mmi+"wlstn.get(WLType.PREDICTION).getDoubleZValue()="+
                 wlStationTimeNode.get(WLType.PREDICTION).getDoubleZValue());
 
       //--- We can update estimated surge statistics:
@@ -537,21 +537,21 @@ public class LegacyResidual
       final double remnantValue=
         (this.tidalRemnantRf == null ? 0.0 : this.tidalRemnantRf.getZw());
 
-      slog.info(mmi+"rawSurge=" + rawSurge);
-      slog.info(mmi+"remnantValue=" + remnantValue);
+      slog.debug(mmi+"rawSurge=" + rawSurge);
+      slog.debug(mmi+"remnantValue=" + remnantValue);
 
       //--- Remove tidal remnant(which could be zero for station without significant tidal influence)
       //    from the raw surge before computing stats:
       final double zY= rawSurge - remnantValue;
 
-      slog.info(mmi+"zY=" + zY);
+      slog.debug(mmi+"zY=" + zY);
 
       //--- Update OLS regression parameters(cd.beta vector)
       resData.OLSRegression(zY, covData.beta);
 
-      slog.info(mmi+"cd.beta=" + covData.beta.toString());
-      slog.info(mmi+"rd.zX=" + resData.zX);
-      slog.info(mmi+"estimated surge=" + covData.beta.dotProd(resData.zX));
+      slog.debug(mmi+"cd.beta=" + covData.beta.toString());
+      slog.debug(mmi+"rd.zX=" + resData.zX);
+      slog.debug(mmi+"estimated surge=" + covData.beta.dotProd(resData.zX));
 
       //double errorEstimate= cd.beta.dotProd(rd.zX);
 
@@ -560,7 +560,7 @@ public class LegacyResidual
       //          variable in the update_model function of the legacy 1990 DVFM C source code kit.
       e2 += ScalarOps.square(zY - covData.beta.dotProd(resData.zX));
 
-      slog.info(mmi+"e2=" + e2);
+      slog.debug(mmi+"e2=" + e2);
 
       //--- Update sum of weights and sum of squares of weights.
       resData.omega += 1.0;
@@ -569,7 +569,7 @@ public class LegacyResidual
       //--- New error epsilon
       resData.eps = Math.sqrt(e2 / resData.omega2);
 
-      slog.info(mmi+"rd.eps=" + resData.eps);
+      slog.debug(mmi+"rd.eps=" + resData.eps);
 
       //--- Store the newly computed direct surge component(zY) and its error==0.0(for now) in the current node for
       // possible subsequent usage:
@@ -581,7 +581,7 @@ public class LegacyResidual
 
     //this.cnt++;
 
-    slog.info(mmi+"end"); //cnt="+cnt);
+    slog.debug(mmi+"end"); //cnt="+cnt);
 
     return wlStationTimeNode;
   }

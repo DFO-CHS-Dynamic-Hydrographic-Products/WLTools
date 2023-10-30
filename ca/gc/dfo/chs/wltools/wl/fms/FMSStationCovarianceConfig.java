@@ -37,7 +37,7 @@ final public class FMSStationCovarianceConfig implements IFMSConfig {
 
     final String mmi= "FMSStationCovarianceConfig main constructor: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     try {
       stnCovCfgJsonObj.size();
@@ -54,7 +54,7 @@ final public class FMSStationCovarianceConfig implements IFMSConfig {
     this.stationId= stnCovCfgJsonObj.
       getString(LEGACY_STN_ID_JSON_KEY);
 
-    slog.info(mmi+"this.stationId="+this.stationId);
+    slog.debug(mmi+"this.stationId="+this.stationId);
 
     if (!stnCovCfgJsonObj.containsKey(LEGACY_STN_COV_TLAG_MINS_JSON_KEY)) {
       throw new RuntimeException(mmi+"Invalid key -> "+"\""+
@@ -70,11 +70,11 @@ final public class FMSStationCovarianceConfig implements IFMSConfig {
     //     the time lag for the auto-regressive part (it is always the case)
     if (this.stationId.equals(tgLocationId)) {
 
-      slog.info(mmi+"Same TG location id.: Using the auto-regressive time lag");
+      slog.debug(mmi+"Same TG location id.: Using the auto-regressive time lag");
       this.timeLagMinutes= autoRegDeltaTMinutes;
     }
 
-    slog.info(mmi+"this.timeLagMinutes="+this.timeLagMinutes);
+    slog.debug(mmi+"this.timeLagMinutes="+this.timeLagMinutes);
 
     if (!stnCovCfgJsonObj.containsKey(LEGACY_STN_COV_FALLBACK_COEFF_JSON_KEY)) {
       throw new RuntimeException(mmi+"Invalid key -> "+"\""+
@@ -84,10 +84,10 @@ final public class FMSStationCovarianceConfig implements IFMSConfig {
     this.fallBackCoeff= stnCovCfgJsonObj.
       getJsonNumber(LEGACY_STN_COV_FALLBACK_COEFF_JSON_KEY).doubleValue();
 
-    slog.info(mmi+"this.fallBackCoeff="+this.fallBackCoeff);
+    slog.debug(mmi+"this.fallBackCoeff="+this.fallBackCoeff);
 
-    slog.info(mmi+"end");
-    //slog.info(mmi+"Debug exit 0");
+    slog.debug(mmi+"end");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
   }
 

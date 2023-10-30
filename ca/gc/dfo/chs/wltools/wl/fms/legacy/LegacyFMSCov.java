@@ -74,7 +74,7 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 
     final String mmi= "LegacyFMSCov main constructor: ";
 
-    slog.info(mmi+"start: targetStationId="+targetStationId);
+    slog.debug(mmi+"start: targetStationId="+targetStationId);
 
     this.squareFallBackError= ScalarOps.square(fallBackError);
 
@@ -97,15 +97,15 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 
       final String auxCovStationId= sc.getStationId();
 
-      slog.info(mmi+"auxCovStationId="+auxCovStationId);
+      slog.debug(mmi+"auxCovStationId="+auxCovStationId);
 
       if (this.gotDuplicate(auxCovStationId)) {
 
-        slog.info(mmi+"Found TG station duplicate :" + auxCovStationId +
+        slog.debug(mmi+"Found TG station duplicate :" + auxCovStationId +
                   " in stationsCovarianceList ! Ignoring this TG station duplicate");
       } else {
 
-        slog.info(mmi+"Adding TG station: " + auxCovStationId + " to this.auxCovs");
+        slog.debug(mmi+"Adding TG station: " + auxCovStationId + " to this.auxCovs");
 
         this.auxCovs.
           add(new LegacyFMSAuxCov( (int) sc.getTimeLagMinutes(), sc.getFallBackCoeff(), auxCovStationId) );
@@ -115,16 +115,16 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
     ////--- Verify if the processed station is itself in this.auxCovs.
     ////    If it is not there then log a warning and add it with default auxiliary covariance parameters
     //if (!this.gotDuplicate(targetStationId)) {
-    //  slog.info(mmi+"The TG station " + targetStationId +
+    //  slog.debug(mmi+"The TG station " + targetStationId +
     //      " was not found in stationsCovarianceList then add it to this.auxCovs with default auxiliary covariance parameters");
     //  this.auxCovs.
     //    add(new LegacyFMSAuxCov(DEFAULT_AUX_COV_TIME_LAG_MINUTES, DEFAULT_AUX_COV_FALL_BACK_COEFF, stationId));
     //}
 
-    slog.info(mmi+"nb. aux. cov=" + this.auxCovs.size());
-    slog.info(mmi+"end");
+    slog.debug(mmi+"nb. aux. cov=" + this.auxCovs.size());
+    slog.debug(mmi+"end");
 
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
   }
 
@@ -157,9 +157,9 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
       throw new RuntimeException(mmi+"Cannot update forecast !!");
     }
 
-    slog.info(mmi+"surgeWeight=" + surgeWeight);
-    slog.info(mmi+"errorWeight=" + errorWeight);
-    slog.info(mmi+"eps=" + eps);
+    slog.debug(mmi+"surgeWeight=" + surgeWeight);
+    slog.debug(mmi+"errorWeight=" + errorWeight);
+    slog.debug(mmi+"eps=" + eps);
 
     //--- Init local estimated surge value and error accumulators
     double value= 0.0;
@@ -195,12 +195,12 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 
       final double longTermWLOffset= fmsAuxCov.getFMSLongTermWLOffset();
 
-      slog.info(mmi+"d=" + d);
-      slog.info(mmi+"fallBack=" + fallBack);
-      slog.info(mmi+"this.beta.at(d)=" + this.beta.at(d));
-      slog.info(mmi+"weight=" + weight);
-      slog.info(mmi+"zX.at(d)=" + zX.at(d));
-      slog.info(mmi+"fmsAuxCov.getFMSLongTermWLOffset()=" + longTermWLOffset);
+      slog.debug(mmi+"d=" + d);
+      slog.debug(mmi+"fallBack=" + fallBack);
+      slog.debug(mmi+"this.beta.at(d)=" + this.beta.at(d));
+      slog.debug(mmi+"weight=" + weight);
+      slog.debug(mmi+"zX.at(d)=" + zX.at(d));
+      slog.debug(mmi+"fmsAuxCov.getFMSLongTermWLOffset()=" + longTermWLOffset);
 
       //--- G. Mercier 2017-12 addition to the Legacy DVFM method:
       //    Remove the corresponding long term surge from zX.at(d) to get only the short term(storm or outflow) surge
@@ -212,8 +212,8 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
       error += ScalarOps.square(weight * errBeta.at(d++));
     }
 
-    slog.info(mmi+"value=" + value);
-    slog.info(mmi+"error=" + error);
+    slog.debug(mmi+"value=" + value);
+    slog.debug(mmi+"error=" + error);
 
     //---
     return estimatedSurge.set(value, error);
@@ -235,7 +235,7 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 
     final String mmi= "getAxSurgesErrsInZX: ";
 
-    slog.info(mmi+"start: seconds dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+    slog.debug(mmi+"start: seconds dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
 
     //--- Un-comment the following two if blocks for debugging purposes.
 //        if (zX.size() != errBeta.size()) {
@@ -258,7 +258,7 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 
       final WLStationTimeNode pastWlsn= fmsAuxCov.getLagFMSWLStationTimeNode(seconds);
 
-      slog.info(mmi+"pastWlsn=" + pastWlsn);
+      slog.debug(mmi+"pastWlsn=" + pastWlsn);
 
       if (pastWlsn != null) {
 
@@ -279,14 +279,14 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 
       } else {
 
-        slog.info(mmi+"pastWlsn==null for seconds dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+        slog.debug(mmi+"pastWlsn==null for seconds dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
       }
     }
 
-    slog.info(mmi+"zX=" + zX.toString());
+    slog.debug(mmi+"zX=" + zX.toString());
     //this.log.debug("err="+err.toString());
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return zX;
   }
@@ -308,7 +308,7 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 //            throw new RuntimeException("LegacyFMCov getValidAxSurgesInZX");
 //        }
 
-    slog.info(mmi+"start: seconds dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+    slog.debug(mmi+"start: seconds dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
 
     boolean ret= true;
 
@@ -319,7 +319,7 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
 
       final WLStationTimeNode wlsn= fmsAuxCov.getLagFMSWLStationTimeNode(seconds);
 
-      slog.info(mmi+"wlsn=" + wlsn);
+      slog.debug(mmi+"wlsn=" + wlsn);
 
       if (wlsn == null) {
         ret = false;
@@ -329,7 +329,7 @@ final public class LegacyFMSCov extends FMSCov implements ILegacyFMS {
       zX.put(wlsn.getSurgeZw(), d++);
     }
 
-    slog.info(mmi+"zX=" + zX.toString());
+    slog.debug(mmi+"zX=" + zX.toString());
 
     return ret;
   }

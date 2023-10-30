@@ -79,7 +79,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     final String mmi= "validateFMSConfig; ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     boolean ret= true;
 
@@ -164,7 +164,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     if (tr0 != null) {
 
-      slog.info(mmi+"Found a non-null FMSTidalRemnantConfig object, validate it with other FMSTidalRemnantConfig objects (if any)");
+      slog.debug(mmi+"Found a non-null FMSTidalRemnantConfig object, validate it with other FMSTidalRemnantConfig objects (if any)");
 
       //for (final ForecastingContext fc : forecastingContextsList) {
       for (final FMSConfig fc: fmsInputList) {
@@ -217,7 +217,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     final String mmi= "getIFMSResidual: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     //this.init();
 
@@ -231,7 +231,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     if (fmsInput.getFMSTidalRemnantConfig() != null) {
 
-      slog.info(mmi+"Will use residual computation with tidal remnant component for station: " + stationId);
+      slog.debug(mmi+"Will use residual computation with tidal remnant component for station: " + stationId);
 
       this.residual= new TidalRemnantResidual(fmsInput.getFMSResidualConfig(),
                                               fmsInput.getFMSTidalRemnantConfig(),
@@ -239,7 +239,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     } else {
 
-      slog.info(mmi+"Will use residual computation without tidal remnant component for station: " + stationId);
+      slog.debug(mmi+"Will use residual computation without tidal remnant component for station: " + stationId);
 
       this.residual= new
         LegacyResidual(fmsInput.getFMSResidualConfig(), stationId);
@@ -249,15 +249,15 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     if (wlpl.get(0).getUncertainty() == null) {
 
-      slog.info(mmi+"wlpl.get(0).getUncertainty()==null for station: " + stationId + " !");
+      slog.debug(mmi+"wlpl.get(0).getUncertainty()==null for station: " + stationId + " !");
 
-      slog.info(mmi+"the default predictions error of "+
+      slog.debug(mmi+"the default predictions error of "+
                 PREDICTIONS_ERROR_ESTIMATE_METERS + " will be used for the residual setup.");
     }
 
     this.residual.setup(lastWLOSse, wlpl);
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return this;
   }
@@ -293,7 +293,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     final String mmi= "newFMSTimeNode: ";
 
-    slog.info(mmi+"pstr=" + pstrWLStationTimeNode +
+    slog.debug(mmi+"pstr=" + pstrWLStationTimeNode +
               ", sse.dt=" + secondsSinceEpoch.dateTimeString(true));
 
     return this.residual.
@@ -319,12 +319,12 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
 
     final String dts= wlStationTimeNode.getSse().dateTimeString(true);
 
-    slog.info(mmi+"Computing Legacy residual at at time stamp: " + dts +
+    slog.debug(mmi+"Computing Legacy residual at at time stamp: " + dts +
               " for station: " + stationId + ", stillGotWLO=" + stillGotWLOs);
 
     if (wlStationTimeNode.get(WLType.OBSERVATION) != null) {
 
-      slog.info(mmi+"Valid OBSERVATION DB data at time stamp: "+dts+" for station: "+
+      slog.debug(mmi+"Valid OBSERVATION DB data at time stamp: "+dts+" for station: "+
                 stationId + ", updating residuals errors statistics and long term surge");
 
       //--- Update the medium-long term (could be just 48 hours) WL offset if we have a valid WLO.
@@ -338,7 +338,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
       if (stillGotWLOs) {
 
         //--- We are in the past(compared with the more recent WLO data available) and we have a missing WLO DB data:
-        slog.info(mmi+"Missing WLO for station: "+stationId+
+        slog.debug(mmi+"Missing WLO for station: "+stationId+
                   " at time-stamp: "+dts+", the surge will be estimated and applied");
 
         //--- Just need to update residual correction parameters.
@@ -352,7 +352,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
       } else {
 
         //--- We are in the future and the surge is estimated with the statistics computed with the valid WLO data.
-        slog.info(mmi+"Estimating WL residual for : "+stationId+" at future time-stamp: " + dts);
+        slog.debug(mmi+"Estimating WL residual for : "+stationId+" at future time-stamp: " + dts);
       }
 
       //--- Use this.residual.estimate both for future forecasts AND missing WLO DB data:
@@ -363,7 +363,7 @@ final public class LegacyFMSResidual implements IFMSResidual, ILegacyFMS {
     //--- Add the newly processed station time node to the list of lag nodes of this.residual:
     this.residual.udpateLagNode(wlStationTimeNode);
 
-    slog.info(mmi+"nb. missing WLO up-to-now="+
+    slog.debug(mmi+"nb. missing WLO up-to-now="+
               this.residual.getNbMissingWLO()+ " at TG station: "+stationId);
 
     return wlStationTimeNode;

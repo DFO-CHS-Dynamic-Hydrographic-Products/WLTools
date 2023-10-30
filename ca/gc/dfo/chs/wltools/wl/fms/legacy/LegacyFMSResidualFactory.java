@@ -53,7 +53,7 @@ abstract public class LegacyFMSResidualFactory
 
     final String mmi= "udpateLagNode: ";
 
-    slog.info(mmi+"newLagNode=" + newLagNode +
+    slog.debug(mmi+"newLagNode=" + newLagNode +
               ", newLagNode dt=" + newLagNode.getSse().dateTimeString(true));
 
     return (this.lastLagNodeAdded= newLagNode);

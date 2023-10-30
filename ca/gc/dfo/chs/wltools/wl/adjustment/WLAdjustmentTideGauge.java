@@ -391,8 +391,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       this.adjustFullModelForecast(prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
 
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
 
     } // --- this.forecastAdjType != null
 
@@ -435,8 +435,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     return this.locationAdjustedData; //adjustmentRet;
   }

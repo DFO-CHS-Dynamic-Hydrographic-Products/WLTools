@@ -156,12 +156,12 @@ public class LegacyResidualData implements ILegacyFMS {
 
     final String mmi= "LegacyResidualData constructor: ";
 
-    slog.info(mmi+"nbAuxCov="+nbAuxCov);
-    slog.info(mmi+"tauHours=" + tauHours);
-    slog.info(mmi+"dtMinutes=" + dtMinutes);
+    slog.debug(mmi+"nbAuxCov="+nbAuxCov);
+    slog.debug(mmi+"tauHours=" + tauHours);
+    slog.debug(mmi+"dtMinutes=" + dtMinutes);
 
     if (tauHours > MEMORY_TIME_SCALE_HOURS_MAX) {
-      slog.info(mmi+"tauHours > MEMORY_TIME_SCALE_HOURS_MAX !");
+      slog.debug(mmi+"tauHours > MEMORY_TIME_SCALE_HOURS_MAX !");
       throw new RuntimeException(mmi);
     }
 
@@ -171,7 +171,7 @@ public class LegacyResidualData implements ILegacyFMS {
 //        }
 
     if (dtMinutes > DELTA_T_MINUTES_MAX) {
-      slog.info(mmi+"dtMinutes > DELTA_T_MINUTES_MAX !");
+      slog.debug(mmi+"dtMinutes > DELTA_T_MINUTES_MAX !");
       throw new RuntimeException(mmi);
     }
 
@@ -198,17 +198,17 @@ public class LegacyResidualData implements ILegacyFMS {
     //    division a zillion times in heavy loops.
     this.squAlphaInv= this.alphaInv * this.alphaInv;
 
-    slog.info(mmi+"this.tau=" + this.tau);
-    slog.info(mmi+"this.dt=" + this.dt);
-    slog.info(mmi+"this.alpha=" + this.alpha);
+    slog.debug(mmi+"this.tau=" + this.tau);
+    slog.debug(mmi+"this.dt=" + this.dt);
+    slog.debug(mmi+"this.alpha=" + this.alpha);
 
     if (nbAuxCov > 0) {
 
-      slog.info(mmi+"Allocating numbercrunching data size->" + nbAuxCov);
+      slog.debug(mmi+"Allocating numbercrunching data size->" + nbAuxCov);
       this.allocInit(nbAuxCov);
 
     } else {
-      slog.info(mmi+"Allocating numbercrunching data is deferred to derived class(es)");
+      slog.debug(mmi+"Allocating numbercrunching data is deferred to derived class(es)");
     }
   }
 
@@ -252,8 +252,8 @@ public class LegacyResidualData implements ILegacyFMS {
     this.omega *= this.alpha;
     this.omega2 *= this.squAlpha;
 
-    slog.info(mmi+"omega=" + omega);
-    slog.info(mmi+"omega2=" + omega2);
+    slog.debug(mmi+"omega=" + omega);
+    slog.debug(mmi+"omega2=" + omega2);
 
     //--- Return sum of squares of remnant time scale
     return ret;
@@ -267,7 +267,7 @@ public class LegacyResidualData implements ILegacyFMS {
 
     final String mmi= "getErrorWeight: ";
 
-    slog.info(mmi+"this.omega2=" + this.omega2);
+    slog.debug(mmi+"this.omega2=" + this.omega2);
 
     return this.omega2 * Math.exp(-2.0 * timeFactor) * (1.0 - this.squAlpha);
   }
@@ -281,7 +281,7 @@ public class LegacyResidualData implements ILegacyFMS {
 
     final String mmi= "getValueWeight: ";
 
-    slog.info(mmi+"this.omega=" + this.omega);
+    slog.debug(mmi+"this.omega=" + this.omega);
 
     return this.omega * Math.exp(-timeFactor) * (1.0 - this.alpha);
   }
@@ -296,13 +296,13 @@ public class LegacyResidualData implements ILegacyFMS {
 
     final String mmi= "OLSRegression: ";
 
-    slog.info(mmi+"bef. update this.invXpX=" + this.invXpX.toString());
+    slog.debug(mmi+"bef. update this.invXpX=" + this.invXpX.toString());
 
     this.updateInvXpx();
 
-    slog.info(mmi+"aft update this.invXpX=" + this.invXpX.toString());
-    slog.info(mmi+"zY=" + zY);
-    slog.info(mmi+"this.zX=" + this.zX);
+    slog.debug(mmi+"aft update this.invXpX=" + this.invXpX.toString());
+    slog.debug(mmi+"zY=" + zY);
+    slog.debug(mmi+"this.zX=" + this.zX);
 
     //--- XpY += zY(scalar)*zX(vector)
     // Legacy C code
@@ -314,7 +314,7 @@ public class LegacyResidualData implements ILegacyFMS {
     //    and finally add(accumulate) the vector result in this.xpY:
     this.xpY.add(this.xyScalProd.deepCopy(this.zX).multWith(zY));
 
-    slog.info(mmi+"this.xpY=" + this.xpY.toString());
+    slog.debug(mmi+"this.xpY=" + this.xpY.toString());
 
     //--- Return beta vector:
     //
@@ -349,13 +349,13 @@ public class LegacyResidualData implements ILegacyFMS {
     //
     final D1Data mx = this.invXpX.D2xColD1(this.zX);
 
-    slog.info(mmi+"mx=" + mx.toString());
+    slog.debug(mmi+"mx=" + mx.toString());
 
     //--- Compute the scalar denominator((zX)' * this.invXpx * zX + 1.0) of the invXpx matrix update
     //    NOTE: Do the division only once here:
     final double denomInv = 1.0 / (this.zX.dotProd(mx) + 1.0);
 
-    slog.info(mmi+"denomInv=" + denomInv);
+    slog.debug(mmi+"denomInv=" + denomInv);
 
     //--- NOTE: The notation for this denom variable used in source file residual.c from the legacy
     //          ODIN-DVFM 1990 kit is:
@@ -426,7 +426,7 @@ public class LegacyResidualData implements ILegacyFMS {
 
     final int initialSize= this.xpY.size();
 
-    slog.info(mmi+"start, initialSize=" + initialSize + ", finalSize=" + finalSize);
+    slog.debug(mmi+"start, initialSize=" + initialSize + ", finalSize=" + finalSize);
 
     if (initialSize < finalSize) {
 
@@ -435,14 +435,14 @@ public class LegacyResidualData implements ILegacyFMS {
 
     } else if (initialSize > finalSize) {
 
-      slog.info(mmi+"Need to downsize numbercrunching data size from "+initialSize + " to " + finalSize);
+      slog.debug(mmi+"Need to downsize numbercrunching data size from "+initialSize + " to " + finalSize);
       this.allocInit(finalSize);
 
     } else {
-      slog.info(mmi+"No need to downsize numbercrunching data! ");
+      slog.debug(mmi+"No need to downsize numbercrunching data! ");
     }
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     return this;
   }

@@ -70,7 +70,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
 
     final String mmi= "WLMeasurementFinder constructor: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     this.mcDataList= mcDataList;
 
@@ -80,7 +80,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
 
     if (this.mcDataList.size() == 1) {
 
-      slog.info(mmi+"this.mcDataList.size()==1 !, setting this.lastSse= this.frstSse !!");
+      slog.debug(mmi+"this.mcDataList.size()==1 !, setting this.lastSse= this.frstSse !!");
 
       this.lastSse= this.frstSse;
       //  this.mcDataList.get(0).getEventDate().getEpochSecond();
@@ -103,7 +103,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
     //--- Determine the sense of the ArrowOfTime of the List.
     this.arrowOfTime = ((frstSse < lastSse) ? ArrowOfTime.FORWARD : ArrowOfTime.BACKWARD);
 
-    slog.info(mmi+"end: this.arrowOfTime=" + this.arrowOfTime.toString());
+    slog.debug(mmi+"end: this.arrowOfTime=" + this.arrowOfTime.toString());
   }
 
   /**
@@ -125,7 +125,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
 
     MeasurementCustom ret= null;
 
-    slog.info(mmi+": seconds dt: "+
+    slog.debug(mmi+": seconds dt: "+
              SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex);
 
     if (this.mcDataList != null) {
@@ -133,7 +133,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
       final long sseCheck= this.mcDataList.
         get(this.trackIndex).getEventDate().getEpochSecond();
 
-      slog.info(mmi+"sseCheck dt: "+SecondsSinceEpoch.dtFmtString(sseCheck,true));
+      slog.debug(mmi+"sseCheck dt: "+SecondsSinceEpoch.dtFmtString(sseCheck,true));
 
       if (sseCheck == seconds) {
         ret= this.mcDataList.get(trackIndex);
@@ -143,10 +143,10 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
       }
     }
 
-    slog.info(mmi+"end, seconds dt: "+
+    slog.debug(mmi+"end, seconds dt: "+
               SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex + ", ret=" + ret);
 
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     return ret;
@@ -164,7 +164,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
 
     MeasurementCustom ret= null;
 
-    //slog.info(mmi+"start : seconds dt:" + SecondsSinceEpoch.dtFmtString(seconds,true));
+    //slog.debug(mmi+"start : seconds dt:" + SecondsSinceEpoch.dtFmtString(seconds,true));
 
     if (this.mcDataList.size() == 1) {
 
@@ -177,7 +177,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
       ret= (this.arrowOfTime == ArrowOfTime.FORWARD) ? this.findFwdMode(seconds) : this.findBwdMode(seconds);
     }
 
-    //slog.info(mmi+"end : seconds dt:" + SecondsSinceEpoch.dtFmtString(seconds, true) + ", ret=" + ret);
+    //slog.debug(mmi+"end : seconds dt:" + SecondsSinceEpoch.dtFmtString(seconds, true) + ", ret=" + ret);
 
     return ret;
   }
@@ -191,7 +191,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
   final public MeasurementCustom findInPast(/*@Min(0)*/ final long seconds) {
 
     final String mmi= "findInPast: ";
-    //slog.info(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
+    //slog.debug(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
     //System.exit(1);
 
     MeasurementCustom ret= null;
@@ -207,7 +207,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
       ret= (this.arrowOfTime == ArrowOfTime.FORWARD) ? this.findBwdMode(seconds) : this.findFwdMode(seconds);
     }
 
-    slog.info(mmi+"end: ret="+ret);
+    slog.debug(mmi+"end: ret="+ret);
 
     return ret;
   }
@@ -225,7 +225,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
 
     MeasurementCustom ret= null;
 
-    //slog.info(mmi+"start : seconds dt:" +
+    //slog.debug(mmi+"start : seconds dt:" +
     //          SecondsSinceEpoch.dtFmtString(seconds,true) + ", this.trackIndex=" + this.trackIndex);
 
     //--- The check if the Measurement wanted at the time-stamp represented
@@ -257,7 +257,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
       }
     }
 
-    //slog.info(mmi+"end : seconds dt:" +
+    //slog.debug(mmi+"end : seconds dt:" +
     //          SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex + ", ret=" + ret);
 
     return ret;
@@ -276,7 +276,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
 
     MeasurementCustom ret= null;
 
-    //slog.info(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
+    //slog.debug(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
     //System.exit(1);
 
     //--- The check if the Measurement wanted at the time-stamp represented
@@ -308,7 +308,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
       }
     }
 
-    slog.info(mmi+"end: ret="+ret);
+    slog.debug(mmi+"end: ret="+ret);
 
     return ret;
   }

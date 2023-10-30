@@ -88,7 +88,7 @@ abstract public class FMSLongTermWLOffset implements IFMS {
   protected final FMSLongTermWLOffset init() {
 
     //final String mmi= "init: ";
-    //slog.info(mmi+"start");
+    //slog.debug(mmi+"start");
 
     this.nbWLP=
        this.nbValidWLO= 0;
@@ -101,7 +101,7 @@ abstract public class FMSLongTermWLOffset implements IFMS {
     this.wlpVsWloRMSE=
       this.wlpVsWloRMSEAcc= 0.0;
 
-    //slog.info(mmi+"end");
+    //slog.debug(mmi+"end");
 
     return this;
   }
@@ -114,8 +114,8 @@ abstract public class FMSLongTermWLOffset implements IFMS {
 
     final String mmi= "updateFMSLongTermWLOffset: ";
 
-    //slog.info(mmi+"Need to implement RMSE or MAE calculation to be able to detect that the obs have a tidal-like signa behavior over 48 hours in the past !!");
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Need to implement RMSE or MAE calculation to be able to detect that the obs have a tidal-like signa behavior over 48 hours in the past !!");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     this.nbWLP++;
@@ -163,13 +163,13 @@ abstract public class FMSLongTermWLOffset implements IFMS {
     //    (1.0 + this.wlpVsWloRMSE) : (1.0 + longTermOffsetAbsVal);
     //this.longTermOffsetFactor= 1.0 / (timeDecayFactorDenom * timeDecayFactorDenom );
 
-    slog.info(mmi+"this.getWLOAvg()=" + this.getWLOAvg());
-    slog.info(mmi+"this.getWLPAvg()=" + this.getWLPAvg());
-    slog.info(mmi+"this.longTermOffset=" + this.longTermOffset);
-    slog.info(mmi+"this.wlpVsWloRMSE="+this.wlpVsWloRMSE);
-    slog.info(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
+    slog.debug(mmi+"this.getWLOAvg()=" + this.getWLOAvg());
+    slog.debug(mmi+"this.getWLPAvg()=" + this.getWLPAvg());
+    slog.debug(mmi+"this.longTermOffset=" + this.longTermOffset);
+    slog.debug(mmi+"this.wlpVsWloRMSE="+this.wlpVsWloRMSE);
+    slog.debug(mmi+"this.longTermOffsetFactor=" + this.longTermOffsetFactor);
 
-    //slog.info(mmi+"Debug exit 0");
+    //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
 
     return this.longTermOffset;

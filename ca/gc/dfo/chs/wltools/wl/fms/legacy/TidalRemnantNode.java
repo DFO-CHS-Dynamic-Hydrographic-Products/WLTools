@@ -62,13 +62,13 @@ final public class TidalRemnantNode extends WLStationTimeNode implements ILegacy
 
     this.remnant= new WLZE(0.0, 0.0);
 
-    slog.info(mmi+"this=" + this);
-    slog.info(mmi+"this dt=" + this.sse.dateTimeString(true));
+    slog.debug(mmi+"this=" + this);
+    slog.debug(mmi+"this dt=" + this.sse.dateTimeString(true));
 
     if (pstrTidalRemnantNode != null) {
-      slog.info(mmi+"pstr=" + pstrTidalRemnantNode);
-      slog.info(mmi+"pstr dt=" + pstrTidalRemnantNode.sse.dateTimeString(true));
-      slog.info(mmi+"pstr futr=" + pstrTidalRemnantNode.futr);
+      slog.debug(mmi+"pstr=" + pstrTidalRemnantNode);
+      slog.debug(mmi+"pstr dt=" + pstrTidalRemnantNode.sse.dateTimeString(true));
+      slog.debug(mmi+"pstr futr=" + pstrTidalRemnantNode.futr);
     }
   }
 
