@@ -391,6 +391,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       this.adjustFullModelForecast(prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
 
+      slog.info(mmi+"Done with the full model forecast correction-adjustment");
+
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
 
