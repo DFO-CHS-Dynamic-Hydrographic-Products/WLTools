@@ -109,11 +109,19 @@ abstract public class WLAdjustmentFMF
     final MeasurementCustomBundle mcbWLO= new
       MeasurementCustomBundle( this.nearestObsData.get(this.location.getIdentity()) );
 
+    // --- Get all the Instant objects of the MeasurementCustomBundle mcbWLO object
+    //     as a Set to be able to test if some timestamps are missing for the WLO data
     final Set<Instant> wloInstantsSet= mcbWLO.getInstantsKeySet();
 
     slog.info(mmi+"wloInstantsSet.size()="+wloInstantsSet.size());
 
-    if (wloInstantsSet.size() > 0 ) {
+    // ---
+    if (wloInstantsSet.size() == 0 ) {
+       slog.warn(mmi+"wloInstantsSet.size()== 0 !! No correction done for the full model forecast data ");
+
+    } else {
+
+      slog.info(mmi+"wloInstantsSet.size() > 0, produce the FMF simple linear correction equation coefficients");
 
       final int prevFMFIndex= IWLAdjustmentIO.
         FullModelForecastType.PREVIOUS.ordinal();
@@ -121,9 +129,15 @@ abstract public class WLAdjustmentFMF
       final int actuFMFIndex= IWLAdjustmentIO.
         FullModelForecastType.ACTUAL.ordinal();
 
-      //String prevPrevFMFASCIIDataFilePath=
-      this.getH2D2ASCIIWLFProbesData(prevFMFASCIIDataFilePath,
-                                     uniqueTGMapObj, mainJsonMapObj, prevFMFIndex);
+      if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
+
+        // --- Read the previous H2D2 full model forecast data
+        this.getH2D2ASCIIWLFProbesData(prevFMFASCIIDataFilePath,
+                                       uniqueTGMapObj, mainJsonMapObj, prevFMFIndex);
+      } else {
+        throw new RuntimeException(mmi+
+                                   "Invalid full model forecast input format -> "+this.modelForecastInputDataFormat.name());
+      }
 
       //slog.info(mmi+"prevPrevFMFASCIIDataFilePath="+prevPrevFMFASCIIDataFilePath);
 
@@ -132,21 +146,26 @@ abstract public class WLAdjustmentFMF
 
       final MeasurementCustom prevFMFDataMC0= prevFMFData.get(0);
 
+      // --- Shortcut to the prevFMFDataMC0.getEventDate() Instant object
+      final Instant prevFMFDataMC0Instant= prevFMFDataMC0.getEventDate();
+
       final List<MeasurementCustom> actuFMFData= this.
         nearestModelData.get(actuFMFIndex).get(this.location.getIdentity());
 
       final MeasurementCustom actuFMFDataMC0= actuFMFData.get(0);
 
-      final long forecastsDurationSeconds=
-        actuFMFDataMC0.getEventDate().getEpochSecond() -
-          prevFMFDataMC0.getEventDate().getEpochSecond();
+      final Instant actuFMFDataMC0Instant= actuFMFDataMC0.getEventDate();
+
+      final long forecastsDurationSeconds= actuFMFDataMC0Instant.
+        getEpochSecond() - prevFMFDataMC0Instant.getEpochSecond(); //prevFMFDataMC0.getEventDate().getEpochSecond();
 
       if (forecastsDurationSeconds < MIN_FULL_FORECAST_DURATION_SECONDS) {
         throw new RuntimeException(mmi+"forecastsDurationSeconds < MIN_FULL_FORECAST_DURATION_SECONDS");
       }
 
-      final Instant shortTermFMFTSThreshold= prevFMFDataMC0.
-        getEventDate().plusSeconds(SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
+      // --- Define the timestamp limit for the short term WLO-WLFMF residual errors calculation
+      final Instant shortTermFMFTSThreshold=
+        prevFMFDataMC0Instant.plusSeconds(SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
 
       slog.info(mmi+"prevFMFDataMC0.getEvenDate()="+prevFMFDataMC0.getEventDate().toString());
       slog.info(mmi+"shortTermFMFTSThreshold="+shortTermFMFTSThreshold.toString());
@@ -158,6 +177,8 @@ abstract public class WLAdjustmentFMF
       //     forecast data List<MeasurementCustom> object for this TG location.
       final MeasurementCustomBundle mcbPrevFMF= new MeasurementCustomBundle( prevFMFData );
 
+      // --- Get all the Instant objects of the MeasurementCustomBundle mcbPrevFMF object
+      //     as a Set to be able to iterate on them.
       final Set<Instant> prevFMFInstantsSet= mcbPrevFMF.getInstantsKeySet();
 
       //int shortTerm
@@ -231,22 +252,51 @@ abstract public class WLAdjustmentFMF
       final double mediumTermResErrorsDurationSeconds= 0.5 *
         (forecastsDurationSeconds + SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
 
+      //final Instant prevFMFDataMC0Instant= prevFMFDataMC0.getEventDate();
+
       // --- datetime mid point (in seconds since epoch) for the medium term time period
       //     after the full forecast zero'th hour.
-      final double mediumTermResErrorsTSMidPointSse= (double) prevFMFDataMC0.
-        getEventDate().plusSeconds( (long) mediumTermResErrorsDurationSeconds ).getEpochSecond();
+      final double mediumTermResErrorsTSMidPointSse= prevFMFDataMC0Instant.
+         plusSeconds( (long) mediumTermResErrorsDurationSeconds ).getEpochSecond();
 
+      if (mediumTermResErrorsTSMidPointSse <= shortTermResErrorsTSMidPointSse) {
+        throw new RuntimeException(mmi+"Cannot have mediumTermResErrorsTSMidPointSse <= shortTermResErrorsTSMidPointSse !!");
+      }
+
+      // --- Get the FMF correction equation slope.
       final double correctionEquationSlope=
         (mediumTermResErrorsMean - shortTermResErrorsMean)/
           (mediumTermResErrorsTSMidPointSse - shortTermResErrorsTSMidPointSse);
 
+      // --- Get the ordinate at origin value (i.e. origin here is the timestamp defined by the
+      //     prevFMFDataMC0Instant object) of the FMF correction equation
+      final double ordinateAtOrigin= shortTermResErrorsMean -
+        (shortTermResErrorsTSMidPointSse - prevFMFDataMC0Instant.getEpochSecond()) * correctionEquationSlope;
+
       slog.info(mmi+"shortTermResErrorsTSMidPointSse="+shortTermResErrorsTSMidPointSse);
       slog.info(mmi+"mediumTermResErrorsTSMidPointSse="+mediumTermResErrorsTSMidPointSse);
       slog.info(mmi+"correctionEquationSlope="+correctionEquationSlope);
+      slog.info(mmi+"ordinateAtOrigin="+ordinateAtOrigin);
 
-    } else {
-      slog.info(mmi+"wloInstantsSet.size()== 0 !! No correction done for the full model forecast data ");
-    }
+      final double actuFMFDataMC0InstantSse= actuFMFDataMC0Instant.getEpochSecond();
+
+      for ( MeasurementCustom mcObj: actuFMFData) {
+
+        final double mcObjRelativeTimeOffset= (double) mcObj.
+          getEventDate().getEpochSecond() - actuFMFDataMC0InstantSse;
+
+        //slog.info(mmi+"bef. correction: mcObj.getValue()="+mcObj.getValue());
+
+        mcObj.setValue(mcObj.getValue() + (correctionEquationSlope * mcObjRelativeTimeOffset + ordinateAtOrigin) );
+
+        //slog.info(mmi+"aft. correction: mcObj.getValue()="+mcObj.getValue());
+        //slog.info(mmi+"Debug exit 0");
+        //System.exit(0);
+      }
+
+    } //else {
+      //slog.info(mmi+"wloInstantsSet.size()== 0 !! No correction done for the full model forecast data ");
+    //}
 
     ///slog.info(mmi+"shortTermResErrors.size()="+shortTermResErrors.size());
     //slog.info(mmi+"mediumTermResErrors.size()="+mediumTermResErrors.size());
