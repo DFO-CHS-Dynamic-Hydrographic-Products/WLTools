@@ -225,7 +225,7 @@ abstract public class WLMeasurement implements IWLMeasurement {
        //slog.info(mmi+"wlMcPrev.getValue()="+wlMcPrev.getValue());
        //slog.info(mmi+"wlMcHere.getValue()="+wlMcHere.getValue());
        //slog.info(mmi+"wlMcNext.getValue()="+wlMcNext.getValue());
-       //slog.info(mmi+"newWLMcList.get(mcItemIter).getValue()="+newWLMcList.get(newIdx).getValue());
+       //slog.info(mmi+"newWLMcList.get(mcItemIter).getValue()="+newWLMcList.get(newIdx).getValue()+"\n");
        //slog.info(mmi+"Debug exit 0");
        //System.exit(0);
      }

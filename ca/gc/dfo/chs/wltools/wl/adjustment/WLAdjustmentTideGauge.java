@@ -304,9 +304,11 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
         getWLDataInJsonFmt(tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
 
+      slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
+
       // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
       //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
-      //    method to it before the assignation.
+      //     method to it before the assignation.
       this.nearestObsData.put(this.location.getIdentity(),
                               WLMeasurement.removeHFWLOscillations(this.prdDataTimeIntervalSeconds,tmpWLOMcList)) ;
                              //this.getWLDataInJsonFmt(tideGaugeWLODataFile, prdTimeIncrSeconds));
@@ -315,8 +317,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
                 this.nearestObsData.get(this.location.getIdentity()).size());
 
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
 
     } else {
       throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
