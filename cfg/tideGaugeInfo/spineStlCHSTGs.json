@@ -57,6 +57,8 @@
      "lon": -73.214444,
      "zcVsIGLD": 3.84,
      "ECCC_ID": "13606",
+     "convFromZCToIGLD": false,
+     "doSpineFPP": false,
      "nearestSpinePointId": "StLawrence-Sorel-gridPoint-155",
      "FMSConfig": { "merge": "ECCC_H2D2_SLFE", "mergeHours": 6,
                    "residual": { "method": "LEGACY", "fallBackError": 0.1,
