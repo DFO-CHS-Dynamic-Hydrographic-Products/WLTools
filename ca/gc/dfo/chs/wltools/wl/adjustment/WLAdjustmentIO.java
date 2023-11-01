@@ -480,10 +480,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO { //extends <>
 
       // --- Could have time stamps that are not defined with the "normal" time
       //     increment difference so just get rid of the related WL data.
-      //       e.g.: When WL obs data have 1mins time incr. intervalls (CHS TGs)
-      //             OR WL obs data have 5mins time incr. intervalls (ECCC TGs)
-      //             it means that for ECCC TGs we only use WL obs data at 15mins
-      //             time intervals if timeIncrToUse is 3mins (180 seconds)
+      //     e.g.: When WL obs data have 1mins time incr. intervalls (CHS TGs)
+      //           OR WL obs data have 5mins time incr. intervalls (ECCC TGs)
+      //           it means that for ECCC TGs we only use WL obs data at 15mins
+      //           time intervals if timeIncrToUse is 3mins (180 seconds)
+      //     NOTE: a timeIncrToUse <= 0 means that we do not need to check
+      //           the time increments (e.g. for predictions)
       if ( (timeIncrToUse > 0L) && (checkTimeIncr % timeIncrToUse != 0L)) {
         continue;
       }

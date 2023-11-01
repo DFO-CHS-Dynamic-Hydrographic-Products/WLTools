@@ -177,6 +177,15 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
      slog.info(mmi+"start");
 
+     try {
+       wlMcList.size();
+
+     } catch (NullPointerException npe) {
+       throw new RuntimeException(mmi+npe);
+     }
+
+     final int nbWLIn= wlMcList.size();
+
      // --- Simply use a three values moving average
      //     NOTE: time incr. intervall should be no more than 15mins (3mins is better)
      //     otherwise it could produce unrealistic results.
@@ -233,9 +242,14 @@ abstract public class WLMeasurement implements IWLMeasurement {
      // --- Add the last MeasurementCustom WLO to the returned List<MeasurementCustom> object.
      newWLMcList.add( new MeasurementCustom( wlMcList.get(wlMcList.size()-1) ) );
 
+     final int nbWLOut= newWLMcList.size();
+
+     slog.info(mmi+"nbWLIn="+nbWLIn);
+     slog.info(mmi+"nbWLOut="+nbWLOut);
+
      slog.info(mmi+"end");
-     //slog.info(mmi+"Debug exit 0");
-     //System.exit(0);
+     slog.info(mmi+"Debug exit 0");
+     System.exit(0);
 
      return newWLMcList;
   }
