@@ -43,6 +43,8 @@ public class WLLocation extends HBCoords implements IWLLocation {
 
   protected double zcVsVertDatum= 0.0;
 
+  protected boolean doZCConvToVertDatum= true;
+
   protected JsonObject jsonCfgObj= null;
 
   // ---
@@ -53,13 +55,16 @@ public class WLLocation extends HBCoords implements IWLLocation {
   }
 
   // ---
-  public WLLocation(final String identity, final double zcVsVertDatum,
+  public WLLocation(final String identity,
+                    final double zcVsVertDatum,
+                    final boolean doZCConvToVertDatum,
                     final double locationLon, final double locationLat ) {
 
     super(locationLon,locationLat);
 
     this.identity= identity;
     this.zcVsVertDatum= zcVsVertDatum;
+    this.doZCConvToVertDatum= doZCConvToVertDatum;
 
     // --- TODO: Add fool proof checks for the the EPSG:4326 CRS coordinates.
     //this.hbCoords= new HBCoords(locationLon,locationLat);
@@ -71,6 +76,10 @@ public class WLLocation extends HBCoords implements IWLLocation {
 
   final public double getZcVsVertDatum() {
     return this.zcVsVertDatum;
+  }
+
+  final public boolean getDoZCConvToVertDatum() {
+    return this.doZCConvToVertDatum;
   }
 
   final public JsonObject getJsonCfgObj() {
@@ -103,12 +112,21 @@ public class WLLocation extends HBCoords implements IWLLocation {
     this.zcVsVertDatum= this.jsonCfgObj.
       getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
 
-    //slog.info(mmi+"this.zcVsVertDatum="+this.zcVsVertDatum);
+    if (this.jsonCfgObj.containsKey(IWLLocation.INFO_JSON_ZCIGLD_CONV_BOOL_KEY)) {
+
+      this.doZCConvToVertDatum= this.jsonCfgObj.
+        getBoolean(IWLLocation.INFO_JSON_ZCIGLD_CONV_BOOL_KEY);
+    }
+
+    slog.info(mmi+"this.identity="+this.identity+
+              ", this.zcVsVertDatum="+this.zcVsVertDatum+
+              ", this.doZCConvToVertDatum="+this.doZCConvToVertDatum);
 
     this.setHBCoords(this.jsonCfgObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
                      this.jsonCfgObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
 
     slog.info(mmi+"end");
+
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 

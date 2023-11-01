@@ -249,10 +249,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     this.location.
       setConfig(mainJsonMapObj.getJsonObject(this.locationIdInfo));
 
-    // --- Get the tide gauge ZC conversion (-this.adjLocationZCVsVDatum to convert to ZC)
-    this.adjLocationZCVsVDatum= this.location.getZcVsVertDatum();
+    // --- Get the tide gauge ZC vs a global vertical datum conversion
+    //     but just if we need to do a conversion.
+    if ( this.location.getDoZCConvToVertDatum() )  {
+      this.adjLocationZCVsVDatum= this.location.getZcVsVertDatum();
+    }
 
-    slog.info(mmi+"this.adjLocationZCVsVDatum="+this.adjLocationZCVsVDatum);
+    slog.info(mmi+"this.location.getIdentity()="+this.location.getIdentity()+
+                  ", this.adjLocationZCVsVDatum="+this.adjLocationZCVsVDatum);
+
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -305,6 +310,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         getWLDataInJsonFmt(tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
 
       slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
+      slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
 
       // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
       //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
