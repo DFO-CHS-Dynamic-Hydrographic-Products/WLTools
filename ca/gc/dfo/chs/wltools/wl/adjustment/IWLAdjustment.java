@@ -11,6 +11,14 @@ import ca.gc.dfo.chs.wltools.util.ITimeMachine;
  */
 public interface IWLAdjustment extends ITimeMachine {
 
+  //--- 3mins in seconds for the maximum WL nearest neigh. time
+  //    interpolation
+  long MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS= 180;
+
+  // --- 15mins in seconds for the maximum time interval for
+  //     the full model forecast data
+  long MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS= 900;
+
   long MIN_FULL_FORECAST_DURATION_HOURS= 48;
 
   long MIN_FULL_FORECAST_DURATION_SECONDS=

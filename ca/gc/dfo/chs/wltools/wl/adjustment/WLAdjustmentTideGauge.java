@@ -273,6 +273,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     if (this.predictInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
 
+      // --- Here we do not need to check if the time stamps of the predictions are
+      //     consistent with what we want hence the -1 for the 2nd arg. for the
+      //     WLAdjustmentIO.getWLDataInJsonFmt() method. We also assume that the WL
+      //     predictions values are already referred to a global or regional vertical
+      //     datum (and not the local CHS ZC) hence the 0.0 value for the 3rd argument
+      //     of WLAdjustmentIO.getWLDataInJsonFmt() method.
       //this.tgLocationWLPData=
       this.locationPredData= WLAdjustmentIO.
         getWLDataInJsonFmt(tideGaugePredictInputDataFile,-1L,0.0);
@@ -325,8 +331,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
                 this.nearestObsData.get(this.location.getIdentity()).size());
 
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
 
     } else {
       throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
@@ -397,14 +403,25 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                                    +this.modelForecastInputDataFormat.name() ); //+" for inputDataType ->"+this.inputDataType.name()+" !!");
       }
 
+      if (this.fmfDataTimeIntervalSeconds > MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS) {
+        throw new RuntimeException(mmi+"Cannot have this.fmfDataTimeIntervalSeconds="+
+                                   this.fmfDataTimeIntervalSeconds+" > MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS="+MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS);
+      }
+
+      // --- Need to have this.fmfDataTimeIntervalSeconds == this.prdDataTimeIntervalSeconds at this point.
+      //     because time interp. of forecast data is not implemented yet
+      if (this.fmfDataTimeIntervalSeconds != this.prdDataTimeIntervalSeconds) {
+        throw new RuntimeException(mmi+"this.fmfDataTimeIntervalSeconds != this.prdDataTimeIntervalSeconds, time interp. for forecasts not implemented yet!");
+      }
+
       slog.info(mmi+"Now doing full model forecast correction-adjustment using previous forecast(s) data: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
 
       this.adjustFullModelForecast(prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
 
       slog.info(mmi+"Done with the full model forecast correction-adjustment");
 
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
 
     } // --- this.forecastAdjType != null
 

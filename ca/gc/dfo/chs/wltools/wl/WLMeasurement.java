@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // ---
+import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 
@@ -167,6 +168,48 @@ abstract public class WLMeasurement implements IWLMeasurement {
     //System.exit(0);
 
     return this;
+  }
+
+  // ---
+  public final static List<MeasurementCustom> getNearest2TimeNeighMCs(final Instant instantFrom,
+                                                                      final long timeIncrToUseSeconds,
+                                                                      final double wlDataValue, final double uncertainty) {
+    // --- No fool-proof checks here, we need performance
+    //     because this method is used in heavy loops.
+    List<MeasurementCustom> retListMCs= new ArrayList<MeasurementCustom>();
+
+    final long instantFromSeconds= instantFrom.getEpochSecond();
+
+    final long minTsInPastSeconds= instantFromSeconds - timeIncrToUseSeconds;
+    final long maxTsInFutrSeconds= instantFromSeconds + timeIncrToUseSeconds;
+
+    // --- Find the nearest timestamp in the past compared to instantFrom which is consistent with the timeIncrToUseSeconds
+    //     argument but it should not be at a time offset differenc that is more than this timeIncrToUseSeconds argument.
+    for (long tsIterSeconds= instantFromSeconds;
+         tsIterSeconds>= minTsInPastSeconds; tsIterSeconds -= ITimeMachine.SECONDS_PER_MINUTE) {
+
+      // --- Test for the modulo of tsIterSeconds to timeIncrToUseSeconds. A consistent tsIterSeconds
+      //     with timeIncrToUseSeconds will give a modulo of 0
+      if (tsIterSeconds % timeIncrToUseSeconds == 0) {
+        retListMCs.add(new MeasurementCustom(Instant.ofEpochSecond(tsIterSeconds), wlDataValue, uncertainty));
+        break;
+      }
+    }
+
+    // --- Find the nearest timestamp in the future compared to instantFrom which is consistent with the timeIncrToUseSeconds
+    //     argument but it should not be at a time offset difference that is more than this timeIncrToUseSeconds argument.
+    for (long tsIterSeconds= instantFromSeconds;
+         tsIterSeconds<= maxTsInFutrSeconds; tsIterSeconds += ITimeMachine.SECONDS_PER_MINUTE) {
+
+     // --- Test for the modulo of tsIterSeconds to timeIncrToUseSeconds. A consistent tsIterSeconds
+     //     with timeIncrToUseSeconds will give a modulo of 0
+     if (tsIterSeconds % timeIncrToUseSeconds == 0) {
+         retListMCs.add( new MeasurementCustom(Instant.ofEpochSecond(tsIterSeconds), wlDataValue, uncertainty) );
+         break;
+      }
+    }
+
+    return retListMCs;
   }
 
   // ---
