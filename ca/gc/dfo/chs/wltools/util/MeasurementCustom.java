@@ -11,11 +11,10 @@ import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * MeasurementCustom:
  * wrapper class that mimics the official IWLS package MeasurementCustom class.
- * This is a placeholder of the same name and we use it to be able to use the WL code 
+ * This is a placeholder of the same name and we use it to be able to use the WL code
  * developped alongside the IWLS code base. We will then be able to switch back quickly
  * to the official IWLS package MeasurementCustom class usage if needed.
  */
@@ -37,7 +36,7 @@ final public class MeasurementCustom {
   private double value;
   private double uncertainty;
 
-  //public final static double MINIMUM_UNCERTAINTY_METERS= 0.005; // --- Half centimeters 
+  //public final static double MINIMUM_UNCERTAINTY_METERS= 0.005; // --- Half centimeters
   public final static double UNDEFINED_UNCERTAINTY= -77777.0;
 
   public MeasurementCustom() {
@@ -118,9 +117,37 @@ final public class MeasurementCustom {
   }
 
   // ---
-  public final static long getDataTimeIntervallSecondsDiff(final MeasurementCustom mc1, final MeasurementCustom mc2) {
+  public final static long getDataTimeIntervallSecondsDiff(final MeasurementCustom mc1,final MeasurementCustom mc2) {
+
     return Math.abs(mc1.getEventDate().getEpochSecond() - mc2.getEventDate().getEpochSecond());
   }
+
+  //// ---
+  //public final static MeasurementCustom getNearestTSWLDataNeighbor(final long timeIncrToUseSeconds,
+  //                                                                 final long timeStampReferenceSeconds,
+  //                                                                 final List<MeasurementCustom> mcsAtNonValidTimeStamps) {
+  //  // --- No fool-proofs checks here, we need performance
+  //  //      because this method is intended to be used in loops
+  //
+  //  MeasurementCustom nearestTSWLDataNeighbor= null;
+  //
+  //  long maxTSDiffSeconds= timeIncrToUseSeconds;  //Long.MAX_VALUE.longValue();
+  //
+  //  for (final MeasurementCustom mcObj: mcsAtNonValidTimeStamps) {
+  //
+  //    final long checkTSDiffSeconds=
+  //      abs(mcObj.getEventDate.getEpochSecond() - timeStampReferenceSeconds);
+  //
+  //    // --- Need to have checkTSDiffSeconds < minTSDiffSeconds
+  //    if (checkTSDiffSeconds < minTSDiffSeconds) {
+  //
+  //      nearestTSWLDataNeighbor= mcObj;
+  //      minTSDiffSeconds= checkTSDiffSeconds;
+  //    }
+  //  }
+  //
+  //  return nearestTSWLDataNeighbor;
+  //}
 
   // ---
   public final static double getValuesArithMean(final List<MeasurementCustom> mcDataList) {

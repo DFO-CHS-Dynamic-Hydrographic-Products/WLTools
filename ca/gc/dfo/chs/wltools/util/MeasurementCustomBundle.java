@@ -31,9 +31,12 @@ final public class MeasurementCustomBundle {
 
   private Map<Instant, MeasurementCustom> mcData= null;
 
+  private Set<Instant> instantsKeySet= null;
+
   // ---
   public MeasurementCustomBundle() {
     this.mcData= null;
+    this.instantsKeySet= null;
   }
 
   // ---
@@ -54,17 +57,25 @@ final public class MeasurementCustomBundle {
 
       this.mcData.put(mcIter.getEventDate(), mcIter);
     }
+
+    this.instantsKeySet= this.mcData.keySet();
   }
 
   // ---
-  public MeasurementCustom getAtThisInstant(final Instant eventDate) {
+  public boolean contains(final Instant anInstant) {
+    return this.instantsKeySet.contains(anInstant) ;
+  }
 
-    //final MeasurementCustom mcRet= this.mcData.containsKey() ? this.mcData.get(eventDate): null;
-    return this.mcData.containsKey(eventDate) ? this.mcData.get(eventDate) : null;
+  // ---
+  public MeasurementCustom getAtThisInstant(final Instant anInstant) {
+
+    // --- Not sure that this.mcData.containsKey(eventDate) is correct all the time
+    //return this.mcData.containsKey(eventDate) ? this.mcData.get(eventDate) : null;
+    return this.contains(anInstant) ? this.mcData.get(anInstant) : null;
   }
 
   // ---
   public Set<Instant> getInstantsKeySet() {
-    return this.mcData.keySet();
+    return this.instantsKeySet; //mcData.keySet();
   }
 }

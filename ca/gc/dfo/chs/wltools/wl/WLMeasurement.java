@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 
 /**
  * abstract wrapper class for the official IWLS package Measurement class.
@@ -177,8 +178,6 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
     final String mmi= "findPossibleWLReplacements: ";
 
-    ArrayList<MeasurementCustom> retListMCs= new ArrayList<MeasurementCustom>();
-
     try {
       mcsAtNonValidTimeStamps.size();
     } catch (NullPointerException npe) {
@@ -191,35 +190,51 @@ abstract public class WLMeasurement implements IWLMeasurement {
       throw new RuntimeException(mmi+npe);
     }
 
+    final MeasurementCustomBundle mcbTmpRetListMCs= new MeasurementCustomBundle(tmpRetListMCs);
+    final MeasurementCustomBundle mcbAtNonValidTimeStamps= new MeasurementCustomBundle(mcsAtNonValidTimeStamps);
+
+    ArrayList<MeasurementCustom> retListMCs= new ArrayList<MeasurementCustom>();
+
     slog.info(mmi+"start");
 
-    for (int mcIter= 0; mcIter < tmpRetListMCs.size()-1; mcIter++ ) {
+    //final long frstInstantSeconds= tmpRetListMCs.get(0).getEventDate().getEpochSecond();
+    //final long lastInstantSeconds= tmpRetListMCs.get(mpRetListMCs.size()-1).getEventDate().getEpochSecond();
 
-      final MeasurementCustom thisMC= tmpRetListMCs.get(mcIter);
+    Instant instantIter= tmpRetListMCs.get(0).getEventDate(); //.plusSeconds(timeIncrToUseSeconds);
 
-      retListMCs.add(thisMC);
+    final Instant lastInstant= tmpRetListMCs.get(tmpRetListMCs.size()-1).getEventDate();
 
-      final long thisMCInstantSeconds= thisMC.getEventDate().getEpochSecond();
-      final long nextMCInstantSeconds= tmpRetListMCs.get(mcIter+1).getEventDate().getEpochSecond();
+    // --- Add the first MeasurementCustom object in the ArrayList that will be returned.
+    retListMCs.add(tmpRetListMCs.get(0));
 
-      if ((nextMCInstantSeconds-thisMCInstantSeconds) != timeIncrToUseSeconds) {
+    //for (long secondsIter= frstInstantSeconds + timeIncrToUseSeconds;
+    //     secondsIter < lastInstantSeconds; secondsIter += timeIncrToUseSeconds) {
+    while(instantIter.isBefore(lastInstant)) {
 
-        slog.info(mmi+"Checking if a WL replacement can be found at a reasonable time distance");
-        slog.info(mmi+"Debug System.exit(0)");
-        System.exit(0);
+      //final Instant checkInstant= Instant.ofEpochSecond(secondsIter);
+
+      instantIter.plusSeconds(timeIncrToUseSeconds);
+
+      if (!mcbTmpRetListMCs.contains(instantIter)) {
 
         //final MeasurementCustom nearestTSWLDataNeighbor=
-        //  MeasurementCustom.getNearestTSWLDataNeighbor(timeIncrToUseSeconds, mcsAtNonValidTimeStamps);
+        //  MeasurementCustomBundle.getNearestTSMCWLDataNeighbor(instantIter,timeIncrToUseSeconds,mcbAtNonValidTimeStamps);
 
         //if (nearestTSWLDataNeighbor != null) {
         //  retListMCs.add(nearestTSWLDataNeighbor);
-        // }
+        //}
+
+      } else {
+        retListMCs.add(mcbTmpRetListMCs.getAtThisInstant(instantIter));
       }
     }
 
+    // --- Add the last MeasurementCustom object in the ArrayList that will be returned.
     retListMCs.add(tmpRetListMCs.get(tmpRetListMCs.size()-1));
 
     slog.info(mmi+"end");
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     return retListMCs;
   }
