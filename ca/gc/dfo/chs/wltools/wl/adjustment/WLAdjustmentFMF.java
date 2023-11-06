@@ -109,9 +109,9 @@ abstract public class WLAdjustmentFMF
     final MeasurementCustomBundle mcbWLO= new
       MeasurementCustomBundle( this.nearestObsData.get(this.location.getIdentity()) );
 
-    // --- Get all the Instant objects of the MeasurementCustomBundle mcbWLO object
+    // --- Get a copy all the Instant objects of the MeasurementCustomBundle mcbWLO object
     //     as a Set to be able to test if some timestamps are missing for the WLO data
-    final Set<Instant> wloInstantsSet= mcbWLO.getInstantsKeySet();
+    final Set<Instant> wloInstantsSet= mcbWLO.getInstantsKeySetCopy();
 
     slog.info(mmi+"wloInstantsSet.size()="+wloInstantsSet.size());
 
@@ -179,7 +179,7 @@ abstract public class WLAdjustmentFMF
 
       // --- Get all the Instant objects of the MeasurementCustomBundle mcbPrevFMF object
       //     as a Set to be able to iterate on them.
-      final Set<Instant> prevFMFInstantsSet= mcbPrevFMF.getInstantsKeySet();
+      final Set<Instant> prevFMFInstantsSet= mcbPrevFMF.getInstantsKeySetCopy();
 
       //int shortTerm
       //double shortTermResErrorsAcc= 0.0;

@@ -7,7 +7,9 @@ package ca.gc.dfo.chs.wltools.util;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
+import java.lang.Math;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.time.Instant;
 
 //---
@@ -75,7 +77,43 @@ final public class MeasurementCustomBundle {
   }
 
   // ---
+  public Set<Instant> getInstantsKeySetCopy() {
+    return new HashSet(this.instantsKeySet); //mcData.keySet();
+  }
+
   public Set<Instant> getInstantsKeySet() {
     return this.instantsKeySet; //mcData.keySet();
   }
-}
+
+  // ---
+  public MeasurementCustom getNearestTSMCWLDataNeighbor(final Instant anInstant,
+                                                        final long maxTimeDiffSeconds) {
+                                                       //        final MeasurementCustomBundle mcbAtNonValidTimeStamps) {
+     // --- No fool-proof checks here, this method is supposed
+     //    to be used in heavy loops
+     //final String mmi= "getNearestTSMCWLDataNeighbor: ";
+
+     MeasurementCustom retMCObj= null;
+
+     long maxTSDiff= (long) Long.MAX_VALUE;
+
+     //Instant checkInstant= null;
+
+     // --- loop on all the Instants object of this MeasurementCustomBundle object.
+     for ( final Instant instantIter: this.instantsKeySet ) { //mcbAtNonValidTimeStamps.getInstantsKeySet()) {
+
+       final long checkTSDiff= Math.abs(anInstant.getEpochSecond() - instantIter.getEpochSecond());
+
+       if (checkTSDiff < maxTSDiff) {
+         retMCObj= this.getAtThisInstant(instantIter); //mcbAtNonValidTimeStamps.getAtThisInstant(instantIter);
+         maxTSDiff= checkTSDiff;
+
+       } // --- if block
+     } // --- for loop
+
+     // --- Return retMCObj only if its timestamo difference with the anInstant Instant
+     //     is smaller than timeIncrToUseSeconds
+     return (maxTSDiff <= maxTimeDiffSeconds) ? retMCObj : null;
+  }
+
+} // --- class scope block

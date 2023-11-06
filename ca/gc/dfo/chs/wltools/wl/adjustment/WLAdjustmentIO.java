@@ -561,8 +561,16 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //     in terms of timestamps.
     if ( (timeIncrToUseSeconds > 0L) && (mcsAtNonValidTimeStamps.size() > 0 ) ) {
 
-      retListMCs= WLMeasurement.
-        findPossibleWLReplacements(timeIncrToUseSeconds,mcsAtNonValidTimeStamps,tmpRetListMCs);
+      slog.info(mmi+"Trying to find WL replacements not too far in time for missing timestamps");
+
+      retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds,
+        mcsAtNonValidTimeStamps,tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
+
+      slog.info(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
+      slog.info(mmi+"retListMCs.size() after WLMeasurement.findPossibleWLReplacements()="+retListMCs.size());
+
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
 
     } else {
       retListMCs= tmpRetListMCs;

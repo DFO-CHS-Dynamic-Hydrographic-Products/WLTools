@@ -317,8 +317,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
       slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
 
       // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
       //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations

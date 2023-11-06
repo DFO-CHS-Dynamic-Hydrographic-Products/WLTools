@@ -67,16 +67,14 @@ final public class MeasurementCustom {
   // ---
   public MeasurementCustom(final Instant eventDate,
                            final Double value, final Double uncertainty) {
-
-     this.eventDate= eventDate;
-
-     this.value= value;
-     this.uncertainty= uncertainty;
+    this.value= value;
+    this.eventDate= eventDate;
+    this.uncertainty= uncertainty;
   }
 
   // ---
   public final Instant getEventDate() {
-     return this.eventDate;
+    return this.eventDate;
   }
 
   public final long getEpochSecond() {
@@ -84,23 +82,26 @@ final public class MeasurementCustom {
   }
 
   public final Double getValue() {
-     return this.value;
+    return this.value;
   }
 
   public final Double getUncertainty() {
-     return this.uncertainty;
+    return this.uncertainty;
   }
 
-  public final void setEventDate(final Instant eventDate) {
-     this.eventDate= eventDate;
+  public final MeasurementCustom setEventDate(final Instant eventDate) {
+    this.eventDate= eventDate;
+    return this;
   }
 
-  public final void setValue(final double value) {
+  public final MeasurementCustom setValue(final double value) {
     this.value= value;
+    return this;
   }
 
-  public final void setUncertainty(final double uncertainty) {
-     this.uncertainty= uncertainty;
+  public final MeasurementCustom setUncertainty(final double uncertainty) {
+    this.uncertainty= uncertainty;
+    return this;
   }
 
   // --- IMPORTANT: Do not use this method for obs MeasurementCustom data

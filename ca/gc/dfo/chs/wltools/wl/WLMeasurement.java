@@ -1,7 +1,10 @@
 //package ca.gc.dfo.iwls.fmservice.modeling.wl;
 package ca.gc.dfo.chs.wltools.wl;
 
+// ---
+import java.util.Set;
 import java.util.List;
+import java.util.HashSet;
 import java.time.Instant;
 import java.util.ArrayList;
 
@@ -174,7 +177,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
   // ---
   public final static ArrayList<MeasurementCustom>
     findPossibleWLReplacements(final long timeIncrToUseSeconds,
-                               final ArrayList<MeasurementCustom> mcsAtNonValidTimeStamps, final ArrayList<MeasurementCustom> tmpRetListMCs) {
+                               final ArrayList<MeasurementCustom> mcsAtNonValidTimeStamps,
+                               final ArrayList<MeasurementCustom> tmpRetListMCs, final long maxTimeDiffSeconds) {
 
     final String mmi= "findPossibleWLReplacements: ";
 
@@ -197,88 +201,122 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
     slog.info(mmi+"start");
 
-    //final long frstInstantSeconds= tmpRetListMCs.get(0).getEventDate().getEpochSecond();
-    //final long lastInstantSeconds= tmpRetListMCs.get(mpRetListMCs.size()-1).getEventDate().getEpochSecond();
-
+    // --- 1st Instant timestamp wanted
     Instant instantIter= tmpRetListMCs.get(0).getEventDate(); //.plusSeconds(timeIncrToUseSeconds);
 
-    final Instant lastInstant= tmpRetListMCs.get(tmpRetListMCs.size()-1).getEventDate();
+    // --- last Instant timestamp wanted
+    final Instant lastInstant= tmpRetListMCs.
+      get(tmpRetListMCs.size()-1).getEventDate();
+
+    if ( instantIter.isAfter(lastInstant)) {
+      throw new RuntimeException(mmi+"Cannot have instantIter being in the future compared to lastInstant !!");
+    }
+
+    if ( instantIter.equals(lastInstant)) {
+      throw new RuntimeException(mmi+"Cannot have instantIter being equal to lastInstant at this point !!");
+    }
+
+    if ( (lastInstant.getEpochSecond()-instantIter.getEpochSecond()) < timeIncrToUseSeconds ) {
+      throw new RuntimeException(mmi+"Cannot have (lastInstant.getEpochSecond()-instantIter.getEpochSecond()) < timeIncrToUseSeconds !!");
+    }
 
     // --- Add the first MeasurementCustom object in the ArrayList that will be returned.
     retListMCs.add(tmpRetListMCs.get(0));
 
-    //for (long secondsIter= frstInstantSeconds + timeIncrToUseSeconds;
-    //     secondsIter < lastInstantSeconds; secondsIter += timeIncrToUseSeconds) {
+    slog.info(mmi+"1st Instant wanted="+instantIter.toString());
+    slog.info(mmi+"lastInstant wanted="+lastInstant.toString());
+
+    int nbWLReplacementsFound= 0;
+
+    //List<Instant> checkInstants= new ArrayList<Instant>();
+
+    // --- Iterate on the Instant objects for the wanted time interval in seconds
+    //     starting at the 1st Instant wanted until the lastInstant wanted
     while(instantIter.isBefore(lastInstant)) {
 
-      //final Instant checkInstant= Instant.ofEpochSecond(secondsIter);
+      // --- Increment instantIter object.
+      //     (Recall that the plusSeconds() method returns a copy of the
+      //      instantIter object being incremented by timeIncrToUseSeconds)
+      instantIter= instantIter.plusSeconds(timeIncrToUseSeconds);
 
-      instantIter.plusSeconds(timeIncrToUseSeconds);
+      //if (checkInstants.contains(instantIter)) {
+      //  throw new RuntimeException(mmi+"Abnormal behavior: An already processed Instant -> "+
+      //                             instantIter.toString()+" was detected in the checkInstants List !!");
+      //}
+
+      //slog.info(mmi+"instantIter="+instantIter.toString());
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
 
       if (!mcbTmpRetListMCs.contains(instantIter)) {
 
-        //final MeasurementCustom nearestTSWLDataNeighbor=
-        //  MeasurementCustomBundle.getNearestTSMCWLDataNeighbor(instantIter,timeIncrToUseSeconds,mcbAtNonValidTimeStamps);
+        //slog.info(mmi+"instantIter="+instantIter.toString()+" not found in mcbTmpRetListMCs !!");
 
-        //if (nearestTSWLDataNeighbor != null) {
-        //  retListMCs.add(nearestTSWLDataNeighbor);
-        //}
+        final MeasurementCustom nearestTSWLDataNeighbor=
+          mcbAtNonValidTimeStamps.getNearestTSMCWLDataNeighbor(instantIter, maxTimeDiffSeconds);
+
+        //MeasurementCustomBundle.
+        //getNearestTSMCWLDataNeighbor(instantIter, timeIncrToUseSeconds, mcbAtNonValidTimeStamps);
+
+        if (nearestTSWLDataNeighbor != null) {
+
+          //slog.info(mmi+"nearestTSWLDataNeighbor.getValue()="+nearestTSWLDataNeighbor.getValue());
+          //slog.info(mmi+"orig. nearestTSWLDataNeighbor.getEventDate().toString()="+nearestTSWLDataNeighbor.getEventDate().toString());
+
+          if (retListMCs.contains(nearestTSWLDataNeighbor)) {
+
+            slog.warn(mmi+"Abnormal behavior: An already processed MeasurementCustom obj. at Instant -> "+
+                     nearestTSWLDataNeighbor.getEventDate().toString()+" was detected in retListMCs List, but continue with the next timestamps !!");
+
+            //slog.warn(mmi+"Debug exit 0");
+            //System.exit(0);
+            continue;
+
+            //throw new RuntimeException(mmi+"Abnormal behavior: An already processed MeasurementCustom obj. at Instant -> "+
+            //                           nearestTSWLDataNeighbor.getEventDate().toString()+" was detected in retListMCs List !!");
+          }
+
+          // --- Add this non-null nearestTSWLDataNeighbor MeasurementCustom object in the
+          //     returned retListMCs List but with its Instant objec beign set with the
+          //    instantIter object which is at the timestamp value we want here. The
+          //     timestamps increasing order if kept okay here in the returbed List.
+          retListMCs.add(nearestTSWLDataNeighbor.setEventDate(instantIter));
+
+          //checkInstants.add(instantIter);
+
+          nbWLReplacementsFound += 1;
+          //slog.info(mmi+"new nearestTSWLDataNeighbor.getEventDate().toString()="+nearestTSWLDataNeighbor.getEventDate().toString());
+
+          //if (nbWLReplacementsFound == 3 ) {
+          //  slog.info(mmi+"Debiug exit 0");
+          //  System.exit(0);
+          //}
+        }
+
+        //slog.info(mmi+"Debug exit 0");
+        //System.exit(0);
 
       } else {
+
+        // --- Just add this WL MeasurementCustom object which has a normal timestamp
+        //     value in the returned retListMCs List (timestamps increasing order is kept
+        //     okay here in the returned List)
         retListMCs.add(mcbTmpRetListMCs.getAtThisInstant(instantIter));
+
+        //checkInstants.add(instantIter);
       }
     }
 
     // --- Add the last MeasurementCustom object in the ArrayList that will be returned.
-    retListMCs.add(tmpRetListMCs.get(tmpRetListMCs.size()-1));
+    //retListMCs.add(tmpRetListMCs.get(tmpRetListMCs.size()-1));
 
+    slog.info(mmi+"nbWLReplacementsFound="+nbWLReplacementsFound);
     slog.info(mmi+"end");
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return retListMCs;
   }
-
-  //// ---
-  //public final static List<MeasurementCustom> getNearest2TimeNeighMCs(final Instant instantFrom,
-  //                                                                     final long timeIncrToUseSeconds,
-  //                                                                    final double wlDataValue, final double uncertainty) {
-  //  // --- No fool-proof checks here, we need performance
-  //  //     because this method is used in heavy loops.
-  //  List<MeasurementCustom> retListMCs= new ArrayList<MeasurementCustom>();
-  //
-  //  final long instantFromSeconds= instantFrom.getEpochSecond();
-  //
-  //  final long minTsInPastSeconds= instantFromSeconds - timeIncrToUseSeconds;
-  //  final long maxTsInFutrSeconds= instantFromSeconds + timeIncrToUseSeconds;
-  //
-  //  // --- Find the nearest timestamp in the past compared to instantFrom which is consistent with the timeIncrToUseSeconds
-  //   //     argument but it should not be at a time offset differenc that is more than this timeIncrToUseSeconds argument.
-  //  for (long tsIterSeconds= instantFromSeconds;
-  //       tsIterSeconds>= minTsInPastSeconds; tsIterSeconds -= ITimeMachine.SECONDS_PER_MINUTE) {
-  //
-  //    // --- Test for the modulo of tsIterSeconds to timeIncrToUseSeconds. A consistent tsIterSeconds
-  //    //     with timeIncrToUseSeconds will give a modulo of 0
-  //    if (tsIterSeconds % timeIncrToUseSeconds == 0) {
-  //      retListMCs.add(new MeasurementCustom(Instant.ofEpochSecond(tsIterSeconds), wlDataValue, uncertainty));
-  //      break;
-  //    }
-  //  }
-  //
-  //  // --- Find the nearest timestamp in the future compared to instantFrom which is consistent with the timeIncrToUseSeconds
-  //  //     argument but it should not be at a time offset difference that is more than this timeIncrToUseSeconds argument.
-  //  for (long tsIterSeconds= instantFromSeconds;
-  //       tsIterSeconds<= maxTsInFutrSeconds; tsIterSeconds += ITimeMachine.SECONDS_PER_MINUTE) {
-  //
-  //   // --- Test for the modulo of tsIterSeconds to timeIncrToUseSeconds. A consistent tsIterSeconds
-  //   //     with timeIncrToUseSeconds will give a modulo of 0
-  //   if (tsIterSeconds % timeIncrToUseSeconds == 0) {
-  //       retListMCs.add( new MeasurementCustom(Instant.ofEpochSecond(tsIterSeconds), wlDataValue, uncertainty) );
-  //       break;
-  //    }
-  //  }
-  //  return retListMCs;
-  //}
 
   // ---
   public final static List<MeasurementCustom>
@@ -313,6 +351,10 @@ abstract public class WLMeasurement implements IWLMeasurement {
        final MeasurementCustom wlMcHere= wlMcList.get(mcItemIter);
        final MeasurementCustom wlMcNext= wlMcList.get(mcItemIter+1);
 
+       slog.info(mmi+"wlMcPrev Instant="+wlMcPrev.getEventDate().toString());
+       slog.info(mmi+"wlMcHere Instant="+wlMcHere.getEventDate().toString());
+       slog.info(mmi+"wlMcNext Instant="+wlMcNext.getEventDate().toString());
+
        // --- Need to avoid applying the moving average if the timestamps
        //     are too far in time (maxTimeIncr threshold) to each other
        final long checkTimeIncrPrev= MeasurementCustom.
@@ -321,10 +363,10 @@ abstract public class WLMeasurement implements IWLMeasurement {
        final long checkTimeIncrNext= MeasurementCustom.
          getDataTimeIntervallSecondsDiff(wlMcNext,wlMcHere);
 
-       //slog.info(mmi+"checkTimeIncrPrev="+checkTimeIncrPrev);
-       //slog.info(mmi+"checkTimeIncrNext="+checkTimeIncrNext);
-       //slog.info(mmi+"Debug exit 0");
-       //System.exit(0);
+       slog.info(mmi+"checkTimeIncrPrev="+checkTimeIncrPrev);
+       slog.info(mmi+"checkTimeIncrNext="+checkTimeIncrNext);
+       slog.info(mmi+"Debug exit 0");
+       System.exit(0);
 
        if (checkTimeIncrPrev > maxTimeIncr || checkTimeIncrNext > maxTimeIncr) {
          continue;
