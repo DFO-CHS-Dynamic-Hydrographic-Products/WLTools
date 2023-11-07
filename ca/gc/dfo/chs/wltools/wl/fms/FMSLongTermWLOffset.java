@@ -141,6 +141,8 @@ abstract public class FMSLongTermWLOffset implements IFMS {
     //--- No time-weighting stuff here, just plain average.
     this.longTermOffset= this.getWLOAvg() - this.getWLPAvg();
 
+    // --- this.longTermOffsetFactor is used to calculate the decay in time
+    //     of this.longTermOffset
     final double timeDecayFactorDenom= (1.0 + Math.abs(this.longTermOffset));
 
     this.longTermOffsetFactor= 1.0 / (timeDecayFactorDenom * timeDecayFactorDenom);

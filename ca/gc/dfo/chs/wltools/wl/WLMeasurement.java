@@ -76,6 +76,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
     final String mmi= "findWLBackward: ";
     //slog.info(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
     //System.exit(1);
+    //slog.info(mmi+"start: seconds ts="+Instant.ofEpochSecond(seconds).toString());
+    //slog.info(mmi+"start:  startIndex="+startIndex);
 
     if (startIndex == 0) {
 
@@ -109,9 +111,9 @@ abstract public class WLMeasurement implements IWLMeasurement {
       this.trackIndex= 0;
     }
 
-    //slog.info(mmi+"seconds ts="+Instant.ofEpochSecond(seconds).toString());
+    //slog.info(mmi+"seconds ts end="+Instant.ofEpochSecond(seconds).toString());
     //slog.info(mmi+"this.measurement="+this.measurement);
-    //slog.debug(mmi+"end");
+    slog.debug(mmi+"end");
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 

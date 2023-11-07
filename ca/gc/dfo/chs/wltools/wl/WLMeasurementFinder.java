@@ -6,6 +6,9 @@ package ca.gc.dfo.chs.wltools.wl;
  */
 
 import java.util.List;
+import java.time.Instant;
+
+// --
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,15 +128,18 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
 
     MeasurementCustom ret= null;
 
-    slog.debug(mmi+": seconds dt: "+
-             SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex);
+    //slog.debug(mmi+": seconds dt: "+
+    //           SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex);
+    //slog.info(mmi+"start: start: seconds ts="+Instant.ofEpochSecond(seconds).toString());
+    //slog.info(mmi+"this.trackIndex="+this.trackIndex);
 
     if (this.mcDataList != null) {
 
       final long sseCheck= this.mcDataList.
         get(this.trackIndex).getEventDate().getEpochSecond();
 
-      slog.debug(mmi+"sseCheck dt: "+SecondsSinceEpoch.dtFmtString(sseCheck,true));
+      //slog.debug(mmi+"sseCheck dt: "+SecondsSinceEpoch.dtFmtString(sseCheck,true));
+      //slog.info(mmi+"sseCheck ts="+Instant.ofEpochSecond(sseCheck).toString());
 
       if (sseCheck == seconds) {
         ret= this.mcDataList.get(trackIndex);
@@ -144,7 +150,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
     }
 
     slog.debug(mmi+"end, seconds dt: "+
-              SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex + ", ret=" + ret);
+               SecondsSinceEpoch.dtFmtString(seconds, true) + ", this.trackIndex=" + this.trackIndex + ", ret=" + ret);
 
     //slog.debug(mmi+"Debug exit 0");
     //System.exit(0);
@@ -191,8 +197,12 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
   final public MeasurementCustom findInPast(/*@Min(0)*/ final long seconds) {
 
     final String mmi= "findInPast: ";
+
     //slog.debug(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
     //System.exit(1);
+    //slog.info(mmi+"start: seconds ts="+Instant.ofEpochSecond(seconds).toString());
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     MeasurementCustom ret= null;
 
@@ -277,19 +287,24 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
     MeasurementCustom ret= null;
 
     //slog.debug(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
-    //System.exit(1);
+    //System.exit(1)
+    //slog.info(mmi+"start: seconds ts="+Instant.ofEpochSecond(seconds).toString());
+    //slog.info(mmi+"this.trackIndex="+this.trackIndex);
+    //slog.info(mmi+"this.mcDataList.get(this.trackIndex),getEventDate()="+this.mcDataList.get(this.trackIndex).getEventDate().toString());
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     //--- The check if the Measurement wanted at the time-stamp represented
     //    by the argument seconds is located at trackIndex is already done.
     if (this.trackIndex == 1) {
 
-      final MeasurementCustom prevMc = this.mcDataList.get(--this.trackIndex);
+      final MeasurementCustom prevMc= this.mcDataList.get(--this.trackIndex);
 
       ret= (prevMc.getEventDate().getEpochSecond() == seconds) ? prevMc : null;
 
     } else if (this.trackIndex >= 2) {
 
-      final int prevMcIndex = this.trackIndex - 1;
+      final int prevMcIndex= this.trackIndex - 1;
 
       final MeasurementCustom prevMc= this.mcDataList.get(prevMcIndex);
 
@@ -297,7 +312,7 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
 
         ret= prevMc;
 
-        this.trackIndex = prevMcIndex;
+        this.trackIndex= prevMcIndex;
 
       } else {
 
@@ -309,6 +324,8 @@ public class WLMeasurementFinder extends WLMeasurement implements ITimeMachine {
     }
 
     slog.debug(mmi+"end: ret="+ret);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return ret;
   }

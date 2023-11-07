@@ -15,10 +15,6 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSResidualConfig;
 import ca.gc.dfo.chs.wltools.numbercrunching.ScalarOps;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSStationCovarianceConfig;
 
-/**
- *
- */
-
 //---
 //---
 //---
@@ -253,6 +249,8 @@ public class LegacyResidual
     double remnantValue= 0.0;
     double remnantError= 0.0;
 
+    //slog.info(mmi+"bef decay: this.longTermOffset=" + this.longTermOffset);
+
     //--- Check if we have a tidal remnant to use:
     if (this.tidalRemnantRf != null) {
 
@@ -263,9 +261,16 @@ public class LegacyResidual
       //    Now let the "long term" surge to decay more slowly than the "short term" surge
       //    in cases where we have a tidal remnant signal to use:
       this.longTermOffset *= Math.exp(-shortTermTimeDecayFactor * this.longTermOffsetFactor); //(-timeFactor * this.longTermOffsetFactor);
+
+    } else {
+
+      // --- G. Mercier 2023-11-07 modif.
+      //     Also allow this.longTermOffset to decay when there is
+      //     no tidal remnant signal to use:
+      this.longTermOffset *= Math.exp(-0.0002*this.longTermOffsetFactor);
     }
 
-    slog.debug(mmi+"this.longTermOffset=" + this.longTermOffset);
+    //slog.info(mmi+"aft decay this.longTermOffset=" + this.longTermOffset);
     slog.debug(mmi+"estimatedShortTermSurgeZw=" + estimatedShortTermSurgeZw);
     slog.debug(mmi+"1st estimatedSurge=" + estimatedSurge);
     slog.debug(mmi+"prevTSEstimatedSurge=" + prevTSEstimatedSurge);
