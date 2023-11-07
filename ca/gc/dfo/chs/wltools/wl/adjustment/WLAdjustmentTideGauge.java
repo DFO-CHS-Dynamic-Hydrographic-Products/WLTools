@@ -324,7 +324,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
       //     method to it before the assignation.
       this.nearestObsData.put(this.location.getIdentity(),
-                              WLMeasurement.removeHFWLOscillations(this.prdDataTimeIntervalSeconds,tmpWLOMcList)) ;
+                              WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
+                             //WLMeasurement.removeHFWLOscillations(this.prdDataTimeIntervalSeconds,tmpWLOMcList)) ;
                              //this.getWLDataInJsonFmt(tideGaugeWLODataFile, prdTimeIncrSeconds));
 
       slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
@@ -420,8 +421,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"Done with the full model forecast correction-adjustment");
 
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
 
     } // --- this.forecastAdjType != null
 

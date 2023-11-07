@@ -62,13 +62,21 @@ public interface IFMS extends IWL, ITimeMachine, ITrigonometry {
 
   int DEFAULT_FULL_MODEL_FORECAST_MERGE_HOURS= 6;
 
+  // --- Define the default time decay factor applied to gradually merge
+  //     the full model forecast (which has a duration < 84 hours) with
+  //     the long term WL prediction (NS_TIDE or climato) after the last
+  //     timestamp of the full model forecast in the future.
+  double FULL_MODEL_FORECAST_LONGTERM_MERGE_FACTOR= 1.0/12.0;
+
   // --- TODO: Change FORECASTS_TIME_INCR_MINUTES_ALLOWED to WLF_QC_TIME_INCR_MINUTES_ALLOWED
   /**
    * Regroup the 3 FORECASTS_TIME_INCR_MINUTES* constants in an array.
    */
-  int [] FORECASTS_TIME_INCR_MINUTES_ALLOWED = {FORECASTS_TIME_INCR_MINUTES_MIN,
-      FORECASTS_TIME_INCR_MINUTES,
-      FORECASTS_TIME_INCR_MINUTES_MAX};
+  int [] FORECASTS_TIME_INCR_MINUTES_ALLOWED= {
+     FORECASTS_TIME_INCR_MINUTES_MIN,
+     FORECASTS_TIME_INCR_MINUTES,
+     FORECASTS_TIME_INCR_MINUTES_MAX
+  };
 
   // --- TODO: Change FORECASTS_TIME_INCR_SECONDS_MIN to WLF_QC_TIME_INCR_SECONDS_MIN
   /**

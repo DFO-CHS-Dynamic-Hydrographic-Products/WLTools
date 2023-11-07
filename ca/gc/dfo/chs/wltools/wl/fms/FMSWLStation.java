@@ -181,7 +181,8 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
     // --- time interpolation weight factor for merging the full model forecast data (if any)
     //     with the long term prediction data. This merge is 3 * slower than for the
     //     merge with the QC forecast data.
-    this.tiLongTermPredMergeWeight= this.tiFMFMergeWeight/3.0;
+    this.tiLongTermPredMergeWeight=
+      FULL_MODEL_FORECAST_LONGTERM_MERGE_FACTOR * this.tiFMFMergeWeight; ///3.0;
 
     //this.log.debug("this.lastWLOSse time-stamp="+SecondsSinceEpoch.dtFmtString(this.lastWLOSse,true));
 

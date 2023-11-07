@@ -86,6 +86,13 @@ final public class MeasurementCustomBundle {
   }
 
   // ---
+  public MeasurementCustomBundle removeElement(final Instant anInstant) {
+
+    this.mcData.remove(anInstant);
+    return this;
+  }
+
+  // ---
   public MeasurementCustom getNearestTSMCWLDataNeighbor(final Instant anInstant,
                                                         final long maxTimeDiffSeconds) {
                                                        //        final MeasurementCustomBundle mcbAtNonValidTimeStamps) {

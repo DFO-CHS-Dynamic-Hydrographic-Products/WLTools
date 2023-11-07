@@ -15,6 +15,10 @@ public interface IWLAdjustment extends ITimeMachine {
   //    interpolation
   long MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS= 180;
 
+  // --- Maximum time difference in seconds for the removal of the high frequency
+  //     WLO data oscillations (WL measurements at tide gauges) 15mins here.
+  long MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS= 900;
+
   // --- 15mins in seconds for the maximum time interval for
   //     the full model forecast data
   long MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS= 900;

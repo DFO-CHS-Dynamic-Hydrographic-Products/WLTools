@@ -62,10 +62,10 @@ abstract public class WLMeasurement implements IWLMeasurement {
   }
 
   /**
-   * Try to recursively find a Measurement having a specific time-stamp
+   * Try to recursively find a MeasurementCustom having a specific time-stamp
    * in a List in backward mode and set this.measurement with it if it is found.
    *
-   * @param seconds    : The specific time-stamp wanted
+   * @param seconds    : The specific time-stamp (in seconds since epoch) wanted
    * @param startIndex : The start index in the List
    * @param msma       : The Measurement List.
    * @return WLMeasurement : this
@@ -74,9 +74,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
                                                /*@Min(0)*/ final int startIndex,
                                                /*@NotNull @Size(min = 2)*/ final List<MeasurementCustom> msma) {
     final String mmi= "findWLBackward: ";
-
-    slog.info(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
-    System.exit(1);
+    //slog.info(mmi+" Need to be (re-)tested before using this method ! exit 1 !");
+    //System.exit(1);
 
     if (startIndex == 0) {
 
@@ -105,10 +104,16 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
     } else {
 
-      slog.info(mmi+"startIndex>=msma.size() !");
+      slog.warn(mmi+"startIndex>=msma.size() !");
       this.measurement= null;
       this.trackIndex= 0;
     }
+
+    //slog.info(mmi+"seconds ts="+Instant.ofEpochSecond(seconds).toString());
+    //slog.info(mmi+"this.measurement="+this.measurement);
+    //slog.debug(mmi+"end");
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
   }
@@ -263,6 +268,7 @@ abstract public class WLMeasurement implements IWLMeasurement {
           //slog.info(mmi+"nearestTSWLDataNeighbor.getValue()="+nearestTSWLDataNeighbor.getValue());
           //slog.info(mmi+"orig. nearestTSWLDataNeighbor.getEventDate().toString()="+nearestTSWLDataNeighbor.getEventDate().toString());
 
+          // --- This fool-proof check is probably overkill but we never knows.
           if (retListMCs.contains(nearestTSWLDataNeighbor)) {
 
             slog.warn(mmi+"Abnormal behavior: An already processed MeasurementCustom obj. at Instant -> "+
@@ -286,6 +292,11 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
           nbWLReplacementsFound += 1;
           //slog.info(mmi+"new nearestTSWLDataNeighbor.getEventDate().toString()="+nearestTSWLDataNeighbor.getEventDate().toString());
+
+          // --- Remeove the instantIter key from the mcbAtNonValidTimeStamps MeasurementCustomBundle obj.
+          //     to avoid using it more than one time and end-up with some Instant objects duplicates in the
+          //     returned List of MeasurementCustom objects which would cause (big) problems elsewhere.
+          mcbAtNonValidTimeStamps.removeElement(instantIter);
 
           //if (nbWLReplacementsFound == 3 ) {
           //  slog.info(mmi+"Debiug exit 0");
@@ -320,7 +331,7 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
   // ---
   public final static List<MeasurementCustom>
-    removeHFWLOscillations(final long maxTimeIncr, List<MeasurementCustom> wlMcList) {
+    removeHFWLOscillations(final long maxTimeDiffSeconds, List<MeasurementCustom> wlMcList) {
 
      final String mmi= "removeHFWLOscillations: ";
 
@@ -343,32 +354,36 @@ abstract public class WLMeasurement implements IWLMeasurement {
      // --- Add the first MeasurementCustom WLO data to the returned List<MeasurementCustom> object.
      newWLMcList.add( new MeasurementCustom(wlMcList.get(0)) );
 
-     int newIdx= 0;
+     // --- Loop on all the MesurementCustom objects of the wlMcList input.
+     //     except the 1st at index 0 and the last at index wlMcList.size()-1
+     for (int mcItemIdx=1; mcItemIdx< wlMcList.size()-1; mcItemIdx++) {
 
-     for (int mcItemIter=1; mcItemIter< wlMcList.size()-1; mcItemIter++) {
+       //--- Extract the 3 contiguous (in terms of indices) MesurementCustom objects
+       //    centered on the actual index mcItemIdx
+       final MeasurementCustom wlMcPrev= wlMcList.get(mcItemIdx-1);
+       final MeasurementCustom wlMcHere= wlMcList.get(mcItemIdx);
+       final MeasurementCustom wlMcNext= wlMcList.get(mcItemIdx+1);
 
-       final MeasurementCustom wlMcPrev= wlMcList.get(mcItemIter-1);
-       final MeasurementCustom wlMcHere= wlMcList.get(mcItemIter);
-       final MeasurementCustom wlMcNext= wlMcList.get(mcItemIter+1);
-
-       slog.info(mmi+"wlMcPrev Instant="+wlMcPrev.getEventDate().toString());
-       slog.info(mmi+"wlMcHere Instant="+wlMcHere.getEventDate().toString());
-       slog.info(mmi+"wlMcNext Instant="+wlMcNext.getEventDate().toString());
+       //slog.info(mmi+"wlMcPrev Instant="+wlMcPrev.getEventDate().toString());
+       //slog.info(mmi+"wlMcHere Instant="+wlMcHere.getEventDate().toString());
+       //slog.info(mmi+"wlMcNext Instant="+wlMcNext.getEventDate().toString());
 
        // --- Need to avoid applying the moving average if the timestamps
-       //     are too far in time (maxTimeIncr threshold) to each other
-       final long checkTimeIncrPrev= MeasurementCustom.
-         getDataTimeIntervallSecondsDiff(wlMcHere,wlMcPrev);
+       //     are too far in time (maxTimeDiffSeconds threshold) to each other
+       final long checkTimeDiffPrevSeconds=
+         MeasurementCustom.getDataTimeIntervallSecondsDiff(wlMcHere,wlMcPrev);
 
-       final long checkTimeIncrNext= MeasurementCustom.
-         getDataTimeIntervallSecondsDiff(wlMcNext,wlMcHere);
+       final long checkTimeDiffNextSeconds=
+         MeasurementCustom.getDataTimeIntervallSecondsDiff(wlMcNext,wlMcHere);
 
-       slog.info(mmi+"checkTimeIncrPrev="+checkTimeIncrPrev);
-       slog.info(mmi+"checkTimeIncrNext="+checkTimeIncrNext);
-       slog.info(mmi+"Debug exit 0");
-       System.exit(0);
+       //slog.info(mmi+"checkTimeDiffPrevSeconds="+checkTimeDiffPrevSeconds);
+       //slog.info(mmi+"checkTimeDiffNextSeconds="+checkTimeDiffNextSeconds);
+       //slog.info(mmi+"Debug exit 0");
+       //System.exit(0);
 
-       if (checkTimeIncrPrev > maxTimeIncr || checkTimeIncrNext > maxTimeIncr) {
+       // --- Skip the HF WL oscillations removal for this timestamp if one time diff
+       //     is larger than maxTimeDiffSeconds
+       if (checkTimeDiffPrevSeconds > maxTimeDiffSeconds || checkTimeDiffNextSeconds > maxTimeDiffSeconds) {
          continue;
        }
 
@@ -378,8 +393,6 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
        final double newWLValue= (wlMcPrev.getValue() + wlMcHere.getValue() + wlMcNext.getValue())/3.0;
 
-       newIdx++;
-
        newWLMcList.add( new MeasurementCustom(wlMcHere.getEventDate(), newWLValue, wlMcHere.getUncertainty()) );
 
        //  setValue((wlMcPrev.getValue() + wlMcHere.getValue() + wlMcNext.getValue())/3.0);
@@ -387,7 +400,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
        //slog.info(mmi+"wlMcPrev.getValue()="+wlMcPrev.getValue());
        //slog.info(mmi+"wlMcHere.getValue()="+wlMcHere.getValue());
        //slog.info(mmi+"wlMcNext.getValue()="+wlMcNext.getValue());
-       //slog.info(mmi+"newWLMcList.get(mcItemIter).getValue()="+newWLMcList.get(newIdx).getValue()+"\n");
+       //slog.info(mmi+"newWLMcList.get(newWLMcList.size()-1).getValue()="+newWLMcList.get(newWLMcList.size()-1).getValue()+"\n");
+       //slog.info(mmi+"newWLMcList.get(newIdx).getValue()="+newWLMcList.get(newIdx).getValue()+"\n");
        //slog.info(mmi+"Debug exit 0");
        //System.exit(0);
      }
@@ -401,8 +415,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
      slog.info(mmi+"nbWLOut="+nbWLOut);
 
      slog.info(mmi+"end");
-     slog.info(mmi+"Debug exit 0");
-     System.exit(0);
+     //slog.info(mmi+"Debug exit 0");
+     //System.exit(0);
 
      return newWLMcList;
   }
