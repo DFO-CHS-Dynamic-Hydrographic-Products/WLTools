@@ -1,0 +1,13 @@
+export CLASSPATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/bin:/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib:$CLASSPATH
+export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib/as/hdfql:$LD_LIBRARY_PATH
+
+time java WLTools \
+--tool=adjustment \
+--adjType=SpineIPP \
+--inputDataType=CHS_SPINE::JSON:JSON \
+--outputDataFormat=DHP_S104_DCF8 \
+--neighborDischargeClusters=TroisRivieres:Neuville \
+--tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
+--nsTidePredInputDataDir=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/2023081706 \
+#--modelInputDataDef=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2ASCII/2023081706_SLFE_NMM.csv \
+--locationIdInfo=tidal/nonStationary/StLawrence/dischargeClusters/Deschaillons/dischargeClimatoTFHA/gridPoint-540-TFHA.json
