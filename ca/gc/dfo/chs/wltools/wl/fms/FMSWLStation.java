@@ -358,7 +358,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
                                                                /*@NotNull*/ final WLStationTimeNode wlstn) {
     final String mmi= "mergeWithFullModelForecast: ";
 
-    slog.debug(mmi+"Merging QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+    slog.info(mmi+"Merging QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
 
     final long lastFullModelForecastDataSse= this.
       lastFullModelForecastMcObj.getEventDate().getEpochSecond();
@@ -375,16 +375,19 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
       final double fmfWeight=
         Math.max(0.0, Math.min(1.0, this.tiFMFMergeWeight * (seconds - fmfThreshold) ));
 
-      slog.debug(mmi+"merge dt="+SecondsSinceEpoch.dtFmtString (seconds, true)+
+      slog.info(mmi+"merge dt="+SecondsSinceEpoch.dtFmtString (seconds, true)+
                 ", fmfThreshold=" + fmfThreshold + ", fmfWeight=" + fmfWeight +", fmfMergeCompleteSse="+fmfMergeCompleteSse);
 
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
-      slog.debug(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+
+      slog.debug(mmi+"Debug exit 0");
+      System.exit(0);
 
       wlstn.mergeWithFullModelForecast(this.surgeOffsetType, fmfWeight);
 
-      slog.debug(mmi+"aft. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.info(mmi+"aft. wlstn.mergeWithFullModelForecast(this.surgeOffsetType, fmfWeight): wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
@@ -396,12 +399,12 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
       this.lastQCFVsFMFDiff=
         this.lastFullModelForecastMcObj.getValue() - wlstn.getUpdatedForecast().getValue();
 
-      slog.debug(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
 
       // --- At this point we use %100 of the full model forecast data for the updated forecast data.
       wlstn.mergeWithFullModelForecast(this.surgeOffsetType, 1.0);
 
-      slog.debug(mmi+"aft. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.info(mmi+"aft. wlstn.mergeWithFullModelForecast(this.surgeOffsetType, 1.0): wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
@@ -415,8 +418,8 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
       final double fmfWeightInv=
         Math.max(0.0, Math.min(1.0, 1.0 - this.tiLongTermPredMergeWeight * (seconds - lastFullModelForecastDataSse)));
 
-      slog.debug(mmi+"fmfWeightInv="+fmfWeightInv);
-      slog.debug(mmi+"tiLongTermPredMergeWeight="+this.tiLongTermPredMergeWeight);
+      slog.info(mmi+"fmfWeightInv="+fmfWeightInv);
+      slog.info(mmi+"tiLongTermPredMergeWeight="+this.tiLongTermPredMergeWeight);
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
@@ -437,15 +440,15 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
      //this.lastFullModelForecastMcObj.
      //   setValue(wlstn.getUpdatedForecast().getValue());
 
-      slog.debug(mmi+"aft. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.info(mmi+"aft. wlstn.mergeWithFullModelForecastZValue: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
     }
 
-    slog.debug(mmi+"end");
-    //slog.debug(mmi+"Debug exit 0");
-    //System.exit(0);
+    slog.info(mmi+"end");
+    slog.debug(mmi+"Debug exit 0");
+    System.exit(0);
 
     return wlstn;
   }

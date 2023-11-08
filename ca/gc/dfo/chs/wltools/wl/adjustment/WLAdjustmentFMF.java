@@ -113,15 +113,17 @@ abstract public class WLAdjustmentFMF
     //     as a Set to be able to test if some timestamps are missing for the WLO data
     final Set<Instant> wloInstantsSet= mcbWLO.getInstantsKeySetCopy();
 
-    slog.info(mmi+"wloInstantsSet.size()="+wloInstantsSet.size());
+    //slog.info(mmi+"wloInstantsSet.size()="+wloInstantsSet.size());
 
     // ---
-    if (wloInstantsSet.size() == 0 ) {
-       slog.warn(mmi+"wloInstantsSet.size()== 0 !! No correction done for the full model forecast data ");
+    //if (wloInstantsSet.size() == 0 ) {
+    if (wloInstantsSet == null ) {
+
+      slog.warn(mmi+"wloInstantsSet == null !! Seems that there is no WLO data to use -> no adjustment will be done for the full model forecast data ");
 
     } else {
 
-      slog.info(mmi+"wloInstantsSet.size() > 0, produce the FMF simple linear correction equation coefficients");
+      slog.info(mmi+"Ww have some WLO data to use -> now produce the FMF simple linear adjustment equation coefficients");
 
       final int prevFMFIndex= IWLAdjustmentIO.
         FullModelForecastType.PREVIOUS.ordinal();
@@ -221,7 +223,8 @@ abstract public class WLAdjustmentFMF
         //slog.info(mmi+"mediumTermResErrors.size()="+mediumTermResErrors.size());
         //slog.info(mmi+"Debug exit 0");
         //System.exit(0);
-      }
+
+      } // --- end for loop 1
 
       slog.info(mmi+"nbMissingWLO="+nbMissingWLO);
       slog.info(mmi+"shortTermResErrors.size()="+shortTermResErrors.size());
@@ -292,15 +295,15 @@ abstract public class WLAdjustmentFMF
         //slog.info(mmi+"aft. correction: mcObj.getValue()="+mcObj.getValue());
         //slog.info(mmi+"Debug exit 0");
         //System.exit(0);
-      }
 
-    } //else {
-      //slog.info(mmi+"wloInstantsSet.size()== 0 !! No correction done for the full model forecast data ");
-    //}
+      } // --- end for loop 2
+
+    } // --- end main if-else block
 
     ///slog.info(mmi+"shortTermResErrors.size()="+shortTermResErrors.size());
     //slog.info(mmi+"mediumTermResErrors.size()="+mediumTermResErrors.size());
     slog.info(mmi+"end");
+
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 

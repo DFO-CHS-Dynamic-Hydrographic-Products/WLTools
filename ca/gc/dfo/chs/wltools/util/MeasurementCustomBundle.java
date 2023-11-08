@@ -47,25 +47,32 @@ final public class MeasurementCustomBundle {
     final String mmi= "MeasurementCustom main constructor: ";
 
     try {
-      mcDataList.get(0);
+      mcDataList.size();
 
     } catch (NullPointerException npe) {
+
+      //npe.printStackTrace(System.err);
       throw new RuntimeException(mmi+npe);
     }
 
-    this.mcData= new HashMap<Instant, MeasurementCustom>();
+    if (mcDataList.size() > 0) {
 
-    for (final MeasurementCustom mcIter: mcDataList) {
+      this.mcData= new HashMap<Instant, MeasurementCustom>();
 
-      this.mcData.put(mcIter.getEventDate(), mcIter);
+      for (final MeasurementCustom mcIter: mcDataList) {
+        this.mcData.put(mcIter.getEventDate(), mcIter);
+      }
+
+      this.instantsKeySet= this.mcData.keySet();
+
+    } else {
+      slog.warn(mmi+"Empty mcDataList !! Nothing to do here !!");
     }
-
-    this.instantsKeySet= this.mcData.keySet();
   }
 
   // ---
   public boolean contains(final Instant anInstant) {
-    return this.instantsKeySet.contains(anInstant) ;
+    return this.instantsKeySet.contains(anInstant);
   }
 
   // ---
@@ -76,17 +83,28 @@ final public class MeasurementCustomBundle {
     return this.contains(anInstant) ? this.mcData.get(anInstant) : null;
   }
 
-  // ---
+  // --- Can return null!!
   public Set<Instant> getInstantsKeySetCopy() {
-    return new HashSet(this.instantsKeySet); //mcData.keySet();
+    return (this.instantsKeySet != null) ? new HashSet(this.instantsKeySet) : null ; //mcData.keySet();
   }
 
+  // --- Can return null !!
   public Set<Instant> getInstantsKeySet() {
     return this.instantsKeySet; //mcData.keySet();
   }
 
   // ---
   public MeasurementCustomBundle removeElement(final Instant anInstant) {
+
+    //final String mmi= "removeElement: ";
+
+    // --- No fool-proof checks here, need performance
+
+    //try {
+    //  this.mcData.size();
+    //} catch (NullPointerException npe) {
+    //  throw new RuntimeException(mmi+npe);
+    //}
 
     this.mcData.remove(anInstant);
     return this;

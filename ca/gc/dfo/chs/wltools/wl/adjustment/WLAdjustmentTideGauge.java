@@ -329,8 +329,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                              //this.getWLDataInJsonFmt(tideGaugeWLODataFile, prdTimeIncrSeconds));
 
       slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
-      slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
-                this.nearestObsData.get(this.location.getIdentity()).size());
+      //slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
+      //          this.nearestObsData.get(this.location.getIdentity()).size());
 
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
@@ -338,6 +338,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     } else {
       throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
     }
+
+    // --- Acid-test for when there is no WLO to use at a TG
+    //     REMOVE WHEN TEST is DONB.
+    this.nearestObsData.get(this.location.getIdentity()).clear();
+
+    slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
+              this.nearestObsData.get(this.location.getIdentity()).size());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // ---
     if (this.forecastAdjType != null) {

@@ -108,8 +108,13 @@ final public class FMSInput extends FMSConfig {
     slog.info(mmi+"firstPredMcInstant="+firstPredMcInstant.toString());
     slog.info(mmi+"lastPredMcInstant="+lastPredMcInstant.toString()+"\n");
 
-    final Instant firstObsMcInstant=
-      this.observations.get(0).getEventDate();
+    // --- Could have no WLO data to use sometimes
+    if (this.observations.size() > 0 ) {
+
+      //final Instant firstObsMcInstant= this.observations.get(0).getEventDate();
+      slog.info(mmi+"firstObsMcInstant="+
+                this.observations.get(0).getEventDate().toString());
+    }
 
     //final Instant lastObsMcInstant= this.
     //  observations.get(this.observations.size()-1).getEventDate();
@@ -123,7 +128,7 @@ final public class FMSInput extends FMSConfig {
     final Instant lastFMFMcInstant= this.
       modelForecasts.get(this.modelForecasts.size()-1).getEventDate();
 
-    slog.info(mmi+"firstObsMcInstant="+firstObsMcInstant.toString());
+    //slog.info(mmi+"firstObsMcInstant="+firstObsMcInstant.toString());
     slog.info(mmi+"firstFMFMcInstant="+firstFMFMcInstant.toString());
     slog.info(mmi+"lastFMFMcInstant="+lastFMFMcInstant.toString()+"\n");
     slog.info(mmi+"this.referenceTime="+this.referenceTime.toString()+"\n");
