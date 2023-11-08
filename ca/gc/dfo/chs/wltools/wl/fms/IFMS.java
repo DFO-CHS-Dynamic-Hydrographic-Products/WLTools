@@ -66,7 +66,7 @@ public interface IFMS extends IWL, ITimeMachine, ITrigonometry {
   //     the full model forecast (which has a duration < 84 hours) with
   //     the long term WL prediction (NS_TIDE or climato) after the last
   //     timestamp of the full model forecast in the future.
-  double FULL_MODEL_FORECAST_LONGTERM_MERGE_FACTOR= 1.0/12.0;
+  double FULL_MODEL_FORECAST_LONGTERM_MERGE_FACTOR= 1.0/24.0; //12.0;
 
   // --- TODO: Change FORECASTS_TIME_INCR_MINUTES_ALLOWED to WLF_QC_TIME_INCR_MINUTES_ALLOWED
   /**
