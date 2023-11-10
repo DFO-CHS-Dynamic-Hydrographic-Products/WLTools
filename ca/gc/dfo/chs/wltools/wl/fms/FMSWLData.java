@@ -282,7 +282,7 @@ final public class FMSWLData implements IFMS { //, ITidal, ITidalIO {
       } else {
 
         slog.warn(mmi+"fmsInputItem.getObservations().size()==0  for station: "
-            + stationId + ", no residual error statistics computations will be done !");
+            + stationId + ", no residual error statistics computations will be done with the WL predictions !");
       }
 
       ////--- 1st check on the storm surge model forecast data. Just report on the WLP and WLF synchronisation here.

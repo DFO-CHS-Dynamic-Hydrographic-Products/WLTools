@@ -13,28 +13,12 @@ import ca.gc.dfo.chs.wltools.wl.fms.IFMS;
 //import ca.gc.dfo.chs.wltools.wl.WLTimeNode;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSConfig;
+import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.WLStationTimeNode;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSLongTermWLOffset;
 import ca.gc.dfo.chs.wltools.wl.fms.legacy.LegacyFMSResidual;
-
-//---
-//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-//import ca.gc.dfo.iwls.fmservice.modeling.fms.legacy.LegacyFMSResidual;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
-//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//import javax.validation.constraints.Min;
-//import javax.validation.constraints.NotNull;
-//import javax.validation.constraints.Size;
-//import java.util.List;
-//import java.util.ArrayList;
-//---2
-//---
-//---
 
 /**
  * Generic class for WL errors residuals computations. It allows the use of more than one stand-alone(without
@@ -303,13 +287,42 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
+      // --- Get the WLMeasurement for the PREDICTION type in case there is
+      //    no WLO data at all
+      final WLMeasurement wlmPRD= wlstn.get(WLType.PREDICTION);
+
+      // --- Check if we have a full model WL forecast result to use.
       if (fmwlStation.useFullModelForecast) {
+
+        // --- Modif. 2023-11-19 G, Mercier:
+        //     The updatedForecast MeasurementCustom object of the WLStationTimeNode wlstn
+        //     could be null here at this point if there is no WLO data at all. If it is the
+        //     case then replace it by the MODEL_FORECAST (if not too far in the future) or
+        //     the PREDICTION WL value (if there is no MODEL_FORECAST value to use).
+        if (wlstn.getUpdatedForecast() == null) {
+
+          //--- Check if we still have a full model WL forecast value to use at this point
+          //    (recall that it has a maximum of 84 hours duration normally)
+          final WLMeasurement wlmFMF= wlstn.get(WLType.MODEL_FORECAST);
+
+          if (wlmFMF != null) {
+
+            // --- Still got a full model WL forecast value to use so set the
+            //     the missing updatedForecast object of the WLStationTimeNode object
+            //     with it
+            wlstn.setUpdatedforecast(wlmFMF.getInstant(), wlmFMF.getDoubleZValue(), wlmFMF.getDoubleZError());
+
+          } else {
+
+            // --- We are now after the timestamp of the last full model WL forecast value
+            //     so use the WL PREDICTION at this point
+            wlstn.setUpdatedforecast(wlmPRD.getInstant(), wlmPRD.getDoubleZValue(), wlmPRD.getDoubleZError());
+          }
+        }
 
         //  slog.error("FMResidualFactory processFMSWLStation: The merging of default forecasts with external storm " +
         //      "surge forecast not available yet !");
         //  throw new RuntimeException("FMResidualFactory processFMSWLStation method");
-        //--- Uncomment the following two lines when the merge of the default forecast with an external storm surge
-        // forecast will be implemented.
         slog.debug(mmi+"Merging the short-term QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true) );
 
         fmwlStation.mergeWithFullModelForecast( seconds, sseFutureThreshold, wlstn);
@@ -317,23 +330,22 @@ abstract public class FMSResidualFactory extends FMSLongTermWLOffset implements 
         //slog.debug(mmi+"Done with Merging the QC forecast with a full model forecast" );
         //slog.debug(mmi+"Debug exit 0");
         //System.exit(0);
+
+      } else if (wlstn.getUpdatedForecast() == null) {
+
+        // --- No full model WL forecast at all to use, just use the PREDICTION
+        //     for the forecast result (better than nothing principle !)
+        wlstn.setUpdatedforecast(wlmPRD.getInstant(), wlmPRD.getDoubleZValue(), wlmPRD.getDoubleZError());
       }
 
-      //--- Populate the updated WL forecasts data.
+      //--- Populate the final updated WL forecasts data List
+      ///   that will be used for the output.
       fmwlStation.updatedForecastData.add(wlstn.getUpdatedForecast());
-
-      //--- block for testing purposes:
-      //if (seconds%3600L==0) {
-      ////if (seconds==(sseFutureThreshold+7200L)) {
-//            staticLog.debug("FMResidualFactory processFMSWLStation: System.exit(0)");
-//            System.exit(0);
-      //}
-
     }
 
     slog.debug(mmi+"end: stationId=" + stationId + ", sse dts=" + dts);
 
-    //slog.debug(mmi+"Debug exit 0");
+    //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 
     return wlstn;

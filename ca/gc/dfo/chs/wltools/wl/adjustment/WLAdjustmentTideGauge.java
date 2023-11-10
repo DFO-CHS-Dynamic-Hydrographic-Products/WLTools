@@ -339,9 +339,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
     }
 
-    // --- Acid-test for when there is no WLO to use at a TG
-    //     REMOVE WHEN TEST is DONB.
-    this.nearestObsData.get(this.location.getIdentity()).clear();
+    //// --- Acid-test for when there is no WLO to use at a TG
+    ////     REMOVE WHEN TEST is DONB.
+    //this.nearestObsData.get(this.location.getIdentity()).clear();
 
     slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
               this.nearestObsData.get(this.location.getIdentity()).size());

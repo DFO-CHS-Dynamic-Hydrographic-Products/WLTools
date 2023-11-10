@@ -24,23 +24,6 @@ import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLStationData;
 import ca.gc.dfo.chs.wltools.wl.fms.FMSWLMeasurement;
 
-//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.IWL;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLStationTimeNode;
-//import ca.gc.dfo.iwls.fmservice.modeling.wl.WLTimeNode;
-//import ca.gc.dfo.iwls.modeling.fms.Forecast;
-//import ca.gc.dfo.iwls.modeling.fms.Residual;
-//import ca.gc.dfo.iwls.modeling.fms.StationCovariance;
-//import ca.gc.dfo.iwls.modeling.fms.TidalRemnant;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//import javax.validation.constraints.Min;
-//import javax.validation.constraints.NotNull;
-
-//---
-//---
-
 /**
  * Class for one WL station FM Service objects.
  */
@@ -358,7 +341,7 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
                                                                /*@NotNull*/ final WLStationTimeNode wlstn) {
     final String mmi= "mergeWithFullModelForecast: ";
 
-    slog.info(mmi+"Merging QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
+    slog.debug(mmi+"Merging QC forecast with full model forecast, dt=" + SecondsSinceEpoch.dtFmtString(seconds, true));
 
     final long lastFullModelForecastDataSse= this.
       lastFullModelForecastMcObj.getEventDate().getEpochSecond();
@@ -375,20 +358,20 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
       final double fmfWeight=
         Math.max(0.0, Math.min(1.0, this.tiFMFMergeWeight * (seconds - fmfThreshold) ));
 
-      slog.info(mmi+"merge dt="+SecondsSinceEpoch.dtFmtString (seconds, true)+
-                ", fmfThreshold=" + fmfThreshold + ", fmfWeight=" + fmfWeight +", fmfMergeCompleteSse="+fmfMergeCompleteSse);
+      slog.debug(mmi+"merge dt="+SecondsSinceEpoch.dtFmtString (seconds, true)+
+                 ", fmfThreshold=" + fmfThreshold + ", fmfWeight=" + fmfWeight +", fmfMergeCompleteSse="+fmfMergeCompleteSse);
 
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
-      slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.debug(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
 
-      slog.debug(mmi+"Debug exit 0");
-      System.exit(0);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
 
       wlstn.mergeWithFullModelForecast(this.surgeOffsetType, fmfWeight);
 
-      slog.info(mmi+"aft. wlstn.mergeWithFullModelForecast(this.surgeOffsetType, fmfWeight): wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
-      //slog.debug(mmi+"Debug exit 0");
+      slog.debug(mmi+"aft. wlstn.mergeWithFullModelForecast(this.surgeOffsetType, fmfWeight): wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
 
     } else if (seconds <= lastFullModelForecastDataSse ) {
@@ -399,13 +382,13 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
       this.lastQCFVsFMFDiff=
         this.lastFullModelForecastMcObj.getValue() - wlstn.getUpdatedForecast().getValue();
 
-      slog.info(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.debug(mmi+"bef. merge: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
 
       // --- At this point we use %100 of the full model forecast data for the updated forecast data.
       wlstn.mergeWithFullModelForecast(this.surgeOffsetType, 1.0);
 
-      slog.info(mmi+"aft. wlstn.mergeWithFullModelForecast(this.surgeOffsetType, 1.0): wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
-      //slog.debug(mmi+"Debug exit 0");
+      slog.debug(mmi+"aft. wlstn.mergeWithFullModelForecast(this.surgeOffsetType, 1.0): wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
 
     } else {
@@ -418,8 +401,8 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
       final double fmfWeightInv=
         Math.max(0.0, Math.min(1.0, 1.0 - this.tiLongTermPredMergeWeight * (seconds - lastFullModelForecastDataSse)));
 
-      slog.info(mmi+"fmfWeightInv="+fmfWeightInv);
-      slog.info(mmi+"tiLongTermPredMergeWeight="+this.tiLongTermPredMergeWeight);
+      slog.debug(mmi+"fmfWeightInv="+fmfWeightInv);
+      slog.debug(mmi+"tiLongTermPredMergeWeight="+this.tiLongTermPredMergeWeight);
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
@@ -440,15 +423,15 @@ public final class FMSWLStation extends FMSWLStationData implements IFMS, IWL {
      //this.lastFullModelForecastMcObj.
      //   setValue(wlstn.getUpdatedForecast().getValue());
 
-      slog.info(mmi+"aft. wlstn.mergeWithFullModelForecastZValue: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
+      slog.debug(mmi+"aft. wlstn.mergeWithFullModelForecastZValue: wlstn.getUpdatedForecast().getValue()="+wlstn.getUpdatedForecast().getValue());
       //slog.debug(mmi+"Debug exit 0");
       //System.exit(0);
 
     }
 
-    slog.info(mmi+"end");
-    slog.debug(mmi+"Debug exit 0");
-    System.exit(0);
+    slog.debug(mmi+"end");
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return wlstn;
   }
