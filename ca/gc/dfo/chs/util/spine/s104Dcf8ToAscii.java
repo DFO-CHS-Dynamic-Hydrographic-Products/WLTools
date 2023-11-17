@@ -1,5 +1,5 @@
 package ca.gc.dfo.chs.util.spine;
-
+import as.hdfql.HDFql;
 
 /**
  * Read s-104 Dcf8 file and generate the 5 ASCII files needed by SPINE
