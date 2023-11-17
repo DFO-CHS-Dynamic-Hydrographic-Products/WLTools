@@ -3,6 +3,7 @@ dischargeClusters/<cluster>/dischargeClimatoTFHA/gridPoint-NNN-TFHA.json files m
 non-stationary tidal predictions with the following equations:
 
 The stages discharges data used for the non-stationary tidal analysis by the NS_TIDE python code was (2nd order polynomial):
+(NOTE: log() is the Neperian logarithm here and not the log10())
 
 log(discharge(t-CS1.lag)) and  (log(discharge(t-CS2lag)))**2
 
