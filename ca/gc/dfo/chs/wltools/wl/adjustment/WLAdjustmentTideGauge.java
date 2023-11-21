@@ -42,6 +42,7 @@ import java.io.FileNotFoundException;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
@@ -122,7 +123,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         tideGaugePredictInputDataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
     }
 
-    this.predictInputDataFormat= IWLStationPredIO.
+    this.predictInputDataFormat= IWLToolsIO.
       Format.valueOf(tideGaugePredictInputDataInfo[0]);
 
     final String tideGaugePredictInputDataFile= tideGaugePredictInputDataInfo[1];  ;//argsMap.get("--tideGaugePredictInputDataFile");
@@ -142,7 +143,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     }
 
     this.obsInputDataFormat=
-      IWLStationPredIO.Format.valueOf(tideGaugeWLODataInfo[0]);
+      IWLToolsIO.Format.valueOf(tideGaugeWLODataInfo[0]);
 
     // --- Extract the path of the WLO data file for the TG.
     final String tideGaugeWLODataFile= tideGaugeWLODataInfo[1]; ;//argsMap.get("--tideGaugeWLODataFile");
@@ -271,7 +272,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"Reading the prediction data using "+this.predictInputDataFormat.name());
 
-    if (this.predictInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
+    if (this.predictInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
 
       // --- Here we do not need to check if the time stamps of the predictions are
       //     consistent with what we want hence the -1 for the 2nd arg. for the
@@ -307,7 +308,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     slog.info(mmi+"Reading the TG obs (WLO) at location -> "+
               this.location.getIdentity()+" data using "+this.obsInputDataFormat.name());
 
-    if (this.obsInputDataFormat == IWLStationPredIO.Format.CHS_JSON ) {
+    if (this.obsInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
 
       this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
 

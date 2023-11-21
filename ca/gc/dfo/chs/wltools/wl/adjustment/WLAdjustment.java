@@ -142,6 +142,20 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
     //System.exit(0);
   }
 
+  // ---
+  final public String getLocationIdentity() {
+
+    final String mmi="getLocationIdentity: ";
+
+    try {
+      this.adjInstance.getLocationIdentity();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+   return this.adjInstance.getLocationIdentity();
+  }
+
   /**
    * Comments please.
    */

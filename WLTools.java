@@ -131,7 +131,7 @@ final public class WLTools extends WLToolsIO {
     //System.exit(0);
 
     if (argsMap.keySet().contains("--outputDataFormat")) {
-      WLToolsIO.setOutputDataFormat(argsMap.get("-outputDataFormat");
+      WLToolsIO.setOutputDataFormat(argsMap.get("--outputDataFormat"));
       mlog.info(mmi+"WLToolsIO.getOutputDataFormat()="+WLToolsIO.getOutputDataFormat());
     }
 
@@ -148,7 +148,7 @@ final public class WLTools extends WLToolsIO {
 
       wlStationPred.getAllPredictions();
 
-      wlStationPred.writeIfNeeded(IWLStationPredIO.Format.CHS_JSON); //.writeResults(IWLStationPred.OutputFormat.JSON)
+      wlStationPred.writeIfNeeded(IWLToolsIO.Format.CHS_JSON); //.writeResults(IWLStationPred.OutputFormat.JSON)
 
       //wlStationPred.writeResults(IWLStationPred.OutputFormat.JSON)
 
@@ -162,20 +162,22 @@ final public class WLTools extends WLToolsIO {
       mlog.info(mmi+"Doing WL forecast or prediction "+
                 IWLTools.Box.adjustment.name()+" using the more recently validated CHS WLO TG data");
 
-      final WLAdjustment wlAdjust= new WLAdjustment(argsMap);
+      final WLAdjustment wlAdjustAtLocation= new WLAdjustment(argsMap);
 
       //List<MeasurementCustom> adjustedWLForecast= null;
 
       // --- Check if we need to write all WL adj. data (input and results) on disk
       final String allAdjDataOutDir= writeAllData ? WLToolsIO.getOutputDirectory() : null;
 
-      final List<MeasurementCustom> adjustedWLForecast= wlAdjust.getAdjustment(allAdjDataOutDir); //.writeResult(finak string outFile); //
+      final List<MeasurementCustom> adjustedWLForecast=
+        wlAdjustAtLocation.getAdjustment(allAdjDataOutDir); //.writeResult(finak string outFile); //
 
       // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
       //    output format.
-       WLToolsIO.write(adjustedWLForecast, WLToolsIO.getOutputDataFormat(), WLToolsIO.getOutputDirectory())
+       WLToolsIO.writeToOutputDir(adjustedWLForecast,
+                                  IWLToolsIO.Format.CHS_JSON, wlAdjustAtLocation.getLocationIdentity());
 
-       mlog(mmi+"Debug System.exit(0)");
+       mlog.info(mmi+"Debug System.exit(0)");
        System.exit(0);
     }
 

@@ -4,7 +4,9 @@ package ca.gc.dfo.chs.wltools.wl.adjustment;
 import java.util.Set;
 import java.util.Map;
 
-import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
+// ---
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
+//import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 
 /**
  * Comments please!
@@ -71,18 +73,18 @@ public interface IWLAdjustmentIO {
   //};
 
   String [] CHS_IWLS_FMTS= {
-    IWLStationPredIO.Format.CHS_JSON.name()
+    IWLToolsIO.Format.CHS_JSON.name()
   };
 
   String [] CHS_SPINE_FMTS= {
-    IWLStationPredIO.Format.CHS_JSON.name(),
+    IWLToolsIO.Format.CHS_JSON.name(),
     DataTypesFormatsDef.DHP_S104_DCF3.name(),
     DataTypesFormatsDef.SPINE_ADHOC_ASCII.name(),
   };
 
   // ---
   String [] CHS_TIDEGAUGE_FMTS= {
-    IWLStationPredIO.Format.CHS_JSON.name(),
+    IWLToolsIO.Format.CHS_JSON.name(),
     DataTypesFormatsDef.ECCC_H2D2_ASCII.name() //,
     //DataTypesFormatsDef.JSON.name()+ INPUT_DATA_FMT_SPLIT_CHAR + DataTypesFormatsDef.ECCC_H2D2_ASCII.name()
   };

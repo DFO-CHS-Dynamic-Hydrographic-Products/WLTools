@@ -32,6 +32,7 @@ import javax.json.JsonArrayBuilder;
 // ---
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
@@ -55,7 +56,7 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  protected String outputDirectory= null;
+  //protected String outputDirectory= null;
 
   protected List<MeasurementCustom> predictionData= null;
 
@@ -65,7 +66,7 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
   public WLStationPredIO() {
     //super();
 
-    this.outputDirectory= null;
+    //this.outputDirectory= null;
     this.predictionData= null;
   }
 
@@ -78,61 +79,20 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
 
     slog.info(mmi+"start: locationId="+locationId);
 
-    if (this.outputDirectory == null) {
-      throw new RuntimeException(mmi+"this.outputDirectory cannot be null at this point!");
-    }
-
-    if (this.predictionData == null) {
-      throw new RuntimeException(mmi+"this.predictionData cannot be null at this point!");
-    }
-
-    final String jsonOutFileNamePrfx= locationId.
-      replace(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR,IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR);
-
-    final String jsonOutputFile= this.outputDirectory +
-      File.separator + jsonOutFileNamePrfx + IWLStationPredIO.JSON_FEXT ;
-
-    slog.info(mmi+"jsonOutputFile="+jsonOutputFile);
-
-    FileOutputStream jsonFileOutputStream= null;
+    //try {
+    //  this.outputDirectory.length();
+    //} catch (NullPointerExceptio npe) {
+    //  throw new RuntimeException(mmi+npe);
+    //}
 
     try {
-      jsonFileOutputStream= new FileOutputStream(jsonOutputFile);
-
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(mmi+e);
+      this.predictionData.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
     }
 
-    JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
-
-    // --- Loop on all the MeasurementCustom objects that contains the WL prediction data.
-    for (final MeasurementCustom mc: this.predictionData) {
-
-       //final String eventDateISO8601= mc.getEventDate().toString();
-       //final double wlpValue= mc.getValue();
-
-       jsonArrayBuilderObj.
-          add( Json.createObjectBuilder().
-            add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ).
-              add( IWLStationPredIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
-              //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
-    }
-
-    //JsonArray jsonArrayObj= jsonArrayBuilderObj.build();
-
-    //JsonWriter jsonWriter= Json.createWriter(jsonFileOutputStream);
-    //jsonWriter.writeArray( jsonArrayBuilderObj.build() );
-
-    Json.createWriter(jsonFileOutputStream).
-      writeArray( jsonArrayBuilderObj.build() );
-
-    // --- We can close the Json file now
-    try {
-      jsonFileOutputStream.close();
-    } catch (IOException e) {
-      throw new RuntimeException(mmi+e);
-    }
-
+    WLToolsIO.writeToOutputDir(this.predictionData,
+                               IWLToolsIO.Format.CHS_JSON,locationId ); //, this.outputDirectory);
     slog.info(mmi+"end");
 
     //slog.info(mmi+"debug System.exit(0)");

@@ -84,21 +84,19 @@ final public class WLStationPred extends WLStationPredFactory {
     final long startTimeSeconds=
       startTimeInstant.toEpochMilli() / ITimeMachine.SEC_TO_MILLISEC;
 
-    try {
-      WLToolsIO.getOutputDirectory().length();
-
-    } catch (NullPointerException e) {
-      throw new RuntimeException(mmi+e);
-    }
-
-    this.outputDirectory= WLToolsIO.getOutputDirectory();
+    //try {
+    //  WLToolsIO.getOutputDirectory().length();
+    //} catch (NullPointerException e) {
+    //  throw new RuntimeException(mmi+e);
+    //}
+    //this.outputDirectory= WLToolsIO.getOutputDirectory();
 
     //if (argsMapKeySet.contains("--outputDirectory")) {
     //this.outputDirectory= argsMap.get("--outputDirectory");
     //}
 
-    slog.info(mmi+"Will use this.outputDirectory="+
-                this.outputDirectory+" to write prediction results");
+    slog.info(mmi+"Will use WLToolsIO.getOutputDirectory()="+
+                WLToolsIO.getOutputDirectory()+" to write prediction results");
 
     long predDurationInDays= IWLStationPred.DEFAULT_DAYS_DURATION_IN_FUTURE;
 
@@ -268,13 +266,13 @@ final public class WLStationPred extends WLStationPredFactory {
   /**
    * comments please!
    */
-  final public void writeIfNeeded(/*@NotNull*/ IWLStationPredIO.Format outputFormat) {
+  final public void writeIfNeeded(/*@NotNull*/ IWLToolsIO.Format outputFormat) {
 
-    final String mmi= "writeIfNeeded: ";
+    final String mmi= "write: ";
 
-    slog.info(mmi+"start: this.outputDirectory="+this.outputDirectory);
+    slog.info(mmi+"start: WLToolsIO.getOutputDirectory()="+WLToolsIO.getOutputDirectory());
 
-    if (this.outputDirectory != null) {
+    if (WLToolsIO.getOutputDirectory() != null) {
 
       if (!IWLStationPredIO.allowedFormats.contains(outputFormat.name())) {
         throw new RuntimeException(mmi+"Invalid output file format -> "+outputFormat.name());
@@ -282,14 +280,20 @@ final public class WLStationPred extends WLStationPredFactory {
 
       //final String outputFile= this.outputDirectory + File.separator + ;
 
-      slog.info(mmi+"Writing prediction results in "+this.outputDirectory+
+      slog.info(mmi+"Writing prediction results in "+WLToolsIO.getOutputDirectory()+
                 " using "+ outputFormat.name()+" output file format");
 
       if (outputFormat.name().
             equals(IWLToolsIO.Format.CHS_JSON.name()) ) {
 
-         this.writeJSONOutputFile(this.stationId);
+        this.writeJSONOutputFile(this.stationId);
+
+      } else {
+        throw new RuntimeException(mmi+"The "+outputFormat.name()+" output file format is not implemented yet !!");
       }
+
+    } else {
+      slog.info(mmi+"WLToolsIO.getOutputDirectory() is null, assuming no need to write the WL predictions data");
     }
 
     slog.info(mmi+"end");
@@ -297,87 +301,4 @@ final public class WLStationPred extends WLStationPredFactory {
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
   }
-
-//  /**
-//   * @param stationId:              String id. of the WL station.
-//   * @param startTimeSeconds:       Starting time in seconds.
-//   * @param enTimeSeconds:          Ending time in seconds.
-//   * @param timeIncrSeconds:        Time increments between sucessive WLs (in seconds)
-//   * @param latitudeDecimalDegrees: (null for stage-only and climatology methods) Need latitude of the target location for astronomic ephemerides computations.
-//   * @param method:                 (null for stage-only and climatology methods) The Tidal prediction method name id.
-//   * @param wlTContstfileFormat:    
-//   */
-////  public WLStationPred(/*@NotNull*/ final String stationId,
-//                       final String stationTcInputFile,
-//                       /*@NotNull*/ final long startTimeSeconds,
-//                       /*@NotNull*/ final long endTimeSeconds,
-//                       final long timeIncrSeconds,
-//                       final double latitudeDecimalDegrees,
-//                       final ITidalIO.WLConstituentsInputFileFormat wlTContstfileFormat,
-//                       final ITidal.Method method,
-//                       final HashMap<String, String> stageTimeVaryingData) {
-//
-//     //super(method, stationId, stationTcInputFile, wlTContstfileFormat,
-//     //      startTimeSeconds, endTimeSeconds, timeIncrSeconds, latitudeDecimalDegrees); //, stageTimeVaryingData);
-//    //super(Method.FOREMAN, stationId, inputfileFormat, latitudeDecimalDegrees, startTimeSeconds);
-//  }
-
-  ///**
-  // * @param method            : Method object which specify which method to use for the tidal computations.
-  // * @param inputFileFormat:  object of class ConstituentsInputFileFormat for the Z tidal constituents input file
-  // *                          format.
-  // * @param startTimeSeconds: Time stamp in seconds since UNIX epoch time 0 for the astronomic ephemerides
-  // *                          computations.
-  // * @param stationInfo:      IWLS Station object normally retreived from the DB with a SQL request.
-  // */
-  //public WLStationPred(final Method method,
-  //                     final WLConstituentsInputFileFormat inputFileFormat,
-  //                     final long startTimeSeconds, /*@NotNull*/ final Station stationInfo) {
-  //
-  //  //--- No more com.vividsolutions.jts.geom.Point object in IWLS Station class.
-  //  //    But it could eventually make a comeback.
-  //  super(method, stationInfo.getCode(), inputFileFormat, stationInfo.getLatitude(), startTimeSeconds);
-  //
-  //  //super(method, stationInfo.getCode(), inputFileFormat, stationInfo.getLocation().getCoordinates()[0].y,
-  //  // startTimeSeconds);
-  //}
-  
-  /**
-   * @param method              : Method object which specify which method to use for the tidal computations.
-   * @param inputFileFormat:    object of class ConstituentsInputFileFormat for the Z tidal constituents input file
-   *                            format.
-   * @param startTimeSeconds:   Time stamp in seconds since UNIX epoch for the beginning of the tidal preds. time
-   *                            series wanted.
-   * @param endTimeSeconds:     Time stamp in seconds since UNIX epoch for the end of the tidal preds. time series
-   *                            wanted.
-   * @param timeIncrSeconds:    Time increment in seconds between each tidal preds. time series items.
-   * @param forecastingContext: IWLS ForecastingContext object normally retreived from the DB with a SQL request.
-   * @return The ForecastingContext taken as last argument with its Prediction time series set to the newly computed
-   * tidal prediction.
-   */
-//  //@NotNull
-//  final public static ForecastingContext computeForecastingContextPredictions(final Method method,
-//                                                                              final WLConstituentsInputFileFormat inputFileFormat,
-//                                                                              final long startTimeSeconds,
-//                                                                              final long endTimeSeconds,
-//                                                                              final long timeIncrSeconds,
-//                                                                              /*@NotNull*/ final ForecastingContext forecastingContext) {
-//    try {
-//      forecastingContext.getReferenceTime();
-//
-//    } catch (NullPointerException e) {
-//
-//      staticLogger.error("WLStationTidalPredictions computeForecastingContextPredictions: forecastingContext==null !!");
-//      throw new RuntimeException("WLStationTidalPredictions computeForecastingContextPredictions");
-//    }
-//
-//    staticLogger.debug("WLStationTidalPredictions computeForecastingContextPredictions: start: station id.= " + forecastingContext.getStationCode());
-//
-//    final WLStationTidalPredictionsFactory tmpFactory = new WLStationTidalPredictions(method, inputFileFormat,
-//        startTimeSeconds, forecastingContext.getStationInfo());
-//
-//    return tmpFactory.computeForecastingContextPreds(startTimeSeconds, endTimeSeconds, timeIncrSeconds,
-//        forecastingContext);
-//  }
-
 }

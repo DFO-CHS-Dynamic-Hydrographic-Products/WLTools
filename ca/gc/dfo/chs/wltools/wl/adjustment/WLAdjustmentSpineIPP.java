@@ -41,6 +41,7 @@ import java.io.FileNotFoundException;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
@@ -413,7 +414,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
         //final HBCoords spineLocationHBCoordsObj= new HBCoords(getJson);
 
         final String spineLocationIdStr= spineLocationJsonInfoFile.
-          getFileName().toString().replace(IWLStationPredIO.JSON_FEXT,"").
+          getFileName().toString().replace(IWLToolsIO.JSON_FEXT,"").
             replace(INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX,"");
 
         final String spineLocationJsonInfoFileStr= spineDomainName +
@@ -490,7 +491,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
                 ": Reading the NS_TIDE prediction for the nearest spine location -> "+nearestSpineLocationId);
 
       final String nsTidePredDataJsonFile= nsTidePredInputDataDir +
-        File.separator + nearestSpineLocationId + IWLStationPredIO.JSON_FEXT;
+        File.separator + nearestSpineLocationId + IWLToolsIO.JSON_FEXT;
 
       slog.info(mmi+"nsTidePredDataJsonFile="+nsTidePredDataJsonFile);
 
@@ -513,7 +514,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       slog.info(mmi+"Filling-up this.spineLocationNSTPred with its NS_TIDE prediction data");
 
       final String nsTidePredDataJsonFile= nsTidePredInputDataDir +
-        File.separator + spinelocationId + IWLStationPredIO.JSON_FEXT;
+        File.separator + spinelocationId + IWLToolsIO.JSON_FEXT;
 
       slog.info(mmi+"NS_TIDE prediction data file for the spine target location -> "+nsTidePredDataJsonFile);
 

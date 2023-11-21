@@ -30,5 +30,7 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
  */
 public interface IWLAdjustmentType extends IWLAdjustmentIO {
 
+  public String getLocationIdentity();
+
   public List<MeasurementCustom> getAdjustment(final String outputDirectory);
 }

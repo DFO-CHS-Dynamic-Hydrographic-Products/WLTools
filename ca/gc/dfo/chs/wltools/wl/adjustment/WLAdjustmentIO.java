@@ -33,7 +33,9 @@ import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
 
+// ---
 import ca.gc.dfo.chs.wltools.wl.IWL;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
@@ -82,8 +84,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
   //protected DataType inputDataType= null;
 
-  protected IWLStationPredIO.Format obsInputDataFormat= null;
-  protected IWLStationPredIO.Format predictInputDataFormat= null;
+  protected IWLToolsIO.Format obsInputDataFormat= null;
+  protected IWLToolsIO.Format predictInputDataFormat= null;
 
   protected DataTypesFormatsDef modelForecastInputDataFormat= null;
 
@@ -487,7 +489,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         jsonWLDataArray.getJsonObject(itemIter);
 
       final Instant wlDataInstant= Instant.
-        parse(jsonWLDataObj.getString(IWLStationPredIO.INSTANT_JSON_KEY));
+        parse(jsonWLDataObj.getString(IWLToolsIO.INSTANT_JSON_KEY));
 
       final long checkTimeStampSeconds= wlDataInstant.getEpochSecond();
 
@@ -516,7 +518,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       //    input file. Users have just to pass the same value but with the
       //    opposite sign to get the value being converted to the ZC.
       final double wlDataValue= jsonWLDataObj.
-        getJsonNumber(IWLStationPredIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
+        getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
 
       //slog.info(mmi+"wlPredValue="+wlPredValue);
       //slog.info(mmi+"Debug System.exit(0)");
@@ -524,10 +526,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
       double uncertainty= MeasurementCustom.UNDEFINED_UNCERTAINTY;
 
-      if (jsonWLDataObj.containsKey(IWLStationPredIO.UNCERTAINTY_JSON_JEY)) {
+      if (jsonWLDataObj.containsKey(IWLToolsIO.UNCERTAINTY_JSON_JEY)) {
 
         uncertainty= jsonWLDataObj.
-          getJsonNumber(IWLStationPredIO.UNCERTAINTY_JSON_JEY).doubleValue();
+          getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
       }
 
       uncertainty= (uncertainty > IWL.MINIMUM_UNCERTAINTY_METERS) ? uncertainty: IWL.MAXIMUM_UNCERTAINTY_METERS;

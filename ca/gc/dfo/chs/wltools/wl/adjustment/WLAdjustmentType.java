@@ -20,6 +20,7 @@ import javax.json.JsonReader;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
@@ -93,7 +94,7 @@ abstract public class WLAdjustmentType
     // --- Get only the base name of the this.locationIdInfo file path.
     //this.locationId= new File(this.locationIdInfo).
     final String identity=
-      new File(this.locationIdInfo).getName().replace(IWLStationPredIO.JSON_FEXT,"");
+      new File(this.locationIdInfo).getName().replace(IWLToolsIO.JSON_FEXT,"");
 
     if (this.adjType == IWLAdjustment.Type.TideGauge) {
 
@@ -153,7 +154,7 @@ abstract public class WLAdjustmentType
     return this.location;
   }
 
-  final public String getIdentity() {
+  final public String getLocationIdentity() {
     return this.location.getIdentity();
   }
 
