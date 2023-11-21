@@ -4,6 +4,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,8 @@ public class S104Dcf8ToAscii {
         HDFql.execute(hdfqlGetGroupsNo);
         Integer numGroup = HDFql.cursorGetCount();
 
+        
+
         // Create Arrays of group names
         String[] groupsNames = new String[numGroup];
         HDFql.variableRegister(groupsNames);
@@ -68,6 +71,32 @@ public class S104Dcf8ToAscii {
             String groupPath = "WaterLevel/WaterLevel.01/" + i;
             String hdfqlSelectValues = "SELECT FROM " + groupPath + "/values";
             HDFql.execute(hdfqlSelectValues);
+
+            // Loop trough group and generate MeasurementCustom items
+            List<MeasurementCustom> bundledValues = new ArrayList<>();
+            while(HDFql.cursorNext() == HDFql.SUCCESS) {
+                // eventDate
+                Integer minutesAfterStart = 0;
+                Instant eventDate = startTime.plus(minutesAfterStart, ChronoUnit.MINUTES);
+                minutesAfterStart = minutesAfterStart + 3;
+                // value
+                Double value = HDFql.cursorGetDouble();
+                HDFql.cursorNext();
+                // Skip trend
+                HDFql.cursorNext();
+                // uncertainty
+                Double uncertainty = HDFql.cursorGetDouble();
+                MeasurementCustom iMeasurement = new MeasurementCustom();
+                iMeasurement.setEventDate(eventDate);
+                iMeasurement.setValue(value);
+                iMeasurement.setUncertainty(uncertainty);
+                bundledValues.add(iMeasurement);
+                
+            }
+            
+            // Generate MeasurementCustomBundle and append to array
+             MeasurementCustomBundle GroupMCB = new MeasurementCustomBundle();
+             data.add(GroupMCB);
 
     
             }
