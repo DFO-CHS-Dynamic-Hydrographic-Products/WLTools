@@ -55,9 +55,6 @@ final public class WLStationPred extends WLStationPredFactory {
    */
   public WLStationPred() {
     super();
-
-    this.outputDirectory= null;
-    this.predictionData= null;
   }
 
  /**
