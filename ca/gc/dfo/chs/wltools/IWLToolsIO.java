@@ -6,6 +6,20 @@ package ca.gc.dfo.chs.wltools;
  */
 public interface IWLToolsIO {
 
+  String JSON_FEXT= ".json";
+
+  String VALUE_JSON_KEY= "value";
+  String INSTANT_JSON_KEY= "eventDate";
+  String UNCERTAINTY_JSON_JEY= "uncertainty";
+
+  // ---
+  enum Format {
+    CHS_JSON,
+    DHP_S104_DCF8
+    //CSV
+  }
+
+
   // --- the cfg main folder MUST exists alongside the main Java classes files folder.
   final static String PKG_CFG_MAIN_DIR= "cfg/";
 

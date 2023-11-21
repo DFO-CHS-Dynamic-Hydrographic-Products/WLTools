@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.List;
 
 // ---
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 
@@ -21,21 +22,22 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
  */
 public interface IWLStationPredIO  {
 
-  String JSON_FEXT= ".json";
+  // --- Moved to IWLToolsIO class
+  //String JSON_FEXT= ".json";
+  //String VALUE_JSON_KEY= "value";
+  //String INSTANT_JSON_KEY= "eventDate";
+  //String UNCERTAINTY_JSON_JEY= "uncertainty";
+  //// ---
+  //enum Format {
+  //  CHS_JSON,
+  //  DHP_S104_DCF8
+  //  //CSV
+  //}
 
-  String VALUE_JSON_KEY= "value";
-  String INSTANT_JSON_KEY= "eventDate";
-  String UNCERTAINTY_JSON_JEY= "uncertainty";
-
-  // ---
-  enum Format {
-    CHS_JSON,
-    DHP_S104_DCF8
-    //CSV
-  }
-
-  String [] allowedFormatsDef= { Format.CHS_JSON.name(),
-                                 Format.DHP_S104_DCF8.name() }; //, OutputFormats.CSV.name() };
+  String [] allowedFormatsDef= {
+    IWLToolsIO.Format.CHS_JSON.name(),
+    IWLToolsIO.Format.DHP_S104_DCF8.name()
+  }; //, OutputFormats.CSV.name() };
 
   Set<String> allowedFormats= Set.of(allowedFormatsDef);
 

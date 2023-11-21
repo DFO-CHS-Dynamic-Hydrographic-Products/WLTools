@@ -23,6 +23,7 @@ import javax.json.JsonReader;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
@@ -284,8 +285,8 @@ final public class WLStationPred extends WLStationPredFactory {
       slog.info(mmi+"Writing prediction results in "+this.outputDirectory+
                 " using "+ outputFormat.name()+" output file format");
 
-      if ( outputFormat.name().
-              equals(IWLStationPredIO.Format.CHS_JSON.name()) ) {
+      if (outputFormat.name().
+            equals(IWLToolsIO.Format.CHS_JSON.name()) ) {
 
          this.writeJSONOutputFile(this.stationId);
       }

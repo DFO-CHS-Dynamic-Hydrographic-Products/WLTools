@@ -46,4 +46,10 @@ public class WLToolsIO implements IWLToolsIO {
    final public static String getOutputDataFormat() {
      return outputDataFormat;
    }
+
+   // ---
+   final public static writeToOutputDirArg(final List<MeasurementCustom> wlDataToWrite,
+                                           final IWLTools.Format outputFormat, final String locationId, final String writeToOutputDirArg, ) {
+
+   }
 }
