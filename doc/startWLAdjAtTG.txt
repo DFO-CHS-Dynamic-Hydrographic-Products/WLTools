@@ -22,6 +22,8 @@ time java WLTools \
 \
 --tideGaugePredictInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/TestNSTIDEPred/2023100406/StLawrence-Deschaillons-gridPoint-540.json
 \
---outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools
+--outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG
+\
+-outputDataFormat=CHS_JSON
 \
 --writeAllData=true

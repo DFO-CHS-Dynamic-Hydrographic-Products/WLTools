@@ -130,6 +130,11 @@ final public class WLTools extends WLToolsIO {
     //System.out.println(mmi+"Debug exit 0");
     //System.exit(0);
 
+    if (argsMap.keySet().contains("--outputDataFormat")) {
+      WLToolsIO.setOutputDataFormat(argsMap.get("-outputDataFormat");
+      mlog.info(mmi+"WLToolsIO.getOutputDataFormat()="+WLToolsIO.getOutputDataFormat());
+    }
+
     //if (tool.equals("prediction")) {
     if (tool.equals(IWLTools.Box.prediction.name())) {
 
@@ -161,18 +166,18 @@ final public class WLTools extends WLToolsIO {
 
       //List<MeasurementCustom> adjustedWLForecast= null;
 
-      // --- Check if we need to write all WL data (input and results) on disk
-      final String outputDirArg= writeAllData ? WLToolsIO.getOutputDirectory() : null;
+      // --- Check if we need to write all WL adj. data (input and results) on disk
+      final String allAdjDataOutDir= writeAllData ? WLToolsIO.getOutputDirectory() : null;
 
-      final List<MeasurementCustom> adjustedWLForecast= wlAdjust.getAdjustment(outputDirArg); //.writeResult(finak string outFile); //
+      final List<MeasurementCustom> adjustedWLForecast= wlAdjust.getAdjustment(allAdjDataOutDir); //.writeResult(finak string outFile); //
 
-       // --- Only write the adjusted WL forecast data on disk
-       //WLToolsIO.write(adjustedWLForecast,WLToolsIO.getOutputFormat,WLToolsIO.getOutputDirectory())
+      // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
+      //    output format.
+       WLToolsIO.write(adjustedWLForecast, WLToolsIO.getOutputDataFormat(), WLToolsIO.getOutputDirectory())
 
-       //System.out.println(mmi+"Debug System.exit(0)");
-       //System.exit(0);
-
-     }
+       mlog(mmi+"Debug System.exit(0)");
+       System.exit(0);
+    }
 
     mlog.info(mmi+"end");
   }
