@@ -101,7 +101,7 @@ public class S104Dcf8ToAscii {
     
             }
         
-        //Populate spine data object
+        //Populate spineData object
         spineData.data = data;
         spineData.startTime = startTime;
         spineData.endTime = endTime;
