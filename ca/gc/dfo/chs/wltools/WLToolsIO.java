@@ -114,7 +114,7 @@ public class WLToolsIO implements IWLToolsIO {
   // ---
   final public static void writeCHSJsonFormat(final List<MeasurementCustom> wlDataToWrite, final String locationId) {
 
-    final String mmi= "ca.gc.dfo.chs.wltools.WLToolsIO.write: ";
+    final String mmi= "ca.gc.dfo.chs.wltools.WLToolsIO.writeCHSJsonFormat: ";
 
     slog.info(mmi+"start");
 
@@ -166,6 +166,10 @@ public class WLToolsIO implements IWLToolsIO {
             add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
               //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
     }
+
+    // --- Now write the Json data bundle in the output file.
+    Json.createWriter(jsonFileOutputStream).
+      writeArray( jsonArrayBuilderObj.build() );
 
     // --- We can close the Json file now
     try {
