@@ -95,7 +95,7 @@ public class S104Dcf8ToAscii {
             }
             
             // Generate MeasurementCustomBundle and append to array
-             MeasurementCustomBundle GroupMCB = new MeasurementCustomBundle();
+             MeasurementCustomBundle GroupMCB = new MeasurementCustomBundle(bundledValues);
              data.add(GroupMCB);
 
     
