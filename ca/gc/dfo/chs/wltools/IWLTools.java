@@ -12,6 +12,7 @@ public interface IWLTools {
     analysis,
     prediction,
     adjustment,
+    S104Dcf8ToAscii,
     merge
   }
 
@@ -20,6 +21,7 @@ public interface IWLTools {
   String [] BoxContentNames= { Box.analysis.name(),
                                Box.prediction.name(),
                                Box.adjustment.name(),
+                               Box.S104Dcf8ToAscii.name(),
                                Box.merge.name() };
 
   Set<String> BoxContent= Set.of(BoxContentNames);

@@ -23,6 +23,20 @@ public class S104Dcf8ToAscii {
         public List<MeasurementCustomBundle> data;
     }
 
+    public static void runConversion(String timeString, String outputDir, String h5Path) {
+
+        // Create Instant from ISO time string
+        // Instant.parse will trow dateTime exception if in wrong format
+        Instant timeInstant = Instant.parse(timeString);
+
+
+        // Generate SpineData
+        final SpineData fileData = s104ToSpineData(h5Path);
+
+        // Write files to output directory 
+        genSpineAsciiFiles(timeInstant, outputDir, fileData);
+    };
+
     static SpineData s104ToSpineData(String h5Path) {
         /**
         * Read s-104 Dcf8 file and return a Spine Data Class object
@@ -110,7 +124,7 @@ public class S104Dcf8ToAscii {
 
     }
 
-    static void genSpineAsciiFiles () {
+    static void genSpineAsciiFiles(Instant timeInstant,String outputDir, SpineData fileData) {
         /**
         * Generate the five ASCII files needed by SPINE
         * YYMMDDHH.one30.1061

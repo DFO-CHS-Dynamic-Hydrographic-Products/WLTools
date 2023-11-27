@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
 // ---
 import ca.gc.dfo.chs.wltools.IWLTools;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
@@ -171,6 +172,32 @@ final public class WLTools extends WLToolsIO {
 
        //System.out.println(mmi+"Debug System.exit(0)");
        //System.exit(0);
+
+     }
+
+        // S104Dcf8ToAscii
+    if (tool.equals(IWLTools.Box.S104Dcf8ToAscii.name())) {
+
+      mlog.info(mmi+"Generating SPINE Ascii files from S-104 Dcf8");
+
+      if (!argsMap.keySet().contains("--outputDirectory")) {
+        throw new RuntimeException(mmi+"Must have the --outputDirectory=<path to the output dir.> defined in the args.!");
+      }
+        final String outputDirArg= argsMap.get("--outputDirectory");
+
+      if (!argsMap.keySet().contains("--h5Path")) {
+        throw new RuntimeException(mmi+"Must have the --h5Path=<path to S-104 file.> defined in the args.!");
+      }
+      final String h5PathArg= argsMap.get("--h5Path");
+
+
+      if (!argsMap.keySet().contains("--time")) {
+        throw new RuntimeException(mmi+"Must have the --time=<ISO time> defined in the args.!");
+      }
+      final String timeArg= argsMap.get("--time");
+
+
+      S104Dcf8ToAscii.runConversion(timeArg, outputDirArg, h5PathArg);
 
      }
 
