@@ -24,6 +24,6 @@ time java WLTools \
 \
 --outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG
 \
--outputDataFormat=CHS_JSON
+--outputDataFormat=CHS_JSON
 \
 --writeAllData=true
