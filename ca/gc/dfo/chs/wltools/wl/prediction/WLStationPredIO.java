@@ -91,8 +91,15 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
       throw new RuntimeException(mmi+npe);
     }
 
+    //try {
+    //  IWLToolsIO.getOutputDataFormat();
+    //} catch (NullPointerException npe) {
+    //  throw new RuntimeException(mmi+npe);
+    //}
+
     WLToolsIO.writeToOutputDir(this.predictionData,
                                IWLToolsIO.Format.CHS_JSON,locationId ); //, this.outputDirectory);
+                               //WLToolsIO.getOutputDataFormat(), locationId );
     slog.info(mmi+"end");
 
     //slog.info(mmi+"debug System.exit(0)");

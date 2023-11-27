@@ -172,13 +172,27 @@ final public class WLTools extends WLToolsIO {
       final List<MeasurementCustom> adjustedWLForecast=
         wlAdjustAtLocation.getAdjustment(allAdjDataOutDir); //.writeResult(finak string outFile); //
 
+      try {
+        WLToolsIO.getOutputDataFormat();
+      } catch (NullPointerException npe) {
+        throw new RuntimeException(mmi+npe);
+      }
+
+      if (WLToolsIO.getOutputDataFormat() != IWLToolsIO.Format.CHS_JSON.name()) {
+        mlog.error(mmi+"Invalid output data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
+      }
+
+      mlog.info(mmi+"Writing this.locationAdjustedData results in -> "+WLToolsIO.getOutputDirectory());
+
+
       // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
       //    output format.
-       WLToolsIO.writeToOutputDir(adjustedWLForecast,
-                                  IWLToolsIO.Format.CHS_JSON, wlAdjustAtLocation.getLocationIdentity());
+      WLToolsIO.writeToOutputDir(adjustedWLForecast,
+                                 IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()),
+                                 wlAdjustAtLocation.getLocationIdentity() );
 
-       mlog.info(mmi+"Debug System.exit(0)");
-       System.exit(0);
+      mlog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
     }
 
     mlog.info(mmi+"end");

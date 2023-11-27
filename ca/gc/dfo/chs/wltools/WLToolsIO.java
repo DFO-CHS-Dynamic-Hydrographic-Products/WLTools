@@ -180,8 +180,7 @@ public class WLToolsIO implements IWLToolsIO {
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
   }
-
 }

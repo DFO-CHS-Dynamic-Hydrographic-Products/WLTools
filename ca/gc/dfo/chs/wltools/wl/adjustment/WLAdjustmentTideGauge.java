@@ -454,7 +454,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
   ///**
   // * Comments please.
   // */
-  final public List<MeasurementCustom> getAdjustment(final String outputDirectory) {
+  final public List<MeasurementCustom> getAdjustment(final String optionalOutputDir) {
 
     final String mmi= "getAdjustment: ";
 
@@ -469,8 +469,25 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     this.locationAdjustedData= this.
        fmsObj.update().getNewForecastData();
 
-    if (outputDirectory != null) {
-      fmsObj.writeAllDataInCSVFiles(this.fmsInputObj.getFirstInstantForWriting(), outputDirectory);
+    //try {
+    //  WLToolsIO.getOutputDataFormat();
+    //} catch (NullPointerException npe) {
+    //  throw new RuntimeException(mmi+npe);
+    //}
+    //if (WLToolsIO.getOutputDataFormat() != IWLToolsIO.Format.CHS_JSON.name()) {
+    //  slog.error(mmi+"Invalid output data format -> "+WLToolsIO.getOutputDataFormat());
+    //}
+    //slog.info(mmi+"Writing this.locationAdjustedData results in -> "+WLToolsIO.getOutputDirectory());
+    // --- Write the WL forecast adjustment in the output directory (member of the WLToolsIO class)
+    //WLToolsIO.writeToOutputDir(this.locationAdjustedData,
+    //                           IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()), this.getLocationIdentity());
+
+    // --- Write all data in CSV format for debugging purposes only (normally).
+    if (optionalOutputDir != null) {
+
+      slog.info(mmi+"Writing all data in the optionalOutputDir -> "+optionalOutputDir);
+
+      fmsObj.writeAllDataInCSVFiles(this.fmsInputObj.getFirstInstantForWriting(), optionalOutputDir);
     }
 
     slog.info(mmi+"end");

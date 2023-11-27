@@ -4,6 +4,7 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 time java WLTools \
 --tool=prediction \
 --predDurationInDays=42 \
+#--outputDataFormat=CHS_JSON \
 --stageType=DISCHARGE_CFG_STATIC \
 --startTimeISOFormat=2023-09-24T06:00:00Z \
 --stationPredType=TIDAL:NON_STATIONARY_FOREMAN \
