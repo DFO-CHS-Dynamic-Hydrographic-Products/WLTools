@@ -24,6 +24,7 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
+import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
@@ -184,16 +185,18 @@ final public class WLTools extends WLToolsIO {
 
       mlog.info(mmi+"Writing this.locationAdjustedData results in -> "+WLToolsIO.getOutputDirectory());
 
-
       // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
       //    output format.
       WLToolsIO.writeToOutputDir(adjustedWLForecast,
                                  IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()),
-                                 wlAdjustAtLocation.getLocationIdentity() );
+                                 IWLAdjustmentIO.ADJ_FORECAST_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity() );
 
-      mlog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //mlog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
     }
+
+    //if (tool.equals(IWLTools.Box.SpineIPP.name())) {
+    //}
 
     mlog.info(mmi+"end");
   }
