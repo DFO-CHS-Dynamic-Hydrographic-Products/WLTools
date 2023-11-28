@@ -72,6 +72,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  private final static int MIN_NUMBER_OF_OBS= 480; // --- 24 hours at 3mins time intervals
+
+  private int minNumberOfObs= MIN_NUMBER_OF_OBS;
+
   //private List<MeasurementCustom> tgLocationWLOData= null;
   //private ArrayList<MeasurementCustom> tgLocationWLPData= null;
   //private List<MeasurementCustom> tgLocationWLFData= null;
@@ -102,9 +106,16 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     final Set<String> argsMapKeysSet =argsMap.keySet();
 
+    if (!argsMapKeysSet.contains("--minNumberOfObs")) {
+       throw new RuntimeException(mmi+
+        "Must have the --minNumberOfObs=<min. number of WL obs> defined in argsMap");
+    }
+
+    this.minNumberOfObs= Integer.parseInt(argsMap.get("--minNumberOfObs"));
+
     if (!argsMapKeysSet.contains("--tideGaugeLocationsDefFileName")) {
       throw new RuntimeException(mmi+
-        "Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
+        "Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in the argsMap");
     }
 
     final String tideGaugeLocationsDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
@@ -344,8 +355,17 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     ////     REMOVE WHEN TEST is DONB.
     //this.nearestObsData.get(this.location.getIdentity()).clear();
 
-    slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
-              this.nearestObsData.get(this.location.getIdentity()).size());
+    final int checkNumberOfObs=
+      this.nearestObsData.get(this.location.getIdentity()).size();
+
+    if (checkNumberOfObs < this.minNumberOfObs) {
+      throw new RuntimeException(mmi+"ERROR: We must have checkNumberOfObs -> "+
+                                 checkNumberOfObs+" >= this.minNumberOfObs -> "+this.minNumberOfObs);
+    }
+
+    slog.info(mmi+"Okay we have a sufficient number of obs WLs -> "+
+              checkNumberOfObs+" to use for predicition and forecast adjustments.");
+
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 

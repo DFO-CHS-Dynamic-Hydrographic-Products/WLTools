@@ -10,6 +10,8 @@ time java WLTools \
 \
 --locationIdInfo=03335 \
 \
+--minNumberOfObs=480 \ # 24 hours at 3mins time intervals
+\
 --fullForecastModelName=ECCC_H2D2_SLFE \
 \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
