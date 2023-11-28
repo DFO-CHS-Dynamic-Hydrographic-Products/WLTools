@@ -5,7 +5,11 @@ package ca.gc.dfo.chs.wltools.util;
  * Created by Gilles Mercier on 2018-01-02.
  */
 
+// ---
 import java.lang.Math;
+
+// ---
+import ca.gc.dfo.chs.wltools.util.IGeo;
 
 /**
  * Trigonometry computations utility.
@@ -13,7 +17,16 @@ import java.lang.Math;
 final public class Trigonometry implements ITrigonometry {
 
   /**
-   * Comments please!
+   * coordinates assumed to be defined in the EPSG:4326 datum.
+   */
+  public static double getDistanceInKms(final double aLonDD, final double aLatDD,
+                                        final double bLonDD, final double bLatDD) {
+
+    return IGeo.EARTH_AVG_RADIUS_KM * getDistanceInRadians(aLonDD,aLatDD,bLonDD,bLatDD);
+  }
+
+  /**
+   * coordinates assumed to be defined in the EPSG:4326 datum.
    */
   public static double getDistanceInRadians(final double aLonDD, final double aLatDD,
                                             final double bLonDD, final double bLatDD) {
