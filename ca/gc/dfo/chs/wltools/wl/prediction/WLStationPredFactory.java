@@ -163,12 +163,13 @@ abstract public class WLStationPredFactory
 
     slog.info(mmi+"start, stationId="+stationId+", tidalConstsInputInfo="+tidalConstsInputInfo);
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
+    //--- To avoid hard-to-debug SNAFU mix-up between WL stations data:
     this.stationId= stationId;
 
-    String stationTcInputFileLocal= stationTcInputFile; // Could be null at this point.
+    String stationTcInputFileLocal= stationTcInputFile; // --- Could be null at this point.
 
     // --- Validate the start and end times
     if (endTimeSeconds <= startTimeSeconds) {
@@ -202,7 +203,7 @@ abstract public class WLStationPredFactory
     }
 
     //--- To avoid SNAFU mix-up between WL stations data:
-    this.stationId= stationId;
+    //this.stationId= stationId;
 
     final String [] tidalConstsInputInfoStrSplit=
        tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR);
@@ -266,8 +267,9 @@ abstract public class WLStationPredFactory
         }
 
         slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
-        slog.info(mmi+"Debug System.exit(0)");
-        System.exit(0);
+
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
 
         this.tidalPred1D= new
            NonStationary1DTidalPredFactory(this.stationId, stageType,
@@ -303,6 +305,7 @@ abstract public class WLStationPredFactory
     this.predictionReady= true;
 
     slog.info(mmi+"end");
+
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 

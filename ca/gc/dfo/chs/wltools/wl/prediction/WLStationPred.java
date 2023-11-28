@@ -70,7 +70,8 @@ final public class WLStationPred extends WLStationPredFactory {
     final Set<String> argsMapKeySet= argsMap.keySet();
 
     if (!argsMapKeySet.contains("--startTimeISOFormat")) {
-      throw new RuntimeException(mmi+"Must have the mandatory prediction location info option: --startTimeISOFormat=<YYYY-MM-DDThh:mm:ss> defined");
+      throw new RuntimeException(mmi+
+        "Must have the mandatory prediction location info option: --startTimeISOFormat=<YYYY-MM-DDThh:mm:ss> defined");
     }
 
     // --- Fool-proof check for the startTimeISOFormat?
@@ -252,8 +253,8 @@ final public class WLStationPred extends WLStationPredFactory {
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
   }
 
   /**
