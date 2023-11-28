@@ -123,6 +123,7 @@ abstract public class WLStationPredFactory
    * Default constructor.
    */
   public WLStationPredFactory() {
+
     this.predictionReady= false;
     this.predictionData= null;
     //this.unfortunateUTCOffsetSeconds = 0L;
@@ -208,6 +209,10 @@ abstract public class WLStationPredFactory
     final String [] tidalConstsInputInfoStrSplit=
        tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR);
 
+    if (tidalConstsInputInfoStrSplit.length != 3) {
+      throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 3 !!");
+    }
+
     final String tidalConstsInfoInputFileFormat= tidalConstsInputInfoStrSplit[0];
 
     slog.info(mmi+"tidalConstsInfoInputFileFormat="+tidalConstsInfoInputFileFormat);
@@ -240,18 +245,17 @@ abstract public class WLStationPredFactory
 
         if (stationTcInputFileLocal == null) {
 
-          final String [] stationIdSplit= this.
-            stationId.split(IWLLocation.ID_SPLIT_CHAR);
+          //final String [] stationIdSplit= this.
+          //  stationId.split(IWLLocation.ID_SPLIT_CHAR);
+          //if (stationIdSplit.length != 3) {
+          //  throw new RuntimeException(mmi+"ERROR: stationIdSplit.length != 3 !!");
+          //}
 
-          if (stationIdSplit.length != 3) {
-            throw new RuntimeException(mmi+"ERROR: stationIdSplit.length != 3 !!");
-          }
-
-          // --- Extract the location id strings ids. to build the path
-          //     to its tidal consts file
-          final String regionIdInfo= stationIdSplit[0];
-          final String subRegionIdInfo= stationIdSplit[1];
-          final String stationIdSpec= stationIdSplit[2];
+          //// --- Extract the location id strings ids. to build the path
+          ////     to its tidal consts file
+          //final String regionIdInfo= stationIdSplit[0];
+          //final String subRegionIdInfo= stationIdSplit[1];
+          //final String stationIdSpec= stationIdSplit[2];
 
           // --- Also need to extract the info about the tidal const type
           //     and the model (like OneDSTLT or H2D2SLFE from which they
@@ -260,10 +264,13 @@ abstract public class WLStationPredFactory
           final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
 
           // --- Build the path of the non-stationaty tidel consts. file inside the
-          //     inner cfg DB.
-          stationTcInputFileLocal= WLToolsIO.getMainCfgDir() + "/tidal/nonStationary/" + regionIdInfo +
-            "/dischargeClusters/" + subRegionIdInfo + File.separator + tidalConstsTypeId + File.separator + tidalConstsTypeModelId +  //INonStationaryIO.CLUSTER_TFHA_MAIN_SUBDIR_NAME + //"/dischargeClimatoTFHA/"+
-               File.separator + stationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLLocation.INFO_JSON_FNAME_EXT;
+          //     inner cfg DB folders structure (comes with the WLTools package).
+          stationTcInputFileLocal= WLToolsIO.
+            getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, this.stationId);
+
+          //stationTcInputFileLocal= WLToolsIO.getMainCfgDir() + "/tidal/nonStationary/" + regionIdInfo +
+          //  "/dischargeClusters/" + subRegionIdInfo + File.separator + tidalConstsTypeId + File.separator + tidalConstsTypeModelId +  //INonStationaryIO.CLUSTER_TFHA_MAIN_SUBDIR_NAME + //"/dischargeClimatoTFHA/"+
+          //     File.separator + stationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLLocation.INFO_JSON_FNAME_EXT;
         }
 
         slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
@@ -295,7 +302,7 @@ abstract public class WLStationPredFactory
       //--- MUST convert decimal degrees latitude to radians here:
       ///   MUST be used after this.getStationConstituentsData method call.
       this.tidalPred1D.setAstroInfos(method,
-                                    Math.toRadians(this.latitudeInDecDegrees),
+                                     Math.toRadians(this.latitudeInDecDegrees),
                                      startTimeSeconds,
                                      this.tidalPred1D.getTcNames());
       //this.predictionReady= true;

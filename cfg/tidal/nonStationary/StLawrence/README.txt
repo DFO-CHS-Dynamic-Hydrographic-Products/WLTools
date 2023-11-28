@@ -1,5 +1,5 @@
 The St. Lawrence discharge clusters non-stationary tidal constituents values in the 
-dischargeClusters/<cluster>/dischargeClimatoTFHA/gridPoint-NNN-TFHA.json files must be used for the
+dischargeClusters/<cluster>/dischargeClimatoTFHA/<model used for the NS_TIDE analyisis>/gridPoint-NNN-TFHA.json files must be used for the
 non-stationary tidal predictions with the following equations:
 
 The stages discharges data used for the non-stationary tidal analysis by the NS_TIDE python code was (2nd order polynomial):
