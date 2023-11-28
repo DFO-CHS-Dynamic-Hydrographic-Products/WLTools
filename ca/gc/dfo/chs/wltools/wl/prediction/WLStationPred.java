@@ -209,15 +209,21 @@ final public class WLStationPred extends WLStationPredFactory {
         }
       }
 
-      if (!argsMapKeySet.contains("--tidalConstsInputFileFormat")) {
+      //if (!argsMapKeySet.contains("--tidalConstsInputFileFormat")) {
+      if (!argsMapKeySet.contains("--tidalConstsInputInfo")) {
 
         throw new RuntimeException(mmi+
-                                   "Must have the --tidalConstsInputFileFormat option defined if mainPredType == TIDAL !!");
+                                   "Must have the --tidalConstsInputInfo option defined if mainPredType == TIDAL !!");
       }
 
-      final String tidalConstsInputFileFormat= argsMap.get("--tidalConstsInputFileFormat");
+      //final String tidalConstsInputFileFormat= argsMap.get("--tidalConstsInputFileFormat");
+      final String tidalConstsInputInfo= argsMap.get("--tidalConstsInputInfo");
 
-      if (!tidalConstsInputFileFormat.
+      final String checkTidalConstInputFileFmt=
+        tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR)[0];
+
+      //if (!tidalConstsInputFileFormat.
+      if (!checkTidalConstInputFileFmt.
             equals(ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name())) {
 
         throw new RuntimeException(mmi+"Only the:"+
@@ -225,8 +231,8 @@ final public class WLStationPred extends WLStationPredFactory {
                                    " tidal prediction input file format allowed for now!!");
       }
 
-      final ITidalIO.WLConstituentsInputFileFormat
-        tidalConstsInputFileFmt= ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON;
+      //final ITidalIO.WLConstituentsInputFileFormat
+      //  tidalConstsInputFileFmt= ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON;
 
       // --- Specific configuration for a tidal prediction.
       super.configureTidalPred(stationIdInfo,
@@ -234,8 +240,9 @@ final public class WLStationPred extends WLStationPredFactory {
                                endTimeSeconds,//endPredTime,
                                timeIncrInSeconds,//180L,//180L, //900L, //3600L,//900L,
                                tidalMethod, //ITidal.Method.NON_STATIONARY_FOREMAN,
-                               null, //nsTCInputFile,
-                               tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                        >
+                               null, //nsTCInputFile
+                               tidalConstsInputInfo,
+                               //tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                        >
                                stageType, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB
                                null, // --- Stage input data file
                                null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
@@ -245,8 +252,8 @@ final public class WLStationPred extends WLStationPredFactory {
 
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"debug System.exit(0)");
+    System.exit(0);
   }
 
   /**
