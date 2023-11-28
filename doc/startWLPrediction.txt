@@ -9,6 +9,7 @@ time java WLTools \
 --startTimeISOFormat=2023-09-24T06:00:00Z \
 --stationPredType=TIDAL:NON_STATIONARY_FOREMAN \
 --tidalConstsInputFileFormat=NON_STATIONARY_JSON \
+--constituentsInputType=dischargeClimatoTFHA:OneDSTLT \
 --stationIdInfo=StLawrence:Deschaillons:gridPoint-540 \ # Deschaillons
 --outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/2023100406 # --- 2023100406 is the H2D2-SLFE synop run DATEO
 
