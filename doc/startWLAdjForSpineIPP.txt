@@ -4,11 +4,10 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 time java WLTools \
 --tool=adjustment \
 --adjType=SpineIPP \
-#--inputDataType=CHS_SPINE::JSON:JSON \
 --outputDataFormat=DHP_S104_DCF8 \
 --locationIdInfo=StLawrence:Neuville:gridPoint-610 \
-#--neighborDischargeClusters=TroisRivieres:Deschaillons \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
+--tidalConstsInputInfo=dischargeClimatoTFHA:OneDSTLT \ # needed to be able to get the coordinates of the location from the related NS tidal config file
 --outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineIPP \
 --adjForecastInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG
 --nsTidePredInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/2023100406
