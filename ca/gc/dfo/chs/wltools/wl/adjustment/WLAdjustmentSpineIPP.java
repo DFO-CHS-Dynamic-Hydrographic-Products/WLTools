@@ -69,19 +69,29 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  // --- To store the HBCoords objects of all the spine cluster locations that
-  //    are relevant for the WL adjustment at a given spine location.
-  //private Map<String, Map<String,HBCoords>> relevantSpineClustersInfo= null;
+  // --- The List<MeasurementCustom> where to save the adjusted forecast
+  //     at the Spine location being processed.
+  private List<MeasurementCustom> spineLocationAdjForecast= null;
 
   // --- To store The initial NS_TIDE WL predictions at the Spine target location.
-  private List<MeasurementCustom> spineLocationNSTPred= null;
+  // INPUT ONLY, not used if the spineLocationNonAdjForecast= is used
+  //private List<MeasurementCustom> spineLocationNSTPred= null;
 
-  // --- To store The adjusted NS_TIDE WL predictions at the Spine target location.
-  private List<MeasurementCustom> spineLocationNSTPredAdj= null;
+  // --- To store the non-adjusted WL NS Tide WL pred data at the Spine location
+  //     possibly merged with the non-adjusted full model forecast WL data xtracted
+  //     at this same Spine locatiom.
+  //     INPUT ONLY
+  private List<MeasurementCustom> spineLocationNonAdjData= null;
 
-  // --- To store The NS_TIDE WL predictions at the Spine locations that are
+  // --- To store the NS_TIDE WL non-ajusted predictions at the Spine locations that are
   //     the nearest to the tide gauges locations used for the adjustments.
-  private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsPred= null;
+  //     INPUT ONLY
+  private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsNSTPred= null;
+
+ // --- To store the model adjusted forecast at the spine locations that are the
+ //     nearest to the tide gauges locations used for the adjustments.
+ //     INPUT ONLY
+  private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsAdjForecast= null;
 
   //private IWLAdjustment.Type adjType= null;
 
@@ -158,8 +168,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     slog.info(mmi+"spineLocationHBCoord lon="+spineLocationHBCoord.getLongitude());
     slog.info(mmi+"spineLocationHBCoord lat="+spineLocationHBCoord.getLatitude());
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- Now find the two nearest CHS tide gauges from this WDS grid point location
     final String spineTideGaugesInfoFile= WLToolsIO.
@@ -183,7 +193,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     }
 
     // --- JSON reader for the CHS tide gauges info file.
-    final JsonObject mainJsonMapObj= Json.
+    final JsonObject mainJsonTGInfoMapObj= Json.
       createReader(jsonFileInputStream).readObject();
 
     // --- We can close the tide gauges info Json file now
@@ -194,61 +204,21 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     }
 
     // --- Define the Set of the CHS tide gauges string ids.
-    final Set<String> tgStrNumIdKeysSet= mainJsonMapObj.keySet();
+    final Set<String> tgStrNumIdKeysSet= mainJsonTGInfoMapObj.keySet();
 
     slog.info(mmi+"tgStrNumIdKeysSet="+tgStrNumIdKeysSet.toString());
 
     //--- Keep only the tide gauges that are at 80km or less from the
     //     locations where we want to adjust the water levels.
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
-
-    if (!argsMap.keySet().contains("--nsTidePredInputDataInfo")) {
-      throw new RuntimeException(mmi+
-        "Must have the --nsTidePredInputDataDir=<NS_TIDE pred. data input directory> defined in argsMap");
-    }
-
-    final String nsTidePredInputDataDir= argsMap.get("--nsTidePredInputDataDir");
-
-    slog.info(mmi+"nsTidePredInputDataDir="+nsTidePredInputDataDir);
-
-    final String spineLocationIdInfoFile=
-      WLToolsIO.getMainCfgDir() + File.separator + this.locationIdInfo;
-
-    final JsonObject spineLocationInfoJsonObj=
-      this.getSpineJsonLocationIdInfo( spineLocationIdInfoFile );
-
-    this.adjLocationZCVsVDatum= spineLocationInfoJsonObj.
-      getJsonNumber(IWLLocation.INFO_JSON_ZCIGLD_CONV_KEY).doubleValue();
-
-    this.adjLocationLatitude= spineLocationInfoJsonObj.
-      getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
-
-    this.adjLocationLongitude= spineLocationInfoJsonObj.
-      getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
-
-    //this.relevantSpineClustersInfo= new HashMap<String, Map<String,HBCoords>>();
-
-    slog.info(mmi+"Spine adjustment location IGLD to ZC conversion value="+this.adjLocationZCVsVDatum);
-    slog.info(mmi+"Spine adjustment location coordinates=("+this.adjLocationLatitude+","+this.adjLocationLongitude+")");
-    //slog.info(mmi+"Debug System.exit(0)");
+    //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
-
-    //FileInputStream jsonFileInputStream= null;
-    //try {
-    //  jsonFileInputStream= new FileInputStream(spineTideGaugesInfoFile);
-    //} catch (FileNotFoundException e) {
-    //  throw new RuntimeException(mmi+"e");
-    //}
-
-    //final JsonObject mainJsonMapObj= Json.
-    //  createReader(jsonFileInputStream).readObject();
 
     //double minDistRad= Double.MAX_VALUE;
 
     // String [] twoNearestTideGaugesIds= {null, null};
     Map<Double,String> tmpDistCheck= new HashMap<Double,String>();
-    //final Set<String> tgStrNumIdKeysSet= mainJsonMapObj.keySet();
+
+    Map<String, HBCoords> tmpTGHBCoords= new HashMap<String, HBCoords>();
 
     // --- Loop on the tide gauges json info objects.
     for (final String tgStrNumId: tgStrNumIdKeysSet) {
@@ -256,7 +226,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       //slog.info(mmi+"Checkin with tgStrNumId="+tgStrNumId);
 
       final JsonObject tgInfoJsonObj=
-        mainJsonMapObj.getJsonObject(tgStrNumId);
+        mainJsonTGInfoMapObj.getJsonObject(tgStrNumId);
 
       final double tgLatitude= tgInfoJsonObj.
         getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
@@ -264,10 +234,15 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
       final double tgLongitude= tgInfoJsonObj.
         getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
 
-      final double tgDistRad= Trigonometry.
-        getDistanceInRadians(tgLongitude, tgLatitude, this.adjLocationLongitude, this.adjLocationLatitude);
+      // --- calculate the distance (in radians) between the location and this CHS tide gauge
+      final double tgDistRad= Trigonometry.getDistanceInRadians(tgLongitude, tgLatitude,
+                                                                spineLocationHBCoord.getLongitude(),
+                                                                spineLocationHBCoord.getLatitude()) ; //this.adjLocationLongitude, this.adjLocationLatitude);
 
+      // --- Store this distance in the temporary Map
       tmpDistCheck.put(tgDistRad,tgStrNumId); //(tgStrNumId,tgDistRad);
+
+      tmpTGHBCoords.put(tgStrNumId, new HBCoords(tgLongitude, tgLatitude) );
 
       //slog.info(mmi+"tgStrNumId="+tgStrNumId+", tgDistRad="+tgDistRad);
     }
@@ -297,39 +272,53 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     slog.info(mmi+"secondNearestTGStrId="+secondNearestTGStrId);
     slog.info(mmi+"thirdNearestTGStrId="+thirdNearestTGStrId);
 
-    // --- Instantiate the this.nearestObsData Map for subsequent usage
-    //this.nearestObsData= new HashMap<String, ArrayList<WLMeasurement>>();
-    //this.nearestObsData= new HashMap<String, List<MeasurementCustom>>();
-
-    //--- And initialize it with the 3 nearest TG location and null
-    //    ArrayList<WLMeasurement> object for now (the ArrayList<WLMeasurement>
-    //    objects will be populated later
-    //this.nearestObsData.put(firstNearestTGStrId, null);
-    //this.nearestObsData.put(secondNearestTGStrId, null);
-   // this.nearestObsData.put(thirdNearestTGStrId, null);
-
     // --- Now store the nearest tide gauges coordinates
     //     in the local nearestsTGCoords map for subsequent
     //     usage.
     final Map<String, HBCoords> nearestsTGCoords= new HashMap<String, HBCoords>();
 
-    // --- Also need to get the ECCC TG location string id. from the Json file
-    //final Map<String, String> nearestsTGEcccIds= new HashMap<String, String>();
-
-    //for (final String chsTGId: this.nearestObsData.keySet()) {
-    //  final JsonObject chsTGJsonObj= mainJsonMapObj.getJsonObject(chsTGId);
-    //  final double tgLon= chsTGJsonObj.
-    //    getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
-    //  final double tgLat= chsTGJsonObj.
-    //    getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
-    //  nearestsTGCoords.put(chsTGId, new HBCoords(tgLon,tgLat) );
-    //  //--- Get the TG ECCC string id.
-    //  //nearestsTGEcccIds.put(chsTGId, chsTGJsonObj.getString(TIDE_GAUGES_INFO_ECCC_IDS_KEY));
-    //}
+    nearestsTGCoords.put(firstNearestTGStrId, tmpTGHBCoords.get(firstNearestTGStrId));
+    nearestsTGCoords.put(secondNearestTGStrId, tmpTGHBCoords.get(secondNearestTGStrId));
+    nearestsTGCoords.put(thirdNearestTGStrId, tmpTGHBCoords.get(thirdNearestTGStrId));
 
     slog.info(mmi+"nearestsTGCoords keys="+nearestsTGCoords.keySet().toString());
-    //slog.info(mmi+"Debug System.exit(0)");
+    //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
+
+    if (!argsMap.keySet().contains("--nsTidePredInputDataInfo")) {
+      throw new RuntimeException(mmi+
+        "Must have the --nsTidePredInputDataInfo=<NS_TIDE pred. data input directory> defined in argsMap");
+    }
+
+    final String [] nsTidePredInputDataInfoStrSplit=
+      argsMap.get("--nsTidePredInputDataInfo").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+    if (nsTidePredInputDataInfoStrSplit.length != 2) {
+      throw new RuntimeException(mmi+"nsTidePredInputDataInfoStrSplit.length != 2 !!");
+    }
+
+    //slog.info(mmi+"nsTidePredInputDataInfoStrSplit[0]="+nsTidePredInputDataInfoStrSplit[0]+".");
+    //slog.info(mmi+"IWLToolsIO.Format.CHS_JSON.name()="+IWLToolsIO.Format.CHS_JSON.name()+".");
+
+    if ( !nsTidePredInputDataInfoStrSplit[0].equals(IWLToolsIO.Format.CHS_JSON.name()) ) {
+      throw new RuntimeException(mmi+"Invalid NS Tide pred input file format -> "+nsTidePredInputDataInfoStrSplit[0]);
+    }
+
+    final String nsTidePredInputDataDir= nsTidePredInputDataInfoStrSplit[1];
+
+    slog.info(mmi+"nsTidePredInputDataDir="+nsTidePredInputDataDir);
+
+    final String spineLocNSTidePredFilePrfx= this.locationIdInfo.
+      replace(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR, IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR);
+
+    //--- First Get the NS Tide WL pred data at the Spine location being processed:
+    final String spineLocationNSTidePredFile= nsTidePredInputDataDir +
+      File.separator + spineLocNSTidePredFilePrfx + IWLToolsIO.JSON_FEXT;
+
+    //slog.info(mmi+"this.locationIdInfo="+this.locationIdInfo);
+    slog.info(mmi+"spineLocationNSTidePredFile="+spineLocationNSTidePredFile);
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     //// --- Now get the coordinates of:
     ////     1). The nearest model input data grid point from the WDS location
@@ -423,104 +412,6 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
-
-    Map<String, HBCoords> tmpSpineLocationsHBCoords= new HashMap<String, HBCoords>();
-
-    slog.info(mmi+"tmpSpineLocationsHBCoords.size()="+tmpSpineLocationsHBCoords.size());
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
-
-    Map<String,String> tgVsSpineLocInfo= new HashMap<String,String>();
-    Map<String,Double> tgVsSpineLocMinDists= new HashMap<String,Double>();
-
-    for (final String tgNumStrId: nearestsTGCoords.keySet()) {
-
-      tgVsSpineLocInfo.put(tgNumStrId,null);
-      tgVsSpineLocMinDists.put(tgNumStrId,Double.MAX_VALUE);
-    }
-
-    for (final String spineLocationFID: tmpSpineLocationsHBCoords.keySet()) {
-
-      //slog.info(mmi+"spineLocationFID="+spineLocationFID);
-
-      final HBCoords spineLocHBCoordsObj=
-        tmpSpineLocationsHBCoords.get(spineLocationFID);
-
-      for (final String tgNumStrId: nearestsTGCoords.keySet()) {
-
-        final HBCoords tgHBCoordsObj= nearestsTGCoords.get(tgNumStrId);
-
-        final double tmpDist= Trigonometry.
-          getDistanceInRadians(tgHBCoordsObj.getLongitude(), tgHBCoordsObj.getLatitude(),
-                               spineLocHBCoordsObj.getLongitude(), spineLocHBCoordsObj.getLatitude());
-
-        if (tmpDist < tgVsSpineLocMinDists.get(tgNumStrId) ) {
-
-          //slog.info(mmi+"spineLocationFID="+spineLocationFID);
-          //slog.info(mmi+"tgNumStrId="+tgNumStrId);
-          //slog.info(mmi+"tmpDist="+tmpDist);
-
-          //slog.info(mmi+"tgHBCoordsObj lon="+tgHBCoordsObj.getLongitude());
-          //slog.info(mmi+"tgHBCoordsObj lat="+tgHBCoordsObj.getLatitude());
-          //slog.info(mmi+"spineLocObj lon="+ spineLocHBCoordsObj.getLongitude());
-          //slog.info(mmi+"spineLocObj lat="+ spineLocHBCoordsObj.getLatitude()+"\n");
-
-          tgVsSpineLocMinDists.put(tgNumStrId,tmpDist);
-          tgVsSpineLocInfo.put(tgNumStrId,spineLocationFID);
-        }
-      }
-
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-    }
-
-    for (final String tgNumStrId: nearestsTGCoords.keySet()) {
-
-      // --- Allocate the this.tgsNearestSpineLocationsPred Map properly
-      //     to store the NS_TIDE WL prediction for the nearest spine locations.
-      this.tgsNearestSpineLocationsPred= new HashMap<String, List<MeasurementCustom> >();
-
-      final String nearestSpineLocationId= tgVsSpineLocInfo.get(tgNumStrId);
-
-      slog.info(mmi+"CHS TG id -> "+tgNumStrId+
-                ": Reading the NS_TIDE prediction for the nearest spine location -> "+nearestSpineLocationId);
-
-      final String nsTidePredDataJsonFile= nsTidePredInputDataDir +
-        File.separator + nearestSpineLocationId + IWLToolsIO.JSON_FEXT;
-
-      slog.info(mmi+"nsTidePredDataJsonFile="+nsTidePredDataJsonFile);
-
-      this.tgsNearestSpineLocationsPred.put( tgNumStrId,
-                                             WLAdjustmentIO.getWLDataInJsonFmt(nsTidePredDataJsonFile, -1L, 0.0) );
-
-      if (nearestSpineLocationId.equals(this.location.getIdentity())) {
-
-         slog.info(mmi+"The Spine target location is also the nearest spine location of the CHS TG -> "+tgNumStrId);
-
-         this.spineLocationNSTPred= this.
-           tgsNearestSpineLocationsPred.get(tgNumStrId);
-      }
-    }
-
-    //slog.info(mmi+"spinelocationId="+spinelocationId);
-
-    if (this.spineLocationNSTPred == null) {
-
-      slog.info(mmi+"Filling-up this.spineLocationNSTPred with its NS_TIDE prediction data");
-
-      final String nsTidePredDataJsonFile= nsTidePredInputDataDir +
-        File.separator + spinelocationId + IWLToolsIO.JSON_FEXT;
-
-      slog.info(mmi+"NS_TIDE prediction data file for the spine target location -> "+nsTidePredDataJsonFile);
-
-      // --- fill up the this.spineLocationNSTPred with its NS_TIDE prediction
-      this.spineLocationNSTPred= WLAdjustmentIO.
-        getWLDataInJsonFmt(nsTidePredDataJsonFile, -1L, 0.0);
-
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-    }
-
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 

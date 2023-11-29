@@ -83,7 +83,7 @@ public class WLToolsIO implements IWLToolsIO {
   // --- Build the path of the tide gauges info, file name in the cfg DB folders.
   final public static String getTideGaugeInfoFilePath(final String tideGaugeInfoFileName) {
 
-    return getMainCfgDir() + File.separator +
+    return getMainCfgDir() + //File.separator +
       ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeInfoFileName;
   }
 
