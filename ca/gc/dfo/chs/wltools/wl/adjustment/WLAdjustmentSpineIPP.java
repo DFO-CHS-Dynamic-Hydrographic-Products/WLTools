@@ -44,6 +44,7 @@ import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
+import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
@@ -102,46 +103,107 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     final String mmi=
       "WLAdjustmentSpineIPP(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
 
-    slog.info(mmi+"Not ready yet!");
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo);
 
-    slog.info(mmi+"start: this.locationIdInfo="+this.locationIdInfo); //wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
+    //slog.info(mmi+"Not ready yet!");
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
-
       throw new RuntimeException(mmi+
          "Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
     }
 
-    final String tideGaugeDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
+    final String tideGaugeLocationsDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
+
+    if (!argsMap.keySet().contains("--tidalConstsInputInfo")) {
+      throw new RuntimeException(mmi+
+         "Must have the --tidalConstsInputInfo=<tidal consts. type:model name from which the tidal consts where produced with the NS_TIDE analysis> defined in argsMap");
+    }
+
+    final String tidalConstsInputInfo= argsMap.get("--tidalConstsInputInfo");
+
+    final String [] tidalConstsInputInfoStrSplit=
+      tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR);
+
+    if (tidalConstsInputInfoStrSplit.length != 3 ) {
+      throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 3 !!!");
+    }
+
+    final String checkTidalConstInputFileFmt= tidalConstsInputInfoStrSplit[0];
+    //tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR)[0];
+
+    if (!checkTidalConstInputFileFmt.
+            equals(ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name())) {
+
+       throw new RuntimeException(mmi+"Only the:"+
+                                   ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name()+
+                                   " tidal prediction input file format allowed for now!!");
+    }
+
+    // --- Extract the relevant substrings that will be used to find the location tidal consts.
+    //    file on disk from the tidalConstsInputInfoStrSplit array
+    final String tidalConstsTypeId= tidalConstsInputInfoStrSplit[1];
+    final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
+
+    // --- Build the path of the location tidal consts. file on disk.
+    final String spineLocationTCInputFile= WLToolsIO.
+      getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, this.locationIdInfo);
+
+    slog.info(mmi+"spineLocationTCInputFile="+spineLocationTCInputFile);
+
+    final HBCoords spineLocationHBCoord= HBCoords.
+      getFromCHSJSONTCFile(spineLocationTCInputFile);
+
+    slog.info(mmi+"spineLocationHBCoord lon="+spineLocationHBCoord.getLongitude());
+    slog.info(mmi+"spineLocationHBCoord lat="+spineLocationHBCoord.getLatitude());
+
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     // --- Now find the two nearest CHS tide gauges from this WDS grid point location
-    final String spineTideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
-      ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;
+    final String spineTideGaugesInfoFile= WLToolsIO.
+      getTideGaugeInfoFilePath(tideGaugeLocationsDefFileName);
+
+      //WLToolsIO.getMainCfgDir() + File.separator +
+      //ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;
 
     slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    if (!argsMap.keySet().contains("--neighborDischargeClusters")) {
-      throw new RuntimeException(mmi+
-        "Must have the --neighborDischargeClusters=<upstream cluster name>:<downstream cluster name> defined in argsMap");
+    // --- Object for reading the CHS tide gauges info file.
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(spineTideGaugesInfoFile);
+
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(mmi+e);
     }
 
-    final String [] neighborDischargeClusters= argsMap.
-      get("--neighborDischargeClusters").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+    // --- JSON reader for the CHS tide gauges info file.
+    final JsonObject mainJsonMapObj= Json.
+      createReader(jsonFileInputStream).readObject();
 
-    // --- Store the neighborDischargeClusters in a local HashSet<String> object
-    //    in order to be able to add other discharge clusters to it.
-    Set<String> nearestDischargeClusters= new
-      HashSet<String>(Arrays.asList(neighborDischargeClusters));
+    // --- We can close the tide gauges info Json file now
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(mmi+e);
+    }
 
-    slog.info(mmi+"nearestDischargeClusters="+nearestDischargeClusters.toString());
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    // --- Define the Set of the CHS tide gauges string ids.
+    final Set<String> tgStrNumIdKeysSet= mainJsonMapObj.keySet();
 
-    if (!argsMap.keySet().contains("--nsTidePredInputDataDir")) {
+    slog.info(mmi+"tgStrNumIdKeysSet="+tgStrNumIdKeysSet.toString());
+
+    //--- Keep only the tide gauges that are at 80km or less from the
+    //     locations where we want to adjust the water levels.
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
+
+    if (!argsMap.keySet().contains("--nsTidePredInputDataInfo")) {
       throw new RuntimeException(mmi+
         "Must have the --nsTidePredInputDataDir=<NS_TIDE pred. data input directory> defined in argsMap");
     }
@@ -172,24 +234,21 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    FileInputStream jsonFileInputStream= null;
+    //FileInputStream jsonFileInputStream= null;
+    //try {
+    //  jsonFileInputStream= new FileInputStream(spineTideGaugesInfoFile);
+    //} catch (FileNotFoundException e) {
+    //  throw new RuntimeException(mmi+"e");
+    //}
 
-    try {
-      jsonFileInputStream= new FileInputStream(spineTideGaugesInfoFile);
-
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(mmi+"e");
-    }
-
-    final JsonObject mainJsonMapObj= Json.
-      createReader(jsonFileInputStream).readObject();
+    //final JsonObject mainJsonMapObj= Json.
+    //  createReader(jsonFileInputStream).readObject();
 
     //double minDistRad= Double.MAX_VALUE;
 
     // String [] twoNearestTideGaugesIds= {null, null};
     Map<Double,String> tmpDistCheck= new HashMap<Double,String>();
-
-    final Set<String> tgStrNumIdKeysSet= mainJsonMapObj.keySet();
+    //final Set<String> tgStrNumIdKeysSet= mainJsonMapObj.keySet();
 
     // --- Loop on the tide gauges json info objects.
     for (final String tgStrNumId: tgStrNumIdKeysSet) {
@@ -240,14 +299,14 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
     // --- Instantiate the this.nearestObsData Map for subsequent usage
     //this.nearestObsData= new HashMap<String, ArrayList<WLMeasurement>>();
-    this.nearestObsData= new HashMap<String, List<MeasurementCustom>>();
+    //this.nearestObsData= new HashMap<String, List<MeasurementCustom>>();
 
     //--- And initialize it with the 3 nearest TG location and null
     //    ArrayList<WLMeasurement> object for now (the ArrayList<WLMeasurement>
     //    objects will be populated later
-    this.nearestObsData.put(firstNearestTGStrId, null);
-    this.nearestObsData.put(secondNearestTGStrId, null);
-    this.nearestObsData.put(thirdNearestTGStrId, null);
+    //this.nearestObsData.put(firstNearestTGStrId, null);
+    //this.nearestObsData.put(secondNearestTGStrId, null);
+   // this.nearestObsData.put(thirdNearestTGStrId, null);
 
     // --- Now store the nearest tide gauges coordinates
     //     in the local nearestsTGCoords map for subsequent
@@ -257,21 +316,16 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     // --- Also need to get the ECCC TG location string id. from the Json file
     //final Map<String, String> nearestsTGEcccIds= new HashMap<String, String>();
 
-    for (final String chsTGId: this.nearestObsData.keySet()) {
-
-      final JsonObject chsTGJsonObj= mainJsonMapObj.getJsonObject(chsTGId);
-
-      final double tgLon= chsTGJsonObj.
-        getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
-
-      final double tgLat= chsTGJsonObj.
-        getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
-
-      nearestsTGCoords.put(chsTGId, new HBCoords(tgLon,tgLat) );
-
-      //--- Get the TG ECCC string id.
-      //nearestsTGEcccIds.put(chsTGId, chsTGJsonObj.getString(TIDE_GAUGES_INFO_ECCC_IDS_KEY));
-    }
+    //for (final String chsTGId: this.nearestObsData.keySet()) {
+    //  final JsonObject chsTGJsonObj= mainJsonMapObj.getJsonObject(chsTGId);
+    //  final double tgLon= chsTGJsonObj.
+    //    getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
+    //  final double tgLat= chsTGJsonObj.
+    //    getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
+    //  nearestsTGCoords.put(chsTGId, new HBCoords(tgLon,tgLat) );
+    //  //--- Get the TG ECCC string id.
+    //  //nearestsTGEcccIds.put(chsTGId, chsTGJsonObj.getString(TIDE_GAUGES_INFO_ECCC_IDS_KEY));
+    //}
 
     slog.info(mmi+"nearestsTGCoords keys="+nearestsTGCoords.keySet().toString());
     //slog.info(mmi+"Debug System.exit(0)");
@@ -318,11 +372,11 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     //}
 
     // --- We can close the Json file now
-    try {
-      jsonFileInputStream.close();
-    } catch (IOException e) {
-      throw new RuntimeException(mmi+e);
-    }
+    //try {
+    //  jsonFileInputStream.close();
+    //} catch (IOException e) {
+    //  throw new RuntimeException(mmi+e);
+    //}
 
     // --- Now find the 3 nearest Spine grid points location from the 3 neareast TG locations
     //     to apply the IWLS-FMS algo to their NS_TIDE predictions and merge the results with the
@@ -346,7 +400,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     // --- Add the spineLocationClusterName to the 2 other nearestDischargeClusters Set
     //     in order to get a complete collection for finding the nearest spine locations
     //     for each nearest CHS TG
-    nearestDischargeClusters.add(spineLocationClusterName);
+    //nearestDischargeClusters.add(spineLocationClusterName);
 
     // --- Redefine this.locationId to include its spineDomainName and
     //     its cluster name and also remove the unwanted file name suffix.
@@ -363,73 +417,14 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
     // --- Build the path to the main discharges cluster directory where to find all the
     //     WDS grid points definition.
-    final String mainDischargeClustersDir= WLToolsIO.getMainCfgDir() +
-      File.separator + String.join(File.separator,Arrays.copyOfRange(locationIdInfoSplit,0,4));
-
-    slog.info(mmi+"mainDischargeClustersDir="+mainDischargeClustersDir);
+    //final String mainDischargeClustersDir= WLToolsIO.getMainCfgDir() +
+    //  File.separator + String.join(File.separator,Arrays.copyOfRange(locationIdInfoSplit,0,4));
+    //slog.info(mmi+"mainDischargeClustersDir="+mainDischargeClustersDir);
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
     Map<String, HBCoords> tmpSpineLocationsHBCoords= new HashMap<String, HBCoords>();
-
-    // --- Iterate on all the disharges clusters subdirectories to find
-    //     all the WDS grid points json info files
-    //for(final Path clusterSubDir: mainDischargeClustersSubDirs) {
-    for(final String clusterSubDir: nearestDischargeClusters) {
-
-      slog.info(mmi+"clusterSubDir="+clusterSubDir);
-
-      final String tfhaSubDir= mainDischargeClustersDir + File.separator +
-        clusterSubDir + File.separator + INonStationaryIO.CLUSTER_TFHA_MAIN_SUBDIR_NAME; //"dischargeClimatoTFHA";
-
-      DirectoryStream<Path> clusterDirGpInfoFiles= null;
-
-      try {
-        clusterDirGpInfoFiles=
-          Files.newDirectoryStream(Paths.get(tfhaSubDir));
-
-      } catch (IOException e) {
-        throw new RuntimeException(mmi+e);
-      }
-
-      // --- Iterate on all the grid points json files of this cluster
-      //       to extract all their HBCoords info.
-      for (final Path spineLocationJsonInfoFile: clusterDirGpInfoFiles) {
-
-        final JsonObject spineLocInfoJsonObj=
-          this.getSpineJsonLocationIdInfo( spineLocationJsonInfoFile.toString() );
-
-        final double spineLocationLon= spineLocInfoJsonObj.
-          getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
-
-        final double spineLocationLat= spineLocInfoJsonObj.
-          getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
-
-        //slog.info(mmi+"spineLocationLon="+spineLocationLon);
-        //slog.info(mmi+"spineLocationLat="+spineLocationLat);
-        //slog.info(mmi+"Debug System.exit(0)");
-        //System.exit(0);
-
-        //final HBCoords spineLocationHBCoordsObj= new HBCoords(getJson);
-
-        final String spineLocationIdStr= spineLocationJsonInfoFile.
-          getFileName().toString().replace(IWLToolsIO.JSON_FEXT,"").
-            replace(INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX,"");
-
-        final String spineLocationJsonInfoFileStr= spineDomainName +
-          IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + clusterSubDir +
-            IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR + spineLocationIdStr;
-
-        //slog.info(mmi+"spineLocationJsonInfoFileStr="+spineLocationJsonInfoFileStr);
-        //slog.info(mmi+"Debug System.exit(0)");
-        //System.exit(0);
-
-        tmpSpineLocationsHBCoords.put( spineLocationJsonInfoFileStr,
-                                       new HBCoords(spineLocationLon,spineLocationLat) );
-
-      } // --- for (final Path spineLocationJsonInfoFile: clusterDirGpInfoFiles)
-    } // --- for(final String clusterSubDir: neighborDischargeClusters)
 
     slog.info(mmi+"tmpSpineLocationsHBCoords.size()="+tmpSpineLocationsHBCoords.size());
     //slog.info(mmi+"Debug System.exit(0)");

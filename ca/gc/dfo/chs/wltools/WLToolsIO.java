@@ -25,6 +25,7 @@ import javax.json.JsonArrayBuilder;
 // ---
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
+import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
@@ -79,6 +80,13 @@ public class WLToolsIO implements IWLToolsIO {
     return outputDataFormat;
   }
 
+  // --- Build the path of the tide gauges info, file name in the cfg DB folders.
+  final public static String getTideGaugeInfoFilePath(final String tideGaugeInfoFileName) {
+
+    return getMainCfgDir() + File.separator +
+      ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeInfoFileName;
+  }
+
   // --- Only for the tidal non-stationary (NS) data.
   final public static String getLocationNSTFHAFilePath(final String tidalConstsTypeId,
                                                        final String tidalConstsTypeModelId, final String locationIdInfo) {
@@ -97,7 +105,7 @@ public class WLToolsIO implements IWLToolsIO {
     final String subRegionIdInfo= locationIdInfoSplit[1];
     final String locationIdSpec= locationIdInfoSplit[2];
 
-    return mainCfgDir + "/tidal/nonStationary/" + regionIdInfo + "/dischargeClusters/" +
+    return mainCfgDir + "tidal/nonStationary/" + regionIdInfo + "/dischargeClusters/" +
            subRegionIdInfo + File.separator + tidalConstsTypeId + File.separator + tidalConstsTypeModelId +
            File.separator + locationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLLocation.INFO_JSON_FNAME_EXT;
   }

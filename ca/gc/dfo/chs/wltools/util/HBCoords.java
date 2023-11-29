@@ -3,8 +3,22 @@ package ca.gc.dfo.chs.wltools.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//---
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonValue;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+// ---
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+
 // ---
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 
 // --- NOTE: This is a temporary Home Brew (HB) code that should
 //     be replaced by either a class from java.awt.geom or a class
@@ -20,7 +34,7 @@ public class HBCoords implements IHBGeom {
  /**
    * private logger utility.
    */
-  private final Logger log = LoggerFactory.getLogger(whoAmI);
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   // --- Only EPSG:4326 normally.
   //protected double latitude;
@@ -65,5 +79,57 @@ public class HBCoords implements IHBGeom {
 
     // --- No fool-proof check here, need performance.
     this.llCoords[lonOrLatIndex]= latOrLon;
+  }
+
+  // ---
+  public static final HBCoords getFromCHSJSONTCFile(final String jsonCHSJSONTCFile) {
+
+    final String mmi= "getFromCHSJSONTCFile: ";
+
+    try {
+      jsonCHSJSONTCFile.length();
+
+    } catch ( NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(jsonCHSJSONTCFile);
+
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(mmi+e);
+    }
+
+    final JsonObject mainJsonTcDataInputObj= Json.
+      createReader(jsonFileInputStream).readObject();
+
+    // --- We can close the tide gauges info Json file now
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(mmi+e);
+    }
+
+    final JsonObject channelGridPointJsonObj=
+       mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
+
+    final double locationLatInDecDeg= channelGridPointJsonObj.
+      getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
+
+    final double locationLonInDecDeg= channelGridPointJsonObj.
+      getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
+
+    //HBCoords hbcRet= new HBCoords(locationLonInDecDeg, locationLatInDecDeg);
+    // --- We can close the tide gauges info Json file now
+    //try {
+    //  jsonFileInputStream.close();
+    //} catch (IOException e) {
+    //  throw new RuntimeException(mmi+e);
+    //}
+
+    return new HBCoords(locationLonInDecDeg, locationLatInDecDeg);
+
   }
 }

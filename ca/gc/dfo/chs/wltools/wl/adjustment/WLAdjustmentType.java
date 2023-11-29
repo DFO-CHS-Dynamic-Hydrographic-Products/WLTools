@@ -104,7 +104,7 @@ abstract public class WLAdjustmentType
 
       this.location= new WLLocation(identity);
 
-      throw new RuntimeException(mmi+"SpineIPP adjustment type not ready yet !!");
+      //throw new RuntimeException(mmi+"SpineIPP adjustment type not ready yet !!");
 
     } else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
 
