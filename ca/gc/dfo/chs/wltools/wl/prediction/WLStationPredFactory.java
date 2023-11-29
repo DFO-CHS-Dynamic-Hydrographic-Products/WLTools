@@ -36,22 +36,9 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
 import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFactory;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidalPredFactory;
 
-//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.TidalPredictions1DFactory;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.ASCIIFileIO;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-
 //import javax.validation.constraints.Min;
 //import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Min;
-//---
-//---
-//import ca.gc.dfo.iwls.station.Station;
-//---
 
 /**
  * Class WLTidalPredictionsFactory acts as abstract base class for water levels tidal predictions:
@@ -237,25 +224,12 @@ abstract public class WLStationPredFactory
       if ( method == ITidal.Method.NON_STATIONARY_FOREMAN) {
 
         //final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat=
-
         //if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON) {
         //  slog.error(mmi+"NON_STATIONARY_JSON prediction method -> Must have NON_STATONARY_JSON for the tc input file format!");
         //  throw new RuntimeException(mmi);
         //}
 
         if (stationTcInputFileLocal == null) {
-
-          //final String [] stationIdSplit= this.
-          //  stationId.split(IWLLocation.ID_SPLIT_CHAR);
-          //if (stationIdSplit.length != 3) {
-          //  throw new RuntimeException(mmi+"ERROR: stationIdSplit.length != 3 !!");
-          //}
-
-          //// --- Extract the location id strings ids. to build the path
-          ////     to its tidal consts file
-          //final String regionIdInfo= stationIdSplit[0];
-          //final String subRegionIdInfo= stationIdSplit[1];
-          //final String stationIdSpec= stationIdSplit[2];
 
           // --- Also need to extract the info about the tidal const type
           //     and the model (like OneDSTLT or H2D2SLFE from which they
@@ -267,10 +241,6 @@ abstract public class WLStationPredFactory
           //     inner cfg DB folders structure (comes with the WLTools package).
           stationTcInputFileLocal= WLToolsIO.
             getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, this.stationId);
-
-          //stationTcInputFileLocal= WLToolsIO.getMainCfgDir() + "/tidal/nonStationary/" + regionIdInfo +
-          //  "/dischargeClusters/" + subRegionIdInfo + File.separator + tidalConstsTypeId + File.separator + tidalConstsTypeModelId +  //INonStationaryIO.CLUSTER_TFHA_MAIN_SUBDIR_NAME + //"/dischargeClimatoTFHA/"+
-          //     File.separator + stationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLLocation.INFO_JSON_FNAME_EXT;
         }
 
         slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
