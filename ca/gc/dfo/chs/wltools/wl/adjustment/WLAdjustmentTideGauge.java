@@ -221,9 +221,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    // --- Now find the two nearest CHS tide gauges from this WDS grid point location
-    final String tideGaugesInfoFile= WLToolsIO.getMainCfgDir() + File.separator +
-      ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeLocationsDefFileName ;
+    // --- Get the complete path for the tide gauges info file.
+    final String tideGaugesInfoFile= WLToolsIO.
+      getTideGaugeInfoFilePath(tideGaugeLocationsDefFileName);
+
+      //WLToolsIO.getMainCfgDir() + File.separator +
+      //ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeLocationsDefFileName ;
 
     slog.info(mmi+"tideGaugesInfoFile="+tideGaugesInfoFile);
     //slog.info(mmi+"Debug System.exit(0)");
