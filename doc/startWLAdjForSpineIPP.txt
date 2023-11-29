@@ -4,14 +4,14 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 time java WLTools \
 --tool=adjustment \
 --adjType=SpineIPP \
---outputDataFormat=DHP_S104_DCF8 \
---locationNonAdjInputDataType=NSTideOnly \ # Hybrid (Hybrid: NS Tide pred merged with a full model forecast) 
+--outputDataFormat=DHP_S104_DCF8 \ 
 --locationIdInfo=StLawrence:Neuville:gridPoint-610 \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
 --tidalConstsInputInfo=NON_STATIONARY_JSON:dischargeClimatoTFHA:OneDSTLT \ # needed to be able to get the coordinates of the Spine location from the related NS tidal config file
 --outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineIPP \
 --adjForecastAtTGSInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG \
 --nsTidePredInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/2023100406 \
+#--nonAdjFMFInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NonAdjFMF
 --writeAllData=true
 
 #--modelInputDataDef=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2ASCII/2023081706_SLFE_NMM.csv \
