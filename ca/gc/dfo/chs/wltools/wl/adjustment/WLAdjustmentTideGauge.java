@@ -126,9 +126,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     }
 
     final String [] tideGaugePredictInputDataInfo= argsMap.
-       get("--tideGaugePredictInputDataInfo").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR) ;
+       get("--tideGaugePredictInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR) ;
 
-    if (!IWLStationPredIO.allowedFormats.contains(tideGaugePredictInputDataInfo[0])) {
+    if (!IWLStationPredIO.
+           allowedFormats.contains(tideGaugePredictInputDataInfo[0])) {
 
       throw new RuntimeException(mmi+"Invalid tideGaugePredictInputData file format -> "+
         tideGaugePredictInputDataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
@@ -145,7 +146,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     }
 
     final String [] tideGaugeWLODataInfo= argsMap.
-      get("--tideGaugeWLODataInfo").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+      get("--tideGaugeWLODataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
     if (!IWLStationPredIO.allowedFormats.contains(tideGaugeWLODataInfo[0])) {
 
@@ -166,7 +167,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //--- Extract the 1st part of the WLO data file which MUST be the same string id. as for the
     //    this.locationIdInfo attribute.
     final String tideGaugeNameIdFromFileName=
-      tideGaugeWLODataFilePathSplit[tideGaugeWLODataFilePathSplit.length-1].split(IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
+      tideGaugeWLODataFilePathSplit[ tideGaugeWLODataFilePathSplit.length-1 ].split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
 
     if (!tideGaugeNameIdFromFileName.equals(this.locationIdInfo)) {
       throw new RuntimeException(mmi+"tideGaugeNameIdFromFileName="+tideGaugeNameIdFromFileName+
@@ -182,7 +183,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     if (argsMapKeysSet.contains("--tideGaugeAdjMethods")) {
 
       final String [] tideGaugeAdjMethodCheck= argsMap.
-        get("--tideGaugeAdjMethods").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+        get("--tideGaugeAdjMethods").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
       if (!IWLAdjustment.allowedTideGaugeAdjMethods.contains(tideGaugeAdjMethodCheck[0]) ) {
         throw new RuntimeException(mmi+"Invalid tide gauge WL adjustment method -> "+tideGaugeAdjMethodCheck[0]+

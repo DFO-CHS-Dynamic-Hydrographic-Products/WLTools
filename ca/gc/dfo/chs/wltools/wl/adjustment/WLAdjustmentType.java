@@ -123,7 +123,7 @@ abstract public class WLAdjustmentType
     if (this.argsMapKeySet.contains("--modelForecastInputDataInfo")) {
 
       final String [] modelForecastInputDataInfo= argsMap.
-        get("--modelForecastInputDataInfo").split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR);
+        get("--modelForecastInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
       if (!allowedInputFormats.contains(modelForecastInputDataInfo[0])) {
 

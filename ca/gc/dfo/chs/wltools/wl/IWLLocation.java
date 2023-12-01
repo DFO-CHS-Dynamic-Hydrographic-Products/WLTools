@@ -9,9 +9,8 @@ import javax.json.JsonObject;
 
 public interface IWLLocation {
 
-  String ID_SPLIT_CHAR= ":";
-
-  String INFO_JSON_FNAME_EXT= ".json";
+  //String ID_SPLIT_CHAR= ":";
+  //String INFO_JSON_FNAME_EXT= ".json";
 
   String INFO_JSON_LATCOORD_KEY= "lat";
   String INFO_JSON_LONCOORD_KEY= "lon";

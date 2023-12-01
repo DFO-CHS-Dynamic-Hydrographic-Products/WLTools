@@ -188,7 +188,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
 
-    slog.info(mmi+"start: nearestsTGCoordsIds="+nearestsTGCoordsIds.toString()+", fmfTypeIndex="+fmfTypeIndex);  //fmfType="+fmfType.name());
+    slog.info(mmi+"start: nearestsTGCoordsIds="+
+              nearestsTGCoordsIds.toString()+", fmfTypeIndex="+fmfTypeIndex);  //fmfType="+fmfType.name());
 
     slog.info(mmi+"H2D2ASCIIWLFProbesDataFile="+H2D2ASCIIWLFProbesDataFile);
     //slog.info(mmi+"this.modelInputDataFiles="+this.modelInputDataFiles);
@@ -247,9 +248,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     slog.info(mmi+"zerothHourYYYYMMDDhh="+zerothHourYYYYMMDDhh);
 
-    final String zerothHourISO8601= zerothHourYYYYMMDDhh.substring(0,4)  + IWLAdjustmentIO.ISO8601_YYYYMMDD_SEP_CHAR +
-                                    zerothHourYYYYMMDDhh.substring(4,6)  + IWLAdjustmentIO.ISO8601_YYYYMMDD_SEP_CHAR +
-                                    zerothHourYYYYMMDDhh.substring(6,8)  + IWLAdjustmentIO.ISO8601_DATETIME_SEP_CHAR +
+    final String zerothHourISO8601= zerothHourYYYYMMDDhh.substring(0,4)  + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR +
+                                    zerothHourYYYYMMDDhh.substring(4,6)  + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR +
+                                    zerothHourYYYYMMDDhh.substring(6,8)  + IWLToolsIO.ISO8601_DATETIME_SEP_CHAR +
                                     zerothHourYYYYMMDDhh.substring(8,10) + ":00:00Z"; //.000Z";
 
     slog.info(mmi+"zerothHourISO8601="+zerothHourISO8601);
@@ -343,14 +344,14 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     slog.info(mmi+"prevFMFInstantInPast="+prevFMFInstantInPast.toString());
 
     final String tmpPrevFMFInstantInPastStr= prevFMFInstantInPast.
-      toString().split(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR)[0];
+      toString().split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[0];
 
     slog.info(mmi+"tmpPrevFMFInstantInPastStr="+tmpPrevFMFInstantInPastStr);
 
     // --- Replace the ISO8601 date time string separators by the empty string
     //    for the timestamp of the previous full model forecast data file.
     final String prevFMFInputFNamePrfx= tmpPrevFMFInstantInPastStr.
-      replace(IWLAdjustmentIO.ISO8601_YYYYMMDD_SEP_CHAR,"").replace(IWLAdjustmentIO.ISO8601_DATETIME_SEP_CHAR,"");
+      replace(IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR,"").replace(IWLToolsIO.ISO8601_DATETIME_SEP_CHAR,"");
 
     //--- Build the complete file path for the previous full model forecast ASCII
     //    input data file that could be used later for (WL0-WLF) error stats

@@ -95,7 +95,7 @@ public class WLToolsIO implements IWLToolsIO {
     // --- No fool-proof check for the args. for now.
 
     final String [] locationIdInfoSplit=
-      locationIdInfo.split(IWLLocation.ID_SPLIT_CHAR);
+      locationIdInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
     if (locationIdInfoSplit.length != 3) {
       throw new RuntimeException(mmi+"ERROR: locationIdInfoSplit.length != 3 !!");
@@ -107,7 +107,7 @@ public class WLToolsIO implements IWLToolsIO {
 
     return mainCfgDir + "tidal/nonStationary/" + regionIdInfo + "/dischargeClusters/" +
            subRegionIdInfo + File.separator + tidalConstsTypeId + File.separator + tidalConstsTypeModelId +
-           File.separator + locationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLLocation.INFO_JSON_FNAME_EXT;
+           File.separator + locationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
   }
 
   // ---
@@ -145,7 +145,8 @@ public class WLToolsIO implements IWLToolsIO {
   }
 
   // ---
-  final public static void writeCHSJsonFormat(final List<MeasurementCustom> wlDataToWrite, final String locationId) {
+  final public static void
+    writeCHSJsonFormat(final List<MeasurementCustom> wlDataToWrite, final String locationId) {
 
     final String mmi= "ca.gc.dfo.chs.wltools.WLToolsIO.writeCHSJsonFormat: ";
 
@@ -170,7 +171,7 @@ public class WLToolsIO implements IWLToolsIO {
     }
 
     final String jsonOutFileNamePrfx= locationId.
-      replace(IWLAdjustmentIO.INPUT_DATA_FMT_SPLIT_CHAR, IWLAdjustmentIO.OUTPUT_DATA_FMT_SPLIT_CHAR);
+      replace(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR, IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR);
 
     final String jsonOutputFile= outputDirectory +
       File.separator + jsonOutFileNamePrfx + IWLToolsIO.JSON_FEXT ;

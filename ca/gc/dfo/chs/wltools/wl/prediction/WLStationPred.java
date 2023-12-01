@@ -165,7 +165,7 @@ final public class WLStationPred extends WLStationPredFactory {
     //WLStationPredFactory wlStnPrdFct= null;
 
     final String [] stationPredTypeSplit=
-      stationPredType.split(IWLLocation.ID_SPLIT_CHAR);
+      stationPredType.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
     final String mainPredType= stationPredTypeSplit[0];
 
@@ -221,7 +221,7 @@ final public class WLStationPred extends WLStationPredFactory {
       final String tidalConstsInputInfo= argsMap.get("--tidalConstsInputInfo");
 
       final String checkTidalConstInputFileFmt=
-        tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR)[0];
+        tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[0];
 
       //if (!tidalConstsInputFileFormat.
       if (!checkTidalConstInputFileFmt.

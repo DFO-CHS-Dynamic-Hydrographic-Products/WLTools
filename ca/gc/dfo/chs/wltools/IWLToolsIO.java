@@ -12,6 +12,12 @@ public interface IWLToolsIO {
   String INSTANT_JSON_KEY= "eventDate";
   String UNCERTAINTY_JSON_JEY= "uncertainty";
 
+  String INPUT_DATA_FMT_SPLIT_CHAR= ":";
+  String OUTPUT_DATA_FMT_SPLIT_CHAR= "-";
+
+  String ISO8601_DATETIME_SEP_CHAR= "T";
+  String ISO8601_YYYYMMDD_SEP_CHAR= OUTPUT_DATA_FMT_SPLIT_CHAR;
+
   // ---
   enum Format {
     CHS_JSON,

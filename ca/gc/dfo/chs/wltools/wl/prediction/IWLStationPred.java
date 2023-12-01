@@ -32,7 +32,7 @@ public interface IWLStationPred  {
 
   long DEFAULT_DAYS_DURATION_IN_PAST= 20L;
   long DEFAULT_DAYS_DURATION_IN_FUTURE= 40L;
-  long MAX_DAYS_DURATION= 120L;
+  long MAX_DAYS_DURATION= 180L; //120L;
 
   // --- Define prediction types
   enum Type {

@@ -13,20 +13,6 @@ import ca.gc.dfo.chs.wltools.IWLToolsIO;
  */
 public interface IWLAdjustmentIO {
 
-  //String SPINE_STL_TIDE_GAUGES_INFO_FNAME= "";
-
-  //String TIDE_GAUGES_INFO_FOLDER_NAME= "tideGaugeInfo";
-  //String TIDE_GAUGES_INFO_ECCC_IDS_KEY= "ECCC_ID";
-
-  String INPUT_DATA_TYPE_SPLIT_STR= "::";
-
-  String INPUT_DATA_FMT_SPLIT_CHAR= ":";
-
-  String OUTPUT_DATA_FMT_SPLIT_CHAR= "-";
-
-  String ISO8601_DATETIME_SEP_CHAR= "T";
-  String ISO8601_YYYYMMDD_SEP_CHAR= OUTPUT_DATA_FMT_SPLIT_CHAR;
-
   // ---
   enum FullModelForecastType {
 

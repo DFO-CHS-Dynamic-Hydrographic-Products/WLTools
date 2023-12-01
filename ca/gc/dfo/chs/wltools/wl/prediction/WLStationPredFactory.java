@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 //---
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
@@ -194,7 +195,7 @@ abstract public class WLStationPredFactory
     //this.stationId= stationId;
 
     final String [] tidalConstsInputInfoStrSplit=
-       tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR);
+       tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
     if (tidalConstsInputInfoStrSplit.length != 3) {
       throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 3 !!");

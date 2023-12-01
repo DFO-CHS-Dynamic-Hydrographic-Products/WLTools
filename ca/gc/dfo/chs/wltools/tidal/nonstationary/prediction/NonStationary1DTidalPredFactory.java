@@ -55,7 +55,7 @@ final public class NonStationary1DTidalPredFactory
      "ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidalPredFactory";
 
   /**
-   * log utility.
+   * private static logging object.
    */
   private final Logger slog= LoggerFactory.getLogger(whoAmI);
 
