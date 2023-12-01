@@ -3,10 +3,15 @@ import as.hdfql.HDFql;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * Read s-104 Dcf8 file and generate the 5 ASCII files needed by SPINE
@@ -124,6 +129,43 @@ public class S104Dcf8ToAscii {
 
     }
 
+    private static void doubleToSpineStringBuilder(Double num, StringBuilder stringBuilder) {
+        /*
+         *  Convert Double to string used in SPINE ascii files
+         *  and append to existing stringBuilder object
+         *  Ex.: 1.2 > "00120;"
+         */
+
+         Long numLong = Math.round(num*100);
+         stringBuilder.append(String.format("%05d", numLong)+";");
+    }
+
+    private static void lineBuilderSpineAscii(Instant start,MeasurementCustomBundle mCBundle,StringBuilder stringBuilder, Boolean values) {
+        /*
+         * Append new line to existing StringBuilder from MeasurementCustomBundle containing Spine station data
+         * Start appending values from the Instant defined in the "start" parameter
+         * if values is set to False, will use uncertainty field instead of values
+         */
+        if (!(mCBundle.contains(start))) {
+            throw new RuntimeException(start + " start time not indexed in source data");
+        }
+        /* Probably not the smartest way to do this loop */
+        for ( final Instant instantIter: mCBundle.getInstantsKeySet() ) {
+            if (!(instantIter.isBefore(start))) {
+                MeasurementCustom mc = mCBundle.getAtThisInstant(instantIter);
+                if (values) {
+                    doubleToSpineStringBuilder(mc.getValue(), stringBuilder);
+                } else {
+                    doubleToSpineStringBuilder(mc.getUncertainty(), stringBuilder);
+                }
+            } 
+
+        }
+        stringBuilder.append(" \n");
+    }
+
+
+
     static void genSpineAsciiFiles(Instant timeInstant,String outputDir, SpineData fileData) {
         /**
         * Generate the five ASCII files needed by SPINE
@@ -133,6 +175,22 @@ public class S104Dcf8ToAscii {
         * YYMMDDHH.Q4.one.1061
         * mat_erreur.dat.1061
         */
-    }
+
+        /* Test gen for mat_erreur.dat.1061 */
+        /* Build String */
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for(int i = 0; i < fileData.data.size(); i++) {
+            lineBuilderSpineAscii(timeInstant,fileData.data.get(i),stringBuilder,false);
+        }
+
+        /* Write file */
+        File file = new File(outputDir + "/mat_erreur.dat.1061");
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            writer.append(stringBuilder);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     
+    }
 }
