@@ -6,4 +6,13 @@ public interface IHBGeom {
   int LAT_IDX= 1;
 
   double UNDEFINED_COORD= -77777.0;
+
+  // --- For indexing b. boxes corners coordnates
+  //     in HashMap objects.
+  enum BBoxCornersId {
+    SOUTH_WEST,
+    NORTH_WEST,
+    NORTH_EAST,
+    SOUTH_EAST
+  }
 }

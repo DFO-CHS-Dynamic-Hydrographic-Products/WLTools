@@ -51,6 +51,7 @@ public class HBCoords implements IHBGeom {
     //  this.longitude= IHBGeom.UNDEFINED_COORD;
   }
 
+  // ---
   public HBCoords(final double longitude, final double latitude) {
 
     this.llCoords[LAT_IDX]= latitude;
@@ -130,6 +131,5 @@ public class HBCoords implements IHBGeom {
     //}
 
     return new HBCoords(locationLonInDecDeg, locationLatInDecDeg);
-
   }
 }

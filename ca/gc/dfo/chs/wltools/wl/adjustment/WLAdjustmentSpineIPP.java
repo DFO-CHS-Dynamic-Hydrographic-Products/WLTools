@@ -42,6 +42,7 @@ import java.io.FileNotFoundException;
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
+import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
@@ -233,7 +234,14 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 
-    //double minDistRad= Double.MAX_VALUE;
+    Map<IHBGeom.BBoxCornersId,HBCoords>
+      tideGaugesRectBBox= new HashMap<IHBGeom.BBoxCornersId,HBCoords>(2);
+
+    tideGaugesRectBBox.put(IHBGeom.BBoxCornersId.SOUTH_WEST,
+                           new HBCoords(Double.MAX_VALUE,Double.MAX_VALUE));
+
+    tideGaugesRectBBox.put(IHBGeom.BBoxCornersId.NORTH_EAST,
+                           new HBCoords(-Double.MAX_VALUE,Double.MIN_VALUE));
 
     // String [] twoNearestTideGaugesIds= {null, null};
     Map<Double,String> tmpDistCheck= new HashMap<Double,String>();
@@ -269,8 +277,41 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
       tmpTGHBCoords.put(chsTGStrNumId, new HBCoords(tgLongitude, tgLatitude) );
 
+      //slog.info(mmi+"chsTGStrNumId="+chsTGStrNumId+", tgLongitude="+tgLongitude+", tgLatitude="+tgLatitude);
+
+      if (tgLongitude < tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude()) {
+        tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).setLongitude(tgLongitude);
+      }
+
+      if (tgLatitude < tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude()) {
+        tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).setLatitude(tgLatitude);
+      }
+
+      if (tgLongitude > tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude()) {
+        tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).setLongitude(tgLongitude);
+      }
+
+      if (tgLatitude > tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude()) {
+        tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).setLatitude(tgLatitude);
+      }
+
       //slog.info(mmi+"tgStrNumId="+tgStrNumId+", tgDistRad="+tgDistRad);
     }
+
+    slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude()="+
+              tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude());
+
+    slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude()="+
+              tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude());
+
+    slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude()="+
+              tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude());
+
+    slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude()="+
+              tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude());
+
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     // --- Use the SortedSet class to automagically sort the distances used
     //     as kays in the tmpDistCheck Map
