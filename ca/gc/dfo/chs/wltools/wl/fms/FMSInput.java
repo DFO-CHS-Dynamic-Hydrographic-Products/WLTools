@@ -52,14 +52,14 @@ final public class FMSInput extends FMSConfig {
   //public FMSConfig(final Float stdErrSigma) {
   //}
 
-  public FMSInput(final WLAdjustmentType wlAdjObj) {
+  public FMSInput(final WLAdjustmentType wlAdjObj, final Instant refTime) {
 
     //super(argsMap, wlAdjObj);
     //super(wlAdjObj.getIdentity(),
     //      wlAdjObj.getLocation(),
     //      wlAdjObj.getLocation().getFmsJsonObject());
 
-    super(wlAdjObj.getLocation());
+    super(wlAdjObj.getLocation(), refTime);
 
     final String mmi= "FMSInput main constructor: ";
 

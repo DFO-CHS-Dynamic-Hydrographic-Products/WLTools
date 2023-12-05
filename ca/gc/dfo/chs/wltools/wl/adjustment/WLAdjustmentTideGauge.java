@@ -36,6 +36,8 @@ import javax.json.JsonValue;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 
+// ---
+import java.time.Instant;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -76,6 +78,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
   private int minNumberOfObs= MIN_NUMBER_OF_OBS;
 
+  private Instant referenceTime= null; //Instant(Clock.systemUTC());
+
   //private List<MeasurementCustom> tgLocationWLOData= null;
   //private ArrayList<MeasurementCustom> tgLocationWLPData= null;
   //private List<MeasurementCustom> tgLocationWLFData= null;
@@ -92,7 +96,6 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //    this.tgLocationWLFData = null;
   }
 
-
   /**
    * Comments please!
    */
@@ -107,11 +110,22 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final Set<String> argsMapKeysSet =argsMap.keySet();
 
     if (!argsMapKeysSet.contains("--minNumberOfObs")) {
-       throw new RuntimeException(mmi+
+      throw new RuntimeException(mmi+
         "Must have the --minNumberOfObs=<min. number of WL obs> defined in argsMap");
     }
 
     this.minNumberOfObs= Integer.parseInt(argsMap.get("--minNumberOfObs"));
+
+    if (!argsMapKeysSet.contains("--referenceTimeISOFormat")) {
+      throw new RuntimeException(mmi+
+        "Must have the --referenceTimeISOFormat=<ISO format time string> defined in argsMap");
+    }
+
+    this.referenceTime= Instant.parse(argsMap.get("--referenceTimeISOFormat"));
+
+    slog.info(mmi+"this.referenceTime="+this.referenceTime.toString());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     if (!argsMapKeysSet.contains("--tideGaugeLocationsDefFileName")) {
       throw new RuntimeException(mmi+
@@ -463,7 +477,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy wl adjustment algo");
 
     // --- Instantiate the FMSInput object using the argsMap and this object.
-    this.fmsInputObj= new FMSInput(this);
+    this.fmsInputObj= new FMSInput(this, this.referenceTime);
 
     // --- and instantiate the FMS object itself with the FMSInput object
     this.fmsObj= new FMS(this.fmsInputObj);
@@ -475,9 +489,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //System.exit(0);
   }
 
-  ///**
-  // * Comments please.
-  // */
+  // --- Comments please!
   final public List<MeasurementCustom> getAdjustment(final String optionalOutputDir) {
 
     final String mmi= "getAdjustment: ";
@@ -521,4 +533,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     return this.locationAdjustedData; //adjustmentRet;
   }
+
+  // ---
+  //final public Instant getReferenceTime() {
+  //  return this.referenceTime;
+  //}
+
 }

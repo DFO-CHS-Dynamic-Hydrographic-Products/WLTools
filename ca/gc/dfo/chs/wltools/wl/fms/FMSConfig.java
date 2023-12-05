@@ -79,7 +79,8 @@ abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
   //                  final HBCoords stationHBCoords,
   //                  final JsonObject fmsConfigJsonObj ) {
 
-  public FMSConfig(final WLLocation wlLocation) {
+  // ---
+  public FMSConfig(final WLLocation wlLocation, final Instant refTime) {
 
     //super();
 
@@ -153,11 +154,11 @@ abstract public class FMSConfig extends LegacyFMSDT implements IFMSConfig {
     }
 
     // --- Define this.referenceTime with the actual system UTC time
-    this.referenceTime= Instant.now(Clock.systemUTC());
+    this.referenceTime= refTime; //Instant.now(Clock.systemUTC());
 
     // --- Need to define time for debug here need to remove
     //    this when debug and validation will be done.
-    this.referenceTime= Instant.parse("2023-10-04T11:45:00Z");
+    //this.referenceTime= Instant.parse("2023-10-04T11:45:00Z");
 
     slog.info(mmi+"this.referenceTime="+this.referenceTime.toString());
 
