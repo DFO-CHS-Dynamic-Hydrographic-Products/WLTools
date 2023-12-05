@@ -310,8 +310,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude()="+
               tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude());
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     // --- Use the SortedSet class to automagically sort the distances used
     //     as kays in the tmpDistCheck Map
@@ -323,20 +323,24 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     final Double firstNearestDistKmForTG= (Double) sortedTGDistRadArray[0]; //sortedTGDistRad.first();
     final Double secondNearestDistKmForTG= (Double) sortedTGDistRadArray[1];
     final Double thirdNearestDistKmForTG= (Double) sortedTGDistRadArray[2];
+    final Double fourthNearestDistKmForTG= (Double) sortedTGDistRadArray[3];
       //sortedTGDistRad.tailSet(firstNearestDistRadForTG).first();
 
     //slog.info(mmi+"sortedTGDistRad="+sortedTGDistRad.toString());
     slog.info(mmi+"firstNearestDistKmForTG="+firstNearestDistKmForTG);
     slog.info(mmi+"secondNearestDistKmForTG="+secondNearestDistKmForTG);
     slog.info(mmi+"thirdNearestDistKmForTG="+thirdNearestDistKmForTG);
+    slog.info(mmi+"fourthNearestDistKmForTG="+fourthNearestDistKmForTG);
 
     final String firstNearestTGStrId= tmpDistCheck.get(firstNearestDistKmForTG);
     final String secondNearestTGStrId= tmpDistCheck.get(secondNearestDistKmForTG);
     final String thirdNearestTGStrId= tmpDistCheck.get(thirdNearestDistKmForTG);
+    final String fourthNearestTGStrId= tmpDistCheck.get(+fourthNearestDistKmForTG);
 
     slog.info(mmi+"firstNearestTGStrId="+firstNearestTGStrId);
     slog.info(mmi+"secondNearestTGStrId="+secondNearestTGStrId);
     slog.info(mmi+"thirdNearestTGStrId="+thirdNearestTGStrId);
+    slog.info(mmi+"fourthNearestTGStrId="+fourthNearestTGStrId);
 
     // --- Now store the nearest tide gauges coordinates
     //     in the local nearestsTGCoords map for subsequent
@@ -346,14 +350,44 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     nearestsTGCoords.put(firstNearestTGStrId, tmpTGHBCoords.get(firstNearestTGStrId));
     nearestsTGCoords.put(secondNearestTGStrId, tmpTGHBCoords.get(secondNearestTGStrId));
     nearestsTGCoords.put(thirdNearestTGStrId, tmpTGHBCoords.get(thirdNearestTGStrId));
+    nearestsTGCoords.put(fourthNearestTGStrId, tmpTGHBCoords.get(fourthNearestTGStrId));
 
     slog.info(mmi+"nearestsTGCoords keys="+nearestsTGCoords.keySet().toString());
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 
+    if (!argsMap.keySet().contains("--adjForecastAtTGSInputDataInfo")) {
+     throw new RuntimeException(mmi+
+        "Must have the --adjForecastAtTGSInputDataInfo=<input file(s) format>:<FMF adjustment data input directory> defined in argsMap");
+    }
+
+    final String [] adjForecastAtTGSInputDataInfoStrSplit=
+      argsMap.get("--adjForecastAtTGSInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+    if (adjForecastAtTGSInputDataInfoStrSplit.length != 2) {
+      throw new RuntimeException(mmi+"adjForecastAtTGSInputDataInfoStrSplit.length != 2 !!");
+    }
+
+    if ( !adjForecastAtTGSInputDataInfoStrSplit[0].equals(IWLToolsIO.Format.CHS_JSON.name()) ) {
+      throw new RuntimeException(mmi+"Invalid FMF adjustment input data file format -> "+adjForecastAtTGSInputDataInfoStrSplit[0]);
+    }
+
+    final String adjForecastAtTGSInputDataDir= adjForecastAtTGSInputDataInfoStrSplit[1];
+
+    final File fmfAdjInfoDirFileObj= new File(adjForecastAtTGSInputDataDir);
+
+    if (!fmfAdjInfoDirFileObj.exists()) {
+      throw new RuntimeException(mmi+"FMF adjustment data input directory -> "+adjForecastAtTGSInputDataDir+" not found!!");
+    }
+
+    slog.info(mmi+"adjForecastAtTGSInputDataDir="+adjForecastAtTGSInputDataDir);
+
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
+
     if (!argsMap.keySet().contains("--nsTidePredInputDataInfo")) {
       throw new RuntimeException(mmi+
-        "Must have the --nsTidePredInputDataInfo=<NS_TIDE pred. data input directory> defined in argsMap");
+        "Must have the --nsTidePredInputDataInfo=<input file(s) format>:<NS_TIDE pred. data input directory> defined in argsMap");
     }
 
     final String [] nsTidePredInputDataInfoStrSplit=
@@ -372,6 +406,12 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
     final String nsTidePredInputDataDir= nsTidePredInputDataInfoStrSplit[1];
 
+    final File nsTidePredInputDataDirFileObj= new File(nsTidePredInputDataDir);
+
+    if (!nsTidePredInputDataDirFileObj.exists()) {
+      throw new RuntimeException(mmi+"NS Tide pred data input directory -> "+nsTidePredInputDataDir+" not found!!");
+    }
+
     slog.info(mmi+"nsTidePredInputDataDir="+nsTidePredInputDataDir);
 
     final String spineLocNSTidePredFilePrfx= this.locationIdInfo.
@@ -380,6 +420,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     //--- First get the NS Tide WL pred data at the Spine location being processed:
     final String spineLocationNSTidePredFile= nsTidePredInputDataDir +
       File.separator + spineLocNSTidePredFilePrfx + IWLToolsIO.JSON_FEXT;
+
+    //final File spineLocationNSTidePredFileObj= new File(spineLocationNSTidePredFile);
 
     //slog.info(mmi+"this.locationIdInfo="+this.locationIdInfo);
     slog.info(mmi+"spineLocationNSTidePredFile="+spineLocationNSTidePredFile);
@@ -507,8 +549,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
    //           IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + locIdStrWithoutSuffix;
 
     //slog.info(mmi+"spinelocationId= "+spinelocationId);
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- Build the path to the main discharges cluster directory where to find all the
     //     WDS grid points definition.
