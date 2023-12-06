@@ -1,5 +1,5 @@
 package ca.gc.dfo.chs.util.spine;
-import as.hdfql.HDFql;
+import as.hdfql.*;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 
@@ -58,13 +58,16 @@ public class S104Dcf8ToAscii {
         final String hdfqlSelectStartTime = "SELECT FROM WaterLevel/WaterLevel.01/dateTimeOfFirstRecord";
         HDFql.execute(hdfqlSelectStartTime);
         HDFql.cursorFirst();
-        final String startTimeStr = HDFql.cursorGetChar();
+        String startTimeStr = HDFql.cursorGetChar();
+        startTimeStr = startTimeStr.substring(0,4)+ "-" + startTimeStr.substring(4,6) + "-" + startTimeStr.substring(6,11)+":" +startTimeStr.substring(11,13) +":" + startTimeStr.substring(13,16);
         final Instant startTime =Instant.parse(startTimeStr);
 
         final String hdfqlSelectEndTime = "SELECT FROM WaterLevel/WaterLevel.01/dateTimeOfLastRecord";
         HDFql.execute(hdfqlSelectEndTime);
         HDFql.cursorFirst();
-        final String endTimeStr = HDFql.cursorGetChar();
+        String endTimeStr = HDFql.cursorGetChar();
+        endTimeStr = endTimeStr.substring(0,4)+ "-" + endTimeStr.substring(4,6) + "-" + endTimeStr.substring(6,11)+":" +endTimeStr.substring(11,13) +":" + endTimeStr.substring(13,16);
+
         final Instant endTime =Instant.parse(endTimeStr);
 
         
@@ -74,7 +77,8 @@ public class S104Dcf8ToAscii {
         // Get Number of Groups
         String hdfqlGetGroupsNo = "SHOW WaterLevel/WaterLevel.01/ LIKE \"Group\"";
         HDFql.execute(hdfqlGetGroupsNo);
-        Integer numGroup = HDFql.cursorGetCount();
+        Long numGroupLong = HDFql.cursorGetCount();
+        Integer numGroup= Math.toIntExact(numGroupLong);
 
         
 

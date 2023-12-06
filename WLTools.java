@@ -90,6 +90,7 @@ final public class WLTools extends WLToolsIO {
                                  IWLTools.Box.prediction.name()+" OR --tool="+
                                  IWLTools.Box.adjustment.name()+" OR --tool="+
                                  IWLTools.Box.analysis.name()+" OR --tool="+
+                                 IWLTools.Box.S104Dcf8ToAscii.name()+" OR --tool="+
                                  IWLTools.Box.merge.name()+" option defined !!");
     }
 
