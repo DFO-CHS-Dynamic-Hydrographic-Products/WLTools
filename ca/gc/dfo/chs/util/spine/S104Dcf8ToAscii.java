@@ -97,18 +97,20 @@ public class S104Dcf8ToAscii {
 
             // Loop trough group and generate MeasurementCustom items
             List<MeasurementCustom> bundledValues = new ArrayList<>();
+            Integer minutesAfterStart = 0;
             while(HDFql.cursorNext() == HDFql.SUCCESS) {
                 // eventDate
-                Integer minutesAfterStart = 0;
                 Instant eventDate = startTime.plus(minutesAfterStart, ChronoUnit.MINUTES);
-                minutesAfterStart = minutesAfterStart + 3;
+                minutesAfterStart = Integer.valueOf(minutesAfterStart.intValue() + 1);
                 // value
-                Double value = HDFql.cursorGetDouble();
+                Float floatValue = HDFql.cursorGetFloat();
+                Double value = (double) floatValue;
                 HDFql.cursorNext();
                 // Skip trend
                 HDFql.cursorNext();
                 // uncertainty
-                Double uncertainty = HDFql.cursorGetDouble();
+                float floatUncertainty = HDFql.cursorGetFloat();
+                Double uncertainty = (double) floatUncertainty;
                 MeasurementCustom iMeasurement = new MeasurementCustom();
                 iMeasurement.setEventDate(eventDate);
                 iMeasurement.setValue(value);
@@ -139,9 +141,8 @@ public class S104Dcf8ToAscii {
          *  and append to existing stringBuilder object
          *  Ex.: 1.2 > "00120;"
          */
-
-         Long numLong = Math.round(num*100);
-         stringBuilder.append(String.format("%05d", numLong)+";");
+        Long numLong = Math.round(num*100);
+        stringBuilder.append(String.format("%05d", numLong)+";");
     }
 
     private static void lineBuilderSpineAscii(Instant start,MeasurementCustomBundle mCBundle,StringBuilder stringBuilder, Boolean values) {
