@@ -197,8 +197,12 @@ final public class WLTools extends WLToolsIO {
       }
       final String timeArg= argsMap.get("--time");
 
+      if (!argsMap.keySet().contains("--type")) {
+        throw new RuntimeException(mmi+"Must have file type --type=UU,30,Q2,Q3,Q4 defined in the args.!");
+      }
+      final String typeArg= argsMap.get("--type");
 
-      S104Dcf8ToAscii.runConversion(timeArg, outputDirArg, h5PathArg);
+      S104Dcf8ToAscii.runConversion(timeArg, outputDirArg, h5PathArg, typeArg);
 
      }
 

@@ -67,8 +67,8 @@ public interface HDFqlConstants {
   public final static int UTF8 = HDFqlJNI.UTF8_get();
   public final static int FILL_DEFAULT = HDFqlJNI.FILL_DEFAULT_get();
   public final static int FILL_DEFINED = HDFqlJNI.FILL_DEFINED_get();
-  public final static int FILL_NEVER = HDFqlJNI.FILL_NEVER_get();
   public final static int FILL_UNDEFINED = HDFqlJNI.FILL_UNDEFINED_get();
+  public final static int FILL_NEVER = HDFqlJNI.FILL_NEVER_get();
   public final static int EARLIEST = HDFqlJNI.EARLIEST_get();
   public final static int LATEST = HDFqlJNI.LATEST_get();
   public final static int VERSION_18 = HDFqlJNI.VERSION_18_get();
@@ -95,6 +95,7 @@ public interface HDFqlConstants {
   public final static int ERROR_UNEXPECTED_STORAGE_TYPE = HDFqlJNI.ERROR_UNEXPECTED_STORAGE_TYPE_get();
   public final static int ERROR_DANGLING_LINK = HDFqlJNI.ERROR_DANGLING_LINK_get();
   public final static int ERROR_NOT_REGISTERED = HDFqlJNI.ERROR_NOT_REGISTERED_get();
+  public final static int ERROR_INVALID_OPERATION = HDFqlJNI.ERROR_INVALID_OPERATION_get();
   public final static int ERROR_INVALID_REGULAR_EXPRESSION = HDFqlJNI.ERROR_INVALID_REGULAR_EXPRESSION_get();
   public final static int ERROR_INVALID_SELECTION = HDFqlJNI.ERROR_INVALID_SELECTION_get();
   public final static int ERROR_UNKNOWN = HDFqlJNI.ERROR_UNKNOWN_get();

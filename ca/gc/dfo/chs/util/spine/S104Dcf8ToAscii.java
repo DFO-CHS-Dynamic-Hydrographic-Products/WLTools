@@ -28,7 +28,7 @@ public class S104Dcf8ToAscii {
         public List<MeasurementCustomBundle> data;
     }
 
-    public static void runConversion(String timeString, String outputDir, String h5Path) {
+    public static void runConversion(String timeString, String outputDir, String h5Path, String type) {
 
         // Create Instant from ISO time string
         // Instant.parse will trow dateTime exception if in wrong format
@@ -39,7 +39,7 @@ public class S104Dcf8ToAscii {
         final SpineData fileData = s104ToSpineData(h5Path);
 
         // Write files to output directory 
-        genSpineAsciiFiles(timeInstant, outputDir, fileData);
+        genSpineAsciiFiles(timeInstant, outputDir, fileData, type);
     };
 
     static SpineData s104ToSpineData(String h5Path) {
@@ -101,7 +101,7 @@ public class S104Dcf8ToAscii {
             while(HDFql.cursorNext() == HDFql.SUCCESS) {
                 // eventDate
                 Instant eventDate = startTime.plus(minutesAfterStart, ChronoUnit.MINUTES);
-                minutesAfterStart = Integer.valueOf(minutesAfterStart.intValue() + 1);
+                minutesAfterStart = Integer.valueOf(minutesAfterStart.intValue() + 3);
                 // value
                 Float floatValue = HDFql.cursorGetFloat();
                 Double value = (double) floatValue;
@@ -141,11 +141,18 @@ public class S104Dcf8ToAscii {
          *  and append to existing stringBuilder object
          *  Ex.: 1.2 > "00120;"
          */
+        String formatedNum;
         Long numLong = Math.round(num*100);
-        stringBuilder.append(String.format("%05d", numLong)+";");
+        
+        if (numLong < 0){
+            formatedNum = "-" + String.format("%04d", Math.abs(numLong))+";";
+        } else {
+            formatedNum = String.format("%05d", numLong)+";";
+        }
+        stringBuilder.append(formatedNum);
     }
 
-    private static void lineBuilderSpineAscii(Instant start,MeasurementCustomBundle mCBundle,StringBuilder stringBuilder, Boolean values) {
+    private static void lineBuilderSpineAscii(Instant start, Instant end, MeasurementCustomBundle mCBundle,StringBuilder stringBuilder, Boolean values) {
         /*
          * Append new line to existing StringBuilder from MeasurementCustomBundle containing Spine station data
          * Start appending values from the Instant defined in the "start" parameter
@@ -154,9 +161,12 @@ public class S104Dcf8ToAscii {
         if (!(mCBundle.contains(start))) {
             throw new RuntimeException(start + " start time not indexed in source data");
         }
+        if (!(mCBundle.contains(end))) {
+            throw new RuntimeException(start + " source file doesn't contain enough data to generate file from specified start time");
+        }
         /* Probably not the smartest way to do this loop */
         for ( final Instant instantIter: mCBundle.getInstantsKeySet() ) {
-            if (!(instantIter.isBefore(start))) {
+            if ((!(instantIter.isBefore(start))) && (instantIter.isBefore(end) || instantIter.equals(end))) {
                 MeasurementCustom mc = mCBundle.getAtThisInstant(instantIter);
                 if (values) {
                     doubleToSpineStringBuilder(mc.getValue(), stringBuilder);
@@ -169,28 +179,71 @@ public class S104Dcf8ToAscii {
         stringBuilder.append(" \n");
     }
 
+    private static Instant getEndTime(String type,  Instant start){
+        Instant end;
+        if (type.equals("30") || type.equals("UU")) {
+            end = start.plus(30, ChronoUnit.DAYS);
+        } else {
+            end = start.plus(1, ChronoUnit.DAYS);
+        }
+        return end;
+    }
+
+    private static String getFileName(String type){
+        String fileName;
+        if(type.equals("UU")) {
+            fileName = "mat_erreur.dat.1061";
+        } else if(type.equals("30")) {
+            fileName = "YMMDDHH.one30.1061";
+        } else if(type.equals("Q2")) {
+            fileName = "YYMMDDHH.Q2.one.1061";
+        } else if(type.equals("Q3")) {   
+            fileName = "YYMMDDHH.Q3.one.1061";
+        } else if(type.equals("Q4")) {     
+            fileName = "YYMMDDHH.Q4.one.1061";
+        } else {
+            throw new RuntimeException("Invalid type, must be 30, Q1, Q2, Q4 or UU");  
+        }
+        return fileName;
+    }
 
 
-    static void genSpineAsciiFiles(Instant timeInstant,String outputDir, SpineData fileData) {
+
+    static void genSpineAsciiFiles(Instant timeInstant,String outputDir, SpineData fileData, String type) {
         /**
         * Generate the five ASCII files needed by SPINE
-        * YYMMDDHH.one30.1061
-        * YYMMDDHH.Q2.one.1061
-        * YYMMDDHH.Q3.one.1061
-        * YYMMDDHH.Q4.one.1061
-        * mat_erreur.dat.1061
+        * Valid files types:
+        * 30 = YYMMDDHH.one30.1061
+        * Q2 = YYMMDDHH.Q2.one.1061
+        * Q3 = YYMMDDHH.Q3.one.1061
+        * Q4 = YYMMDDHH.Q4.one.1061
+        * UU = mat_erreur.dat.1061
         */
-
-        /* Test gen for mat_erreur.dat.1061 */
-        /* Build String */
         StringBuilder stringBuilder = new StringBuilder();
+        Instant end = getEndTime(type,timeInstant);
+        String fileName = getFileName(type);
 
-        for(int i = 0; i < fileData.data.size(); i++) {
-            lineBuilderSpineAscii(timeInstant,fileData.data.get(i),stringBuilder,false);
+
+        /* Build String */
+        if(type.equals("UU")) {
+
+            for(int i = 0; i < fileData.data.size(); i++) {         
+                    lineBuilderSpineAscii(timeInstant,end,fileData.data.get(i),stringBuilder,false);
+            }
+
+        } else if (type.equals("30") || type.equals("Q2") || type.equals("Q3") || type.equals("Q4")) {
+
+            for(int i = 0; i < fileData.data.size(); i++) {
+                    lineBuilderSpineAscii(timeInstant,end,fileData.data.get(i),stringBuilder,true);
+            }
+
+        } else {
+            throw new RuntimeException("Invalid type, must be 30, Q1, Q2, Q4 or UU");       
         }
 
+        
         /* Write file */
-        File file = new File(outputDir + "/mat_erreur.dat.1061");
+        File file = new File(outputDir + "/" + fileName);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.append(stringBuilder);
         } catch (Exception e) {

@@ -10,8 +10,8 @@ rm -f ${javaCodeBaseMainDir}/bin/*.class
 
 export CLASSPATH=${javaClassesMainDestDir}:${javaCodeBaseMainDir}:${CLASSPATH}
 
-ant -buildfile ${javaCodeBaseMainDir}/ant/antCompHDFql.xml
 
+ant -buildfile ${javaCodeBaseMainDir}/ant/antCompHDFql.xml
 if [ ${?} -ne 0 ];
 then
   echo "ant -buildfile ${javaCodeBaseMainDir}/ant/antCompHDFql.xml FAILED!!"
