@@ -45,6 +45,9 @@ final public class TideGaugeConfig extends WLLocation implements ITideGaugeConfi
 
   private String nearestSpinePointId= null;
 
+  private String upstreamNeighTGId= null;
+  private String downstreamNeighTGId= null;
+
   private JsonObject fmsJsonObject= null;
 
   public TideGaugeConfig(final String identity) {
@@ -60,6 +63,12 @@ final public class TideGaugeConfig extends WLLocation implements ITideGaugeConfi
 
     this.nearestSpinePointId=
       tgJsonObj.getString(INFO_NEAREST_SPINE_POINT_ID_JSON_KEY);
+
+    this.upstreamNeighTGId=
+      tgJsonObj.getString(INFO_UPSTREAM_NEIGH_TGID_JSON_KEY);
+
+    this.downtreamNeighTGId=
+      tgJsonObj.getString(INFO_DOWNTREAM_NEIGH_TGID_JSON_KEY);
 
     this.fmsJsonObject= tgJsonObj.getJsonObject(INFO_FMS_CONFIG_JSON_KEY);
 
