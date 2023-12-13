@@ -11,6 +11,8 @@ import java.lang.Math;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.time.Instant;
+import java.util.TreeSet;
+import java.util.SortedSet;
 
 //---
 import org.slf4j.Logger;
@@ -33,7 +35,8 @@ final public class MeasurementCustomBundle {
 
   private Map<Instant, MeasurementCustom> mcData= null;
 
-  private Set<Instant> instantsKeySet= null;
+  //private Set<Instant> instantsKeySet= null;
+  private SortedSet<Instant> instantsKeySet= null;
 
   // ---
   public MeasurementCustomBundle() {
@@ -63,7 +66,8 @@ final public class MeasurementCustomBundle {
         this.mcData.put(mcIter.getEventDate(), mcIter);
       }
 
-      this.instantsKeySet= this.mcData.keySet();
+      //this.instantsKeySet= this.mcData.keySet();
+      this.instantsKeySet= new TreeSet<Instant>(this.mcData.keySet());
 
     } else {
       slog.warn(mmi+"Empty mcDataList !! Nothing to do here !!");
@@ -71,27 +75,64 @@ final public class MeasurementCustomBundle {
   }
 
   // ---
+  public Instant getLessRecentInstant() {
+
+    final String mmi= "getLessRecentInstant: ";
+
+    try {
+      this.instantsKeySet.first();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe); 
+    }
+
+    return this.instantsKeySet.first();
+  }
+
+  // ---
+  public Instant getMoreRecentInstant() {
+
+    final String mmi= "getMoreecentInstant: ";
+
+    try {
+      this.instantsKeySet.last();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    return this.instantsKeySet.last();
+  }
+
+  // --- No fool-proof here, need performance
   public boolean contains(final Instant anInstant) {
     return this.instantsKeySet.contains(anInstant);
   }
 
-  // ---
+  // --- No fool-proof here, need performance
   public MeasurementCustom getAtThisInstant(final Instant anInstant) {
 
-    // --- Not sure that this.mcData.containsKey(eventDate) is correct all the time
+    // ---
     //return this.mcData.containsKey(eventDate) ? this.mcData.get(eventDate) : null;
     return this.contains(anInstant) ? this.mcData.get(anInstant) : null;
   }
 
   // --- Can return null!!
-  public Set<Instant> getInstantsKeySetCopy() {
-    return (this.instantsKeySet != null) ? new HashSet(this.instantsKeySet) : null ; //mcData.keySet();
+  public SortedSet<Instant> getInstantsKeySetCopy() {
+
+    final String mmi= "getInstantsKeySetCopy: ";
+
+    try {
+      this.instantsKeySet.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    return (this.instantsKeySet != null) ? new TreeSet(this.instantsKeySet) : null ; //mcData.keySet();
   }
 
   // --- Can return null !!
-  public Set<Instant> getInstantsKeySet() {
-    return this.instantsKeySet; //mcData.keySet();
-  }
+  //public SortedSet<Instant> getInstantsKeySet() {
+  //  return this.instantsKeySet; //mcData.keySet();
+  //}
 
   // ---
   public MeasurementCustomBundle removeElement(final Instant anInstant) {
