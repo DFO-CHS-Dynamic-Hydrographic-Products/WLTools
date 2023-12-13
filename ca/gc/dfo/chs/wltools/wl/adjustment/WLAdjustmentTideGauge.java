@@ -204,9 +204,11 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                                     " Must be one of -> "+IWLAdjustment.allowedTideGaugeAdjMethods.toString());
       }
 
+      // --- WL prediction adjustment type
       this.predictAdjType= IWLAdjustment.
         TideGaugeAdjMethod.valueOf(tideGaugeAdjMethodCheck[0]);
 
+      // --- Full Model Forecast (FMF) adjustment type (if any)
       if (tideGaugeAdjMethodCheck.length == 2) {
 
         if (!IWLAdjustment.allowedTideGaugeAdjMethods.contains(tideGaugeAdjMethodCheck[1]) ) {
@@ -390,12 +392,11 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // ---
     if (this.forecastAdjType != null) {
 
-      if (this.forecastAdjType != IWLAdjustment.
-            TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) {
-
-        slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
-                  IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS.name()+" is allowed for now !");
-      }
+      //if (this.forecastAdjType != IWLAdjustment.
+      //      TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) {
+      //  slog.info(mmi+"Only the tide gauge WL forecast adjustment type -> "+
+      //            IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS.name()+" is allowed for now !");
+      //}
 
      this.fullForecastModelName= argsMapKeysSet.
        contains("--fullForecastModelName") ? argsMap.get("--fullForecastModelName") : IWLAdjustment.DEFAULT_MODEL_NAME;
@@ -410,6 +411,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
       //     method call.
       final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
+
       uniqueTGMapObj.put(this.location.getIdentity(), null);
 
       String prevFMFASCIIDataFilePath= null;
@@ -423,13 +425,19 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
         //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
 
+        // --- Define the nb. hours in past to use depending on this.forecastAdjType:
+        //    0 means that it will be automagically be determined according to the FMF
+        //    data duration after its lead time
+        final long nbHoursInPastArg=
+          (this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
+
         // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII
         //     format. It should be the H2D2 model forecast data of the actual synoptic run as
         //     it is specified with the IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()
         //     argument to this method.
         prevFMFASCIIDataFilePath= this.getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo,
-                                                                 uniqueTGMapObj, mainJsonMapObj,
+                                                                 uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
                                                                  IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()); // , this.nearestModelData);
 
         slog.info(mmi+"Done with reading the model full forecast at TG location -> "+this.location.getIdentity());
@@ -469,8 +477,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"Done with the full model forecast correction-adjustment");
 
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
 
     } // --- this.forecastAdjType != null
 

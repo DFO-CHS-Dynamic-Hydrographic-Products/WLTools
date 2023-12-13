@@ -59,7 +59,7 @@ abstract public class WLAdjustmentType
   // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG
   //     for the forecast (WLF) data.
   protected IWLAdjustment.TideGaugeAdjMethod forecastAdjType=
-    IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS; //ECCC_H2D2_FORECAST_AUTOREG;
+    IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS; //MULT_TIMEDEP_FMF_ERROR_STATS;
 
   /**
    * Comments please!
@@ -189,6 +189,8 @@ abstract public class WLAdjustmentType
     final String mmi= "adjustFullModelForecast: ";
 
     slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     try {
       prevFMFASCIIDataFilePath.length();
@@ -223,6 +225,18 @@ abstract public class WLAdjustmentType
 
         this.singleTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
                                            uniqueTGMapObj, mainJsonMapObj);
+        break;
+
+      case MULT_TIMEDEP_FMF_ERROR_STATS:
+
+        //this.multTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
+        //                                 uniqueTGMapObj, mainJsonMapObj);
+
+        slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
+
+        slog.info(mmi+"Debug exit 0");
+        System.exit(0);
+
         break;
 
       default:

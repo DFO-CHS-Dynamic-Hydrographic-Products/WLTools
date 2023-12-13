@@ -67,8 +67,8 @@ final public class TideGaugeConfig extends WLLocation implements ITideGaugeConfi
     this.upstreamNeighTGId=
       tgJsonObj.getString(INFO_UPSTREAM_NEIGH_TGID_JSON_KEY);
 
-    this.downtreamNeighTGId=
-      tgJsonObj.getString(INFO_DOWNTREAM_NEIGH_TGID_JSON_KEY);
+    this.downstreamNeighTGId=
+      tgJsonObj.getString(INFO_DOWNSTREAM_NEIGH_TGID_JSON_KEY);
 
     this.fmsJsonObject= tgJsonObj.getJsonObject(INFO_FMS_CONFIG_JSON_KEY);
 

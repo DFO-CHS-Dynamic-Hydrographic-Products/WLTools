@@ -176,6 +176,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   final String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
                                           /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
                                           /*@NotNull*/ final JsonObject       mainJsonMapObj,
+                                                       final long             nbHoursInPastArg,
                                                        final int              fmfTypeIndex ) {
                                                        //final FullModelForecastType fmfType ) {
 
@@ -185,6 +186,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //     because the HBCoords object is useless for this method.
 
     final String mmi= "getH2D2ASCIIWLProbeData: ";
+
+    if (nbHoursInPastArg < 0) {
+      throw new RuntimeException(mmi+"ERROR: nbHoursInPastArg must be >= 0 !!");
+    }
 
     final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
 
@@ -320,18 +325,21 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //final List<MeasurementCustom> tg0McList=
     //  fullModelForecastData.get(nearestsTGCoordsIds.toArray()[0]);
 
-    final int nbTimeStamps= tg0McList.size();
-
-    slog.info(mmi+"model results nbTimeStamps="+nbTimeStamps);
+    //final int nbTimeStamps= tg0McList.size();
+    //slog.info(mmi+"model results nbTimeStamps="+nbTimeStamps);
 
     //--- Get the time incr. interval of the full model forecast data
     this.fmfDataTimeIntervalSeconds=
       MeasurementCustom.getDataTimeIntervallSeconds(tg0McList);
 
+    final int nbTimeStamps= tg0McList.size();
+
+    slog.info(mmi+"model results nbTimeStamps="+nbTimeStamps);
+
     // --- Need to use (double) cast to get what we want in terms of hours to go
-    //     in past
-    final long nbHoursToGoInPast= (long) ( (double) nbTimeStamps *
-      (double) this.fmfDataTimeIntervalSeconds/ITimeMachine.SECONDS_PER_HOUR );
+    //     in past but only if nbHoursInPastArg == 0
+    final long nbHoursToGoInPast= (nbHoursInPastArg != 0 ) ? nbHoursInPastArg :
+       (long) ( (double) nbTimeStamps * (double) this.fmfDataTimeIntervalSeconds/ITimeMachine.SECONDS_PER_HOUR );
 
     slog.info(mmi+"this.fmfDataTimeIntervalSeconds="+this.fmfDataTimeIntervalSeconds);
     slog.info(mmi+"nbHoursToGoInPast="+nbHoursToGoInPast);
@@ -361,8 +369,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     slog.info(mmi+"returned previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     return previousFMFASCIIDataFilePath;
   }

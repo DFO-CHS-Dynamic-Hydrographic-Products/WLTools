@@ -135,7 +135,7 @@ abstract public class WLAdjustmentFMF
 
         // --- Read the previous H2D2 full model forecast data
         this.getH2D2ASCIIWLFProbesData(prevFMFASCIIDataFilePath,
-                                       uniqueTGMapObj, mainJsonMapObj, prevFMFIndex);
+                                       uniqueTGMapObj, mainJsonMapObj, 0L, prevFMFIndex);
       } else {
         throw new RuntimeException(mmi+
                                    "Invalid full model forecast input format -> "+this.modelForecastInputDataFormat.name());
