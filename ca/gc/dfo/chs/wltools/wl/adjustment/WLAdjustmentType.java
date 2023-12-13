@@ -189,8 +189,8 @@ abstract public class WLAdjustmentType
     final String mmi= "adjustFullModelForecast: ";
 
     slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     try {
       prevFMFASCIIDataFilePath.length();
@@ -225,12 +225,15 @@ abstract public class WLAdjustmentType
 
         this.singleTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
                                            uniqueTGMapObj, mainJsonMapObj);
+
+        slog.info(mmi+"Done with SINGLE_TIMEDEP_FMF_ERROR_STATS");
+
         break;
 
       case MULT_TIMEDEP_FMF_ERROR_STATS:
 
-        //this.multTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
-        //                                 uniqueTGMapObj, mainJsonMapObj);
+        this.multTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
+                                         uniqueTGMapObj, mainJsonMapObj);
 
         slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
 

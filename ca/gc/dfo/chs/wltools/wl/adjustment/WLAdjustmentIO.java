@@ -51,6 +51,7 @@ import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
@@ -168,6 +169,52 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     slog.info(mmi+"this.adjType="+this.adjType.name());
 
     this.argsMapKeySet= argsMap.keySet();
+  }
+
+  // ---
+  final MeasurementCustomBundle getMcbWLOData() {
+
+    final String mmi= "getMcbWLOData: ";
+
+    try {
+      this.nearestObsData.size();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"this.nearestObsData is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+   try {
+      this.location.hashCode();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"this.location is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    try {
+      this.nearestObsData.get(this.location.getIdentity()).size();
+
+    } catch (NullPointerException e) {
+
+      slog.error(mmi+"this.nearestObsData.get(this.location.getIdentity()) is null !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    final List<MeasurementCustom> locationMCWLO= this.nearestObsData.get(this.location.getIdentity());
+
+    if (locationMCWLO.size() == 0 ) {
+      throw new RuntimeException(mmi+"ERROR: Cannot have locationMCWLO.size() == 0 at this point !!");
+    }
+
+    // --- Create a local MeasurementCustomBundle object with the WLO data
+    //     List<MeasurementCustom> object for this TG location.
+    //final MeasurementCustomBundle mcbWLO= new
+    //  MeasurementCustomBundle( this.nearestObsData.get(this.location.getIdentity()) );
+
+    return new MeasurementCustomBundle(locationMCWLO); //mcbWLO;
   }
 
   /**
@@ -366,11 +413,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     final String previousFMFASCIIDataFilePath= inputFileNameFileObj.getParent() +
       File.separator + inputFileName.replace(zerothHourYYYYMMDDhh,prevFMFInputFNamePrfx);
 
-    slog.info(mmi+"returned previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
+    slog.info(mmi+"Will return previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     return previousFMFASCIIDataFilePath;
   }
