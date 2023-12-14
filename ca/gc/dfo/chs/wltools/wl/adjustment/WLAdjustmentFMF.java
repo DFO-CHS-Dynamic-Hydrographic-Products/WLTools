@@ -354,6 +354,8 @@ abstract public class WLAdjustmentFMF
 
     boolean wloTimeFrameOverlap= true;
 
+    int nbOverlapsCount= 0;
+
     // ---
     while(wloTimeFrameOverlap) {
 
@@ -385,6 +387,8 @@ abstract public class WLAdjustmentFMF
 
       // --- Calculate the residuals for the FMF if its time frame overlaps the WLO Time Frame.
       if (wloTimeFrameOverlap) {
+
+        nbOverlapsCount++;
 
         // --- Get the FMF lead time (a.k.a. zero'th hour) to use it to define
         //     the time offset needed for time dependant residuals stats indexing.
@@ -444,6 +448,8 @@ abstract public class WLAdjustmentFMF
 
     } // --- while(wloTimeFrameOtimeDepResidualsStats=verlap) loop block
 
+    slog.info(mmi+"nbOverlapsCount="+nbOverlapsCount);
+
     // ---
     final Map<Long, MeasurementCustom> timeDepResidualsStats=
       MeasurementCustom.getTimeDepMCStats(timeDepResidualsAcc);
@@ -501,7 +507,7 @@ abstract public class WLAdjustmentFMF
       //    time dependent residual for this time offset.
       actuFMFMc.setUncertainty(timeDepResidualMc.getUncertainty());
 
-      //slog.info(mmi+"actuFMFMc value aft adj.="+actuFMFMc.getValue());
+      //slog.info(mmi+"actuFMFMc value aft adj.="+actuFMFMc.getValue()+"\n");
 
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
