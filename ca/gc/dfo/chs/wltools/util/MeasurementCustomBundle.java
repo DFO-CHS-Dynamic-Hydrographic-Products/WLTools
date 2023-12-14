@@ -75,23 +75,23 @@ final public class MeasurementCustomBundle {
   }
 
   // ---
-  public Instant getLessRecentInstant() {
+  public Instant getLeastRecentInstantRef() {
 
-    final String mmi= "getLessRecentInstant: ";
+    final String mmi= "getLeastRecentInstantRef: ";
 
     try {
       this.instantsKeySet.first();
     } catch (NullPointerException npe) {
-      throw new RuntimeException(mmi+npe); 
+      throw new RuntimeException(mmi+npe);
     }
 
     return this.instantsKeySet.first();
   }
 
   // ---
-  public Instant getMoreRecentInstant() {
+  public Instant getMostRecentInstantRef() {
 
-    final String mmi= "getMoreecentInstant: ";
+    final String mmi= "getMostRecentInstantRef: ";
 
     try {
       this.instantsKeySet.last();
@@ -102,7 +102,8 @@ final public class MeasurementCustomBundle {
     return this.instantsKeySet.last();
   }
 
-  // --- No fool-proof here, need performance
+  // --- No fool-proof here, need performancels
+
   public boolean contains(final Instant anInstant) {
     return this.instantsKeySet.contains(anInstant);
   }

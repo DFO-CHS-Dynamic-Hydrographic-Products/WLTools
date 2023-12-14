@@ -4,8 +4,12 @@ package ca.gc.dfo.chs.wltools.util;
  *
  */
 
+import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 import java.time.Instant;
+import java.util.TreeSet;
+import java.util.SortedSet;
 
 //---
 import org.slf4j.Logger;
@@ -14,9 +18,7 @@ import org.slf4j.LoggerFactory;
 /**
  * MeasurementCustom:
  * wrapper class that mimics the official IWLS package MeasurementCustom class.
- * This is a placeholder of the same name and we use it to be able to use the WL code
- * developped alongside the IWLS code base. We will then be able to switch back quickly
- * to the official IWLS package MeasurementCustom class usage if needed.
+ * But we added some more capabiliies (namely for statistics calculations)
  */
 //abstract
 final public class MeasurementCustom {
@@ -123,6 +125,97 @@ final public class MeasurementCustom {
     return Math.abs(mc1.getEventDate().getEpochSecond() - mc2.getEventDate().getEpochSecond());
   }
 
+  // ---
+  public final static double getValuesArithMean(final List<MeasurementCustom> mcDataList) {
+
+    final String mmi= "getValuesArithMean: ";
+
+    try {
+      mcDataList.size();
+
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    if (mcDataList.size() == 0) {
+      throw new RuntimeException(mmi+"mcDataList.size() == 0 !!");
+    }
+
+    double valuesAcc= 0.0;
+
+    for(final MeasurementCustom mcObj: mcDataList) {
+      valuesAcc += mcObj.getValue();
+    }
+
+    return valuesAcc/mcDataList.size();
+  }
+
+  // ---
+  static public Map<Long, MeasurementCustom> getTimeDepMCStats( final Map<Long, List<Double>> timeDepDoubleAccListMap ) {
+
+    final String mmi= "getTimeDepMCStats: ";
+
+    try {
+      timeDepDoubleAccListMap.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    Map<Long, MeasurementCustom> timeDepMCStats= new HashMap<Long, MeasurementCustom>();
+
+    final SortedSet<Long> timeDepDoubleAccListMapSSet= new TreeSet<Long>(timeDepDoubleAccListMap.keySet());
+
+    for (final Long longObjIdx: timeDepDoubleAccListMapSSet) {
+
+      final List<Double> dValueAccList= timeDepDoubleAccListMap.get(longObjIdx);
+
+      double dValuesAcc= 0.0;
+      double dValuesSquAcc= 0.0;
+
+      // --- Assumming that dValueAccList.size() is not 0 here
+      final int dValueAccListSize= dValueAccList.size();
+
+      for (int dIter= 0; dIter < dValueAccListSize; dIter++) {
+
+        final double dValue= dValueAccList.get(dIter);
+
+        dValuesAcc += dValue;
+        dValuesSquAcc += dValue*dValue;
+      }
+
+      final double dValuesAccArithAvg= dValuesAcc/dValueAccListSize;
+
+      final double dValuesAccStdDev= Math.sqrt(dValuesSquAcc/dValueAccListSize - dValuesAccArithAvg*dValuesAccArithAvg) ;
+
+      //slog.info(mmi+"longObjIdx="+longObjIdx);
+      //slog.info(mmi+"dValuesAccArithAvg="+dValuesAccArithAvg);
+      //slog.info(mmi+"dValuesAccStdDev="+dValuesAccStdDev+"\n");
+
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
+
+      //--- We use a null Instant here to build the MeasurementCustom object because
+      //     the Instant is irrelevant here since we use the Long object longObjIdx which is
+      //    the time offset in seconds from an unknown Instant. This has to be managed by
+      //    the calling method afterwards.
+      timeDepMCStats.put(longObjIdx, new MeasurementCustom(null, dValuesAccArithAvg, dValuesAccStdDev));
+    }
+
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
+
+    return timeDepMCStats;
+  }
+
+  // ---
+  @Override
+  public final String toString() {
+
+     return whoAmI + " -> { this.eventDate= " +
+                            this.eventDate.toString() + ", this.value= "+
+                            this.value+ ", this.uncertainty= "+this.uncertainty+"}";
+  }
+
   //// ---
   //public final static MeasurementCustom getNearestTSWLDataNeighbor(final long timeIncrToUseSeconds,
   //                                                                 final long timeStampReferenceSeconds,
@@ -150,36 +243,5 @@ final public class MeasurementCustom {
   //  return nearestTSWLDataNeighbor;
   //}
 
-  // ---
-  public final static double getValuesArithMean(final List<MeasurementCustom> mcDataList) {
-
-    final String mmi= "getValuesArithMean: ";
-
-    try {
-      mcDataList.size();
-
-    } catch (NullPointerException npe) {
-      throw new RuntimeException(mmi+npe);
-    }
-
-    if (mcDataList.size() == 0) {
-      throw new RuntimeException(mmi+"mcDataList.size() == 0 !!");
-    }
-
-    double valuesAcc= 0.0;
-
-    for(final MeasurementCustom mcObj: mcDataList) {
-      valuesAcc += mcObj.getValue();
-    }
-
-    return valuesAcc/mcDataList.size();
-  }
-
-  @Override
-  public final String toString() {
-
-     return whoAmI + " -> { this.eventDate= " +
-                            this.eventDate.toString() + ", this.value= "+
-                            this.value+ ", this.uncertainty= "+this.uncertainty+"}";
-  }
 }
+

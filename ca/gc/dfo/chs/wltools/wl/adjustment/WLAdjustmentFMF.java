@@ -139,6 +139,7 @@ abstract public class WLAdjustmentFMF
     // --- Shortcut to the prevFMFDataMC0.getEventDate() Instant object
     final Instant prevFMFDataMC0Instant= prevFMFDataMC0.getEventDate();
 
+    // --- Get the actual FMF data that we want to adjust.
     final List<MeasurementCustom> actuFMFData= this.
       nearestModelData.get(actuFMFIndex).get(this.location.getIdentity());
 
@@ -316,6 +317,8 @@ abstract public class WLAdjustmentFMF
 
     final String wlLocationIdentity= this.location.getIdentity();
 
+    slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
+
     // --- Get a local MeasurementCustomBundle object with the WLO data
     //     List<MeasurementCustom> object for this TG location.
     final MeasurementCustomBundle mcbWLO= this.getMcbWLOData();
@@ -332,11 +335,13 @@ abstract public class WLAdjustmentFMF
 
     slog.info(mmi+"wloInstantsSet.size()="+wloInstantsSet.size());
 
-    final Instant lessRecentWLOInstant= wloInstantsSet.first();
-    final Instant moreRecentWLOInstant= wloInstantsSet.last();
+    // --- Be sure to use final here since the Instant objects are
+    //     references and are not copies.
+    final Instant mostRecentWLOInstant=  mcbWLO.getMostRecentInstantRef();
+    final Instant leastRecentWLOInstant= mcbWLO.getLeastRecentInstantRef();
 
-    slog.info(mmi+"lessRecentWLOInstant="+lessRecentWLOInstant.toString());
-    slog.info(mmi+"moreRecentWLOInstant="+moreRecentWLOInstant.toString());
+    slog.info(mmi+"leastRecentWLOInstant="+leastRecentWLOInstant.toString());
+    slog.info(mmi+"mostRecentWLOInstant="+mostRecentWLOInstant.toString());
 
     // --- Local HashMap to accumulate the (WLO-WLFMF subtraction) residuals indexed by the
     //     time difference (in seconds since epoch) from the forecast lead time.
@@ -364,10 +369,11 @@ abstract public class WLAdjustmentFMF
         MeasurementCustomBundle( this.nearestModelData.get(prevFMFIdxIter).get(wlLocationIdentity));
 
       // --- Get the more recent FMF Instant to see if it is inside the
-      //     WLO data time frame/
-      final Instant moreRecentFMFInstant= mcbPrevFMF.getMoreRecentInstant();
+      //     WLO data time frame. Again use final here because of
+      //     mostRecentFMFInstant object being a reference.
+      final Instant mostRecentFMFInstant= mcbPrevFMF.getMostRecentInstantRef();
 
-      slog.info(mmi+"moreRecentFMFInstant="+moreRecentFMFInstant.toString());
+      slog.info(mmi+"mostRecentFMFInstant="+mostRecentFMFInstant.toString());
 
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
@@ -375,21 +381,131 @@ abstract public class WLAdjustmentFMF
       // --- Stop the iteration if the moreRecentFMFInstant is before the lessRecentWLOInstant. It
       //     means that all the FMF data is in the past compared to the less recent WLO data and we cannot
       //     use it for time dependant residuals calculations (no overlap for the respective time frames)
-      wloTimeFrameOverlap= (moreRecentFMFInstant.isAfter(lessRecentWLOInstant)) ? true : false;
+      wloTimeFrameOverlap= (mostRecentFMFInstant.isAfter(leastRecentWLOInstant)) ? true : false;
 
       // --- Calculate the residuals for the FMF if its time frame overlaps the WLO Time Frame.
       if (wloTimeFrameOverlap) {
 
-        final Instant lessRecentFMFInstant= mcbPrevFMF.getLessRecentInstant();
+        // --- Get the FMF lead time (a.k.a. zero'th hour) to use it to define
+        //     the time offset needed for time dependant residuals stats indexing.
+        //     It is the least recent Instant of the FMF being processed.
+        final Instant fmfLeadTimeInstant= mcbPrevFMF.getLeastRecentInstantRef();
+        final long fmfLeadTimeSeconds= fmfLeadTimeInstant.getEpochSecond();
 
-        slog.info(mmi+"Overlap between WLO and FMF time frames: calculate the residuals for the FMF, lessRecentFMFInstant="+lessRecentFMFInstant.toString());
-      }
+        slog.info(mmi+"Overlap between WLO and FMF time frames: calculate the residuals for the FMF, fmfLeadTimeInstant="+fmfLeadTimeInstant.toString());
+
+        final SortedSet<Instant> mcbPrevFMFInstantsSet= mcbPrevFMF.getInstantsKeySetCopy();
+
+        for (final Instant mcbPrevFMFInstant : mcbPrevFMFInstantsSet) {
+
+          // --- Check if the WLO data exists for this mcbPrevFMFInstant.
+          //     This compeletely avoids the annoying usage of NO DATA flags
+          //     and the related error of possibly using this NO DATA flag as
+          //      a valid value. (But we still need to implement WL quality
+          //      control for ridiculously low or high WL values like being
+          //      2m under or 2m over the local ZC)
+          if (wloInstantsSet.contains(mcbPrevFMFInstant)) {
+
+            slog.debug(mmi+"WLO vs WLFMF Instant match for "+mcbPrevFMFInstant.toString());
+
+            // --- Get the WLO at this Instant
+            final double wloValue= mcbWLO.
+              getAtThisInstant(mcbPrevFMFInstant).getValue();
+
+            // --- Get the FMF WL at this same Instant
+            final double fmfWLValue= mcbPrevFMF.
+              getAtThisInstant(mcbPrevFMFInstant).getValue();
+
+            //slog.info(mmi+"wloValue="+wloValue);
+            //slog.info(mmi+"fmfWLValue="+fmfWLValue);
+
+             // --- Get the time offset in seconds between the mcbPrevFMFInstant and the fmfLeadTimeInstant
+            //    to keep track of the time dependent WLO - WLFMF residuals values
+            final Long residualTimeOffsetIdx=
+              mcbPrevFMFInstant.getEpochSecond() - fmfLeadTimeSeconds ; //fmfLeadTimeInstant.getEpochSecond();
+
+            //slog.info(mmi+"residualTimeOffsetIdx="+residualTimeOffsetIdx);
+
+            if (! timeDepResidualsAcc.containsKey(residualTimeOffsetIdx)) {
+              timeDepResidualsAcc.put(residualTimeOffsetIdx, new ArrayList<Double>());
+            }
+
+            timeDepResidualsAcc.get(residualTimeOffsetIdx).add(wloValue-fmfWLValue);
+
+            //slog.info(mmi+"timeDepResidualsAcc.get(residualTimeOffsetIdx).get(0)="+timeDepResidualsAcc.get(residualTimeOffsetIdx).get(0));
+            //slog.info(mmi+"Debug exit 0");
+            //System.exit(0);
+
+          } // --- inner if (wloInstantsSet.contains(mcbPrevFMFInstant)) block
+        } // --- inner for loop on mcbPrevFMFInstantsSet
+      } // --- if (wloTimeFrameOverlap) block
 
       prevFMFIdxIter++;
-    }
 
-    //slog.info(mmi+"Debug exit 0");
-    //System.exit(0);
+    } // --- while(wloTimeFrameOtimeDepResidualsStats=verlap) loop block
+
+    // ---
+    final Map<Long, MeasurementCustom> timeDepResidualsStats=
+      MeasurementCustom.getTimeDepMCStats(timeDepResidualsAcc);
+
+    //--- Now verify if we have all the time offsets for the FMF time frame.
+    //    need to replace the missing time dependent residal stats by the
+    //    values that are stored on disk for this location and for this
+    //    time offset
+    slog.info(mmi+"Now check if we have all the FMF time offsets available for the residuals stats");
+
+    final int actuFMFIndex= IWLAdjustmentIO.
+      FullModelForecastType.ACTUAL.ordinal();
+
+    final List<MeasurementCustom> actualFMFMCList=
+      this.nearestModelData.get(actuFMFIndex).get(wlLocationIdentity);
+
+    final MeasurementCustomBundle actualFMFMcb= new MeasurementCustomBundle( actualFMFMCList );
+
+    //final leastRecentActualFMFInstant= actualMcbFMF.getLeastRecentInstantRef();
+    final long leastRecentActualFMFSeconds= actualFMFMcb.getLeastRecentInstantRef().getEpochSecond();
+
+    final Set<Instant> actuFMFInstantsSet= actualFMFMcb.getInstantsKeySetCopy();
+
+    for (final Instant actualFMFInstant: actuFMFInstantsSet) {
+
+      final Long longIdx= actualFMFInstant.getEpochSecond() - leastRecentActualFMFSeconds;
+
+      if (! timeDepResidualsStats.containsKey(longIdx) ) {
+
+        // --- replace the run time error rause by the code that takes the values stored on disk here
+        //slog.error(mmi+"longIdx key -> "+longIdx+" not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
+        throw new RuntimeException(mmi+"longIdx key -> "+longIdx+
+          " not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
+      }
+
+      //slog.info(mmi+"actualFMFInstant="+actualFMFInstant.toString());
+
+      // --- Get the MeasurementCustom object of the FMF for this instant:
+      MeasurementCustom actuFMFMc= actualFMFMcb.getAtThisInstant(actualFMFInstant);
+
+      // --- Get the time dependent residual stats MeasurementCustom object for the
+      //    time offset between the FMF lead time and the Instant being processed
+      final MeasurementCustom timeDepResidualMc= timeDepResidualsStats.get(longIdx);
+
+      //final double timeDepResidualAvg= timeDepResidualsStats.get(longIdx).getValue();
+
+      //slog.info(mmi+"actuFMFMc value bef adj.="+actuFMFMc.getValue());
+      //slog.info(mmi+"timeDepResidualAvg="+timeDepResidualMc.getValue());
+      //slog.info(mmi+"timeDepResidual uncertainty="+timeDepResidualMc.getUncertainty());
+
+      // --- Set the adjusted FMF WL value using the time dependent residual avg. value
+      actuFMFMc.setValue(actuFMFMc.getValue() + timeDepResidualMc.getValue());
+
+      // --- Set the adjusted FMF WL uncertainty using the std dev of the related
+      //    time dependent residual for this time offset.
+      actuFMFMc.setUncertainty(timeDepResidualMc.getUncertainty());
+
+      //slog.info(mmi+"actuFMFMc value aft adj.="+actuFMFMc.getValue());
+
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
+    }
 
     slog.info(mmi+"end");
 
@@ -397,6 +513,5 @@ abstract public class WLAdjustmentFMF
     System.exit(0);
 
     return this;
-
   }
 }
