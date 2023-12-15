@@ -83,5 +83,12 @@ public interface IWLAdjustmentIO {
 
   String H2D2_ASCII_FMT_FNAME_SPLITSTR= "_";
 
+  String ARG_NOT_DEFINED= "NONE";
+
+  // --- TODO add code to append the FMF <YYYYMMDDhhmm> lead time string
+  //     to this file name prefix
   String ADJ_FORECAST_ATTG_FNAME_PRFX= "AdjForecastAtTG-";
+
+  String NEW_FMF_RESIDUALS_STATS_SUBDIRNAME= "newerStats";
+  String PRV_FMF_RESIDUALS_STATS_SUBDIRNAME= "previousStats";
 }

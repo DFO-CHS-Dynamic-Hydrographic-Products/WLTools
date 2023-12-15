@@ -297,7 +297,8 @@ abstract public class WLAdjustmentFMF
 
   // ---
   final public WLAdjustmentFMF multTimeDepFMFErrorStatsAdj(final String prevFMFASCIIDataFilePath,
-                                                           final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj) {
+                                                           final Map<String, HBCoords> uniqueTGMapObj,
+                                                           final JsonObject mainJsonMapObj, final String tgResidualsStatsIODirectory) {
 
     final String mmi= "multTimeDepFMFErrorStatsAdj: ";
 

@@ -183,8 +183,8 @@ abstract public class WLAdjustmentType
   }
 
   // ---
-  final public WLAdjustmentType adjustFullModelForecast(final String prevFMFASCIIDataFilePath,
-                                                        final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj) {
+  final public WLAdjustmentType adjustFullModelForecast(final HashMap<String,String> argsMap, final String prevFMFASCIIDataFilePath,
+                                                        final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj ) {
 
     final String mmi= "adjustFullModelForecast: ";
 
@@ -232,8 +232,16 @@ abstract public class WLAdjustmentType
 
       case MULT_TIMEDEP_FMF_ERROR_STATS:
 
+        if (!argsMap.containsKey("--tgResidualsStatsIODirectory")) {
+          throw new RuntimeException(mmi+
+            "Must have the --tgResidualsStatsIODirectory=<IO main folder for the FMF residuals stats at tide gauges> defined in the argsMap!!");
+        }
+
+        final String tgResidualsStatsIODirectory= argsMap.get("--tgResidualsStatsIODirectory");
+
         this.multTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
-                                         uniqueTGMapObj, mainJsonMapObj);
+                                         uniqueTGMapObj, mainJsonMapObj,
+                                         tgResidualsStatsIODirectory);
 
         slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
 

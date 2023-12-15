@@ -85,6 +85,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
   //protected DataType inputDataType= null;
 
+  protected String tideGaugeWLODataFile= null;
+
+  protected int minNumberOfObs= MIN_NUMBER_OF_OBS;
+
   protected IWLToolsIO.Format obsInputDataFormat= null;
   protected IWLToolsIO.Format predictInputDataFormat= null;
 
@@ -131,7 +135,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //this.locationId=
     this.locationIdInfo= null;
 
-    //this.inputDataType= null;
+    this.tideGaugeWLODataFile= null;
 
     this.obsInputDataFormat=
       this.predictInputDataFormat= null;
@@ -422,17 +426,54 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     return previousFMFASCIIDataFilePath;
   }
 
-  // --- IMPORTANT: Do not use this method for WL observation data since we could
-  //     have missing data so the result of this method could be misleading for 
-  //     that kind of WL data. 
- //public static final long getDataTimeIntervallSeconds(final List<MeasurementCustom> dataList) {
- //   //long ret= IWLStationPred.TIME_NOT_DEFINED;
- //   final long firstTimeStampSeconds= dataList.get(0).getEventDate().getEpochSeconds();
- //   final long secondTimeStampSeconds= dataList.get(1).getEventDate().getEpochSeconds();
- //  // --- Do not assume that the secondTimeStampSeconds value is larger than the
- //  //     firstTimeStampSeconds value so usr Math.abs here.
- //   return Math.abs(secondTimeStampSeconds - firstTimeStampSeconds);
-  //}
+  // ---
+  final void getTGObsData() {
+
+    final String mmi= "getTGObsData: ";
+
+    slog.info(mmi+"start");
+
+    if (this.obsInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
+
+      //this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
+
+      // --- Read the WLO data in a temp. List<MeasurementCustom> object
+      final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
+        getWLDataInJsonFmt(tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
+
+      slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
+      slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+      // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
+      //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
+      //     method to it before the assignation.
+      this.nearestObsData.put(this.location.getIdentity(),
+                              WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
+
+      slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
+
+    } else {
+      throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
+    }
+
+    final int checkNumberOfObs=
+      this.nearestObsData.get(this.location.getIdentity()).size();
+
+    if (checkNumberOfObs < this.minNumberOfObs) {
+      throw new RuntimeException(mmi+"ERROR: We must have checkNumberOfObs -> "+
+                                 checkNumberOfObs+" >= this.minNumberOfObs -> "+this.minNumberOfObs);
+    }
+
+    slog.info(mmi+"Okay we have a sufficient number of obs WLs -> "+
+              checkNumberOfObs+" to use for predicition and forecast adjustments.");
+
+    slog.info(mmi+"end");
+
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+  }
 
   /**
    * Comments please!
@@ -490,9 +531,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   /**
    * Comments please!
    */
-  final static ArrayList<MeasurementCustom>
-    getWLDataInJsonFmt(/*@NotNull*/ final String WLDataJsonFile,
-                       final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
+  final static ArrayList<MeasurementCustom> getWLDataInJsonFmt(final String WLDataJsonFile,
+                                                               final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
 
     final String mmi= "getWLDataInJsonFmt: ";
 

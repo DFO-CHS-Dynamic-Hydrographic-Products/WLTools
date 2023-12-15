@@ -11,6 +11,8 @@ import ca.gc.dfo.chs.wltools.util.ITimeMachine;
  */
 public interface IWLAdjustment extends ITimeMachine {
 
+  int MIN_NUMBER_OF_OBS= 480;
+
   //--- 3mins in seconds for the maximum WL nearest neigh. time
   //    interpolation
   long MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS= 180;
