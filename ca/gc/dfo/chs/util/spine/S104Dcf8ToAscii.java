@@ -29,6 +29,9 @@ public class S104Dcf8ToAscii {
     }
 
     public static void runConversion(String timeString, String outputDir, String h5Path, String type) {
+        /**
+        * Create spineData object from S-111 file and run file writing script
+        */
 
         // Create Instant from ISO time string
         // Instant.parse will trow dateTime exception if in wrong format
@@ -143,8 +146,9 @@ public class S104Dcf8ToAscii {
          */
         String formatedNum;
         Long numLong = Math.round(num*100);
-        
-        if (numLong < 0){
+        if ((numLong > 99999)||(numLong < -9999)){
+            throw new RuntimeException(numLong + " Invalid value in source data");
+        } else if (numLong < 0){
             formatedNum = "-" + String.format("%04d", Math.abs(numLong))+";";
         } else {
             formatedNum = String.format("%05d", numLong)+";";
@@ -180,6 +184,9 @@ public class S104Dcf8ToAscii {
     }
 
     private static Instant getEndTime(String type,  Instant start){
+        /**
+        * Generate Instant corresponding to final time stamp from start time and file type
+        */
         Instant end;
         if (type.equals("30") || type.equals("UU")) {
             end = start.plus(30, ChronoUnit.DAYS);
@@ -190,6 +197,9 @@ public class S104Dcf8ToAscii {
     }
 
     private static String getFileName(String type){
+        /**
+        * Return full fill name string from type code string
+        */
         String fileName;
         if(type.equals("UU")) {
             fileName = "mat_erreur.dat.1061";
@@ -247,7 +257,7 @@ public class S104Dcf8ToAscii {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.append(stringBuilder);
         } catch (Exception e) {
-            // TODO: handle exception
+            throw new RuntimeException("Could not write to file");
         }
     
     }
