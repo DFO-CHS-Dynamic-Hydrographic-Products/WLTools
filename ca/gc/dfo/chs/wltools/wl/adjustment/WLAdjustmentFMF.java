@@ -514,6 +514,11 @@ abstract public class WLAdjustmentFMF
       //System.exit(0);
     }
 
+    // --- Write the TG time dependent residual stats to be able to use them
+    //     for cases where no WLO data is available.
+    this.writeTGTimeDepResidualsStats(wlLocationIdentity,
+                                      timeDepResidualsStats, tgResidualsStatsIODirectory);
+
     slog.info(mmi+"end");
 
     slog.info(mmi+"Debug exit 0");

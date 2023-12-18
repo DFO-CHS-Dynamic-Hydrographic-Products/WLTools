@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
+import java.util.TreeSet;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.SortedSet;
 import java.util.ArrayList;
 //import java.util.stream.Collectors;
 
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 // ---
 import java.io.IOException;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
 // ---
@@ -27,6 +30,7 @@ import javax.json.JsonArray;
 import javax.json.JsonValue;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonArrayBuilder;
 
 // ---
 import as.hdfql.HDFql;
@@ -224,11 +228,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   /**
    * Comments please!
    */
-  final String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
-                                          /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
-                                          /*@NotNull*/ final JsonObject       mainJsonMapObj,
-                                                       final long             nbHoursInPastArg,
-                                                       final int              fmfTypeIndex ) {
+  final protected String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
+                                                    /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
+                                                    /*@NotNull*/ final JsonObject       mainJsonMapObj,
+                                                                 final long             nbHoursInPastArg,
+                                                                 final int              fmfTypeIndex ) {
                                                        //final FullModelForecastType fmfType ) {
 
                                        ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
@@ -427,7 +431,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   }
 
   // ---
-  final void getTGObsData() {
+  final protected void getTGObsData() {
 
     final String mmi= "getTGObsData: ";
 
@@ -689,5 +693,66 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //System.exit(0);
 
     return retListMCs;
+  }
+
+  // --- Using the CHS JSON format.
+  final protected void writeTGTimeDepResidualsStats(final String tgIdentity,
+                                                    final Map<Long, MeasurementCustom> timeDepResidualsStatsMap,
+                                                    final String tgResidualsStatsIODirectory                     ) {
+
+    final String mmi= "writeTGTimeDepResidualsStats: ";
+
+    slog.info(mmi+"start");
+
+    try {
+      timeDepResidualsStatsMap.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    final String tgTimeDepResidualsStatsFile= tgResidualsStatsIODirectory +
+      File.separator + IWLAdjustmentIO.RESIDUALS_STATS_ATTG_FNAME_PRFX + tgIdentity + IWLToolsIO.JSON_FEXT;
+
+    slog.info(mmi+"Writing tgTimeDepResidualsStatsFile="+tgTimeDepResidualsStatsFile);
+
+    FileOutputStream jsonFileOutputStream= null;
+
+    try {
+      jsonFileOutputStream= new FileOutputStream(tgTimeDepResidualsStatsFile);
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(mmi+e);
+    }
+
+    JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
+
+    final SortedSet<Long> timeDepResidualsStatsMapSSet= new TreeSet<Long>(timeDepResidualsStatsMap.keySet());
+
+    for (final Long longIter: timeDepResidualsStatsMapSSet) { //timeDepResidualsStatsMap.keySet()) {
+
+      final MeasurementCustom mc= timeDepResidualsStatsMap.get(longIter);
+
+      jsonArrayBuilderObj.
+        add( Json.createObjectBuilder().
+          add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
+            add( IWLAdjustmentIO.FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY, longIter.toString() ).
+            //add( IWLToolsIO.INSTANT_JSON_KEY, longIter.toString() ).
+              add( IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty()) );
+    }
+
+    // --- Now write the Json data bundle in the output file.
+    Json.createWriter(jsonFileOutputStream).
+      writeArray( jsonArrayBuilderObj.build() );
+
+    // --- We can close the Json file now
+    try {
+      jsonFileOutputStream.close();
+    } catch (IOException ioe) {
+      throw new RuntimeException(mmi+ioe);
+    }
+
+    slog.info(mmi+"end");
+
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
   }
 }

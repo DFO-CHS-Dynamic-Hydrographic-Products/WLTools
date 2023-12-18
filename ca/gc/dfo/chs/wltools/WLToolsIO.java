@@ -148,7 +148,7 @@ public class WLToolsIO implements IWLToolsIO {
   final public static void
     writeCHSJsonFormat(final List<MeasurementCustom> wlDataToWrite, final String locationId) {
 
-    final String mmi= "ca.gc.dfo.chs.wltools.WLToolsIO.writeCHSJsonFormat: ";
+    final String mmi= "writeCHSJsonFormat: ";
 
     slog.info(mmi+"start");
 
