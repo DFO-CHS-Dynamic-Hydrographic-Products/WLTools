@@ -91,8 +91,8 @@ public interface IWLAdjustmentIO {
 
   String RESIDUALS_STATS_ATTG_FNAME_PRFX= "ResidualsStatsAtTG-";
 
-  String NEW_FMF_RESIDUALS_STATS_SUBDIRNAME= "newerStats";
-  String PRV_FMF_RESIDUALS_STATS_SUBDIRNAME= "previousStats";
+  String NEW_FMF_RESIDUALS_STATS_SUBDIRNAME= "newer";
+  String PRV_FMF_RESIDUALS_STATS_SUBDIRNAME= "previous";
 
   String FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY= "secondsOffset";
 }

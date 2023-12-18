@@ -355,6 +355,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
          continue;
        }
 
+       // ---
        for (final String chsTGId: nearestsTGCoordsIds) {
 
          final double tgWLFValue= Double.
@@ -710,8 +711,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       throw new RuntimeException(mmi+npe);
     }
 
-    final String tgTimeDepResidualsStatsFile= tgResidualsStatsIODirectory +
-      File.separator + IWLAdjustmentIO.RESIDUALS_STATS_ATTG_FNAME_PRFX + tgIdentity + IWLToolsIO.JSON_FEXT;
+    final String tgTimeDepResidualsStatsFile= tgResidualsStatsIODirectory + File.separator +
+      NEW_FMF_RESIDUALS_STATS_SUBDIRNAME + File.separator + RESIDUALS_STATS_ATTG_FNAME_PRFX + tgIdentity + IWLToolsIO.JSON_FEXT;
 
     slog.info(mmi+"Writing tgTimeDepResidualsStatsFile="+tgTimeDepResidualsStatsFile);
 

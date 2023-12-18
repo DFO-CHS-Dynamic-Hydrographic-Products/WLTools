@@ -400,7 +400,16 @@ abstract public class WLAdjustmentFMF
 
         final SortedSet<Instant> mcbPrevFMFInstantsSet= mcbPrevFMF.getInstantsKeySetCopy();
 
+        //Instant lastValidInstantProcessed= null;
+
         for (final Instant mcbPrevFMFInstant : mcbPrevFMFInstantsSet) {
+
+          //slog.info(mmi+"Checking mcbPrevFMFInstant="+mcbPrevFMFInstant.toString());
+
+          // --- Get the time offset in seconds between the mcbPrevFMFInstant and the fmfLeadTimeInstant
+          //    to keep track of the time dependent WLO - WLFMF residuals values
+          //final Long residualTimeOffsetIdx=
+          //  mcbPrevFMFInstant.getEpochSecond() - fmfLeadTimeSeconds ; //fmfLeadTimeInstant.getEpochSecond();
 
           // --- Check if the WLO data exists for this mcbPrevFMFInstant.
           //     This compeletely avoids the annoying usage of NO DATA flags
@@ -410,7 +419,7 @@ abstract public class WLAdjustmentFMF
           //      2m under or 2m over the local ZC)
           if (wloInstantsSet.contains(mcbPrevFMFInstant)) {
 
-            slog.debug(mmi+"WLO vs WLFMF Instant match for "+mcbPrevFMFInstant.toString());
+            //slog.info(mmi+"WLO vs WLFMF Instant match for "+mcbPrevFMFInstant.toString());
 
             // --- Get the WLO at this Instant
             final double wloValue= mcbWLO.
@@ -423,13 +432,15 @@ abstract public class WLAdjustmentFMF
             //slog.info(mmi+"wloValue="+wloValue);
             //slog.info(mmi+"fmfWLValue="+fmfWLValue);
 
-             // --- Get the time offset in seconds between the mcbPrevFMFInstant and the fmfLeadTimeInstant
+            // --- Get the time offset in seconds between the mcbPrevFMFInstant and the fmfLeadTimeInstant
             //    to keep track of the time dependent WLO - WLFMF residuals values
             final Long residualTimeOffsetIdx=
               mcbPrevFMFInstant.getEpochSecond() - fmfLeadTimeSeconds ; //fmfLeadTimeInstant.getEpochSecond();
 
             //slog.info(mmi+"residualTimeOffsetIdx="+residualTimeOffsetIdx);
 
+            // --- Allocate space in the timeDepResidualsAcc to store the residual values
+            //   indexed by the residualTimeOffsetIdx key
             if (! timeDepResidualsAcc.containsKey(residualTimeOffsetIdx)) {
               timeDepResidualsAcc.put(residualTimeOffsetIdx, new ArrayList<Double>());
             }
@@ -437,8 +448,11 @@ abstract public class WLAdjustmentFMF
             timeDepResidualsAcc.get(residualTimeOffsetIdx).add(wloValue-fmfWLValue);
 
             //slog.info(mmi+"timeDepResidualsAcc.get(residualTimeOffsetIdx).get(0)="+timeDepResidualsAcc.get(residualTimeOffsetIdx).get(0));
+
+            //if (residualTimeOffsetIdx>=3600) {
             //slog.info(mmi+"Debug exit 0");
             //System.exit(0);
+            //}
 
           } // --- inner if (wloInstantsSet.contains(mcbPrevFMFInstant)) block
         } // --- inner for loop on mcbPrevFMFInstantsSet
@@ -474,17 +488,39 @@ abstract public class WLAdjustmentFMF
 
     final Set<Instant> actuFMFInstantsSet= actualFMFMcb.getInstantsKeySetCopy();
 
+    Long lastValidLongIdx= -1L;
+
+    // --- Loop on all the Instant objects of the actual FMF data that we want
+    //     to adjust.
     for (final Instant actualFMFInstant: actuFMFInstantsSet) {
 
+      //final
       final Long longIdx= actualFMFInstant.getEpochSecond() - leastRecentActualFMFSeconds;
 
+      //MeasurementCustom timeDepResidualMc= timeDepResidualsStats.get(longIdx);
+
+      // --- Could have missing obs -> missing residual stats, use the last
+      //     residual stats data if not too far in time (<=MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS)
+      //     otherwise use the residual stats data that is stored on disk.
       if (! timeDepResidualsStats.containsKey(longIdx) ) {
 
-        // --- replace the run time error rause by the code that takes the values stored on disk here
-        //slog.error(mmi+"longIdx key -> "+longIdx+" not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
-        throw new RuntimeException(mmi+"longIdx key -> "+longIdx+
-          " not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
+        if (lastValidLongIdx >= 0L &&
+              (longIdx-lastValidLongIdx) <= MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS) {
+
+          // --- Set the timeDepResidualsStats Map to the previous residual stats value here
+          timeDepResidualsStats.put(longIdx, timeDepResidualsStats.get(lastValidLongIdx));
+
+        } else {
+
+          // --- The previous valid longIdx it too far in time, replace the corresponding residual value 
+          //     using what we have stored on disk for that
+          //slog.error(mmi+"longIdx key -> "+longIdx+" not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
+          throw new RuntimeException(mmi+"longIdx key -> "+longIdx+
+             " not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
+        }
       }
+
+      lastValidLongIdx= longIdx;
 
       //slog.info(mmi+"actualFMFInstant="+actualFMFInstant.toString());
 
