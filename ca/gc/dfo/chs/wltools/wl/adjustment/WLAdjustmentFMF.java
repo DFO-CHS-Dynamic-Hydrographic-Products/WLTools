@@ -67,7 +67,7 @@ abstract public class WLAdjustmentFMF
    * Parse the main program arguments using a constructor.
    */
   public WLAdjustmentFMF(/*NotNull*/ final WLAdjustment.Type adjType,
-                          /*NotNull*/ final HashMap<String,String> argsMap) {
+                         /*NotNull*/ final HashMap<String,String> argsMap) {
 
     super(adjType, argsMap);
 
@@ -336,10 +336,10 @@ abstract public class WLAdjustmentFMF
 
     slog.info(mmi+"wloInstantsSet.size()="+wloInstantsSet.size());
 
-    // --- Be sure to use final here since the Instant objects are
-    //     references and are not copies.
-    final Instant mostRecentWLOInstant=  mcbWLO.getMostRecentInstantRef();
-    final Instant leastRecentWLOInstant= mcbWLO.getLeastRecentInstantRef();
+    // --- Get copies of the most recent and least receint Intants objects
+    //     of the WLO MeasurementCustomBundle object 
+    final Instant mostRecentWLOInstant=  mcbWLO.getMostRecentInstantCopy();
+    final Instant leastRecentWLOInstant= mcbWLO.getLeastRecentInstantCopy();
 
     slog.info(mmi+"leastRecentWLOInstant="+leastRecentWLOInstant.toString());
     slog.info(mmi+"mostRecentWLOInstant="+mostRecentWLOInstant.toString());
@@ -372,9 +372,8 @@ abstract public class WLAdjustmentFMF
         MeasurementCustomBundle( this.nearestModelData.get(prevFMFIdxIter).get(wlLocationIdentity));
 
       // --- Get the more recent FMF Instant to see if it is inside the
-      //     WLO data time frame. Again use final here because of
-      //     mostRecentFMFInstant object being a reference.
-      final Instant mostRecentFMFInstant= mcbPrevFMF.getMostRecentInstantRef();
+      //     WLO data time frame.
+      final Instant mostRecentFMFInstant= mcbPrevFMF.getMostRecentInstantCopy();
 
       slog.info(mmi+"mostRecentFMFInstant="+mostRecentFMFInstant.toString());
 
@@ -394,7 +393,7 @@ abstract public class WLAdjustmentFMF
         // --- Get the FMF lead time (a.k.a. zero'th hour) to use it to define
         //     the time offset needed for time dependant residuals stats indexing.
         //     It is the least recent Instant of the FMF being processed.
-        final Instant fmfLeadTimeInstant= mcbPrevFMF.getLeastRecentInstantRef();
+        final Instant fmfLeadTimeInstant= mcbPrevFMF.getLeastRecentInstantCopy();
         final long fmfLeadTimeSeconds= fmfLeadTimeInstant.getEpochSecond();
 
         slog.info(mmi+"Overlap between WLO and FMF time frames: calculate the residuals for the FMF, fmfLeadTimeInstant="+fmfLeadTimeInstant.toString());
@@ -470,7 +469,8 @@ abstract public class WLAdjustmentFMF
     final MeasurementCustomBundle actualFMFMcb= new MeasurementCustomBundle( actualFMFMCList );
 
     //final leastRecentActualFMFInstant= actualMcbFMF.getLeastRecentInstantRef();
-    final long leastRecentActualFMFSeconds= actualFMFMcb.getLeastRecentInstantRef().getEpochSecond();
+    final long leastRecentActualFMFSeconds=
+      actualFMFMcb.getLeastRecentInstantCopy().getEpochSecond();
 
     final Set<Instant> actuFMFInstantsSet= actualFMFMcb.getInstantsKeySetCopy();
 

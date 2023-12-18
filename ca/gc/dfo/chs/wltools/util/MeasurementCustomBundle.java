@@ -74,10 +74,10 @@ final public class MeasurementCustomBundle {
     }
   }
 
-  // ---
-  public Instant getLeastRecentInstantRef() {
+ // ---
+  public Instant getLeastRecentInstantCopy() {
 
-    final String mmi= "getLeastRecentInstantRef: ";
+    final String mmi= "getLeastRecentInstantCopy: ";
 
     try {
       this.instantsKeySet.first();
@@ -85,13 +85,16 @@ final public class MeasurementCustomBundle {
       throw new RuntimeException(mmi+npe);
     }
 
-    return this.instantsKeySet.first();
+    // --- Simply return a copy of this.instantsKeySet.first() with
+    //     a zero seconds offset, it is the equivalent of a clone().
+    return this.instantsKeySet.first().plusSeconds(0L);
+    //return this.instantsKeySet.first();
   }
 
   // ---
-  public Instant getMostRecentInstantRef() {
+  public Instant getMostRecentInstantCopy() {
 
-    final String mmi= "getMostRecentInstantRef: ";
+    final String mmi= "getMostRecentInstantCopy: ";
 
     try {
       this.instantsKeySet.last();
@@ -99,7 +102,7 @@ final public class MeasurementCustomBundle {
       throw new RuntimeException(mmi+npe);
     }
 
-    return this.instantsKeySet.last();
+    return this.instantsKeySet.last().plusSeconds(0L);
   }
 
   // --- No fool-proof here, need performancels
