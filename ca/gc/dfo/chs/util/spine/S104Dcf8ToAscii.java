@@ -18,16 +18,6 @@ import java.util.Iterator;
  */
 public class S104Dcf8ToAscii {
 
-    static class SpineData {
-        /**
-        * Data Class holding the information needed to generate the 5 ASCII files needed by SPINE
-        */
-
-        public Instant startTime;
-        public Instant endTime;
-        public List<MeasurementCustomBundle> data;
-    }
-
     public static void runConversion(String timeString, String outputDir, String h5Path, String type) {
         /**
         * Create spineData object from S-111 file and run file writing script
@@ -39,41 +29,34 @@ public class S104Dcf8ToAscii {
 
 
         // Generate SpineData
-        final SpineData fileData = s104ToSpineData(h5Path);
+        // final SpineData fileData = s104ToSpineData(h5Path);
+
+        // Generate MeasurementCustom Array List
+        final List<MeasurementCustomBundle> fileData = s104ToMcbl(h5Path);
+
 
         // Write files to output directory 
         genSpineAsciiFiles(timeInstant, outputDir, fileData, type);
     };
 
-    static SpineData s104ToSpineData(String h5Path) {
+    static List<MeasurementCustomBundle> s104ToMcbl(String h5Path) {
         /**
-        * Read s-104 Dcf8 file and return a Spine Data Class object
+        * Read s-104 Dcf8 file and return aan ArrayList of MeasurementCustomBundles
         */
 
-        SpineData spineData = new SpineData();
         List<MeasurementCustomBundle> data = new ArrayList<>();;
 
         // Read h5 file
         final String hdfqlUseFile = "USE FILE " + h5Path;
         HDFql.execute(hdfqlUseFile);
 
-        // Parse first and last timestamps
+        // Parse first timestamps
         final String hdfqlSelectStartTime = "SELECT FROM WaterLevel/WaterLevel.01/dateTimeOfFirstRecord";
         HDFql.execute(hdfqlSelectStartTime);
         HDFql.cursorFirst();
         String startTimeStr = HDFql.cursorGetChar();
         startTimeStr = startTimeStr.substring(0,4)+ "-" + startTimeStr.substring(4,6) + "-" + startTimeStr.substring(6,11)+":" +startTimeStr.substring(11,13) +":" + startTimeStr.substring(13,16);
         final Instant startTime =Instant.parse(startTimeStr);
-
-        final String hdfqlSelectEndTime = "SELECT FROM WaterLevel/WaterLevel.01/dateTimeOfLastRecord";
-        HDFql.execute(hdfqlSelectEndTime);
-        HDFql.cursorFirst();
-        String endTimeStr = HDFql.cursorGetChar();
-        endTimeStr = endTimeStr.substring(0,4)+ "-" + endTimeStr.substring(4,6) + "-" + endTimeStr.substring(6,11)+":" +endTimeStr.substring(11,13) +":" + endTimeStr.substring(13,16);
-
-        final Instant endTime =Instant.parse(endTimeStr);
-
-        
 
         // Read data group and return MeasurementCustomBundle List
         
@@ -128,13 +111,8 @@ public class S104Dcf8ToAscii {
 
     
             }
-        
-        //Populate spineData object
-        spineData.data = data;
-        spineData.startTime = startTime;
-        spineData.endTime = endTime;
-
-        return spineData;
+    
+        return data;
 
     }
 
@@ -219,7 +197,7 @@ public class S104Dcf8ToAscii {
 
 
 
-    static void genSpineAsciiFiles(Instant timeInstant,String outputDir, SpineData fileData, String type) {
+    static void genSpineAsciiFiles(Instant timeInstant,String outputDir, List<MeasurementCustomBundle> fileData, String type) {
         /**
         * Generate the five ASCII files needed by SPINE
         * Valid files types:
@@ -237,14 +215,14 @@ public class S104Dcf8ToAscii {
         /* Build String */
         if(type.equals("UU")) {
 
-            for(int i = 0; i < fileData.data.size(); i++) {         
-                    lineBuilderSpineAscii(timeInstant,end,fileData.data.get(i),stringBuilder,false);
+            for(int i = 0; i < fileData.size(); i++) {         
+                    lineBuilderSpineAscii(timeInstant,end,fileData.get(i),stringBuilder,false);
             }
 
         } else if (type.equals("30") || type.equals("Q2") || type.equals("Q3") || type.equals("Q4")) {
 
-            for(int i = 0; i < fileData.data.size(); i++) {
-                    lineBuilderSpineAscii(timeInstant,end,fileData.data.get(i),stringBuilder,true);
+            for(int i = 0; i < fileData.size(); i++) {
+                    lineBuilderSpineAscii(timeInstant,end,fileData.get(i),stringBuilder,true);
             }
 
         } else {
