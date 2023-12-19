@@ -52,6 +52,18 @@ abstract public class WLAdjustmentFMF
 
   //private IWLAdjustment.Type adjType= null;
 
+  // --- Map for the previous time dependant residual stats data that
+  //     is stored on disk. We could need to use it in case:
+  //  
+  //     1). Some of the time offsets Long keys are missing in the
+  //         newly calculated time dependant residual stats.
+  //
+  //     2). There is no WLO data to use at all for the time frame
+  //         being processed but we have some previous complete time
+  //         dependant residual stats stoted on disk and that we can
+  //         use for FMF WL data adjustments.
+  private Map<Long, MeasurementCustom> prevTimeDepResidualsStats= null;
+
   /**
    * Comments please!
    */
@@ -91,6 +103,11 @@ abstract public class WLAdjustmentFMF
       this.location.getIdentity();
     } catch (NullPointerException npe) {
       throw new RuntimeException(mmi+npe);
+    }
+
+    // --- this.haveWLOData MUST be true at this point!
+    if (!this.haveWLOData) {
+      throw new RuntimeException(mmi+"this.haveWLOData must be true here!");
     }
 
     // --- Get a local MeasurementCustomBundle object with the WLO data
@@ -320,6 +337,14 @@ abstract public class WLAdjustmentFMF
 
     slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
 
+    Map<Long, MeasurementCustom> timeDepResidualsStats= null;
+	
+    // --- Read the previous time dependent residuals stats on disk first:
+    if (this.haveWLOData) {
+      timeDepResidualsStats= this.getNewTimeDepResidualsStats(prevFMFASCIIDataFilePath,
+							      uniqueTGMapObj,mainJsonMapObj);
+    }
+    
     // --- Get a local MeasurementCustomBundle object with the WLO data
     //     List<MeasurementCustom> object for this TG location.
     final MeasurementCustomBundle mcbWLO= this.getMcbWLOData();

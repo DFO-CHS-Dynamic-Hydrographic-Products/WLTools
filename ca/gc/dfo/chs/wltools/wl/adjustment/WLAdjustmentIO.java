@@ -39,6 +39,7 @@ import as.hdfql.HDFqlConstants;
 
 // ---
 import ca.gc.dfo.chs.wltools.wl.IWL;
+import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
@@ -92,6 +93,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   protected String tideGaugeWLODataFile= null;
 
   protected int minNumberOfObs= MIN_NUMBER_OF_OBS;
+
+  protected boolean haveWLOData= true;  
 
   protected IWLToolsIO.Format obsInputDataFormat= null;
   protected IWLToolsIO.Format predictInputDataFormat= null;
@@ -438,46 +441,48 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     slog.info(mmi+"start");
 
-    if (this.obsInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
+    //boolean haveWLOData= true;
 
-      //this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
+    // --- check if the WL Obs. (a.k.a. WLO) input dat file exists
+    //	   If it does not exists on disk then there is no WLO data
+    //     to use 
+    if ( WLToolsIO.checkForFileExistence(this.tideGaugeWLODataFile) ) {
+	
+      if (this.obsInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
 
-      // --- Read the WLO data in a temp. List<MeasurementCustom> object
-      final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
-        getWLDataInJsonFmt(tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
+        //this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
 
-      slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
-      slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
+        // --- Read the WLO data in a temp. List<MeasurementCustom> object
+        final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
+          getWLDataInJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
 
-      // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
-      //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
-      //     method to it before the assignation.
-      this.nearestObsData.put(this.location.getIdentity(),
-                              WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
+        slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
+        slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
 
-      slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
+        // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
+        //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
+        //     method to it before the assignation.
+        this.nearestObsData.put(this.location.getIdentity(),
+                                WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
 
-    } else {
-      throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
+        slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
+
+      } else {
+	throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
+      }
+
+    } else {	
+      this.haveWLOData= false; 
     }
-
-    final int checkNumberOfObs=
-      this.nearestObsData.get(this.location.getIdentity()).size();
-
-    if (checkNumberOfObs < this.minNumberOfObs) {
-      throw new RuntimeException(mmi+"ERROR: We must have checkNumberOfObs -> "+
-                                 checkNumberOfObs+" >= this.minNumberOfObs -> "+this.minNumberOfObs);
-    }
-
-    slog.info(mmi+"Okay we have a sufficient number of obs WLs -> "+
-              checkNumberOfObs+" to use for predicition and forecast adjustments.");
-
+      
     slog.info(mmi+"end");
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
+
+    //return haveWLOData;
   }
 
   /**
@@ -552,11 +557,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //--- Deal with possible null nsTidePredDataJsonFile String: if @NotNull not used
     try {
       WLDataJsonFile.length();
-
-    } catch (NullPointerException e) {
-
-      slog.error(mmi+"WLDataJsonFile is null !!");
-      throw new RuntimeException(mmi+e);
+    } catch (NullPointerException npe) {
+	//slog.error(mmi+"WLDataJsonFile is null !!");
+      throw new RuntimeException(mmi+npe);
     }
 
     slog.info(mmi+"start: WLDataJsonFile=" + WLDataJsonFile+
@@ -681,9 +684,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     try {
       jsonFileInputStream.close();
-
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(mmi+e);
     }
 
     slog.info(mmi+"done with WLDataJsonFile=" + WLDataJsonFile);

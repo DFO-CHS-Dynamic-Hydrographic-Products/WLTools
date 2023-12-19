@@ -80,6 +80,25 @@ public class WLToolsIO implements IWLToolsIO {
     return outputDataFormat;
   }
 
+  // ---
+  final public static boolean checkForFileExistence(final String filePath) {
+
+    final String mmi= "checkForAsciiFileExistence: ";
+
+    //boolean asciiFileExists= true;
+
+    try {
+      filePath.length();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    final File fileOutThere= new File(filePath);
+
+    return (fileOutThere.exists()) ? true: false;
+
+  }
+
   // --- Build the path of the tide gauges info, file name in the cfg DB folders.
   final public static String getTideGaugeInfoFilePath(final String tideGaugeInfoFileName) {
 

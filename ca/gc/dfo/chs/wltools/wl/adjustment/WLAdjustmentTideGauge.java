@@ -165,43 +165,44 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // --- Check if we have WL obs to use, checkTideGaugeWLODataInfo is set to
     //     ARG_NOT_DEFINED Sting if there are no WLO data to use for tje tide gauge(s)
     //     TODO: Move this block after the WL prediction data read block.
-    if (!checkTGWLODataInfo.equals(IWLAdjustmentIO.ARG_NOT_DEFINED)) {
+    //if (!checkTGWLODataInfo.equals(IWLAdjustmentIO.ARG_NOT_DEFINED)) {
 
-      final String [] tideGaugeWLODataInfo=
-        checkTGWLODataInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+    //--- Do some preliminary checks for the WLO data before reading it (if any) later.
+    final String [] tideGaugeWLODataInfo=
+      checkTGWLODataInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-      if (!IWLStationPredIO.allowedFormats.contains(tideGaugeWLODataInfo[0])) {
+    if (!IWLStationPredIO.allowedFormats.contains(tideGaugeWLODataInfo[0])) {
 
-        throw new RuntimeException(mmi+"Invalid TG WLO Input Data file format -> "+
-          tideGaugeWLODataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
-      }
-
-      // --- Define the WLO input data file format:
-      this.obsInputDataFormat=
-        IWLToolsIO.Format.valueOf(tideGaugeWLODataInfo[0]);
-
-      // --- Define the path of the WLO data file for the TG.
-      this.tideGaugeWLODataFile= tideGaugeWLODataInfo[1]; ;//argsMap.get("--tideGaugeWLODataFile");
-
-      // --- Verify that we have the same name id. for the TG between the file name and
-      //     the this.locationIdInfo attrbute.
-      final String [] tideGaugeWLODataFilePathSplit= tideGaugeWLODataFile.split(File.separator);
-
-      //--- Extract the 1st part of the WLO data file which MUST be the same string id. as for the
-      //    this.locationIdInfo attribute.
-      final String tideGaugeNameIdFromFileName=
-        tideGaugeWLODataFilePathSplit[ tideGaugeWLODataFilePathSplit.length-1 ].split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
-
-      if (!tideGaugeNameIdFromFileName.equals(this.locationIdInfo)) {
-        throw new RuntimeException(mmi+"tideGaugeNameIdFromFileName="+tideGaugeNameIdFromFileName+
-                                 " is NOT the same tg station id. as this.locationIdInfo="+this.locationIdInfo);
-      }
-
-      slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
-
-    } else {
-      slog.warn(mmi+"No WLO data to use at this point !! this.locationIdInfo="+this.locationIdInfo);
+      throw new RuntimeException(mmi+"Invalid TG WLO Input Data file format -> "+
+        tideGaugeWLODataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
     }
+
+    // --- Define the WLO input data file format:
+    this.obsInputDataFormat=
+      IWLToolsIO.Format.valueOf(tideGaugeWLODataInfo[0]);
+
+    // --- Define the path of the WLO data file for the TG.
+    this.tideGaugeWLODataFile= tideGaugeWLODataInfo[1]; ;//argsMap.get("--tideGaugeWLODataFile");
+
+    // --- Verify that we have the same name id. for the TG between the file name and
+    //     the this.locationIdInfo attrbute.
+    final String [] tideGaugeWLODataFilePathSplit= tideGaugeWLODataFile.split(File.separator);
+
+    //--- Extract the 1st part of the WLO data file which MUST be the same string id. as for the
+    //    this.locationIdInfo attribute.
+    final String tideGaugeNameIdFromFileName=
+      tideGaugeWLODataFilePathSplit[ tideGaugeWLODataFilePathSplit.length-1 ].split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
+
+    if (!tideGaugeNameIdFromFileName.equals(this.locationIdInfo)) {
+      throw new RuntimeException(mmi+"tideGaugeNameIdFromFileName="+tideGaugeNameIdFromFileName+
+                                 " is NOT the same tg station id. as this.locationIdInfo="+this.locationIdInfo);
+    }
+
+    slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
+
+    //} else {
+    //  slog.warn(mmi+"No WLO data to use at this point !! this.locationIdInfo="+this.locationIdInfo);
+    //}
 
     slog.info(mmi+"tideGaugePredictInputDataFile="+tideGaugePredictInputDataFile);
     slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
@@ -322,7 +323,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         getWLDataInJsonFmt(tideGaugePredictInputDataFile,-1L,0.0);
 
     } else {
-       throw new RuntimeException(mmi+"Invalid prediction input data format -> "+this.predictInputDataFormat.name());
+      throw new RuntimeException(mmi+"Invalid prediction input data format -> "+this.predictInputDataFormat.name());
     }
 
     //double predVal0= this.locationPredData.get(0).getValue();
@@ -343,58 +344,42 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //System.exit(0);
 
     this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
+    
+    //---
+    slog.info(mmi+"Reading the TG obs (WLO) at location -> "+
+              this.location.getIdentity()+" data using "+this.obsInputDataFormat.name());
 
-    //--- NOTE: The TG WLO data (if any) need to be read after the prediction data in order
-    //    to be sure that both are compatible in terms of timestamps intervals
-    if (this.tideGaugeWLODataFile != null) {
+    // --- Read-get the WLO data (if any)
+    this.getTGObsData();
 
-      slog.info(mmi+"Reading the TG obs (WLO) at location -> "+
-                this.location.getIdentity()+" data using "+this.obsInputDataFormat.name());
+    // --- Do some checks on the WLO data (if any).
+    if (this.haveWLOData) {	
 
-      this.getTGObsData();
-    }
+      try {
+	this.nearestObsData.get(this.location.getIdentity()).size();
+      } catch (NullPointerException npe) {
+	throw new RuntimeException(mmi+"ERROR: this.nearestObsData.get(this.location.getIdentity()) cannot be null if this.haveWLOData is true");
+      }
 
-    //if (this.obsInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
-      //this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
-      // --- Read the WLO data in a temp. List<MeasurementCustom> object
-      //final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
-      //  getWLDataInJsonFmt(tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
-
-      //slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
-      //slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-
-      // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
-      //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
-      //     method to it before the assignation.
-      //this.nearestObsData.put(this.location.getIdentity(),
-      //                        WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
-                             //WLMeasurement.removeHFWLOscillations(this.prdDataTimeIntervalSeconds,tmpWLOMcList)) ;
-                             //this.getWLDataInJsonFmt(tideGaugeWLODataFile, prdTimeIncrSeconds));
-      //slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
-      //slog.info(mmi+"this.nearestObsData.get(this.location.getIdentity()).size()="+
-      //          this.nearestObsData.get(this.location.getIdentity()).size());
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-    //} else {
-    //  throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
-    //}
-    //// --- Acid-test for when there is no WLO to use at a TG
-    ////     REMOVE WHEN TEST is DONB.
-    //this.nearestObsData.get(this.location.getIdentity()).clear();
-    //final int checkNumberOfObs=
-    //  this.nearestObsData.get(this.location.getIdentity()).size();
-    //if (checkNumberOfObs < this.minNumberOfObs) {
-    //  throw new RuntimeException(mmi+"ERROR: We must have checkNumberOfObs -> "+
-    //                             checkNumberOfObs+" >= this.minNumberOfObs -> "+this.minNumberOfObs);
-    //}
-    //slog.info(mmi+"Okay we have a sufficient number of obs WLs -> "+
-    //          checkNumberOfObs+" to use for predicition and forecast adjustments.");
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
-
-    // ---
+      final int checkNumberOfObs= this.
+	nearestObsData.get(this.location.getIdentity()).size();
+      
+      if (checkNumberOfObs < this.minNumberOfObs) {
+	  //throw new RuntimeException(mmi+"ERROR: We must have checkNumberOfObs -> "+
+          //                       checkNumberOfObs+" >= this.minNumberOfObs -> "+this.minNumberOfObs);
+ 
+	slog.warn(mmi+"Insuficient nb. of WLO data -> "+checkNumberOfObs+" will not use it !!");
+	  
+	this.haveWLOData= false;
+	  
+      } else {
+	  
+        slog.info(mmi+"Okay we have a sufficient number of obs WLs -> "+
+                 checkNumberOfObs+" to use for predicition and forecast adjustments.");     
+      }
+    }	  
+      
+    // --- Now proceed with the FMF adjustment:
     if (this.forecastAdjType != null) {
 
       //if (this.forecastAdjType != IWLAdjustment.
@@ -452,13 +437,6 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         //              this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()).get(this.location.getIdentity()).get(0).getValue());
 
         //slog.info(mmi+"previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
-
-        //this.getH2D2ASCIIWLFProbesData( prevFMFASCIIDataFilePath,
-        //                                uniqueTGMapObj, mainJsonMapObj,
-        //                                IWLAdjustmentIO.FullModelForecastType.PREVIOUS.ordinal() );
-
-        //slog.info(mmi+"this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.PREVIOUS).get(this.location.getIdentity()).get(0).getValue()="+
-        //              this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.PREVIOUS.ordinal()).get(this.location.getIdentity()).get(0).getValue());
 
       } else {
         throw new RuntimeException(mmi+"Invalid this.modelForecastInputDataFormat -> "
