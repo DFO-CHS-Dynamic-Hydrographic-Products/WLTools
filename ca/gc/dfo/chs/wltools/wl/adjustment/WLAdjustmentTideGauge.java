@@ -375,9 +375,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       } else {
 	  
         slog.info(mmi+"Okay we have a sufficient number of obs WLs -> "+
-                 checkNumberOfObs+" to use for predicition and forecast adjustments.");     
+                 checkNumberOfObs+" to use for predicition and forecast adjustments for TG -> "+this.location.getIdentity());     
       }
-    }	  
+      
+    } else {
+      slog.info(mmi+"this.haveWLOData == false !!, no WLO data available for TG -> "+this.location.getIdentity());
+    }
+
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
       
     // --- Now proceed with the FMF adjustment:
     if (this.forecastAdjType != null) {
@@ -458,7 +464,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       this.adjustFullModelForecast(argsMap, prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
 
-      slog.info(mmi+"Done with the full model forecast correction-adjustment");
+      slog.info(mmi+"Done with the FMF WL adjustments");
 
       slog.info(mmi+"Debug System.exit(0)");
       System.exit(0);

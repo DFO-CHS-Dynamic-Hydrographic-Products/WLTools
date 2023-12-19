@@ -62,7 +62,7 @@ abstract public class WLAdjustmentFMF
   //         being processed but we have some previous complete time
   //         dependant residual stats stoted on disk and that we can
   //         use for FMF WL data adjustments.
-  private Map<Long, MeasurementCustom> prevTimeDepResidualsStats= null;
+  //private Map<Long, MeasurementCustom> prevTimeDepResidualsStats= null;
 
   /**
    * Comments please!
@@ -313,37 +313,13 @@ abstract public class WLAdjustmentFMF
   }
 
   // ---
-  final public WLAdjustmentFMF multTimeDepFMFErrorStatsAdj(final String prevFMFASCIIDataFilePath,
-                                                           final Map<String, HBCoords> uniqueTGMapObj,
-                                                           final JsonObject mainJsonMapObj, final String tgResidualsStatsIODirectory) {
-
-    final String mmi= "multTimeDepFMFErrorStatsAdj: ";
-
-    slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
-
-    // --- Only the IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII input file format is allowed for now
-    if (this.modelForecastInputDataFormat != IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
-      throw new RuntimeException(mmi+
-        "Invalid full model forecast input format -> "+this.modelForecastInputDataFormat.name());
-    }
-
-    try {
-      this.location.getIdentity();
-    } catch (NullPointerException npe) {
-      throw new RuntimeException(mmi+npe);
-    }
+  final public Map<Long, MeasurementCustom> getNewTimeDepResidualsStats(final String prevFMFASCIIDataFilePath,
+									final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj) {
+    final String mmi= "getNewTimeDepResidualsStats: ";
 
     final String wlLocationIdentity= this.location.getIdentity();
 
     slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
-
-    Map<Long, MeasurementCustom> timeDepResidualsStats= null;
-	
-    // --- Read the previous time dependent residuals stats on disk first:
-    if (this.haveWLOData) {
-      timeDepResidualsStats= this.getNewTimeDepResidualsStats(prevFMFASCIIDataFilePath,
-							      uniqueTGMapObj,mainJsonMapObj);
-    }
     
     // --- Get a local MeasurementCustomBundle object with the WLO data
     //     List<MeasurementCustom> object for this TG location.
@@ -381,7 +357,7 @@ abstract public class WLAdjustmentFMF
     boolean wloTimeFrameOverlap= true;
 
     int nbOverlapsCount= 0;
-
+    
     // ---
     while(wloTimeFrameOverlap) {
 
@@ -436,7 +412,7 @@ abstract public class WLAdjustmentFMF
           //final Long residualTimeOffsetIdx=
           //  mcbPrevFMFInstant.getEpochSecond() - fmfLeadTimeSeconds ; //fmfLeadTimeInstant.getEpochSecond();
 
-          // --- Check if the WLO data exists for this mcbPrevFMFInstant.
+                    // --- Check if the WLO data exists for this mcbPrevFMFInstant.
           //     This compeletely avoids the annoying usage of NO DATA flags
           //     and the related error of possibly using this NO DATA flag as
           //      a valid value. (But we still need to implement WL quality
@@ -473,31 +449,88 @@ abstract public class WLAdjustmentFMF
             timeDepResidualsAcc.get(residualTimeOffsetIdx).add(wloValue-fmfWLValue);
 
             //slog.info(mmi+"timeDepResidualsAcc.get(residualTimeOffsetIdx).get(0)="+timeDepResidualsAcc.get(residualTimeOffsetIdx).get(0));
-
             //if (residualTimeOffsetIdx>=3600) {
             //slog.info(mmi+"Debug exit 0");
             //System.exit(0);
-            //}
-
-          } // --- inner if (wloInstantsSet.contains(mcbPrevFMFInstant)) block
-        } // --- inner for loop on mcbPrevFMFInstantsSet
+	 
+	  } // --- if (wloInstantsSet.contains(mcbPrevFMFInstant)) block   
+	} // ---  for (final Instant mcbPrevFMFInstant : mcbPrevFMFInstantsSet) block.
       } // --- if (wloTimeFrameOverlap) block
-
+       
       prevFMFIdxIter++;
-
-    } // --- while(wloTimeFrameOtimeDepResidualsStats=verlap) loop block
+      
+    } // ---  while(wloTimeFrameOverlap) block.
 
     slog.info(mmi+"nbOverlapsCount="+nbOverlapsCount);
 
-    // ---
-    final Map<Long, MeasurementCustom> timeDepResidualsStats=
-      MeasurementCustom.getTimeDepMCStats(timeDepResidualsAcc);
+    return MeasurementCustom.getTimeDepMCStats(timeDepResidualsAcc);
+  }
 
+  // ---
+  final public WLAdjustmentFMF multTimeDepFMFErrorStatsAdj(final String prevFMFASCIIDataFilePath,
+                                                           final Map<String, HBCoords> uniqueTGMapObj,
+                                                           final JsonObject mainJsonMapObj, final String tgResidualsStatsIODirectory) {
+
+    final String mmi= "multTimeDepFMFErrorStatsAdj: ";
+
+    slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
+
+    // --- Only the IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII input file format is allowed for now
+    if (this.modelForecastInputDataFormat != IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
+      throw new RuntimeException(mmi+
+        "Invalid full model forecast input format -> "+this.modelForecastInputDataFormat.name());
+    }
+
+    try {
+      this.location.getIdentity();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    final String wlLocationIdentity= this.location.getIdentity();
+
+    slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
+
+    // --- Read the previous time dependent residuals stats on disk first:
+    //     We could need to use it in case:
+    //  
+    //     1). Some of the time offsets Long keys are missing in the
+    //         newly calculated time dependant residual stats.
+    //
+    //     2). There is no WLO data to use at all for the time frame
+    //         being processed but we have some previous complete time
+    //         dependant residual stats stoted on disk and that we can
+    //         use for FMF WL data adjustments.
+    //
+    final Map<Long, MeasurementCustom> prevTimeDepResidualsStats=
+      this.readTGTimeDepResidualsStats(wlLocationIdentity, tgResidualsStatsIODirectory);
+
+    //  --- Define the local timeDepResidualsStats Map object that will be used
+    //	    for the FMF WL data adjustment.
+    Map<Long, MeasurementCustom> timeDepResidualsStats= null;
+     
+    // --- Produce the new time dependant residuals stats if we have WLO data.
+    if (this.haveWLOData) {
+
+      slog.info(mmi+"this.haveWLOData == true: Produce the new time dependant residuals stats");
+      
+      timeDepResidualsStats= this.getNewTimeDepResidualsStats(prevFMFASCIIDataFilePath,
+							      uniqueTGMapObj, mainJsonMapObj);
+    } else {
+
+      slog.warn(mmi+"this.haveWLOData != true: Need to use the previous time dependant residuals stats");
+      
+      timeDepResidualsStats= prevTimeDepResidualsStats;
+    }
+
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);  
+    
     //--- Now verify if we have all the time offsets for the FMF time frame.
     //    need to replace the missing time dependent residal stats by the
     //    values that are stored on disk for this location and for this
     //    time offset
-    slog.info(mmi+"Now check if we have all the FMF time offsets available for the residuals stats");
+    //slog.info(mmi+"Now check if we have all the FMF time offsets available for the residuals stats");
 
     final int actuFMFIndex= IWLAdjustmentIO.
       FullModelForecastType.ACTUAL.ordinal();
@@ -519,7 +552,8 @@ abstract public class WLAdjustmentFMF
     //     to adjust.
     for (final Instant actualFMFInstant: actuFMFInstantsSet) {
 
-      //final
+      //--- Get the time offset in seconds between the actualFMFInstant and the
+      //    leastRecentActualFMFSeconds to use it for indexing in the timeDepResidualsStats Map
       final Long longIdx= actualFMFInstant.getEpochSecond() - leastRecentActualFMFSeconds;
 
       //MeasurementCustom timeDepResidualMc= timeDepResidualsStats.get(longIdx);
@@ -553,7 +587,7 @@ abstract public class WLAdjustmentFMF
       MeasurementCustom actuFMFMc= actualFMFMcb.getAtThisInstant(actualFMFInstant);
 
       // --- Get the time dependent residual stats MeasurementCustom object for the
-      //    time offset between the FMF lead time and the Instant being processed
+      //     time offset between the FMF lead time and the Instant being processed
       final MeasurementCustom timeDepResidualMc= timeDepResidualsStats.get(longIdx);
 
       //final double timeDepResidualAvg= timeDepResidualsStats.get(longIdx).getValue();
@@ -576,14 +610,15 @@ abstract public class WLAdjustmentFMF
     }
 
     // --- Write the TG time dependent residual stats to be able to use them
-    //     for cases where no WLO data is available.
+    //     for other cases where no WLO data is available. NOTE we write it
+    //     even if the previous TG time dependent residual stats was used
+    //     in order to facilitate the management of this data
     this.writeTGTimeDepResidualsStats(wlLocationIdentity,
                                       timeDepResidualsStats, tgResidualsStatsIODirectory);
-
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
   }

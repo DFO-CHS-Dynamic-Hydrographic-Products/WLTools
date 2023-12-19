@@ -189,7 +189,6 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     try {
       this.nearestObsData.size();
-
     } catch (NullPointerException e) {
 
       slog.error(mmi+"this.nearestObsData is null !!");
@@ -198,7 +197,6 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
    try {
       this.location.hashCode();
-
     } catch (NullPointerException e) {
 
       slog.error(mmi+"this.location is null !!");
@@ -207,7 +205,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     try {
       this.nearestObsData.get(this.location.getIdentity()).size();
-
+      
     } catch (NullPointerException e) {
 
       slog.error(mmi+"this.nearestObsData.get(this.location.getIdentity()) is null !!");
@@ -476,6 +474,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     } else {	
       this.haveWLOData= false; 
     }
+
+    slog.info(mmi+"this.haveWLOData="+this.haveWLOData);
       
     slog.info(mmi+"end");
 
@@ -698,6 +698,60 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     return retListMCs;
   }
 
+  // ---
+  final protected Map<Long, MeasurementCustom> readTGTimeDepResidualsStats(final String tgIdentity,
+									   final String tgResidualsStatsIODirectory) {
+      
+    final String mmi= "readTGTimeDepResidualsStats: ";
+
+    slog.info(mmi+"start");
+
+    final String tgTimeDepResidualsStatsFile= tgResidualsStatsIODirectory + File.separator +
+      PRV_FMF_RESIDUALS_STATS_SUBDIRNAME + File.separator + RESIDUALS_STATS_ATTG_FNAME_PRFX + tgIdentity + IWLToolsIO.JSON_FEXT;
+
+    slog.info(mmi+"Reading tgTimeDepResidualsStatsFile="+tgTimeDepResidualsStatsFile);
+
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(tgTimeDepResidualsStatsFile);
+      
+    } catch (FileNotFoundException e) {
+	
+      throw new RuntimeException(mmi+"ERROR: The tgTimeDepResidualsStatsFile -> "+
+				 tgTimeDepResidualsStatsFile+" must exists at this point !!");
+    }
+
+    final JsonArray jsonDataArray= Json.
+      createReader(jsonFileInputStream).readArray();
+
+    Map<Long, MeasurementCustom> tgTimeDepResidualsStats= new HashMap<Long, MeasurementCustom>();
+    
+    for (int itemIter= 0; itemIter< jsonDataArray.size(); itemIter++) {
+	
+      final JsonObject jsonDataObj=
+        jsonDataArray.getJsonObject(itemIter);
+
+      final double timeDepResidualAvg= jsonDataObj.
+	getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue();
+
+      final double timeDepResidualUncertainty= jsonDataObj.
+	getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
+
+      final Long longIdx= jsonDataObj.
+	getJsonNumber(IWLAdjustmentIO.FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY).longValue();
+
+      // --- We do not use the Instant object for the time dependent residual stats
+      //     so we pass null for it in the MeasurementCustom constructor.
+      tgTimeDepResidualsStats.put(longIdx,
+                                  new MeasurementCustom(null, timeDepResidualAvg, timeDepResidualUncertainty));
+    }
+
+    slog.info(mmi+"end");
+
+    return tgTimeDepResidualsStats;
+  }
+
   // --- Using the CHS JSON format.
   final protected void writeTGTimeDepResidualsStats(final String tgIdentity,
                                                     final Map<Long, MeasurementCustom> timeDepResidualsStatsMap,
@@ -737,9 +791,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       jsonArrayBuilderObj.
         add( Json.createObjectBuilder().
           add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
-            add( IWLAdjustmentIO.FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY, longIter.toString() ).
-            //add( IWLToolsIO.INSTANT_JSON_KEY, longIter.toString() ).
-              add( IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty()) );
+	     add( IWLAdjustmentIO.FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY, longIter).
+	       add( IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty() )); 
     }
 
     // --- Now write the Json data bundle in the output file.
@@ -755,7 +808,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
   }
 }

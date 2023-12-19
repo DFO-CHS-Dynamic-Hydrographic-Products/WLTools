@@ -223,6 +223,10 @@ abstract public class WLAdjustmentType
 
       case SINGLE_TIMEDEP_FMF_ERROR_STATS:
 
+	if (!this.haveWLOData) {
+	  throw new RuntimeException(mmi+"ERROR: this.haveWLOData cannot be false for the SINGLE_TIMEDEP_FMF_ERROR_STATS FMF adjustment type !");
+	}
+	  
         this.singleTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
                                            uniqueTGMapObj, mainJsonMapObj);
 
@@ -245,8 +249,8 @@ abstract public class WLAdjustmentType
 
         slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
 
-        slog.info(mmi+"Debug exit 0");
-        System.exit(0);
+        //slog.info(mmi+"Debug exit 0");
+        //System.exit(0);
 
         break;
 
