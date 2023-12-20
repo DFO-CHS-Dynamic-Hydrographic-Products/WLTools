@@ -8,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.TreeSet;
 import java.util.SortedSet;
 import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
@@ -548,6 +549,14 @@ abstract public class WLAdjustmentFMF
 
     Long lastValidLongIdx= -1L;
 
+    //timeDepResidualsStats.remove(0L);
+    //timeDepResidualsStats.remove(180L);
+    //timeDepResidualsStats.remove(360L);
+
+    // --- Get the sorted set of the valid Long keys of the timeDepResidualsStats
+    //     to possibly use it in case some time dependent residual stats are missung
+    final SortedSet<Long> validLonIdxKeySet= new TreeSet<Long>(timeDepResidualsStats.keySet());
+
     // --- Loop on all the Instant objects of the actual FMF data that we want
     //     to adjust.
     for (final Instant actualFMFInstant: actuFMFInstantsSet) {
@@ -556,12 +565,18 @@ abstract public class WLAdjustmentFMF
       //    leastRecentActualFMFSeconds to use it for indexing in the timeDepResidualsStats Map
       final Long longIdx= actualFMFInstant.getEpochSecond() - leastRecentActualFMFSeconds;
 
-      //MeasurementCustom timeDepResidualMc= timeDepResidualsStats.get(longIdx);
-
       // --- Could have missing obs -> missing residual stats, use the last
       //     residual stats data if not too far in time (<=MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS)
       //     otherwise use the residual stats data that is stored on disk.
       if (! timeDepResidualsStats.containsKey(longIdx) ) {
+
+	// --- TODO: Use a method that returns the last valid
+	//     longIdx key and the next valid longIdx key from an initial
+	//     valid keys sorted set (validLonIdxKeySet) in a two item List
+	//     and do linear time interp. for the missing residual value.
+	//     If one of the two returned keys is null then just use the
+	//     valid one for the residual value. Then no more need to use the
+	//     lastValidLongIdx cumbersome trick.
 
         if (lastValidLongIdx >= 0L &&
               (longIdx-lastValidLongIdx) <= MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS) {
@@ -571,13 +586,22 @@ abstract public class WLAdjustmentFMF
 
         } else {
 
-          // --- The previous valid longIdx it too far in time, replace the corresponding residual value 
-          //     using what we have stored on disk for that
-          //slog.error(mmi+"longIdx key -> "+longIdx+" not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
-          throw new RuntimeException(mmi+"longIdx key -> "+longIdx+
-             " not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
+          //throw new RuntimeException(mmi+"longIdx key -> "+longIdx+
+	  slog.warn(mmi+"longIdx key -> "+longIdx+
+		    " not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
+	    
+          // --- The previous valid longIdx it too far in time compared to the longIdx, replace the corresponding residual value 
+          //     using what we have stored on disk for that longIdx.
+	  timeDepResidualsStats.put(longIdx, prevTimeDepResidualsStats.get(longIdx));
+
+	  //slog.warn(mmi+"timeDepResidualsStats.get(longIdx)="+timeDepResidualsStats.get(longIdx).getValue());
+          //slog.info(mmi+"Remove this debug exit 0 when this replacement strategy has been validated");
+          //System.exit(0);	  
         }
       }
+
+      slog.info(mmi+"Remove this debug exit 0 when this replacement strategy for residuals will have been validated");
+      System.exit(0);     
 
       lastValidLongIdx= longIdx;
 
@@ -600,7 +624,7 @@ abstract public class WLAdjustmentFMF
       actuFMFMc.setValue(actuFMFMc.getValue() + timeDepResidualMc.getValue());
 
       // --- Set the adjusted FMF WL uncertainty using the std dev of the related
-      //    time dependent residual for this time offset.
+      //     time dependent residual for this time offset.
       actuFMFMc.setUncertainty(timeDepResidualMc.getUncertainty());
 
       //slog.info(mmi+"actuFMFMc value aft adj.="+actuFMFMc.getValue()+"\n");
