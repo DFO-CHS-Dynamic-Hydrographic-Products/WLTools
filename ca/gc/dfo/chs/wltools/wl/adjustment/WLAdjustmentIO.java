@@ -706,47 +706,55 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     slog.info(mmi+"start");
 
+    Map<Long, MeasurementCustom> tgTimeDepResidualsStats= null;
+
     final String tgTimeDepResidualsStatsFile= tgResidualsStatsIODirectory + File.separator +
       PRV_FMF_RESIDUALS_STATS_SUBDIRNAME + File.separator + RESIDUALS_STATS_ATTG_FNAME_PRFX + tgIdentity + IWLToolsIO.JSON_FEXT;
 
-    slog.info(mmi+"Reading tgTimeDepResidualsStatsFile="+tgTimeDepResidualsStatsFile);
-
-    FileInputStream jsonFileInputStream= null;
-
-    try {
-      jsonFileInputStream= new FileInputStream(tgTimeDepResidualsStatsFile);
-      
-    } catch (FileNotFoundException e) {
-	
-      throw new RuntimeException(mmi+"ERROR: The tgTimeDepResidualsStatsFile -> "+
-				 tgTimeDepResidualsStatsFile+" must exists at this point !!");
-    }
-
-    final JsonArray jsonDataArray= Json.
-      createReader(jsonFileInputStream).readArray();
-
-    Map<Long, MeasurementCustom> tgTimeDepResidualsStats= new HashMap<Long, MeasurementCustom>();
+    if (WLToolsIO.checkForFileExistence(tgTimeDepResidualsStatsFile)) {
     
-    for (int itemIter= 0; itemIter< jsonDataArray.size(); itemIter++) {
-	
-      final JsonObject jsonDataObj=
-        jsonDataArray.getJsonObject(itemIter);
+      slog.info(mmi+"Reading tgTimeDepResidualsStatsFile="+tgTimeDepResidualsStatsFile);
 
-      final double timeDepResidualAvg= jsonDataObj.
+      FileInputStream jsonFileInputStream= null;
+
+      try {
+        jsonFileInputStream= new FileInputStream(tgTimeDepResidualsStatsFile);
+      } catch (FileNotFoundException e) {
+	
+        throw new RuntimeException(mmi+"ERROR: The tgTimeDepResidualsStatsFile -> "+
+	   			   tgTimeDepResidualsStatsFile+" cannot be opened in read mode !!");
+      }
+
+      final JsonArray jsonDataArray= Json.
+        createReader(jsonFileInputStream).readArray();
+
+      tgTimeDepResidualsStats= new HashMap<Long, MeasurementCustom>();
+    
+      for (int itemIter= 0; itemIter< jsonDataArray.size(); itemIter++) {
+	
+        final JsonObject jsonDataObj=
+          jsonDataArray.getJsonObject(itemIter);
+
+        final double timeDepResidualAvg= jsonDataObj.
 	getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue();
 
-      final double timeDepResidualUncertainty= jsonDataObj.
-	getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
+        final double timeDepResidualUncertainty= jsonDataObj.
+	  getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
 
-      final Long longIdx= jsonDataObj.
-	getJsonNumber(IWLAdjustmentIO.FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY).longValue();
+        final Long longIdx= jsonDataObj.
+	  getJsonNumber(IWLAdjustmentIO.FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY).longValue();
 
-      // --- We do not use the Instant object for the time dependent residual stats
-      //     so we pass null for it in the MeasurementCustom constructor.
-      tgTimeDepResidualsStats.put(longIdx,
-                                  new MeasurementCustom(null, timeDepResidualAvg, timeDepResidualUncertainty));
+        // --- We do not use the Instant object for the time dependent residual stats
+        //     so we pass null for it in the MeasurementCustom constructor.
+        tgTimeDepResidualsStats.put(longIdx,
+                                    new MeasurementCustom(null, timeDepResidualAvg, timeDepResidualUncertainty));
+      }
+      
+    } else {
+      slog.warn(mmi+"The tgTimeDepResidualsStatsFile -> "+
+		tgTimeDepResidualsStatsFile+" does not exists, returning null !!");
     }
-
+    
     slog.info(mmi+"end");
 
     return tgTimeDepResidualsStats;

@@ -26,6 +26,7 @@ import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
+import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -474,7 +475,8 @@ abstract public class WLAdjustmentFMF
 
     final String mmi= "multTimeDepFMFErrorStatsAdj: ";
 
-    slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
+    slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath+
+	      ", this.prdDataTimeIntervalSeconds="+this.prdDataTimeIntervalSeconds);
 
     // --- Only the IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII input file format is allowed for now
     if (this.modelForecastInputDataFormat != IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
@@ -492,8 +494,8 @@ abstract public class WLAdjustmentFMF
 
     slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
 
-    // --- Read the previous time dependent residuals stats on disk first:
-    //     We could need to use it in case:
+    // --- Read the previous time dependent residuals stats that is stored
+    //     on disk first: We could need to use it in case:
     //  
     //     1). Some of the time offsets Long keys are missing in the
     //         newly calculated time dependant residual stats.
@@ -502,6 +504,12 @@ abstract public class WLAdjustmentFMF
     //         being processed but we have some previous complete time
     //         dependant residual stats stoted on disk and that we can
     //         use for FMF WL data adjustments.
+    //
+    //     NOTE: the this.readTGTimeDepResidualsStats method could return
+    //           null if the previous time dependent residuals stats file
+    //           do not exists. It is possible if it is a cold start which
+    //           means that there is no previous time dependent residuals
+    //           stats that already exists.
     //
     final Map<Long, MeasurementCustom> prevTimeDepResidualsStats=
       this.readTGTimeDepResidualsStats(wlLocationIdentity, tgResidualsStatsIODirectory);
@@ -517,11 +525,21 @@ abstract public class WLAdjustmentFMF
       
       timeDepResidualsStats= this.getNewTimeDepResidualsStats(prevFMFASCIIDataFilePath,
 							      uniqueTGMapObj, mainJsonMapObj);
-    } else {
+    } else if ( prevTimeDepResidualsStats != null) {
 
       slog.warn(mmi+"this.haveWLOData != true: Need to use the previous time dependant residuals stats");
       
       timeDepResidualsStats= prevTimeDepResidualsStats;
+      
+    } else {
+      slog.warn(mmi+"prevTimeDepResidualsStats is null !! assuming a cold start here !");
+    }
+
+    // --- Need to be sure to have at least a MeasurementCustom object initialized with zero values
+    //     at the time offsets 0L in the timeDepResidualsStats Map for cold starts OR if it is
+    //     missing (veru unlikely but not impossible)
+    if (!timeDepResidualsStats.containsKey(0L)) {
+      timeDepResidualsStats.put(0L, new MeasurementCustom(null, 0.0, 0.0));
     }
 
     //slog.info(mmi+"Debug exit 0");
@@ -545,10 +563,24 @@ abstract public class WLAdjustmentFMF
     final long leastRecentActualFMFSeconds=
       actualFMFMcb.getLeastRecentInstantCopy().getEpochSecond();
 
-    final Set<Instant> actuFMFInstantsSet= actualFMFMcb.getInstantsKeySetCopy();
+    final long mostRecentActualFMFSeconds=
+      actualFMFMcb.getMostRecentInstantCopy().getEpochSecond();
 
-    Long lastValidLongIdx= -1L;
+    // --- Need to have the total time offset in seconds between the
+    //     mostRecentActualFMFSeconds anf the leastRecentActualFMFSeconds
+    final Long lastActuFMFTimeOffet= mostRecentActualFMFSeconds - leastRecentActualFMFSeconds;
 
+    // --- Check if we have a valid time dependent residual value to use at
+    //     the last time offset of the FMF data. use a MeasurementCustom object
+    //     initialized with zero values (means no residual -> no adjustment for this time offset)
+    if (!timeDepResidualsStats.containsKey(lastActuFMFTimeOffet)) {
+      timeDepResidualsStats.put(lastActuFMFTimeOffet, new MeasurementCustom(null, 0.0, 0.0));
+    }
+
+    // --- Get a copy of the SortedSet of Instant objects of the FMF data.
+    final SortedSet<Instant> actuFMFInstantsSet= actualFMFMcb.getInstantsKeySetCopy();
+    
+    //Long lastValidLongIdx= -1L;
     //timeDepResidualsStats.remove(0L);
     //timeDepResidualsStats.remove(180L);
     //timeDepResidualsStats.remove(360L);
@@ -568,7 +600,7 @@ abstract public class WLAdjustmentFMF
       // --- Could have missing obs -> missing residual stats, use the last
       //     residual stats data if not too far in time (<=MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS)
       //     otherwise use the residual stats data that is stored on disk.
-      if (! timeDepResidualsStats.containsKey(longIdx) ) {
+      if (! timeDepResidualsStats.containsKey(longIdx) ) {  
 
 	// --- TODO: Use a method that returns the last valid
 	//     longIdx key and the next valid longIdx key from an initial
@@ -578,32 +610,67 @@ abstract public class WLAdjustmentFMF
 	//     valid one for the residual value. Then no more need to use the
 	//     lastValidLongIdx cumbersome trick.
 
-        if (lastValidLongIdx >= 0L &&
-              (longIdx-lastValidLongIdx) <= MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS) {
+	final List<Long> twoNearestsLongSecondsKeys=
+	  TimeMachine.getTwoNeareastsLongSeconds(longIdx, validLonIdxKeySet);
 
-          // --- Set the timeDepResidualsStats Map to the previous residual stats value here
-          timeDepResidualsStats.put(longIdx, timeDepResidualsStats.get(lastValidLongIdx));
+        final Long nearestPrevLongSeconds= twoNearestsLongSecondsKeys.get(0);
+	final Long nearestNextLongSeconds= twoNearestsLongSecondsKeys.get(1);
+	
+	slog.info(mmi+"nearestPrevLongSeconds="+nearestPrevLongSeconds);
+	slog.info(mmi+"nearestNextLongSeconds="+nearestNextLongSeconds);
 
-        } else {
+	if (nearestNextLongSeconds == nearestPrevLongSeconds ) {
+	  throw new RuntimeException(mmi+"Cannot have nearestNextLongSeconds == nearestPrevLongSeconds here !!");
+	}
 
-          //throw new RuntimeException(mmi+"longIdx key -> "+longIdx+
-	  slog.warn(mmi+"longIdx key -> "+longIdx+
-		    " not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
-	    
-          // --- The previous valid longIdx it too far in time compared to the longIdx, replace the corresponding residual value 
-          //     using what we have stored on disk for that longIdx.
-	  timeDepResidualsStats.put(longIdx, prevTimeDepResidualsStats.get(longIdx));
+        final MeasurementCustom nearestPrevMc= timeDepResidualsStats.get(nearestPrevLongSeconds);
+        final MeasurementCustom nearestNextMc= timeDepResidualsStats.get(nearestNextLongSeconds);
 
+	// --- Doing linear time interpolation for the missing residual avg value and its uncertainty
+	//     using the nearests MeasurementCustom objects from the timeDepResidualsStats Map
+
+	//final double timeOffsetDiff= (double)(nearestNextLongSeconds - nearestPrevLongSeconds);
+
+	final double prevTimeOffsetWght=
+	  (double)(nearestNextLongSeconds - longIdx)/(double)(nearestNextLongSeconds - nearestPrevLongSeconds);
+
+	final double residualAvgTmInterp=
+	  prevTimeOffsetWght * nearestPrevMc.getValue() + (1.0 - prevTimeOffsetWght) * nearestNextMc.getValue();
+
+	final double residualUncTmInterp=
+	  prevTimeOffsetWght * nearestPrevMc.getUncertainty() + (1.0 - prevTimeOffsetWght) * nearestNextMc.getUncertainty();
+
+        timeDepResidualsStats.put(longIdx, new MeasurementCustom(null, residualAvgTmInterp, residualUncTmInterp ));
+	
+	slog.info(mmi+"Remove this debug exit 0 when this replacement strategy has been validated");
+        System.exit(0);
+	
+        //if (lastValidLongIdx >= 0L &&
+        //      (longIdx-lastValidLongIdx) <= MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS) {
+        //
+        //  // --- Set the timeDepResidualsStats Map to the previous residual stats value here
+        //  timeDepResidualsStats.put(longIdx, timeDepResidualsStats.get(lastValidLongIdx));
+        //
+        //} else if (prevTimeDepResidualsStats != null ) {
+        //
+        //  //throw new RuntimeException(mmi+"longIdx key -> "+longIdx+
+	//  slog.warn(mmi+"longIdx key -> "+longIdx+
+	//	    " not found in the timeDepResidualsStats Map! need to replace it by its corresponding values stored on disk!");
+	//    
+        //  // --- The previous valid longIdx it too far in time compared to the longIdx, replace the corresponding residual value 
+        //  //     using what we have stored on disk for that longIdx.
+	//  timeDepResidualsStats.put(longIdx, prevTimeDepResidualsStats.get(longIdx));
+        //
 	  //slog.warn(mmi+"timeDepResidualsStats.get(longIdx)="+timeDepResidualsStats.get(longIdx).getValue());
           //slog.info(mmi+"Remove this debug exit 0 when this replacement strategy has been validated");
           //System.exit(0);	  
-        }
+	//}
       }
+      
+      //slog.info(mmi+"Remove this debug exit 0 when this replacement strategy for residuals will have been validated");
+      //System.exit(0);     
 
-      slog.info(mmi+"Remove this debug exit 0 when this replacement strategy for residuals will have been validated");
-      System.exit(0);     
-
-      lastValidLongIdx= longIdx;
+      //lastValidLongIdx= longIdx;
 
       //slog.info(mmi+"actualFMFInstant="+actualFMFInstant.toString());
 
@@ -631,7 +698,8 @@ abstract public class WLAdjustmentFMF
 
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
-    }
+      
+    } // --- for (final Instant actualFMFInstant: actuFMFInstantsSet) loop block
 
     // --- Write the TG time dependent residual stats to be able to use them
     //     for other cases where no WLO data is available. NOTE we write it

@@ -12,8 +12,13 @@ import org.slf4j.LoggerFactory;
 //import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Size;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.TimeZone;
+import java.util.GregorianCalendar;
+
+// ---
+import java.util.List;
+import java.util.ArrayList;
+import java.util.SortedSet;
 
 //import javax.validation.constraints.Min;
 //---
@@ -29,7 +34,47 @@ abstract public class TimeMachine implements ITimeMachine {
   /**
    * static log utility.
    */
-  private static final Logger slog = LoggerFactory.getLogger(whoAmI);
+  private static final Logger slog= LoggerFactory.getLogger(whoAmI);
+
+  // ---
+  public static List<Long> getTwoNeareastsLongSeconds(final Long longSeconds, final SortedSet<Long> longObjectsSortedSet) {
+
+    final String mmi= "get2NeareastsLongSeconds: ";
+      
+    try {
+      longObjectsSortedSet.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe); 
+    }
+    
+    if (longObjectsSortedSet.size() < 2) {
+      throw new RuntimeException(mmi+" longObjectsSortedSet.size() must be >= 2 !!"); 
+    }
+
+    if (longSeconds < longObjectsSortedSet.first()) {
+      throw new RuntimeException(mmi+"Cannot have longSeconds="+
+				 longSeconds+" < longObjectsSortedSet.first()="+longObjectsSortedSet.first()+" !!");  
+    }
+
+    if (longSeconds > longObjectsSortedSet.last()) {
+      throw new RuntimeException(mmi+"Cannot have longSeconds="+
+				 longSeconds+" > longObjectsSortedSet.last()="+longObjectsSortedSet.last()+" !!");  
+    }
+
+    //if (!longObjectsSortedSet.contains(longSeconds)) {
+    //  throw new RuntimeException(mmi+" longObjectsSortedSet does not contain longSeconds -> "+longSeconds);
+    //}
+
+    List<Long> twoNeareastsLongSeconds= new ArrayList<Long>(2);
+		  
+    twoNeareastsLongSeconds.add(null);
+    twoNeareastsLongSeconds.add(null);
+    
+    twoNeareastsLongSeconds.add(0, longObjectsSortedSet.headSet(longSeconds).last());
+    twoNeareastsLongSeconds.add(1, longObjectsSortedSet.tailSet(longSeconds).first());
+    
+    return twoNeareastsLongSeconds;
+  }	
 
   /**
    * @param cld : A Calendar object
