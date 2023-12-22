@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.lang.Math;
 import java.lang.Enum;
 import java.util.Arrays;
 import java.time.Instant;
@@ -57,6 +58,7 @@ import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
@@ -460,24 +462,22 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         throw new RuntimeException(mmi+"this.fmfDataTimeIntervalSeconds != this.prdDataTimeIntervalSeconds, time interp. for forecasts not implemented yet!");
       }
 
-      slog.info(mmi+"Now doing full model forecast correction-adjustment using previous forecast(s) data: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
+      slog.info(mmi+"Now doing full model forecast (FMF) adjustment-correction using previous forecast(s) data: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
 
       this.adjustFullModelForecast(argsMap, prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
 
-      slog.info(mmi+"Done with the FMF WL adjustments");
+      slog.info(mmi+"Done with the speicific FMF WL data adjustment");
 
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
 
     } // --- this.forecastAdjType != null
 
-    slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy wl adjustment algo");
-
+    //slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy wl adjustment algo");
     // --- Instantiate the FMSInput object using the argsMap and this object.
-    this.fmsInputObj= new FMSInput(this, this.referenceTime);
-
+    //this.fmsInputObj= new FMSInput(this, this.referenceTime);
     // --- and instantiate the FMS object itself with the FMSInput object
-    this.fmsObj= new FMS(this.fmsInputObj);
+    //this.fmsObj= new FMS(this.fmsInputObj);
     //this.fmsObj= new FMS(new FMSInput(this));O
 
     slog.info(mmi+"end");
@@ -493,14 +493,105 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"start");
 
-    // --- 1.) Get the adjustment-correction for the model forecast (ECCC P. Matte's algo).
+    // --- Now stitch (merge) the adjusted-corrected FMF data with the last valid WLO available
+    //     but only if we have that this last WLO data is more recent in time than the first
+    //     FMF data time stamp.
 
+    try {
+      this.locationAdjustedData.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"this.mostRecentWLOInstant cannot be null here !!");
+    }
+    
+    // --- Get a MeasurementCustomBundle object for the this.locationAdjustedData object
+    final MeasurementCustomBundle adjFMFMcb=
+      new MeasurementCustomBundle(this.locationAdjustedData);
+  
+    final Instant adjFMFMcbLeastRecentInstant= adjFMFMcb.getLeastRecentInstantCopy();
+    
+    try {
+      this.mcbWLO.hashCode();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"this.mcbWLO cannot be null here !!");
+    }
+
+    try {
+      this.mostRecentWLOInstant.hashCode();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"this.mostRecentWLOInstant cannot be null here !!");
+    }   
+
+    // --- Local copy of the most recent WLO Instant object
+    //final Instant mostRecentWLOInstant= this.mcbWLO.getMostRecentInstantCopy();
+
+    slog.info(mmi+"adjFMFMcbLeastRecentInstant="+adjFMFMcbLeastRecentInstant.toString());
+    slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
+ 
+    if (!adjFMFMcbLeastRecentInstant.equals(mostRecentWLOInstant)) {
+       throw new RuntimeException(mmi+"Must have adjFMFMcbLeastRecentInstant.equals(mostRecentWLOInstant) at this point!");
+    }
+
+    slog.info(mmi+"Merging the future FMF adjusted data with the last WLO data available at -> "+ mostRecentWLOInstant.toString());
+
+    final double lastWLOValue= this.mcbWLO.
+      getAtThisInstant(mostRecentWLOInstant).getValue();
+      
+    final double adjFMFValueAtLastWLOInstant=
+      adjFMFMcb.getAtThisInstant(mostRecentWLOInstant).getValue();
+ 
+    final double fmfWLOValuesDiff= lastWLOValue - adjFMFValueAtLastWLOInstant;
+
+    slog.info(mmi+"lastWLOValue="+lastWLOValue);
+    slog.info(mmi+"adjFMFValueAtLastWLOInstant="+adjFMFValueAtLastWLOInstant);
+    slog.info(mmi+"fmfWLOValuesDiff="+fmfWLOValuesDiff);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+      
+    final SortedSet<Instant> adjFMFMcbInstantsSet= adjFMFMcb.getInstantsKeySetCopy();
+
+    final long mergeTimeRefSeconds= adjFMFMcbLeastRecentInstant.getEpochSecond();
+
+    // --- Use a final double with the inverted IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS
+    //     instead of a division in the Math.exp() calls, it should give a better perf.
+    final double shortTermFMFTSOffsetSecondsInv= 1.0/IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS;
+    
+    for (final Instant fmfAdjInstant: adjFMFMcbInstantsSet) {
+
+      final double timeOffsetSeconds= (double)(fmfAdjInstant.getEpochSecond() - mergeTimeRefSeconds);
+      
+      final double shortTermTimeDecayingAdj= fmfWLOValuesDiff *
+	Math.exp(-timeOffsetSeconds * shortTermFMFTSOffsetSecondsInv);
+	
+      MeasurementCustom fmfAdjMc= adjFMFMcb.getAtThisInstant(fmfAdjInstant);
+
+      //slog.info(mmi+"timeOffsetSeconds="+timeOffsetSeconds);
+      //slog.info(mmi+"shortTermTimeDecayingAdj="+shortTermTimeDecayingAdj);
+      //slog.info(mmi+"fmfAdjMc.getValue() bef. merge="+fmfAdjMc.getValue());
+      
+      fmfAdjMc.setValue(fmfAdjMc.getValue() + shortTermTimeDecayingAdj);
+
+      //slog.info(mmi+"fmfAdjMc.getValue() aft. merge="+fmfAdjMc.getValue());
+
+      //if (timeOffsetSeconds > 3600) {
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);   
+      //}
+        
+    }
+
+    // --- Now merge (adjust) the NSTide prediction with the last adjusted FMF WL value. 
+
+    slog.info(mmi+"Done with merging the adjusted-corrected FMF data now merge the 40 days NSTide prediction data(OR the 40 days climatologic H2D2-SLFE results)");
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);   
+    
+    // --- 1.) Get the adjustment-correction for the model forecast (ECCC P. Matte's algo).
     // --- 2.) Get the adjustment-correction for the predictions (IWLS WLF-QC algo) and merge
     //         the result of the adjustment-correction for the model forecast done at the
     //         previous step with it.
     //final fmsContext fmsContextObj= this.getFmsContext(this);
-    this.locationAdjustedData= this.
-       fmsObj.update().getNewForecastData();
+    //this.locationAdjustedData= this.
+    //   fmsObj.update().getNewForecastData();
 
     //try {
     //  WLToolsIO.getOutputDataFormat();
@@ -520,7 +611,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"Writing all data in the optionalOutputDir -> "+optionalOutputDir);
 
-      fmsObj.writeAllDataInCSVFiles(this.fmsInputObj.getFirstInstantForWriting(), optionalOutputDir);
+      //fmsObj.writeAllDataInCSVFiles(this.fmsInputObj.getFirstInstantForWriting(), optionalOutputDir);
     }
 
     slog.info(mmi+"end");

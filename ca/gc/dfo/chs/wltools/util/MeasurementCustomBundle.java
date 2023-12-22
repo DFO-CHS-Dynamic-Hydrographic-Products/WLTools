@@ -74,7 +74,21 @@ final public class MeasurementCustomBundle {
     }
   }
 
- // ---
+  // ---
+  public int size() {
+
+    final String mmi= "size: ";
+
+    try {
+      this.instantsKeySet.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    return this.instantsKeySet.size();
+  }
+
+  // ---
   public Instant getLeastRecentInstantCopy() {
 
     final String mmi= "getLeastRecentInstantCopy: ";

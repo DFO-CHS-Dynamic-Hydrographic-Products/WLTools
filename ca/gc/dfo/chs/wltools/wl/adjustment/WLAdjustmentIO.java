@@ -115,6 +115,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   protected Map<String, List<MeasurementCustom>> nearestObsData= null;
   //protected Map<String, List<MeasurementCustom>> nearestModelData= null; // []= { null, null };
 
+  protected Instant mostRecentWLOInstant= null;
+  //protected Instant leastRecentWLOInstant= null;
+
+  protected MeasurementCustomBundle mcbWLO= null;  
+    
   protected List< Map<String, List<MeasurementCustom>> > nearestModelData=
     new ArrayList< Map<String, List<MeasurementCustom>> > (FullModelForecastType.values().length);
 
@@ -125,9 +130,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   //protected long obsDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
   protected long prdDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
   protected long fmfDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
-
-  protected FMS fmsObj= null;
-  protected FMSInput fmsInputObj= null;
+    
+  //protected FMS fmsObj= null;
+  //protected FMSInput fmsInputObj= null;
   //protected FMSFactory fmsFactoryObj= null;
 
   /**
@@ -158,13 +163,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     this.nearestObsData= null;
     //this.nearestModelData= new Map<String, List<MeasurementCustom>> [2];
-
+    
     this.modelForecastInputDataInfo= null;
     this.modelForecastInputDataFiles= null;
     //this.modelInputDataFiles= null;
 
-    this.fmsObj= null;
-    this.fmsInputObj= null;
+    //this.fmsObj= null;
+    //this.fmsInputObj= null;
   }
 
   /**
