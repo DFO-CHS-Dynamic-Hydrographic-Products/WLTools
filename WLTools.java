@@ -185,21 +185,22 @@ final public class WLTools extends WLToolsIO {
 
       mlog.info(mmi+"Writing this.locationAdjustedData results in folder -> "+WLToolsIO.getOutputDirectory());
 
-      //final String hfpLeadTimeStr= adjustedWLForecast.get(0).
+      final String hfpLeadTimeStr=
+        wlAdjustAtLocation.getFMFLeadTimeECCCOperStr() + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR;
       //  getEventDate().toString().replace();
 
       //mlog.info(mmi+"hfpLeadTimeStr="+hfpLeadTimeStr);
-      mlog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //mlog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
 
       // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
       //    output format.
       WLToolsIO.writeToOutputDir(adjustedWLForecast,
                                  IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()),
-                                 IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity() );
+                                 hfpLeadTimeStr + IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity() );
 
-      //mlog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
+      mlog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
     }
 
     //if (tool.equals(IWLTools.Box.SpineIPP.name())) {

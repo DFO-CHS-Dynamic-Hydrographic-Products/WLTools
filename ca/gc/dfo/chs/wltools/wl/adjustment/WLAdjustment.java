@@ -156,6 +156,20 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
    return this.adjInstance.getLocationIdentity();
   }
 
+  // ---
+  final public String getFMFLeadTimeECCCOperStr() {
+
+    final String mmi= "getFMFLeadTimeECCCOperStr: ";
+      
+    try {
+      this.adjInstance.getLocationIdentity();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+      
+    return this.adjInstance.getFMFLeadTimeECCCOperStr(); 
+  }
+
   /**
    * Comments please.
    */
