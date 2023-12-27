@@ -673,10 +673,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
       //}
-      
+
+      // --- Update the List<MeasurementCustom> object that holds the adjusted-merged combination of
+      //     the FMF WL data and the long term WL prediction data for the longTermInstant being
+      //     processed.
       this.locationAdjustedData.
 	add( new MeasurementCustom(longTermInstant.plusSeconds(0L), adjWLPredValue, adjWLPredUncertainty));
-      
     }
     
     slog.info(mmi+"Debug System.exit(0)");
