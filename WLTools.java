@@ -179,17 +179,24 @@ final public class WLTools extends WLToolsIO {
         throw new RuntimeException(mmi+npe);
       }
 
-      if (WLToolsIO.getOutputDataFormat() != IWLToolsIO.Format.CHS_JSON.name()) {
+      if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.CHS_JSON.name())) {
         mlog.error(mmi+"Invalid output data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
       }
 
-      mlog.info(mmi+"Writing this.locationAdjustedData results in -> "+WLToolsIO.getOutputDirectory());
+      mlog.info(mmi+"Writing this.locationAdjustedData results in folder -> "+WLToolsIO.getOutputDirectory());
+
+      //final String hfpLeadTimeStr= adjustedWLForecast.get(0).
+      //  getEventDate().toString().replace();
+
+      //mlog.info(mmi+"hfpLeadTimeStr="+hfpLeadTimeStr);
+      mlog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
 
       // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
       //    output format.
       WLToolsIO.writeToOutputDir(adjustedWLForecast,
                                  IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()),
-                                 IWLAdjustmentIO.ADJ_FORECAST_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity() );
+                                 IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity() );
 
       //mlog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);

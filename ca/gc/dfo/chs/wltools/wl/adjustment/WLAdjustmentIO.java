@@ -94,7 +94,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
   protected int minNumberOfObs= MIN_NUMBER_OF_OBS;
 
-  protected boolean haveWLOData= true;  
+  protected boolean haveWLOData= true;
+
+  protected Instant fmfLeadTimeInstant= null;
 
   protected IWLToolsIO.Format obsInputDataFormat= null;
   protected IWLToolsIO.Format predictInputDataFormat= null;
@@ -231,6 +233,40 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     return new MeasurementCustomBundle(locationMCWLO); //mcbWLO;
   }
 
+  // ---
+  final Instant getFMFLeadTimeInstantCopy() {
+
+    final String mmi= "getFMFLeadTimeInstantCopy: ";
+      
+    try {
+      this.fmfLeadTimeInstant.hashCode();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+    
+    return this.fmfLeadTimeInstant.plusSeconds(0L);
+  }
+
+  // ---
+  final String getFMFLeadTimeInstantECCCOperStr() {
+
+    final String mmi= "getFMFLeadTimeInstantECCCOperStr: ";
+      
+    try {
+      this.fmfLeadTimeInstant.hashCode();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    // --- return <YYYYMMDDhh>0000 string built from the
+    //     YYYY-MM-DDThh:mm:ssZ ISO8601 time string
+    final String [] YYYYMMDDhhStrArray= this.fmfLeadTimeInstant.
+	toString().split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[0].split(IWLToolsIO.ISO8601_DATETIME_SEP_CHAR);
+
+    return YYYYMMDDhhStrArray[0] + YYYYMMDDhhStrArray[1] + "0000";
+    
+  }
+
   /**
    * Comments please!
    */
@@ -308,24 +344,26 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //final String [] tmpInputFileNameSplit= new
     //  File(H2D2ASCIIWLFProbesDataFile).getName().split(H2D2_ASCII_FMT_FNAME_SPLITSTR)
 
-    final String zerothHourYYYYMMDDhh=
+    final String zeroThHourYYYYMMDDhh=
       inputFileName.split(H2D2_ASCII_FMT_FNAME_SPLITSTR)[0];
    //  File(H2D2ASCIIWLFProbesDataFile).getName().split(H2D2_ASCII_FMT_FNAME_SPLITSTR)[0];
 
-    slog.info(mmi+"zerothHourYYYYMMDDhh="+zerothHourYYYYMMDDhh);
+    slog.info(mmi+"zeroThHourYYYYMMDDhh="+zeroThHourYYYYMMDDhh);
 
-    final String zerothHourISO8601= zerothHourYYYYMMDDhh.substring(0,4)  + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR +
-                                    zerothHourYYYYMMDDhh.substring(4,6)  + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR +
-                                    zerothHourYYYYMMDDhh.substring(6,8)  + IWLToolsIO.ISO8601_DATETIME_SEP_CHAR +
-                                    zerothHourYYYYMMDDhh.substring(8,10) + ":00:00Z"; //.000Z";
+    final String zeroThHourISO8601= zeroThHourYYYYMMDDhh.substring(0,4)  + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR +
+                                    zeroThHourYYYYMMDDhh.substring(4,6)  + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR +
+                                    zeroThHourYYYYMMDDhh.substring(6,8)  + IWLToolsIO.ISO8601_DATETIME_SEP_CHAR +
+                                    zeroThHourYYYYMMDDhh.substring(8,10) + ":00:00Z"; //.000Z";
 
-    slog.info(mmi+"zerothHourISO8601="+zerothHourISO8601);
+    slog.info(mmi+"zeroThHourISO8601="+zeroThHourISO8601);
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    final Instant zeroThHourInstant= Instant.parse(zerothHourISO8601);
+    //final Instant zeroThHourInstant= Instant.parse(zerothHourISO8601);
+    // --- Define this.fmfLeadTimeInstant with the zerothHourISO8601 string.
+    this.fmfLeadTimeInstant= Instant.parse(zeroThHourISO8601);
 
-    //slog.info(mmi+"zerothHourInstant check="+zerothHourInstant.toString());
+    slog.info(mmi+"this.fmfLeadTimeInstant check="+this.fmfLeadTimeInstant.toString());
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -353,7 +391,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
          ofEpochSecond(Long.parseLong(inputDataLineSplit[timeStampColumnIndex]));
 
        // --- Discard analysis-nowcast WL data (i.e. for timestamps smaller than zerothHourInstant)
-       if (timeStampInstant.compareTo(zeroThHourInstant) < 0 ) {
+       //if (timeStampInstant.compareTo(zeroThHourInstant) < 0 ) {
+       
+       if (timeStampInstant.compareTo(this.fmfLeadTimeInstant) < 0 ) {   
          //slog.info(mmi+"Skipping nowcast data at timestamp: "+timeStampInstant.toString());
          //slog.info(mmi+"Debug System.exit(0)");
          //System.exit(0);
@@ -408,7 +448,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     //--- Get the Instant object that define the timestamp of the previous
     //    full model forecast data file to use for the (WLO-WLF) error stats.
-    final Instant prevFMFInstantInPast= zeroThHourInstant.
+    //final Instant prevFMFInstantInPast= zeroThHourInstant.
+    final Instant prevFMFInstantInPast=	this.fmfLeadTimeInstant.
       plusSeconds(-nbHoursToGoInPast*ITimeMachine.SECONDS_PER_HOUR);
 
     slog.info(mmi+"prevFMFInstantInPast="+prevFMFInstantInPast.toString());
@@ -426,7 +467,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //--- Build the complete file path for the previous full model forecast ASCII
     //    input data file that could be used later for (WL0-WLF) error stats
     final String previousFMFASCIIDataFilePath= inputFileNameFileObj.getParent() +
-      File.separator + inputFileName.replace(zerothHourYYYYMMDDhh,prevFMFInputFNamePrfx);
+      File.separator + inputFileName.replace(zeroThHourYYYYMMDDhh,prevFMFInputFNamePrfx);
 
     slog.info(mmi+"Will return previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
     slog.info(mmi+"end");

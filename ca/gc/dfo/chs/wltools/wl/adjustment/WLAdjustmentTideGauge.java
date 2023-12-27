@@ -489,6 +489,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
   // --- Comments please!
   final public List<MeasurementCustom> getAdjustment(final String optionalOutputDir) {
+  //final public MeasurementCustomBundle getAdjustment(final String optionalOutputDir) { 
 
     final String mmi= "getAdjustment: ";
 
@@ -587,10 +588,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"Done with merging the adjusted-corrected FMF data now merge the 40 days NSTide prediction data(OR the 40 days climatologic H2D2-SLFE results)");
 
-    //final Instant leastRecentAdjFMFInstant= adjFMFMcbInstantsSet.first();
+    final Instant leastRecentAdjFMFInstant= adjFMFMcbInstantsSet.first();
     final Instant mostRecentAdjFMFInstant= adjFMFMcbInstantsSet.last();
 
-    //slog.info(mmi+"leastRecentAdjFMFInstant="+leastRecentAdjFMFInstant.toString());
+    slog.info(mmi+"leastRecentAdjFMFInstant="+leastRecentAdjFMFInstant.toString());
     slog.info(mmi+"mostRecentAdjFMFInstant="+mostRecentAdjFMFInstant.toString());
  
     final MeasurementCustom lastAdjFMFWLMc= 
@@ -680,9 +681,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       this.locationAdjustedData.
 	add( new MeasurementCustom(longTermInstant.plusSeconds(0L), adjWLPredValue, adjWLPredUncertainty));
     }
+
+    //slog.info(mmi+"leastRecentAdjFMFInstant="+leastRecentAdjFMFInstant.toString());
     
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);   
+    //WLToolsIO.writeToOutputDir(this.locationAdjustedData, IWLToolsIO.Format.CHS_JSON,
+    //			       IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + this.location.getIdentity());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);   
     
     // --- 1.) Get the adjustment-correction for the model forecast (ECCC P. Matte's algo).
     // --- 2.) Get the adjustment-correction for the predictions (IWLS WLF-QC algo) and merge
@@ -705,7 +710,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //WLToolsIO.writeToOutputDir(this.locationAdjustedData,
     //                           IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()), this.getLocationIdentity());
 
-    // --- Write all data in CSV format for debugging purposes only (normally).
+    // --- Write all data in JSON format for debugging purposes only (normally).
     if (optionalOutputDir != null) {
 
       slog.info(mmi+"Writing all data in the optionalOutputDir -> "+optionalOutputDir);
