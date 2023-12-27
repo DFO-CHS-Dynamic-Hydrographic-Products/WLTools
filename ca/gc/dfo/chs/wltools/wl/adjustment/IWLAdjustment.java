@@ -33,8 +33,13 @@ public interface IWLAdjustment extends ITimeMachine {
   long SYNOP_RUNS_TIME_OFFSET_HOUR= 6;
   long SHORT_TERM_FORECAST_TS_OFFSET_HOURS= SYNOP_RUNS_TIME_OFFSET_HOUR;
 
+  // --- Used to merge the adj. FMF WL data with the last obs.
   long SHORT_TERM_FORECAST_TS_OFFSET_SECONDS=
        SHORT_TERM_FORECAST_TS_OFFSET_HOURS * SECONDS_PER_HOUR;
+
+  // --- Used to merge the WL pred. data with the last adj. FMF WL data.
+  //     144*SECONDS_PER_HOUR is 6 days in seconds.
+  long LONG_TERM_FORECAST_TS_OFFSET_SECONDS= 144*SECONDS_PER_HOUR;
 
   String DEFAULT_MODEL_NAME= "MODEL_NAME_NOT_DEFINED";
 

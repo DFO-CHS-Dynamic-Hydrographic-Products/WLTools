@@ -44,6 +44,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 // ---
+import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.fms.FMS;
@@ -557,17 +558,20 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     
     for (final Instant fmfAdjInstant: adjFMFMcbInstantsSet) {
 
-      final double timeOffsetSeconds= (double)(fmfAdjInstant.getEpochSecond() - mergeTimeRefSeconds);
+      final double shortTermTimeOffsetSeconds=
+	(double)(fmfAdjInstant.getEpochSecond() - mergeTimeRefSeconds);
       
       final double shortTermTimeDecayingAdj= fmfWLOValuesDiff *
-	Math.exp(-timeOffsetSeconds * shortTermFMFTSOffsetSecondsInv);
+	Math.exp(-shortTermTimeOffsetSeconds * shortTermFMFTSOffsetSecondsInv);
 	
       MeasurementCustom fmfAdjMc= adjFMFMcb.getAtThisInstant(fmfAdjInstant);
 
       //slog.info(mmi+"timeOffsetSeconds="+timeOffsetSeconds);
       //slog.info(mmi+"shortTermTimeDecayingAdj="+shortTermTimeDecayingAdj);
       //slog.info(mmi+"fmfAdjMc.getValue() bef. merge="+fmfAdjMc.getValue());
-      
+
+      // --- NOTE: We directly adjust-merge the WL value in-situ in the MeasurementCustom
+      //	   at the fmfAdjInstant in the this.locationAdjustedData List.
       fmfAdjMc.setValue(fmfAdjMc.getValue() + shortTermTimeDecayingAdj);
 
       //slog.info(mmi+"fmfAdjMc.getValue() aft. merge="+fmfAdjMc.getValue());
@@ -582,6 +586,99 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // --- Now merge (adjust) the NSTide prediction with the last adjusted FMF WL value. 
 
     slog.info(mmi+"Done with merging the adjusted-corrected FMF data now merge the 40 days NSTide prediction data(OR the 40 days climatologic H2D2-SLFE results)");
+
+    //final Instant leastRecentAdjFMFInstant= adjFMFMcbInstantsSet.first();
+    final Instant mostRecentAdjFMFInstant= adjFMFMcbInstantsSet.last();
+
+    //slog.info(mmi+"leastRecentAdjFMFInstant="+leastRecentAdjFMFInstant.toString());
+    slog.info(mmi+"mostRecentAdjFMFInstant="+mostRecentAdjFMFInstant.toString());
+ 
+    final MeasurementCustom lastAdjFMFWLMc= 
+      adjFMFMcb.getAtThisInstant(mostRecentAdjFMFInstant);
+    
+    final double lastAdjFMFWLValue= lastAdjFMFWLMc.getValue();
+    final double lastAdjFMFWLUncertainty= lastAdjFMFWLMc.getUncertainty();
+    
+    slog.info(mmi+"lastAdjFMFWLValue="+lastAdjFMFWLValue);
+    slog.info(mmi+"lastAdjFMFWLUncertainty="+lastAdjFMFWLUncertainty);
+
+    // --- Wrap the WL prediction data in a MeasurementCustomBundle object
+    //     to ensure to have time synchronization with the FMF WL adj. data
+    final MeasurementCustomBundle wlPredMCB= new MeasurementCustomBundle(this.locationPredData);
+
+    final MeasurementCustom wlPredMcForDiff= wlPredMCB.getAtThisInstant(mostRecentAdjFMFInstant);
+
+    try {
+      wlPredMcForDiff.getValue();
+    }  catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"wlPredMc cannot be null here !!");
+    }
+
+    // --- Get the difference between the last FMF WL adjusted value and
+    //     the corresponding time synchronized WL prediction value.
+    final double lastFMFVsPredDiff= lastAdjFMFWLValue - wlPredMcForDiff.getValue();
+
+    slog.info(mmi+"lastFMFVsPredDiff="+lastFMFVsPredDiff);
+
+    final long longTermMergeSecondsRef= mostRecentAdjFMFInstant.getEpochSecond();
+
+    // --- Get copies of all the Instant object of the WL prediction data starting
+    //     at the last (most recent) Instant object of the adj. FMF WL data. 
+    final SortedSet<Instant> predMcbInstantsTailSet=
+      wlPredMCB.getInstantsKeySetCopy().tailSet(mostRecentAdjFMFInstant);
+
+    // --- long term decaying time factor for adjusting-merging WL values
+    final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
+
+    // --- long term decaying time factor for adjusting-merging WL values uncertainties
+    //     It is the longTermFMFOffsetSecondsInvWLV divided by 5 so it decay 5 times
+    //     more slowly than for the WL values themselves.
+    final double longTermFMFOffsetSecondsInvWLU= 0.2 * longTermFMFOffsetSecondsInvWLV;
+
+    //final MeasurementCustom checkLastLADMC= this.locationAdjustedData.get(this.locationAdjustedData.size()-1);
+    //slog.info(mmi+"checkLastLADMC.getEventDate()="+checkLastLADMC.getEventDate().toString());							       
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+    
+    // --- Loop on the WL prediction Instant objects starting at the last
+    //     adj. FMF WL Instant object. 
+    for (final Instant longTermInstant: predMcbInstantsTailSet) {
+	
+      //slog.info(mmi+"longTermInstant="+longTermInstant.toString());
+	
+      final double longTermOffsetSeconds=
+	(double)(longTermInstant.getEpochSecond() - longTermMergeSecondsRef); 
+      	
+      final double longTermTimeDecayingFactWLV=
+        Math.exp(-longTermOffsetSeconds * longTermFMFOffsetSecondsInvWLV);
+
+      final double adjWLPredValue=
+	wlPredMCB.getAtThisInstant(longTermInstant).getValue() + longTermTimeDecayingFactWLV * lastFMFVsPredDiff;
+
+      final double longTermTimeDecayingFactWLU=
+        Math.exp(-longTermOffsetSeconds * longTermFMFOffsetSecondsInvWLU);
+      
+      double adjWLPredUncertainty= lastAdjFMFWLUncertainty +
+	(1.0 - longTermTimeDecayingFactWLU) * IWL.MAXIMUM_UNCERTAINTY_METERS; 
+
+      // --- Limit the max. value of adjWLPredUncertainty at IWL.MAXIMUM_UNCERTAINTY_METERS
+      adjWLPredUncertainty=
+        (adjWLPredUncertainty > IWL.MAXIMUM_UNCERTAINTY_METERS) ? IWL.MAXIMUM_UNCERTAINTY_METERS: adjWLPredUncertainty;
+      
+      //slog.info(mmi+"longTermInstant="+longTermInstant.toString());
+      //slog.info(mmi+"adjWLPredValue="+adjWLPredValue);
+      //slog.info(mmi+"adjWLPredUncertainty="+adjWLPredUncertainty+"\n");
+
+      //if (longTermOffsetSeconds > 900) {
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+      //}
+      
+      this.locationAdjustedData.
+	add( new MeasurementCustom(longTermInstant.plusSeconds(0L), adjWLPredValue, adjWLPredUncertainty));
+      
+    }
+    
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);   
     
