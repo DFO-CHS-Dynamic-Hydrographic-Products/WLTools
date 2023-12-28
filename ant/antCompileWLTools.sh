@@ -3,10 +3,14 @@
 # --- Modify according to the code location context.
 javaCodeBaseMainDir=../
 javaClassesMainDestDir=${javaCodeBaseMainDir}/lib
+javaMainClassDestDir=${javaCodeBaseMainDir}/bin
+
+# --- Create javaMainClassDestDir if not already existing.
+mkdir -p ${javaMainClassDestDir}
 
 # --- force recompilation of the main program source file
-#     (Still need to implement dependencies for ant)
-rm -f ${javaCodeBaseMainDir}/bin/*.class
+#     (TODO: Still need to implement dependencies for ant)
+rm -f ${javaCodeBaseMainDir}/*.class
 
 export CLASSPATH=${javaClassesMainDestDir}:${javaCodeBaseMainDir}:${CLASSPATH}
 
