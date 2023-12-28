@@ -474,7 +474,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     } // --- this.forecastAdjType != null
 
-    //slog.info(mmi+"Done with reading the WL input data to adjust, now doing the setup for the IWLS FMS legacy wl adjustment algo");
+    // --- Legacy FMS will eventually be completely decommissioned.
+    //     Keeping its usage here just in case we would need to
+    //     re-activate it (very unlikely).
     // --- Instantiate the FMSInput object using the argsMap and this object.
     //this.fmsInputObj= new FMSInput(this, this.referenceTime);
     // --- and instantiate the FMS object itself with the FMSInput object
@@ -682,39 +684,23 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 	add( new MeasurementCustom(longTermInstant.plusSeconds(0L), adjWLPredValue, adjWLPredUncertainty));
     }
 
-    //slog.info(mmi+"leastRecentAdjFMFInstant="+leastRecentAdjFMFInstant.toString());
+    // --- Remove the small (4-5cm max) WL oscillations that can possibly be produced by the adjustment method(s)
+    this.locationAdjustedData= WLMeasurement.
+      removeHFWLOscillations(MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS, this.locationAdjustedData);
     
-    //WLToolsIO.writeToOutputDir(this.locationAdjustedData, IWLToolsIO.Format.CHS_JSON,
-    //			       IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + this.location.getIdentity());
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);   
-    
-    // --- 1.) Get the adjustment-correction for the model forecast (ECCC P. Matte's algo).
-    // --- 2.) Get the adjustment-correction for the predictions (IWLS WLF-QC algo) and merge
-    //         the result of the adjustment-correction for the model forecast done at the
-    //         previous step with it.
+    // --- Legacy FMS will eventually be completely decommissioned.
+    //     Keeping its usage here just in case we would need to
+    //     re-activate it (very unlikely).
     //final fmsContext fmsContextObj= this.getFmsContext(this);
     //this.locationAdjustedData= this.
     //   fmsObj.update().getNewForecastData();
 
-    //try {
-    //  WLToolsIO.getOutputDataFormat();
-    //} catch (NullPointerException npe) {
-    //  throw new RuntimeException(mmi+npe);
-    //}
-    //if (WLToolsIO.getOutputDataFormat() != IWLToolsIO.Format.CHS_JSON.name()) {
-    //  slog.error(mmi+"Invalid output data format -> "+WLToolsIO.getOutputDataFormat());
-    //}
-    //slog.info(mmi+"Writing this.locationAdjustedData results in -> "+WLToolsIO.getOutputDirectory());
-    // --- Write the WL forecast adjustment in the output directory (member of the WLToolsIO class)
-    //WLToolsIO.writeToOutputDir(this.locationAdjustedData,
-    //                           IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()), this.getLocationIdentity());
-
     // --- Write all data in JSON format for debugging purposes only (normally).
     if (optionalOutputDir != null) {
 
-      slog.info(mmi+"Writing all data in the optionalOutputDir -> "+optionalOutputDir);
+      slog.info(mmi+"Writing non-adjusted FMF data in the optionalOutputDir -> "+optionalOutputDir);
 
+      
       //fmsObj.writeAllDataInCSVFiles(this.fmsInputObj.getFirstInstantForWriting(), optionalOutputDir);
     }
 
