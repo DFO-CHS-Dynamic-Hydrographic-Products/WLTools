@@ -170,7 +170,7 @@ final public class WLTools extends WLToolsIO {
       // --- Check if we need to write all WL adj. data (input and results) on disk
       final String allAdjDataOutDir= writeAllData ? WLToolsIO.getOutputDirectory() : null;
 
-      final List<MeasurementCustom> adjustedWLForecast=
+      final List<MeasurementCustom> adjustedHWLPS=
         wlAdjustAtLocation.getAdjustment(allAdjDataOutDir); //.writeResult(finak string outFile); //
 
       try {
@@ -193,14 +193,19 @@ final public class WLTools extends WLToolsIO {
       //mlog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
 
+      final String adjustedHWLPSOutFName= hfpLeadTimeStr +
+        IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity();
+
+      mlog.info(mmi+"adjustedHWLPSOutFName="+adjustedHWLPSOutFName);
+
       // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
       //    output format.
-      WLToolsIO.writeToOutputDir(adjustedWLForecast,
+      WLToolsIO.writeToOutputDir(adjustedHWLPS,
                                  IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()),
-                                 hfpLeadTimeStr + IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity() );
+                                 adjustedHWLPSOutFName, null );
 
-      mlog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //mlog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
     }
 
     //if (tool.equals(IWLTools.Box.SpineIPP.name())) {

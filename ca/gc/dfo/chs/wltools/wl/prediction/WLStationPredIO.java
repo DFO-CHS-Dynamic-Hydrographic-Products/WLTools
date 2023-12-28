@@ -98,8 +98,8 @@ abstract public class WLStationPredIO implements IWL, IWLStationPredIO {
     //}
 
     WLToolsIO.writeToOutputDir(this.predictionData,
-                               IWLToolsIO.Format.CHS_JSON,locationId ); //, this.outputDirectory);
-                               //WLToolsIO.getOutputDataFormat(), locationId );
+                               IWLToolsIO.Format.CHS_JSON,locationId, null);
+
     slog.info(mmi+"end");
 
     //slog.info(mmi+"debug System.exit(0)");

@@ -698,10 +698,19 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // --- Write all data in JSON format for debugging purposes only (normally).
     if (optionalOutputDir != null) {
 
-      slog.info(mmi+"Writing non-adjusted FMF data in the optionalOutputDir -> "+optionalOutputDir);
+      slog.info(mmi+"Writing non-adjusted FMF WL data in the optionalOutputDir -> "+optionalOutputDir);
 
+      final List<MeasurementCustom> nonAdjFMFWLData= this.nearestModelData.
+	get(IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()).get(this.location.getIdentity());
       
-      //fmsObj.writeAllDataInCSVFiles(this.fmsInputObj.getFirstInstantForWriting(), optionalOutputDir);
+      final String nonAdjFMFWLDataFName= this.getFMFLeadTimeECCCOperStr() +
+	IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR + IWLAdjustmentIO.NONADJ_FMF_ATTG_FNAME_PRFX + this.location.getIdentity();
+
+      slog.info(mmi+"nonAdjFMFWLDataFName="+nonAdjFMFWLDataFName);
+      
+      WLToolsIO.writeToOutputDir( nonAdjFMFWLData,
+				  IWLToolsIO.Format.CHS_JSON,
+				  nonAdjFMFWLDataFName, optionalOutputDir);
     }
 
     slog.info(mmi+"end");

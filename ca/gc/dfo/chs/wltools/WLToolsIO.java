@@ -131,7 +131,8 @@ public class WLToolsIO implements IWLToolsIO {
 
   // ---
   final public static void writeToOutputDir(final List<MeasurementCustom> wlDataToWrite,
-                                            final IWLToolsIO.Format outputFormat, final String locationId) { //, final String writeToOutputDirArg ) {
+					    final IWLToolsIO.Format outputFormat,
+					    final String locationId, final String writeToOutputDirArg ) { //, final String writeToOutputDirArg ) {
 
     final String mmi= "writeToOutputDir: ";
 
@@ -154,9 +155,13 @@ public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+npe);
     }
 
+    // --- Use the writeToOutputDirArg if it is not null, otherwise use the default
+    //     statically defined outputDirectory
+    final String outputDirToUse= (writeToOutputDirArg != null) ? writeToOutputDirArg: outputDirectory;
+
     if (outputFormat == IWLToolsIO.Format.CHS_JSON) {
 
-       writeCHSJsonFormat(wlDataToWrite, locationId);
+      writeCHSJsonFormat(wlDataToWrite, locationId, outputDirToUse);
 
     } else {
        throw new RuntimeException(mmi+"IWLTools.Format output type -> "+outputFormat.name()+" not implemented yet !!");
@@ -164,8 +169,8 @@ public class WLToolsIO implements IWLToolsIO {
   }
 
   // ---
-  final public static void
-    writeCHSJsonFormat(final List<MeasurementCustom> wlDataToWrite, final String locationId) {
+  final public static void writeCHSJsonFormat(final List<MeasurementCustom> wlDataToWrite,
+					      final String locationId, final String outputDirectoryArg) {
 
     final String mmi= "writeCHSJsonFormat: ";
 
@@ -184,7 +189,7 @@ public class WLToolsIO implements IWLToolsIO {
     }
 
     try {
-      outputDirectory.length();
+      outputDirectoryArg.length();
     } catch (NullPointerException npe) {
       throw new RuntimeException(mmi+npe);
     }
@@ -192,7 +197,7 @@ public class WLToolsIO implements IWLToolsIO {
     final String jsonOutFileNamePrfx= locationId.
       replace(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR, IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR);
 
-    final String jsonOutputFile= outputDirectory +
+    final String jsonOutputFile= outputDirectoryArg +
       File.separator + jsonOutFileNamePrfx + IWLToolsIO.JSON_FEXT ;
 
     slog.info(mmi+"jsonOutputFile="+jsonOutputFile);
