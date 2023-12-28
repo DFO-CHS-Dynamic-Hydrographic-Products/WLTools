@@ -7,11 +7,22 @@ package ca.gc.dfo.chs.wltools.wl.prediction;
  * Modified on 2023-07-21, Gilles Mercier
  */
 
+import java.io.File;
+import java.lang.Math;
+import java.util.List;
+import org.slf4j.Logger;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.ArrayList;
+import org.slf4j.LoggerFactory;
+
 //---
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 //import ca.gc.dfo.chs.wltools.util.ITrigonometry;
 //import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
@@ -26,35 +37,15 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
 import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFactory;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction.NonStationary1DTidalPredFactory;
 
-//import ca.gc.dfo.iwls.fmservice.modeling.ForecastingContext;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITides;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.ITidesIO;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.TidalPredictions1DFactory;
-//import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1D;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.ASCIIFileIO;
-//import ca.gc.dfo.iwls.fmservice.modeling.util.SecondsSinceEpoch;
-//import ca.gc.dfo.iwls.timeseries.MeasurementCustom;
-
-import java.lang.Math;
-import java.util.List;
-import org.slf4j.Logger;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.ArrayList;
-import org.slf4j.LoggerFactory;
-
 //import javax.validation.constraints.Min;
 //import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Min;
-//---
-//---
-//import ca.gc.dfo.iwls.station.Station;
-//---
 
 /**
  * Class WLTidalPredictionsFactory acts as abstract base class for water levels tidal predictions:
  */
-abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
+abstract public class WLStationPredFactory
+  extends WLStationPredIO implements IWLStationPred { //, ITidal, ITidalIO, IStage, INonStationaryIO {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory: ";//"ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory";
@@ -70,7 +61,7 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
    * so we have to apply a time zone offset to the results in order to have the
    * tidal predictions defined in UTC(a.k.a. ZULU).
    */
-  protected long unfortunateUTCOffsetSeconds = 0L;
+  protected long unfortunateUTCOffsetSeconds= 0L;
 
   /**
    *  Simple climatology (yearly average normally) prediction object.
@@ -97,10 +88,12 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
    */
   //protected NonStationary1DTidalPredFactory nonStationaryTidalPred= null;
 
+  // ---  TODO: change stationId to locationId since we can also produce tidal
+  //            predicitions at locations that are not TG per se.
   /**
-   * Keep the station ID to avoid WL tidal predictions data mix-up between two WL stations data:
+   *  comments please!
    */
-  private String stationId= null;
+  protected String stationId= null;
 
   protected long startTimeSeconds= IWLStationPred.TIME_NOT_DEFINED;
   protected long endTimeSeconds= IWLStationPred.TIME_NOT_DEFINED;
@@ -111,12 +104,24 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
 
   protected boolean predictionReady= false;
 
+  //protected List<MeasurementCustom> predictionData= null;
+  //protected String outputDirectory= false;
+
   /**
    * Default constructor.
    */
   public WLStationPredFactory() {
+
     this.predictionReady= false;
+    this.predictionData= null;
     //this.unfortunateUTCOffsetSeconds = 0L;
+  }
+
+  /**
+   * comments please!
+   */
+  public List<MeasurementCustom> getPredictionData() {
+    return this.predictionData; //= super.getAllPredictions();
   }
 
    // --- TOOO: Update the javadoc comments.
@@ -132,24 +137,28 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
    * @param latitudeDecimalDegrees: The latitude(in decimal degrees) of the WL station (null if the station lat is defined in the tcInputFile)
    */
   //public WLStationPredFactory(/*@NotNull*/final String stationId,
-  protected WLStationPredFactory configure(/*@NotNull*/final String stationId,
-                                           /*@NotNull*/final Long startTimeSeconds,
-                                           /*@NotNull*/final Long endTimeSeconds,
-                                           final Long timeIncrSeconds,
-                                           final ITidal.Method method,
-                                           final String stationTcInputFile,
-                                           final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
-                                           final IStage.Type stageType,
-                                           final String stageInputDataFile,
-                                           final IStageIO.FileFormat stageInputDataFileFormat) {
-
+  protected WLStationPredFactory configureTidalPred(/*@NotNull*/final String stationId,
+                                                    /*@NotNull*/final Long startTimeSeconds,
+                                                    /*@NotNull*/final Long endTimeSeconds,
+                                                    final Long timeIncrSeconds,
+                                                    final ITidal.Method method,
+                                                    final String stationTcInputFile,
+                                                    final String tidalConstsInputInfo,
+                                                    //final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat,
+                                                    final IStage.Type stageType,
+                                                    final String stageInputDataFile,
+                                                    final IStageIO.FileFormat stageInputDataFileFormat) {
     final String mmi="configure: ";
 
-    slog.info(mmi+"start, stationId="+stationId);
+    slog.info(mmi+"start, stationId="+stationId+", tidalConstsInputInfo="+tidalConstsInputInfo);
 
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    //--- To avoid hard-to-debug SNAFU mix-up between WL stations data:
     this.stationId= stationId;
 
-    String stationTcInputFileLocal= stationTcInputFile; // Could be null at this point.
+    String stationTcInputFileLocal= stationTcInputFile; // --- Could be null at this point.
 
     // --- Validate the start and end times
     if (endTimeSeconds <= startTimeSeconds) {
@@ -183,88 +192,98 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
     }
 
     //--- To avoid SNAFU mix-up between WL stations data:
-    this.stationId = stationId;
+    //this.stationId= stationId;
+
+    final String [] tidalConstsInputInfoStrSplit=
+       tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+    if (tidalConstsInputInfoStrSplit.length != 3) {
+      throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 3 !!");
+    }
+
+    final String tidalConstsInfoInputFileFormat= tidalConstsInputInfoStrSplit[0];
+
+    slog.info(mmi+"tidalConstsInfoInputFileFormat="+tidalConstsInfoInputFileFormat);
+
+    final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat=
+      ITidalIO.WLConstituentsInputFileFormat.valueOf(tidalConstsInfoInputFileFormat);
 
     // ---
     if ( method == ITidal.Method.STATIONARY_FOREMAN || method == ITidal.Method.NON_STATIONARY_FOREMAN) {
 
-       if ( method == ITidal.Method.STATIONARY_FOREMAN ) {
+      if ( method == ITidal.Method.STATIONARY_FOREMAN ) {
 
-          if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.STATIONARY_TCF) {
+        if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.STATIONARY_TCF) {
+          slog.error(mmi+"STATIONARY_FOREMAN prediction method -> Must have STATONARY_TCF for the tc input file format!");
+          throw new RuntimeException(mmi);
+        }
 
-              slog.error(mmi+"STATIONARY_FOREMAN prediction method -> Must have STATONARY_TCF for the tc input file format!");
-              throw new RuntimeException(mmi);
-          }
+        this.tidalPred1D= new Stationary1DTidalPredFactory();
+      }
 
-          this.tidalPred1D= new Stationary1DTidalPredFactory();
-       }
+      // ---
+      if ( method == ITidal.Method.NON_STATIONARY_FOREMAN) {
 
-       if ( method == ITidal.Method.NON_STATIONARY_FOREMAN) {
+        //final ITidalIO.WLConstituentsInputFileFormat tcInputFileFormat=
+        //if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON) {
+        //  slog.error(mmi+"NON_STATIONARY_JSON prediction method -> Must have NON_STATONARY_JSON for the tc input file format!");
+        //  throw new RuntimeException(mmi);
+        //}
 
-          if ( tcInputFileFormat != ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON) {
+        if (stationTcInputFileLocal == null) {
 
-              slog.error(mmi+"NON_STATIONARY_JSON prediction method -> Must have NON_STATONARY_JSON for the tc input file format!");
-              throw new RuntimeException(mmi);
-          }
+          // --- Also need to extract the info about the tidal const type
+          //     and the model (like OneDSTLT or H2D2SLFE from which they
+          //     have been produced with the NS_TIDE analysis
+          final String tidalConstsTypeId= tidalConstsInputInfoStrSplit[1];
+          final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
 
-          if (stationTcInputFileLocal == null) {
+          // --- Build the path of the non-stationaty tidel consts. file inside the
+          //     inner cfg DB folders structure (comes with the WLTools package).
+          stationTcInputFileLocal= WLToolsIO.
+            getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, this.stationId);
+        }
 
-            final String [] stationIdSplit=
-              this.stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
+        slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
 
-            if (stationIdSplit.length != 3) {
-              throw new RuntimeException(mmi+"ERROR: stationIdSplit.length != 3 !!");
-            }
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
 
-            final String regionIdInfo= stationIdSplit[0];
-            final String subRegionIdInfo= stationIdSplit[1];
-            final String stationIdSpec= stationIdSplit[2];
+        this.tidalPred1D= new
+           NonStationary1DTidalPredFactory(this.stationId, stageType,
+                                           this.startTimeSeconds, this.endTimeSeconds,
+                                           this.timeIncrSeconds, stageInputDataFile, stageInputDataFileFormat);
 
-            // --- Build the path of the non-stationaty tidel consts. file inside the
-            //     inner cfg DB.
-            stationTcInputFileLocal= WLToolsIO.getMainCfgDir()+
-              "/tidal/nonStationary/"+regionIdInfo+"/dischargeClusters/"+subRegionIdInfo+"/dischargeClimatoTFHA/"+
-              stationIdSpec+INonStationaryIO.STATION_TIDAL_CONSTS_FNAME_SUFFIX+IStageIO.STATION_INFO_JSON_FNAME_EXT;
-          }
+        slog.info(mmi+"done with new NonStationary1DTidalPredFactory()");
+        //slog.info(mmi+"debug System.exit(0)");
+        //System.exit(0);
+      }
 
-          //slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
-          //slog.info(mmi+"Debug System.exit(0)");
-          //System.exit(0);
+      slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
 
-          this.tidalPred1D= new
-             NonStationary1DTidalPredFactory(this.stationId, stageType,
-                                             this.startTimeSeconds, this.endTimeSeconds, this.timeIncrSeconds,
-                                             stageInputDataFile, stageInputDataFileFormat);
+      //--- Retreive WL station tidal constituents from a local disk file.
+      //    It MUST be used before the following this.1DTidalPred.setAstroInfos
+      //    method call
+      this.getStationConstituentsData(stationId, stationTcInputFileLocal, tcInputFileFormat);
 
-          slog.info(mmi+"done with new NonStationary1DTidalPredFactory()");
-          //slog.info(mmi+"debug System.exit(0)");
-          //System.exit(0);
-       }
+      slog.info(mmi+"done with this.getStationConstituentsData");
+      //this.log.info("WLStationPredFactory constructor: Debug System.exit(0)");
+      //System.exit(0);
 
-       slog.info(mmi+"stationTcInputFileLocal="+stationTcInputFileLocal);
-
-       //--- Retreive WL station tidal constituents from a local disk file.
-       //    It MUST be used before the following this.1DTidalPred.setAstroInfos
-       //    method call
-       this.getStationConstituentsData(stationId, stationTcInputFileLocal, tcInputFileFormat);
-
-       slog.info(mmi+"done with this.getStationConstituentsData");
-       //this.log.info("WLStationPredFactory constructor: Debug System.exit(0)");
-       //System.exit(0);
-
-       //--- MUST convert decimal degrees latitude to radians here:
-       ///   MUST be used after this.getStationConstituentsData method call.
-       this.tidalPred1D.setAstroInfos(method,
-                                      Math.toRadians(this.latitudeInDecDegrees),
-                                      startTimeSeconds,
-                                      this.tidalPred1D.getTcNames());
-       //this.predictionReady= true;
+      //--- MUST convert decimal degrees latitude to radians here:
+      ///   MUST be used after this.getStationConstituentsData method call.
+      this.tidalPred1D.setAstroInfos(method,
+                                     Math.toRadians(this.latitudeInDecDegrees),
+                                     startTimeSeconds,
+                                     this.tidalPred1D.getTcNames());
+      //this.predictionReady= true;
 
     } // --- ITidal method prediction typw
 
     this.predictionReady= true;
 
     slog.info(mmi+"end");
+
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
@@ -371,9 +390,27 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
   /**
     * comments please
     */
-  public List<MeasurementCustom> getAllPredictions() { //getTidalPredictionsForStation() {
+  public IWLStationPred getAllPredictions() {
 
-    final String mmi="getAllPredictions: ";
+    final String mmi= "getAllPredictions: ";
+
+    if (this.tidalPred1D != null) {
+      this.getAllTidalPredictions();
+
+    } else {
+       throw new RuntimeException(mmi+"Sorry! Only the tidal predictions type is available for now!");
+    }
+
+    return this;
+  }
+
+  /**
+    * comments please
+    */
+  //public List<MeasurementCustom> getAllPredictions() { //getTidalPredictionsForStation() {
+  public IWLStationPred getAllTidalPredictions() {
+
+    final String mmi="getAllTidalPredictions: ";
 
     slog.info(mmi+"start, getting tidal predictions for station -> "+this.stationId);
 
@@ -381,7 +418,8 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
       throw new RuntimeException(mmi+"not ready for predictions calculations!");
     }
 
-    ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
+    //ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
+    this.predictionData= new ArrayList<MeasurementCustom>();
 
     // --- Check nbTimeStamps value here >> Must be at least 1
     //     and this.endTimeSeconds - this.startTimeSeconds > this.timeIncrSeconds
@@ -411,19 +449,21 @@ abstract public class WLStationPredFactory implements IWL, IWLStationPred { //, 
       //final MeasurementCustom tmpMC= new
       //  MeasurementCustom( Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0 );
 
-      retList.add(new MeasurementCustom(Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0));
+      //retList.
+      this.predictionData.add(new MeasurementCustom(Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0));
 
-      if (tsIter<=47){
-        slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
+      //if (tsIter<=47){
+      //  slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
       //  slog.info(mmi+"debug System.exit(0)");
       //  System.exit(0);
-      }
+      //}
     }
 
     slog.info(mmi+"done with tidal predictions for station -> "+this.stationId);
-    slog.info(mmi+"getTidalPredictions: end");
+    slog.info(mmi+"end");
 
-    return retList;
+     return this;
+    //return retList;
   }
 
   /**

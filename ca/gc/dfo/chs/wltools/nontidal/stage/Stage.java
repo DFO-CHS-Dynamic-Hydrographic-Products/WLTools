@@ -35,6 +35,8 @@ import java.util.GregorianCalendar;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.IWLToolsIO;
+import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 
@@ -61,7 +63,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
   /**
    * log utility.
    */
-   private final static Logger slog = LoggerFactory.getLogger(whoAmI);
+   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   /**
    * List of Map object(s) of StageCoefficient object(s).
@@ -118,8 +120,8 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
 
        //--- Get the path of the stage input discharge data from the package DB using the stationId String
        //    and the static WLToolsIO.mainCfgDir
-       final String [] stationIdStrSplit=
-         stationId.split(IStageIO.STATION_ID_SPLIT_CHAR);
+       final String [] stationIdStrSplit= 
+         stationId.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
        if (stationIdStrSplit.length != 3) {
          throw new RuntimeException(mmi+"ERROR: stationIdStrSplit.length != 3 !!");
@@ -129,7 +131,7 @@ final public class Stage extends StageIO implements IStage {//, IStageIO {
        final String stationDischargeClusterName= stationIdStrSplit[1];
 
        final String stationDischargeJsonFileName= stationIdStrSplit[2] +
-         IStageIO.STATION_DISCHARGE_INPUT_FNAME_SUFFIX + IStageIO.STATION_INFO_JSON_FNAME_EXT;
+         IStageIO.LOCATION_DISCHARGE_INPUT_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
 
        //slog.info(mmi+"WLToolsIO.getMainCfgDir()="+WLToolsIO.getMainCfgDir());
 
