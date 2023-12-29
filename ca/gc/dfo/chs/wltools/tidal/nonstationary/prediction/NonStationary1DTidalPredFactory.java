@@ -7,7 +7,26 @@ package ca.gc.dfo.chs.wltools.tidal.nonstationary.prediction;
  * Modified on 2023-07-20, Gilles Mercier
  */
 
-//---
+
+// ---
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import java.util.HashMap;
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonValue;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+// ---
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.nontidal.stage.Stage;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
@@ -25,23 +44,6 @@ import ca.gc.dfo.chs.wltools.tidal.stationary.prediction.Stationary1DTidalPredFa
 //import ca.gc.dfo.iwls.fmservice.modeling.tides.astro.Constituent1DData;
 //import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Size;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.HashMap;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonValue;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * River-discharge and-or atmospheric influenced (a.k.a. non-stationary) tidal prediction object.
@@ -96,7 +98,7 @@ final public class NonStationary1DTidalPredFactory
     this.constituent1DDataItems= null;
   }
 
-
+  // ---
   public NonStationary1DTidalPredFactory(/*NotNull*/final String stationId,
                                          /*NotNull*/final IStage.Type type,
                                          /*NotNull*/final Long timeStartSeconds,
@@ -209,24 +211,17 @@ final public class NonStationary1DTidalPredFactory
 
     slog.info(mmi+"start: tcInputfilePath=" + tcInputfilePath);
 
-    //--- Get the TCF format ASCII lines in a List of Strings:
-    //final List<String> jsonFileLines = ASCIIFileIO.getFileLinesAsArrayList(tcInputfilePath);
-    //final JsonParser tcJsonInput= Json.createParser(new FileInputStream(tcInputfilePath));
-
     //JsonObject tmpJsonTcDataInputObj= null;
     FileInputStream jsonFileInputStream= null;
 
     try {
-        //final FileInputStream tcInputfilePathRdr= new FileInputStream(tcInputfilePath);
-       //final JsonArray jsonTcDataInputArray= Json.createReader(new FileInputStream(tcInputfilePath)).readArray();
-       //tmpJsonTcDataInputObj= Json.createReader(new FileInputStream(tcInputfilePath)).readObject();
 
-       jsonFileInputStream= new FileInputStream(tcInputfilePath);
+      jsonFileInputStream= new FileInputStream(tcInputfilePath);
 
     } catch (FileNotFoundException e) {
 
-       //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
-       throw new RuntimeException(e);
+      //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
+      throw new RuntimeException(e);
     }
 
     final JsonObject mainJsonTcDataInputObj=
@@ -307,62 +302,62 @@ final public class NonStationary1DTidalPredFactory
     //     with the related non-stationary tidal constituents data.
     for (final String jsonTcConstName: jsonTcDataInputObj.keySet()) {
 
-       // --- Be sure to remove any leading and-or trailing blank
-       //     (and annoying) characters.
-       //final String tcConstName= jsonTcConstName.strip();
-       //this.log.info("Processing tidal const. "+tcConstName);
+      // --- Be sure to remove any leading and-or trailing blank
+      //     (and annoying) characters.
+      //final String tcConstName= jsonTcConstName.strip();
+      //this.log.info("Processing tidal const. "+tcConstName);
 
-       //this.tcDataMaps.put(tcConstName, new HashMap<>());
+      //this.tcDataMaps.put(tcConstName, new HashMap<>());
 
-       // --- Get the JsonObject for this non-stationary tidal const.
-       final JsonObject jsonTcDataObj=
-          jsonTcDataInputObj.getJsonObject(jsonTcConstName);
+      // --- Get the JsonObject for this non-stationary tidal const.
+      final JsonObject jsonTcDataObj=
+         jsonTcDataInputObj.getJsonObject(jsonTcConstName);
 
-       // --- Amplitude for the zero'th order of this
-       //     tidal const.
-       final double zeroThOrderAmplitude=
-          jsonTcDataObj.getJsonNumber(zeroThOrderAmpKey).doubleValue();
+      // --- Amplitude for the zero'th order of this
+      //     tidal const.
+      final double zeroThOrderAmplitude=
+        jsonTcDataObj.getJsonNumber(zeroThOrderAmpKey).doubleValue();
 
-       // ---Assuming that the Greenwich phase lag is in radians here.
-       final double zeroThOrderGrwPhaseLag=
-          jsonTcDataObj.getJsonNumber(zeroThOrderPhaKey).doubleValue();
+      // ---Assuming that the Greenwich phase lag is in radians here.
+      final double zeroThOrderGrwPhaseLag=
+        jsonTcDataObj.getJsonNumber(zeroThOrderPhaKey).doubleValue();
 
-       // --- Be sure to remove any leading and-or trailing blank
-       //     (and annoying) characters.
-       final String tcConstName= jsonTcConstName.strip();
+      // --- Be sure to remove any leading and-or trailing blank
+      //     (and annoying) characters.
+      final String tcConstName= jsonTcConstName.strip();
 
-       slog.info(mmi+"Processing tidal const. \""+tcConstName+"\"");
+      slog.debug(mmi+"Processing tidal const. \""+tcConstName+"\"");
 
-       // --- Populate the super.tcDataMap object with the
-       //     zero'th order for this non-stationary tidal const.
-       super.tcDataMap.put( tcConstName,
-                            new Constituent1D(zeroThOrderAmplitude,zeroThOrderGrwPhaseLag)) ;
+      // --- Populate the super.tcDataMap object with the
+      //     zero'th order for this non-stationary tidal const.
+      super.tcDataMap.put( tcConstName,
+                           new Constituent1D(zeroThOrderAmplitude,zeroThOrderGrwPhaseLag)) ;
 
-       // --- Loop on the order >=1 stage(s) id(s) and set the inner
-       //     HashMap with the non-staionary tidal constituents info
-       //     for this location.
-       for (final String hoStageId: this.hoTcDataMaps.keySet()) {
+      // --- Loop on the order >=1 stage(s) id(s) and set the inner
+      //     HashMap with the non-staionary tidal constituents info
+      //     for this location.
+      for (final String hoStageId: this.hoTcDataMaps.keySet()) {
 
-          final String hoOrderAmpKey= hoStageId + jsonAmplitudeKey;
-          final String hoOrderPhaKey= hoStageId + jsonGrwPhaseLagKey;
+        final String hoOrderAmpKey= hoStageId + jsonAmplitudeKey;
+        final String hoOrderPhaKey= hoStageId + jsonGrwPhaseLagKey;
 
-          final double hoTcAmplitude=
-            jsonTcDataObj.getJsonNumber(hoOrderAmpKey).doubleValue();
+        final double hoTcAmplitude=
+          jsonTcDataObj.getJsonNumber(hoOrderAmpKey).doubleValue();
 
-          final double hoTcGrwPhaseLag=
-            jsonTcDataObj.getJsonNumber(hoOrderPhaKey).doubleValue();
+        final double hoTcGrwPhaseLag=
+          jsonTcDataObj.getJsonNumber(hoOrderPhaKey).doubleValue();
 
-          this.hoTcDataMaps.get(hoStageId).put( tcConstName,
-                                                new Constituent1D(hoTcAmplitude,hoTcGrwPhaseLag) );
-       }
+        this.hoTcDataMaps.get(hoStageId).put( tcConstName,
+                                              new Constituent1D(hoTcAmplitude,hoTcGrwPhaseLag) );
+      }
 
-       slog.info(mmi+"Done with Processing tidal const. \""+tcConstName+"\"");
+      slog.debug(mmi+"Done with Processing tidal const. \""+tcConstName+"\"");
     }
 
     try {
-       jsonFileInputStream.close();
+      jsonFileInputStream.close();
     } catch (IOException e) {
-       throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
 
     slog.info(mmi+"end");
