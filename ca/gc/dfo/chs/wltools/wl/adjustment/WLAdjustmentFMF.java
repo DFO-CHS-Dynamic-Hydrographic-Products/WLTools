@@ -636,6 +636,8 @@ abstract public class WLAdjustmentFMF
     //     to possibly use it in case some time dependent residual stats are missung
     final SortedSet<Long> validLonIdxKeySet= new TreeSet<Long>(timeDepResidualsStats.keySet());
 
+    slog.info(mmi+"before loop on actuFMFInstantsSet: timeDepResidualsStats.size()="+timeDepResidualsStats.size());
+
     // --- Loop on all the Instant objects of the actual FMF data that we want
     //     to adjust.
     for (final Instant actualFMFInstant: actuFMFInstantsSet) {
@@ -732,8 +734,10 @@ abstract public class WLAdjustmentFMF
       
     } // --- for (final Instant actualFMFInstant: actuFMFInstantsSet) loop block
 
-    //slog.info(mmi+"actuFMFInstantsSet.size()="+actuFMFInstantsSet.size());
-    //slog.info(mmi+"timeDepResidualsStats.size()="+timeDepResidualsStats.size());
+    slog.info(mmi+"end: actualFMFMcb.size()="+actualFMFMcb.size());
+    slog.info(mmi+"end: actuFMFInstantsSet.size()="+actuFMFInstantsSet.size());
+    slog.info(mmi+"end: timeDepResidualsStats.size()="+timeDepResidualsStats.size());
+    slog.info(mmi+"end: this.locationAdjustedData.size()="+this.locationAdjustedData.size());
 
     if (timeDepResidualsStats.size() != actualFMFMcb.size()) {
       throw new RuntimeException(mmi+
