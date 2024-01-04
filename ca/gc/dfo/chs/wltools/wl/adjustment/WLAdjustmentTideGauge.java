@@ -555,10 +555,19 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     final long mergeTimeRefSeconds= adjFMFMcbLeastRecentInstant.getEpochSecond();
 
-    // --- Use a final double with the inverted IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS
-    //     instead of a division in the Math.exp() calls, it should give a better perf.
-    final double shortTermFMFTSOffsetSecondsInv= 1.0/IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS;
-    
+    // --- Use a final double with the inverted
+    //     IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS*(1.0+Math.abs(fmfWLOValuesDiff))
+    //     instead of a division in repeated the Math.exp() calls in the following loop,
+    //     it should give a better perf.
+    //     NOTE: We also use an error modulation factor (1.0+Math.abs(fmfWLOValuesDiff)) to
+    //     decrease the time decaying factor in order to increase the time delay in proportion
+    //     of the fmfWLOValuesDiff (error) for the merge operation done in the following loop
+    final double shortTermFMFTSOffsetSecondsInv=
+	1.0/(IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS * (1.0+Math.abs(fmfWLOValuesDiff)) );
+
+    slog.info(mmi+"shortTermFMFTSOffsetSecondsInv="+shortTermFMFTSOffsetSecondsInv);
+
+    // --- Loop on all the FMF Instant objects (FMF data duration in the future >= 48h)
     for (final Instant fmfAdjInstant: adjFMFMcbInstantsSet) {
 
       final double shortTermTimeOffsetSeconds=
@@ -583,7 +592,6 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);   
       //}
-        
     }
 
     // --- Now merge (adjust) the NSTide prediction with the last adjusted FMF WL value. 
