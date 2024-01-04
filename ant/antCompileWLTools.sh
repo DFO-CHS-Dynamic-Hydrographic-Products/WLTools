@@ -10,7 +10,7 @@ mkdir -p ${javaMainClassDestDir}
 
 # --- force recompilation of the main program source file
 #     (TODO: Still need to implement dependencies for ant)
-rm -f ${javaCodeBaseMainDir}/*.class
+rm -f ${javaMainClassDestDir}/*.class
 
 export CLASSPATH=${javaClassesMainDestDir}:${javaCodeBaseMainDir}:${CLASSPATH}
 
