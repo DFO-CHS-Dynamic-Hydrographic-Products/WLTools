@@ -33,17 +33,7 @@ import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
  */
 final public class WLTools extends WLToolsIO {
 
-   //static {
-   //   System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace");
-   //}
-
-   //private static String mainCfgDir= "";
-
-   // ---
-   //final static String getMainCfgDir() {
-   //   return mainCfgDir;
-   //}
-
+  // ---
   static public void main (String[] args) {
 
     //System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");

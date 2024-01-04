@@ -81,7 +81,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
   protected IWLAdjustment.Type adjType= null;
 
+  // --- could be one tide gauge OR one ship channel point location.
   protected WLLocation location= null;
+
+  // --- could be tide gauges OR any ship channel point locations.
+  protected List<WLLocation> locations= null;
 
   //protected String locationId= null;
   protected String locationIdInfo= null;

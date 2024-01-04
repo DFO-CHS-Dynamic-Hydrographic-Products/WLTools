@@ -88,29 +88,40 @@ abstract public class WLAdjustmentType
       throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
     }
 
-    // --- Get only the base name of the
+    // --- 
     this.locationIdInfo= argsMap.get("--locationIdInfo");
 
-    // --- Get only the base name of the this.locationIdInfo file path.
-    //this.locationId= new File(this.locationIdInfo).
+    slog.info(mmi+"this.locationIdInfo="+this.locationIdInfo);
+    
+    // --- Get only the base name of the this.locationIdInfo if it is a
+    //     path to a file having the IWLToolsIO.JSON_FEXT file name extension.
+    //     TODO: Verify if this is still needed.
     final String identity=
       new File(this.locationIdInfo).getName().replace(IWLToolsIO.JSON_FEXT,"");
 
+    slog.info(mmi+"identity="+identity);
+    
     if (this.adjType == IWLAdjustment.Type.TideGauge) {
 
       this.location= new TideGaugeConfig(identity);
 
-    } else if (this.adjType == IWLAdjustment.Type.SpineIPP) {
+    } else if (this.adjType == IWLAdjustment.Type.SpineIPP || this.adjType == IWLAdjustment.Type.SpineFPP) {
 
-      this.location= new WLLocation(identity);
+      final String [] spineInterpTGIds= identity.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
+      this.locations= new ArrayList<WLLocation>(2);
+      
+      //this.location= new WLLocation(identity);
+      this.locations.add(0, new TideGaugeConfig(spineInterpTGIds[0]));
+      this.locations.add(1, new TideGaugeConfig(spineInterpTGIds[1]));
+
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
+      
       //throw new RuntimeException(mmi+"SpineIPP adjustment type not ready yet !!");
-
-    } else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
-
-      this.location= new WLLocation(identity);
-
-      throw new RuntimeException(mmi+"SpineFPP adjustment type not ready yet !!");
+      //} else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
+      //this.location= new WLLocation(identity);
+      //  throw new RuntimeException(mmi+"SpineFPP adjustment type not ready yet !!");
 
     } else {
        throw new RuntimeException(mmi+"Invalid adjustment type "+this.adjType.name()+" !!");
@@ -142,12 +153,13 @@ abstract public class WLAdjustmentType
       slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
-    }
+      
+    } // --- if (this.argsMapKeySet.contains("--modelForecastInputDataInfo") block
 
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
   }
 
   final public WLLocation getLocation() {

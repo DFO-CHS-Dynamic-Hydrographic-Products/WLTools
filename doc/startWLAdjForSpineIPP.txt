@@ -4,16 +4,20 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 time java WLTools \
 --tool=adjustment \
 --adjType=SpineIPP \
---outputDataFormat=DHP_S104_DCF8 \ 
---locationIdInfo=StLawrence:Neuville:gridPoint-610 \
+#--outputDataFormat=DHP_S104_DCF8 \
+--outputDataFormat=CHS_JSON \
+--locationIdInfo=03057:03100 \
+#--locationIdInfo=StLawrence:Neuville:gridPoint-610 \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
 --tidalConstsInputInfo=NON_STATIONARY_JSON:dischargeClimatoTFHA:OneDSTLT \ # needed to be able to get the coordinates of the Spine location from the related NS tidal config file
---outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineIPP \
---adjForecastAtTGSInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG \
---nsTidePredInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/2023100406 \
+--outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineIPP/20240104120000 \
+--adjForecastAtTGSInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG/20240104120000 \
+--nsTidePredInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/20240104120000 \
+#--tideGaugePredictInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/20231212120000 \
+--writeAllData=true
 # for non-adjusted model data if available for all Spine locations
 # --nonAdjFMFInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NonAdjFMF \
---writeAllData=true
+#--writeAllData=true
 
 #--modelInputDataDef=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2ASCII/2023081706_SLFE_NMM.csv \
 #--locationIdInfo=tidal/nonStationary/StLawrence/dischargeClusters/Deschaillons/dischargeClimatoTFHA/gridPoint-540-TFHA.json

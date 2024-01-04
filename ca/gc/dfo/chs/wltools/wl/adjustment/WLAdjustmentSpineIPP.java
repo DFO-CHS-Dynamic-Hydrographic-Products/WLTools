@@ -137,8 +137,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     }
 
     //slog.info(mmi+"Not ready yet!");
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
       throw new RuntimeException(mmi+
