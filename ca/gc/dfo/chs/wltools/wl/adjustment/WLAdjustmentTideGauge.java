@@ -563,7 +563,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //     decrease the time decaying factor in order to increase the time delay in proportion
     //     of the fmfWLOValuesDiff (error) for the merge operation done in the following loop
     final double shortTermFMFTSOffsetSecondsInv=
-	1.0/(IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS * (1.0+Math.abs(fmfWLOValuesDiff)) );
+      1.0/(IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS * (1.0+Math.abs(fmfWLOValuesDiff)) );
 
     slog.info(mmi+"shortTermFMFTSOffsetSecondsInv="+shortTermFMFTSOffsetSecondsInv);
 
