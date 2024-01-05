@@ -113,7 +113,7 @@ abstract public class WLAdjustmentType
       //     channel point locations that are in-between those two TG locations.
       final String [] twoSpineInterpTGIds= identity.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-      if (twoSpineInterpTGIds.length() != 2) {
+      if (twoSpineInterpTGIds.length != 2) {
 	throw new RuntimeException(mmi+"twoSpineInterpTGIds must have length of 2 here!");
       }
       
@@ -126,8 +126,8 @@ abstract public class WLAdjustmentType
       slog.info(mmi+"this.locations TG 0 id.="+this.locations.get(0).getIdentity());
       slog.info(mmi+"this.locations TG 1 id.="+this.locations.get(1).getIdentity());
       
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
       
       //throw new RuntimeException(mmi+"SpineIPP adjustment type not ready yet !!");
       //} else if (this.adjType == IWLAdjustment.Type.SpineFPP) {

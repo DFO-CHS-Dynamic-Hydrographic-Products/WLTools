@@ -137,338 +137,338 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
 
-    if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
-      throw new RuntimeException(mmi+
-         "Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
-    }
+    // if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
+    //   throw new RuntimeException(mmi+
+    //      "Must have the --tideGaugeLocationsDefFileName=<tide gauges definition file name> defined in argsMap");
+    // }
 
-    final String tideGaugeLocationsDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
+    // final String tideGaugeLocationsDefFileName= argsMap.get("--tideGaugeLocationsDefFileName");
 
-    if (!argsMap.keySet().contains("--tidalConstsInputInfo")) {
-      throw new RuntimeException(mmi+
-         "Must have the --tidalConstsInputInfo=<tidal consts. type:model name from which the tidal consts where produced with the NS_TIDE analysis> defined in argsMap");
-    }
+    // if (!argsMap.keySet().contains("--tidalConstsInputInfo")) {
+    //   throw new RuntimeException(mmi+
+    //      "Must have the --tidalConstsInputInfo=<tidal consts. type:model name from which the tidal consts where produced with the NS_TIDE analysis> defined in argsMap");
+    // }
 
-    final String tidalConstsInputInfo= argsMap.get("--tidalConstsInputInfo");
+    // final String tidalConstsInputInfo= argsMap.get("--tidalConstsInputInfo");
 
-    final String [] tidalConstsInputInfoStrSplit=
-      tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+    // final String [] tidalConstsInputInfoStrSplit=
+    //   tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    if (tidalConstsInputInfoStrSplit.length != 3 ) {
-      throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 3 !!!");
-    }
+    // if (tidalConstsInputInfoStrSplit.length != 3 ) {
+    //   throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 3 !!!");
+    // }
 
-    final String checkTidalConstInputFileFmt= tidalConstsInputInfoStrSplit[0];
-    //tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR)[0];
+    // final String checkTidalConstInputFileFmt= tidalConstsInputInfoStrSplit[0];
+    // //tidalConstsInputInfo.split(IWLLocation.ID_SPLIT_CHAR)[0];
 
-    if (!checkTidalConstInputFileFmt.
-            equals(ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name())) {
+    // if (!checkTidalConstInputFileFmt.
+    //         equals(ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name())) {
 
-       throw new RuntimeException(mmi+"Only the:"+
-                                   ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name()+
-                                   " tidal prediction input file format allowed for now!!");
-    }
+    //    throw new RuntimeException(mmi+"Only the:"+
+    //                                ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name()+
+    //                                " tidal prediction input file format allowed for now!!");
+    // }
 
-    // --- Extract the relevant substrings that will be used to find the location tidal consts.
-    //     file on disk from the tidalConstsInputInfoStrSplit array
-    final String tidalConstsTypeId= tidalConstsInputInfoStrSplit[1];
-    final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
+    // // --- Extract the relevant substrings that will be used to find the location tidal consts.
+    // //     file on disk from the tidalConstsInputInfoStrSplit array
+    // final String tidalConstsTypeId= tidalConstsInputInfoStrSplit[1];
+    // final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
 
-    // --- Build the path of the location tidal consts. file on disk.
-    final String spineLocationTCInputFile= WLToolsIO.
-      getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, this.locationIdInfo);
+    // // --- Build the path of the location tidal consts. file on disk.
+    // final String spineLocationTCInputFile= WLToolsIO.
+    //   getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, this.locationIdInfo);
 
-    slog.info(mmi+"spineLocationTCInputFile="+spineLocationTCInputFile);
+    // slog.info(mmi+"spineLocationTCInputFile="+spineLocationTCInputFile);
 
-    final HBCoords spineLocationHBCoord= HBCoords.
-      getFromCHSJSONTCFile(spineLocationTCInputFile);
+    // final HBCoords spineLocationHBCoord= HBCoords.
+    //   getFromCHSJSONTCFile(spineLocationTCInputFile);
 
-    slog.info(mmi+"spineLocationHBCoord lon="+spineLocationHBCoord.getLongitude());
-    slog.info(mmi+"spineLocationHBCoord lat="+spineLocationHBCoord.getLatitude());
+    // slog.info(mmi+"spineLocationHBCoord lon="+spineLocationHBCoord.getLongitude());
+    // slog.info(mmi+"spineLocationHBCoord lat="+spineLocationHBCoord.getLatitude());
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    // //slog.info(mmi+"Debug System.exit(0)");
+    // //System.exit(0);
 
-    // --- Now find the two nearest CHS tide gauges from this WDS grid point location
-    final String spineTideGaugesInfoFile= WLToolsIO.
-      getTideGaugeInfoFilePath(tideGaugeLocationsDefFileName);
+    // // --- Now find the two nearest CHS tide gauges from this WDS grid point location
+    // final String spineTideGaugesInfoFile= WLToolsIO.
+    //   getTideGaugeInfoFilePath(tideGaugeLocationsDefFileName);
 
-      //WLToolsIO.getMainCfgDir() + File.separator +
-      //ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;
+    //   //WLToolsIO.getMainCfgDir() + File.separator +
+    //   //ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;
 
-    slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    // slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
+    // //slog.info(mmi+"Debug System.exit(0)");
+    // //System.exit(0);
 
-    // --- Object for reading the CHS tide gauges info file.
-    FileInputStream jsonFileInputStream= null;
+    // // --- Object for reading the CHS tide gauges info file.
+    // FileInputStream jsonFileInputStream= null;
 
-    try {
-      jsonFileInputStream= new FileInputStream(spineTideGaugesInfoFile);
+    // try {
+    //   jsonFileInputStream= new FileInputStream(spineTideGaugesInfoFile);
 
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(mmi+e);
-    }
+    // } catch (FileNotFoundException e) {
+    //   throw new RuntimeException(mmi+e);
+    // }
 
-    // --- JSON reader for the CHS tide gauges info file.
-    final JsonObject mainJsonTGInfoMapObj= Json.
-      createReader(jsonFileInputStream).readObject();
+    // // --- JSON reader for the CHS tide gauges info file.
+    // final JsonObject mainJsonTGInfoMapObj= Json.
+    //   createReader(jsonFileInputStream).readObject();
 
-    // --- We can close the tide gauges info Json file now
-    try {
-      jsonFileInputStream.close();
-    } catch (IOException e) {
-      throw new RuntimeException(mmi+e);
-    }
+    // // --- We can close the tide gauges info Json file now
+    // try {
+    //   jsonFileInputStream.close();
+    // } catch (IOException e) {
+    //   throw new RuntimeException(mmi+e);
+    // }
 
-    // --- Define the Set of the CHS tide gauges string ids.
-    final Set<String> tgStrNumIdKeysSet= mainJsonTGInfoMapObj.keySet();
+    // // --- Define the Set of the CHS tide gauges string ids.
+    // final Set<String> tgStrNumIdKeysSet= mainJsonTGInfoMapObj.keySet();
 
-    slog.info(mmi+"tgStrNumIdKeysSet="+tgStrNumIdKeysSet.toString());
+    // slog.info(mmi+"tgStrNumIdKeysSet="+tgStrNumIdKeysSet.toString());
 
-    //--- Keep only the tide gauges that are at 80km or less from the
-    //     locations where we want to adjust the water levels.
-    //slog.info(mmi+"Debug exit 0");
-    //System.exit(0);
+    // //--- Keep only the tide gauges that are at 80km or less from the
+    // //     locations where we want to adjust the water levels.
+    // //slog.info(mmi+"Debug exit 0");
+    // //System.exit(0);
 
-    Map<IHBGeom.BBoxCornersId,HBCoords>
-      tideGaugesRectBBox= new HashMap<IHBGeom.BBoxCornersId,HBCoords>(2);
+    // Map<IHBGeom.BBoxCornersId,HBCoords>
+    //   tideGaugesRectBBox= new HashMap<IHBGeom.BBoxCornersId,HBCoords>(2);
 
-    tideGaugesRectBBox.put(IHBGeom.BBoxCornersId.SOUTH_WEST,
-                           new HBCoords(Double.MAX_VALUE,Double.MAX_VALUE));
+    // tideGaugesRectBBox.put(IHBGeom.BBoxCornersId.SOUTH_WEST,
+    //                        new HBCoords(Double.MAX_VALUE,Double.MAX_VALUE));
 
-    tideGaugesRectBBox.put(IHBGeom.BBoxCornersId.NORTH_EAST,
-                           new HBCoords(-Double.MAX_VALUE,Double.MIN_VALUE));
+    // tideGaugesRectBBox.put(IHBGeom.BBoxCornersId.NORTH_EAST,
+    //                        new HBCoords(-Double.MAX_VALUE,Double.MIN_VALUE));
 
-    // String [] twoNearestTideGaugesIds= {null, null};
-    Map<Double,String> tmpDistCheck= new HashMap<Double,String>();
+    // // String [] twoNearestTideGaugesIds= {null, null};
+    // Map<Double,String> tmpDistCheck= new HashMap<Double,String>();
 
-    Map<String, HBCoords> tmpTGHBCoords= new HashMap<String, HBCoords>();
+    // Map<String, HBCoords> tmpTGHBCoords= new HashMap<String, HBCoords>();
 
-    // --- Loop on the tide gauges json info objects.
-    for (final String chsTGStrNumId: tgStrNumIdKeysSet) {
+    // // --- Loop on the tide gauges json info objects.
+    // for (final String chsTGStrNumId: tgStrNumIdKeysSet) {
 
-      //slog.info(mmi+"Checkin with tgStrNumId="+tgStrNumId);
+    //   //slog.info(mmi+"Checkin with tgStrNumId="+tgStrNumId);
 
-      final JsonObject tgInfoJsonObj=
-        mainJsonTGInfoMapObj.getJsonObject(chsTGStrNumId);
+    //   final JsonObject tgInfoJsonObj=
+    //     mainJsonTGInfoMapObj.getJsonObject(chsTGStrNumId);
 
-      final double tgLatitude= tgInfoJsonObj.
-        getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
+    //   final double tgLatitude= tgInfoJsonObj.
+    //     getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue();
 
-      final double tgLongitude= tgInfoJsonObj.
-        getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
+    //   final double tgLongitude= tgInfoJsonObj.
+    //     getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue();
 
-      // --- calculate the distance (in radians) between the location and this CHS tide gauge
-      //final double tgDistRad= Trigonometry.getDistanceInRadians(tgLongitude, tgLatitude,
-      //                                                          spineLocationHBCoord.getLongitude(),
-      //                                                          spineLocationHBCoord.getLatitude()) ; //this.adjLocationLongitude, this.adjLocationLatitude);
+    //   // --- calculate the distance (in radians) between the location and this CHS tide gauge
+    //   //final double tgDistRad= Trigonometry.getDistanceInRadians(tgLongitude, tgLatitude,
+    //   //                                                          spineLocationHBCoord.getLongitude(),
+    //   //                                                          spineLocationHBCoord.getLatitude()) ; //this.adjLocationLongitude, this.adjLocationLatitude);
 
-      final double tgDistKm= Trigonometry.getDistanceInKms(tgLongitude, tgLatitude,
-                                                           spineLocationHBCoord.getLongitude(),
-                                                           spineLocationHBCoord.getLatitude()) ;
+    //   final double tgDistKm= Trigonometry.getDistanceInKms(tgLongitude, tgLatitude,
+    //                                                        spineLocationHBCoord.getLongitude(),
+    //                                                        spineLocationHBCoord.getLatitude()) ;
 
-      // --- Store this distance in the temporary Map
-      //tmpDistCheck.put((Double)tgDistRad, chsTGStrNumId); //(tgStrNumId,tgDistRad);
-      tmpDistCheck.put((Double)tgDistKm, chsTGStrNumId);
+    //   // --- Store this distance in the temporary Map
+    //   //tmpDistCheck.put((Double)tgDistRad, chsTGStrNumId); //(tgStrNumId,tgDistRad);
+    //   tmpDistCheck.put((Double)tgDistKm, chsTGStrNumId);
 
-      tmpTGHBCoords.put(chsTGStrNumId, new HBCoords(tgLongitude, tgLatitude) );
+    //   tmpTGHBCoords.put(chsTGStrNumId, new HBCoords(tgLongitude, tgLatitude) );
 
-      //slog.info(mmi+"chsTGStrNumId="+chsTGStrNumId+", tgLongitude="+tgLongitude+", tgLatitude="+tgLatitude);
+    //   //slog.info(mmi+"chsTGStrNumId="+chsTGStrNumId+", tgLongitude="+tgLongitude+", tgLatitude="+tgLatitude);
 
-      if (tgLongitude < tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude()) {
-        tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).setLongitude(tgLongitude);
-      }
+    //   if (tgLongitude < tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude()) {
+    //     tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).setLongitude(tgLongitude);
+    //   }
 
-      if (tgLatitude < tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude()) {
-        tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).setLatitude(tgLatitude);
-      }
+    //   if (tgLatitude < tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude()) {
+    //     tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).setLatitude(tgLatitude);
+    //   }
 
-      if (tgLongitude > tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude()) {
-        tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).setLongitude(tgLongitude);
-      }
+    //   if (tgLongitude > tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude()) {
+    //     tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).setLongitude(tgLongitude);
+    //   }
 
-      if (tgLatitude > tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude()) {
-        tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).setLatitude(tgLatitude);
-      }
+    //   if (tgLatitude > tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude()) {
+    //     tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).setLatitude(tgLatitude);
+    //   }
 
-      //slog.info(mmi+"tgStrNumId="+tgStrNumId+", tgDistRad="+tgDistRad);
-    }
+    //   //slog.info(mmi+"tgStrNumId="+tgStrNumId+", tgDistRad="+tgDistRad);
+    // }
 
-    slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude()="+
-              tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude());
+    // slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude()="+
+    //           tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLongitude());
 
-    slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude()="+
-              tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude());
+    // slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude()="+
+    //           tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.SOUTH_WEST).getLatitude());
 
-    slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude()="+
-              tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude());
+    // slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude()="+
+    //           tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLongitude());
 
-    slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude()="+
-              tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude());
+    // slog.info(mmi+"tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude()="+
+    //           tideGaugesRectBBox.get(IHBGeom.BBoxCornersId.NORTH_EAST).getLatitude());
 
-    //slog.info(mmi+"Debug exit 0");
-    //System.exit(0);
+    // //slog.info(mmi+"Debug exit 0");
+    // //System.exit(0);
 
-    // --- Use the SortedSet class to automagically sort the distances used
-    //     as kays in the tmpDistCheck Map
-    final SortedSet<Double> sortedTGDistRad= new TreeSet<Double>(tmpDistCheck.keySet());
+    // // --- Use the SortedSet class to automagically sort the distances used
+    // //     as kays in the tmpDistCheck Map
+    // final SortedSet<Double> sortedTGDistRad= new TreeSet<Double>(tmpDistCheck.keySet());
 
-    // --- Convert the SortedSet to an array of Double objects.
-    final Object [] sortedTGDistRadArray= sortedTGDistRad.toArray();
+    // // --- Convert the SortedSet to an array of Double objects.
+    // final Object [] sortedTGDistRadArray= sortedTGDistRad.toArray();
 
-    final Double firstNearestDistKmForTG= (Double) sortedTGDistRadArray[0]; //sortedTGDistRad.first();
-    final Double secondNearestDistKmForTG= (Double) sortedTGDistRadArray[1];
-    final Double thirdNearestDistKmForTG= (Double) sortedTGDistRadArray[2];
-    final Double fourthNearestDistKmForTG= (Double) sortedTGDistRadArray[3];
-      //sortedTGDistRad.tailSet(firstNearestDistRadForTG).first();
+    // final Double firstNearestDistKmForTG= (Double) sortedTGDistRadArray[0]; //sortedTGDistRad.first();
+    // final Double secondNearestDistKmForTG= (Double) sortedTGDistRadArray[1];
+    // final Double thirdNearestDistKmForTG= (Double) sortedTGDistRadArray[2];
+    // final Double fourthNearestDistKmForTG= (Double) sortedTGDistRadArray[3];
+    //   //sortedTGDistRad.tailSet(firstNearestDistRadForTG).first();
 
-    //slog.info(mmi+"sortedTGDistRad="+sortedTGDistRad.toString());
-    slog.info(mmi+"firstNearestDistKmForTG="+firstNearestDistKmForTG);
-    slog.info(mmi+"secondNearestDistKmForTG="+secondNearestDistKmForTG);
-    slog.info(mmi+"thirdNearestDistKmForTG="+thirdNearestDistKmForTG);
-    slog.info(mmi+"fourthNearestDistKmForTG="+fourthNearestDistKmForTG);
+    // //slog.info(mmi+"sortedTGDistRad="+sortedTGDistRad.toString());
+    // slog.info(mmi+"firstNearestDistKmForTG="+firstNearestDistKmForTG);
+    // slog.info(mmi+"secondNearestDistKmForTG="+secondNearestDistKmForTG);
+    // slog.info(mmi+"thirdNearestDistKmForTG="+thirdNearestDistKmForTG);
+    // slog.info(mmi+"fourthNearestDistKmForTG="+fourthNearestDistKmForTG);
 
-    final String firstNearestTGStrId= tmpDistCheck.get(firstNearestDistKmForTG);
-    final String secondNearestTGStrId= tmpDistCheck.get(secondNearestDistKmForTG);
-    final String thirdNearestTGStrId= tmpDistCheck.get(thirdNearestDistKmForTG);
-    final String fourthNearestTGStrId= tmpDistCheck.get(+fourthNearestDistKmForTG);
+    // final String firstNearestTGStrId= tmpDistCheck.get(firstNearestDistKmForTG);
+    // final String secondNearestTGStrId= tmpDistCheck.get(secondNearestDistKmForTG);
+    // final String thirdNearestTGStrId= tmpDistCheck.get(thirdNearestDistKmForTG);
+    // final String fourthNearestTGStrId= tmpDistCheck.get(+fourthNearestDistKmForTG);
 
-    slog.info(mmi+"firstNearestTGStrId="+firstNearestTGStrId);
-    slog.info(mmi+"secondNearestTGStrId="+secondNearestTGStrId);
-    slog.info(mmi+"thirdNearestTGStrId="+thirdNearestTGStrId);
-    slog.info(mmi+"fourthNearestTGStrId="+fourthNearestTGStrId);
+    // slog.info(mmi+"firstNearestTGStrId="+firstNearestTGStrId);
+    // slog.info(mmi+"secondNearestTGStrId="+secondNearestTGStrId);
+    // slog.info(mmi+"thirdNearestTGStrId="+thirdNearestTGStrId);
+    // slog.info(mmi+"fourthNearestTGStrId="+fourthNearestTGStrId);
 
-    // --- Now store the nearest tide gauges coordinates
-    //     in the local nearestsTGCoords map for subsequent
-    //     usage.
-    final Map<String, HBCoords> nearestsTGCoords= new HashMap<String, HBCoords>();
+    // // --- Now store the nearest tide gauges coordinates
+    // //     in the local nearestsTGCoords map for subsequent
+    // //     usage.
+    // final Map<String, HBCoords> nearestsTGCoords= new HashMap<String, HBCoords>();
 
-    nearestsTGCoords.put(firstNearestTGStrId, tmpTGHBCoords.get(firstNearestTGStrId));
-    nearestsTGCoords.put(secondNearestTGStrId, tmpTGHBCoords.get(secondNearestTGStrId));
-    nearestsTGCoords.put(thirdNearestTGStrId, tmpTGHBCoords.get(thirdNearestTGStrId));
-    nearestsTGCoords.put(fourthNearestTGStrId, tmpTGHBCoords.get(fourthNearestTGStrId));
+    // nearestsTGCoords.put(firstNearestTGStrId, tmpTGHBCoords.get(firstNearestTGStrId));
+    // nearestsTGCoords.put(secondNearestTGStrId, tmpTGHBCoords.get(secondNearestTGStrId));
+    // nearestsTGCoords.put(thirdNearestTGStrId, tmpTGHBCoords.get(thirdNearestTGStrId));
+    // nearestsTGCoords.put(fourthNearestTGStrId, tmpTGHBCoords.get(fourthNearestTGStrId));
 
-    slog.info(mmi+"nearestsTGCoords keys="+nearestsTGCoords.keySet().toString());
-    //slog.info(mmi+"Debug exit 0");
-    //System.exit(0);
+    // slog.info(mmi+"nearestsTGCoords keys="+nearestsTGCoords.keySet().toString());
+    // //slog.info(mmi+"Debug exit 0");
+    // //System.exit(0);
 
-    if (!argsMap.keySet().contains("--adjForecastAtTGSInputDataInfo")) {
-     throw new RuntimeException(mmi+
-        "Must have the --adjForecastAtTGSInputDataInfo=<input file(s) format>:<FMF adjustment data input directory> defined in argsMap");
-    }
+    // if (!argsMap.keySet().contains("--adjForecastAtTGSInputDataInfo")) {
+    //  throw new RuntimeException(mmi+
+    //     "Must have the --adjForecastAtTGSInputDataInfo=<input file(s) format>:<FMF adjustment data input directory> defined in argsMap");
+    // }
 
-    final String [] adjForecastAtTGSInputDataInfoStrSplit=
-      argsMap.get("--adjForecastAtTGSInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+    // final String [] adjForecastAtTGSInputDataInfoStrSplit=
+    //   argsMap.get("--adjForecastAtTGSInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    if (adjForecastAtTGSInputDataInfoStrSplit.length != 2) {
-      throw new RuntimeException(mmi+"adjForecastAtTGSInputDataInfoStrSplit.length != 2 !!");
-    }
+    // if (adjForecastAtTGSInputDataInfoStrSplit.length != 2) {
+    //   throw new RuntimeException(mmi+"adjForecastAtTGSInputDataInfoStrSplit.length != 2 !!");
+    // }
 
-    if ( !adjForecastAtTGSInputDataInfoStrSplit[0].equals(IWLToolsIO.Format.CHS_JSON.name()) ) {
-      throw new RuntimeException(mmi+"Invalid FMF adjustment input data file format -> "+adjForecastAtTGSInputDataInfoStrSplit[0]);
-    }
+    // if ( !adjForecastAtTGSInputDataInfoStrSplit[0].equals(IWLToolsIO.Format.CHS_JSON.name()) ) {
+    //   throw new RuntimeException(mmi+"Invalid FMF adjustment input data file format -> "+adjForecastAtTGSInputDataInfoStrSplit[0]);
+    // }
 
-    final String adjForecastAtTGSInputDataDir= adjForecastAtTGSInputDataInfoStrSplit[1];
+    // final String adjForecastAtTGSInputDataDir= adjForecastAtTGSInputDataInfoStrSplit[1];
 
-    final File fmfAdjInfoDirFileObj= new File(adjForecastAtTGSInputDataDir);
+    // final File fmfAdjInfoDirFileObj= new File(adjForecastAtTGSInputDataDir);
 
-    if (!fmfAdjInfoDirFileObj.exists()) {
-      throw new RuntimeException(mmi+"FMF adjustment data input directory -> "+adjForecastAtTGSInputDataDir+" not found!!");
-    }
+    // if (!fmfAdjInfoDirFileObj.exists()) {
+    //   throw new RuntimeException(mmi+"FMF adjustment data input directory -> "+adjForecastAtTGSInputDataDir+" not found!!");
+    // }
 
-    slog.info(mmi+"adjForecastAtTGSInputDataDir="+adjForecastAtTGSInputDataDir);
+    // slog.info(mmi+"adjForecastAtTGSInputDataDir="+adjForecastAtTGSInputDataDir);
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    // slog.info(mmi+"Debug exit 0");
+    // System.exit(0);
 
-    if (!argsMap.keySet().contains("--nsTidePredInputDataInfo")) {
-      throw new RuntimeException(mmi+
-        "Must have the --nsTidePredInputDataInfo=<input file(s) format>:<NS_TIDE pred. data input directory> defined in argsMap");
-    }
+    // if (!argsMap.keySet().contains("--nsTidePredInputDataInfo")) {
+    //   throw new RuntimeException(mmi+
+    //     "Must have the --nsTidePredInputDataInfo=<input file(s) format>:<NS_TIDE pred. data input directory> defined in argsMap");
+    // }
 
-    final String [] nsTidePredInputDataInfoStrSplit=
-      argsMap.get("--nsTidePredInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+    // final String [] nsTidePredInputDataInfoStrSplit=
+    //   argsMap.get("--nsTidePredInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    if (nsTidePredInputDataInfoStrSplit.length != 2) {
-      throw new RuntimeException(mmi+"nsTidePredInputDataInfoStrSplit.length != 2 !!");
-    }
+    // if (nsTidePredInputDataInfoStrSplit.length != 2) {
+    //   throw new RuntimeException(mmi+"nsTidePredInputDataInfoStrSplit.length != 2 !!");
+    // }
 
-    //slog.info(mmi+"nsTidePredInputDataInfoStrSplit[0]="+nsTidePredInputDataInfoStrSplit[0]+".");
-    //slog.info(mmi+"IWLToolsIO.Format.CHS_JSON.name()="+IWLToolsIO.Format.CHS_JSON.name()+".");
+    // //slog.info(mmi+"nsTidePredInputDataInfoStrSplit[0]="+nsTidePredInputDataInfoStrSplit[0]+".");
+    // //slog.info(mmi+"IWLToolsIO.Format.CHS_JSON.name()="+IWLToolsIO.Format.CHS_JSON.name()+".");
 
-    if ( !nsTidePredInputDataInfoStrSplit[0].equals(IWLToolsIO.Format.CHS_JSON.name()) ) {
-      throw new RuntimeException(mmi+"Invalid NS Tide pred input file format -> "+nsTidePredInputDataInfoStrSplit[0]);
-    }
+    // if ( !nsTidePredInputDataInfoStrSplit[0].equals(IWLToolsIO.Format.CHS_JSON.name()) ) {
+    //   throw new RuntimeException(mmi+"Invalid NS Tide pred input file format -> "+nsTidePredInputDataInfoStrSplit[0]);
+    // }
 
-    final String nsTidePredInputDataDir= nsTidePredInputDataInfoStrSplit[1];
+    // final String nsTidePredInputDataDir= nsTidePredInputDataInfoStrSplit[1];
 
-    final File nsTidePredInputDataDirFileObj= new File(nsTidePredInputDataDir);
+    // final File nsTidePredInputDataDirFileObj= new File(nsTidePredInputDataDir);
 
-    if (!nsTidePredInputDataDirFileObj.exists()) {
-      throw new RuntimeException(mmi+"NS Tide pred data input directory -> "+nsTidePredInputDataDir+" not found!!");
-    }
+    // if (!nsTidePredInputDataDirFileObj.exists()) {
+    //   throw new RuntimeException(mmi+"NS Tide pred data input directory -> "+nsTidePredInputDataDir+" not found!!");
+    // }
 
-    slog.info(mmi+"nsTidePredInputDataDir="+nsTidePredInputDataDir);
+    // slog.info(mmi+"nsTidePredInputDataDir="+nsTidePredInputDataDir);
 
-    final String spineLocNSTidePredFilePrfx= this.locationIdInfo.
-      replace(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR, IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR);
+    // final String spineLocNSTidePredFilePrfx= this.locationIdInfo.
+    //   replace(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR, IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR);
 
-    //--- First get the NS Tide WL pred data at the Spine location being processed:
-    final String spineLocationNSTidePredFile= nsTidePredInputDataDir +
-      File.separator + spineLocNSTidePredFilePrfx + IWLToolsIO.JSON_FEXT;
+    // //--- First get the NS Tide WL pred data at the Spine location being processed:
+    // final String spineLocationNSTidePredFile= nsTidePredInputDataDir +
+    //   File.separator + spineLocNSTidePredFilePrfx + IWLToolsIO.JSON_FEXT;
 
-    //final File spineLocationNSTidePredFileObj= new File(spineLocationNSTidePredFile);
+    // //final File spineLocationNSTidePredFileObj= new File(spineLocationNSTidePredFile);
 
-    //slog.info(mmi+"this.locationIdInfo="+this.locationIdInfo);
-    slog.info(mmi+"spineLocationNSTidePredFile="+spineLocationNSTidePredFile);
+    // //slog.info(mmi+"this.locationIdInfo="+this.locationIdInfo);
+    // slog.info(mmi+"spineLocationNSTidePredFile="+spineLocationNSTidePredFile);
 
-    // --- Put the Spine location WL pred data in a MeasurementCustomBundle object
-    //     to avoid the (very) annoying wrong array indexing syndrome
-    this.spineLocationNonAdjData= new
-      MeasurementCustomBundle(WLAdjustmentIO.
-        getWLDataInJsonFmt(spineLocationNSTidePredFile, -1L, 0.0));
+    // // --- Put the Spine location WL pred data in a MeasurementCustomBundle object
+    // //     to avoid the (very) annoying wrong array indexing syndrome
+    // this.spineLocationNonAdjData= new
+    //   MeasurementCustomBundle(WLAdjustmentIO.
+    //     getWLDataInJsonFmt(spineLocationNSTidePredFile, -1L, 0.0));
 
-    // --- Inatantiate the HashMap for the other Spine locations WL Pred data
-    this.tgsNearestSpineLocationsNonAdjData= new HashMap<String, MeasurementCustomBundle>();
+    // // --- Inatantiate the HashMap for the other Spine locations WL Pred data
+    // this.tgsNearestSpineLocationsNonAdjData= new HashMap<String, MeasurementCustomBundle>();
 
-    //--- Now read the NS Tide prediction data for the spine locations that
-    ///   the nearests to the 3 nearest TGs
-    for (final String chsTGStrNumId: nearestsTGCoords.keySet() ) {
+    // //--- Now read the NS Tide prediction data for the spine locations that
+    // ///   the nearests to the 3 nearest TGs
+    // for (final String chsTGStrNumId: nearestsTGCoords.keySet() ) {
 
-      final JsonObject tgInfoJsonObj=
-        mainJsonTGInfoMapObj.getJsonObject(chsTGStrNumId);
+    //   final JsonObject tgInfoJsonObj=
+    //     mainJsonTGInfoMapObj.getJsonObject(chsTGStrNumId);
 
-      final String nearTGSpineLocId= tgInfoJsonObj.
-        getString(ITideGaugeConfig.INFO_NEAREST_SPINE_POINT_ID_JSON_KEY);
+    //   final String nearTGSpineLocId= tgInfoJsonObj.
+    //     getString(ITideGaugeConfig.INFO_NEAREST_SPINE_POINT_ID_JSON_KEY);
 
-      slog.info(mmi+"nearTGSpineLocId="+nearTGSpineLocId);
+    //   slog.info(mmi+"nearTGSpineLocId="+nearTGSpineLocId);
 
-      final String nearTGSpineLocTidePredFile= nsTidePredInputDataDir +
-      File.separator + nearTGSpineLocId + IWLToolsIO.JSON_FEXT;
+    //   final String nearTGSpineLocTidePredFile= nsTidePredInputDataDir +
+    //   File.separator + nearTGSpineLocId + IWLToolsIO.JSON_FEXT;
 
-      slog.info(mmi+"Reading NS Tide prediction for CHS TG -> "+chsTGStrNumId+
-                " from the Json file -> "+nearTGSpineLocTidePredFile+"\n");
+    //   slog.info(mmi+"Reading NS Tide prediction for CHS TG -> "+chsTGStrNumId+
+    //             " from the Json file -> "+nearTGSpineLocTidePredFile+"\n");
 
-      final List<MeasurementCustom> tmpMCList= WLAdjustmentIO.
-        getWLDataInJsonFmt(spineLocationNSTidePredFile, -1L, 0.0);
+    //   final List<MeasurementCustom> tmpMCList= WLAdjustmentIO.
+    //     getWLDataInJsonFmt(spineLocationNSTidePredFile, -1L, 0.0);
 
-      this.tgsNearestSpineLocationsNonAdjData.
-        put(chsTGStrNumId, new MeasurementCustomBundle(tmpMCList));
-    }
+    //   this.tgsNearestSpineLocationsNonAdjData.
+    //     put(chsTGStrNumId, new MeasurementCustomBundle(tmpMCList));
+    // }
 
-    if (this.nonAdjFMFInputDataInfo != null) {
+    // if (this.nonAdjFMFInputDataInfo != null) {
 
-      //--- Merge the non-adjusted NS Tide pred data with the non-adjusted full model forecast
-      //    data for the Spine location being processed and also for the spine locations that are the
-      //    nearest to the nearest 3 tide gauges locations
+    //   //--- Merge the non-adjusted NS Tide pred data with the non-adjusted full model forecast
+    //   //    data for the Spine location being processed and also for the spine locations that are the
+    //   //    nearest to the nearest 3 tide gauges locations
 
-      throw new RuntimeException(mmi+
-        "The usage of the non-adjusted full model forecast for the Spine location is not ready yet!");
-    }
+    //   throw new RuntimeException(mmi+
+    //     "The usage of the non-adjusted full model forecast for the Spine location is not ready yet!");
+    // }
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    // slog.info(mmi+"Debug exit 0");
+    // System.exit(0);
 
     //// --- Now get the coordinates of:
     ////     1). The nearest model input data grid point from the WDS location

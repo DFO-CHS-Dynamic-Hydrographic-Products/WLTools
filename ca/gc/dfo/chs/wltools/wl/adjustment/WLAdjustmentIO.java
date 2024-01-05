@@ -95,7 +95,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   //     corner and the largest (lon,lat) coordinates
   //     for the North-East corner. This is normally
   //     used only by the SpineIPP and SpineFPP classes.
-  protected List<HBCoords> regionBBox= null;
+  //protected List<HBCoords> regionBBox= null;
 
   //protected String locationId= null;
   protected String locationIdInfo= null;
