@@ -97,4 +97,6 @@ public interface IWLAdjustmentIO {
   String PRV_FMF_RESIDUALS_STATS_SUBDIRNAME= "previous";
 
   String FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY= "secondsOffset";
+
+    //String SHIP_CHANNEL_POINTS_DEF_DIRNAME= "channelGridPointsInfoDef";  
 }

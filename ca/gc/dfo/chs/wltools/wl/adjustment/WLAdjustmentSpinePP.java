@@ -84,7 +84,7 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
   //     corner and the largest (lon,lat) coordinates
   //     for the North-East corner. This is normally
   //     used only by the SpineIPP and SpineFPP classes.
-  protected List<HBCoords> regionBBox= new ArrayList<HBCoords>(2); //null;
+  //protected List<HBCoords> regionBBox= new ArrayList<HBCoords>(2); //null;
     
   protected String nonAdjFMFInputDataInfo= null;
 
@@ -197,56 +197,29 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     this.locations.get(1).
       setConfig(mainJsonTGInfoMapObj.getJsonObject(this.locations.get(1).getIdentity()));
 
-    if (!argsMap.keySet().contains("--regionTGsBBoxInfo")) {
-      throw new RuntimeException(mmi+
-         "Must have the --regionTGsBBoxInfo=<TG0Id:TG1Id> defined in argsMap");
-    }
+    final double tgLoc0Lon= this.locations.get(0).getLongitude();
+    final double tgLoc0Lat= this.locations.get(0).getLatitude();
+    final double tgLoc1Lon= this.locations.get(1).getLongitude();
+    final double tgLoc1Lat= this.locations.get(1).getLatitude();    
 
-    // --- Now deal with the region bounding box which includes all the tide gauges
-    //     and all the ship channel points locations needed for the Spine WL adjustments. 
-    final String regionTGsBBoxInfo= argsMap.get("--regionTGsBBoxInfo");
-
-    slog.info(mmi+"regionTGsBBoxInfo="+regionTGsBBoxInfo);
-
-    final String [] regionTGsBBoxInfoSplit=
-      regionTGsBBoxInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
-
-    if (regionTGsBBoxInfoSplit.length != 2) {
-      throw new RuntimeException(mmi+"regionTGsBBoxInfoSplit must have length of 2 here!");
-    }
-
-    // ---
-    final TideGaugeConfig bBoxTideGauge0= new TideGaugeConfig(regionTGsBBoxInfoSplit[0]);
-    final TideGaugeConfig bBoxTideGauge1= new TideGaugeConfig(regionTGsBBoxInfoSplit[1]);
-
-    bBoxTideGauge0.setConfig(mainJsonTGInfoMapObj.getJsonObject(bBoxTideGauge0.getIdentity()));
-    bBoxTideGauge1.setConfig(mainJsonTGInfoMapObj.getJsonObject(bBoxTideGauge1.getIdentity()));
-
-    final double bBoxTideGauge0Lon= bBoxTideGauge0.getLongitude();
-    final double bBoxTideGauge1Lon= bBoxTideGauge1.getLongitude();
-    final double bBoxTideGauge0Lat= bBoxTideGauge0.getLatitude();
-    final double bBoxTideGauge1Lat= bBoxTideGauge1.getLatitude();    
+    final double tgLocationsHalfDistRadSquared=
+      Math.pow(0.5 * Trigonometry.getDistanceInRadians(tgLoc0Lon,tgLoc0Lat,tgLoc1Lon,tgLoc1Lat), 2);
     
-    final double minLon= (bBoxTideGauge0Lon < bBoxTideGauge1Lon) ? bBoxTideGauge0Lon: bBoxTideGauge1Lon;
-    final double maxLon= (bBoxTideGauge0Lon > bBoxTideGauge1Lon) ? bBoxTideGauge0Lon: bBoxTideGauge1Lon;
-    final double minLat= (bBoxTideGauge0Lat < bBoxTideGauge1Lat) ? bBoxTideGauge0Lat: bBoxTideGauge1Lat;
-    final double maxLat= (bBoxTideGauge0Lat > bBoxTideGauge1Lat) ? bBoxTideGauge0Lat: bBoxTideGauge1Lat;  
+    final double tgLocationsCenterLon=
+      0.5 * (this.locations.get(0).getLongitude() + this.locations.get(1).getLongitude());
 
-    //slog.info(mmi+"minLon="+minLon);
-    //slog.info(mmi+"maxLon="+maxLon);
-    //slog.info(mmi+"minLat="+minLat);
-    //slog.info(mmi+"maxLat="+maxLat);
+    final double tgLocationsCenterLat=
+      0.5 * (this.locations.get(0).getLatitude() + this.locations.get(1).getLatitude());
 
-    // --- Set the this.regionBBox HBCoords objects
-    this.regionBBox.add(0, new HBCoords(minLon,minLat));
-    this.regionBBox.add(1, new HBCoords(maxLon,maxLat));
-    
+    slog.info(mmi+"tgLocationsCenterLon="+tgLocationsCenterLon);
+    slog.info(mmi+"tgLocationsCenterLat="+tgLocationsCenterLat);
+
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
     
     if (!argsMap.keySet().contains("--tidalConstsInputInfo")) {
       throw new RuntimeException(mmi+
-         "Must have the --tidalConstsInputInfo=<tidal consts. type:model name from which the tidal consts where produced with the NS_TIDE analysis> defined in argsMap");
+         "Must have the --tidalConstsInputInfo=<> defined in argsMap");
     }
 
     final String tidalConstsInputInfo= argsMap.get("--tidalConstsInputInfo");
@@ -254,8 +227,8 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     final String [] tidalConstsInputInfoStrSplit=
       tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    if (tidalConstsInputInfoStrSplit.length != 3 ) {
-      throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 3 !!!");
+    if (tidalConstsInputInfoStrSplit.length != 2 ) {
+      throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 2 !!!");
     }
 
     final String checkTidalConstInputFileFmt= tidalConstsInputInfoStrSplit[0];
@@ -269,43 +242,31 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
                                  " tidal prediction input file format allowed for now!!");
     }
 
-    // --- Extract the relevant substrings that will be used to find the tidal consts.
-    //     files for the ship channel point locations on disk from the tidalConstsInputInfoStrSplit array
-    final String tidalConstsTypeId= tidalConstsInputInfoStrSplit[1];
-    final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
-
-    slog.info(mmi+"tidalConstsTypeId="+tidalConstsTypeId);
-    slog.info(mmi+"tidalConstsTypeModelId="+tidalConstsTypeModelId);
+    //// --- Extract the relevant substrings that will be used to find the tidal consts.
+    ////     files for the ship channel point locations on disk from the tidalConstsInputInfoStrSplit array
+    //final String tidalConstsTypeId= tidalConstsInputInfoStrSplit[1];
+    //final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
+    //slog.info(mmi+"tidalConstsTypeId="+tidalConstsTypeId);
+    //slog.info(mmi+"tidalConstsTypeModelId="+tidalConstsTypeModelId);
      
     // --- Build the path of the main folder where we can find all tidal consts. files
     //       for all the ship channel point locations on disk.
-    final String spineLocationsTCInputFolder= WLToolsIO.
-      getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, null); // this.locationIdInfo);
+    //final String spineLocationsTCInputFolder= WLToolsIO.
+    //  getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, null); // this.locationIdInfo);
 
-    slog.info(mmi+"spineLocationsTCInputFolder="+spineLocationsTCInputFolder);
+    final String mainTCInputDir= tidalConstsInputInfoStrSplit[1];
+	       
+    slog.info(mmi+"mainTCInputDir="+mainTCInputDir);
 
+    final String shipChannelPointLocsTCInputDir=
+      WLToolsIO.getMainCfgDir() + mainTCInputDir + IWLToolsIO.SHIP_CHANNEL_POINTS_DEF_DIRNAME;
+
+    slog.info(mmi+"shipChannelPointLocsTCInputDir="+shipChannelPointLocsTCInputDir);
+    
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);        
 
-    //final HBCoords spineLocationHBCoord= HBCoords.
-    //  getFromCHSJSONTCFile(spineLocationTCInputFile);
-
-    //slog.info(mmi+"spineLocationHBCoord lon="+spineLocationHBCoord.getLongitude());
-    //slog.info(mmi+"spineLocationHBCoord lat="+spineLocationHBCoord.getLatitude());
-
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
-
-    //// --- Now find the two nearest CHS tide gauges from this WDS grid point location
-    //final String spineTideGaugesInfoFile= WLToolsIO.
-    //  getTideGaugeInfoFilePath(tideGaugeLocationsDefFileName);
-
-      //WLToolsIO.getMainCfgDir() + File.separator +
-      //ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeDefFileName ;
-
-    //slog.info(mmi+"spineTideGaugesInfoFile="+spineTideGaugesInfoFile);
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+  
  
   } // --- main constructor
     
