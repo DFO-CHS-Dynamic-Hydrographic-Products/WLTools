@@ -7,6 +7,7 @@ time java WLTools \
 #--outputDataFormat=DHP_S104_DCF8 \
 --outputDataFormat=CHS_JSON \
 --locationIdInfo=03057:03100 \
+--regionTGsBBoxInfo=15520:03057 \
 #--locationIdInfo=StLawrence:Neuville:gridPoint-610 \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
 --tidalConstsInputInfo=NON_STATIONARY_JSON:dischargeClimatoTFHA:OneDSTLT \ # needed to be able to get the coordinates of the Spine location from the related NS tidal config file

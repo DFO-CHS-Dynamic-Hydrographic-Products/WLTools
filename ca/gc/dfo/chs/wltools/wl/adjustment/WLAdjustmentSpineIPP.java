@@ -56,12 +56,13 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpinePP;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 
 /**
  * Comments please!
  */
-final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
+final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpineIPP: ";
@@ -71,38 +72,33 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  private String nonAdjFMFInputDataInfo= null;
+  // private String nonAdjFMFInputDataInfo= null;
+  // private Map<String, Double> twoNearestTGInfo= new HashMap<String, Double>(2);
+  // // --- The List<MeasurementCustom> where to save the adjusted forecast
+  // //     at the Spine location being processed.
+  // //private List<MeasurementCustom> spineLocationAdjForecast= null;
+  // private MeasurementCustomBundle spineLocationAdjForecast= null;
+  // // --- To store The initial NS_TIDE WL predictions at the Spine target location.
+  // // INPUT ONLY, not used if the spineLocationNonAdjForecast= is used
+  // //private List<MeasurementCustom> spineLocationNSTPred= null;
+  // // --- To store the non-adjusted WL NS Tide WL pred data at the Spine location
+  // //     possibly merged with the non-adjusted full model forecast WL data extracted
+  // //     at this same Spine locatiom.
+  // //     INPUT ONLY
+  // //private List<MeasurementCustom> spineLocationNonAdjData= null;
+  //  private MeasurementCustomBundle spineLocationNonAdjData= null;
+  // // --- To store the NS_TIDE WL non-ajusted predictions at the Spine locations that are
+  // //     the nearest to the tide gauges locations and that could possibly be merged with
+  // //      the non-adjusted full model forecast WL data extracted at this same Spine locatiom.
+  // //     INPUT ONLY
+  // //private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsNonAdjData= null;
+  // private Map<String, MeasurementCustomBundle> tgsNearestSpineLocationsNonAdjData= null;
 
-  private Map<String, Double> twoNearestTGInfo= new HashMap<String, Double>(2);
-
-  // --- The List<MeasurementCustom> where to save the adjusted forecast
-  //     at the Spine location being processed.
-  //private List<MeasurementCustom> spineLocationAdjForecast= null;
-  private MeasurementCustomBundle spineLocationAdjForecast= null;
-
-  // --- To store The initial NS_TIDE WL predictions at the Spine target location.
-  // INPUT ONLY, not used if the spineLocationNonAdjForecast= is used
-  //private List<MeasurementCustom> spineLocationNSTPred= null;
-
-  // --- To store the non-adjusted WL NS Tide WL pred data at the Spine location
-  //     possibly merged with the non-adjusted full model forecast WL data extracted
-  //     at this same Spine locatiom.
-  //     INPUT ONLY
-  //private List<MeasurementCustom> spineLocationNonAdjData= null;
-   private MeasurementCustomBundle spineLocationNonAdjData= null;
-
-  // --- To store the NS_TIDE WL non-ajusted predictions at the Spine locations that are
-  //     the nearest to the tide gauges locations and that could possibly be merged with
-  //      the non-adjusted full model forecast WL data extracted at this same Spine locatiom.
-  //     INPUT ONLY
-  //private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsNonAdjData= null;
-  private Map<String, MeasurementCustomBundle> tgsNearestSpineLocationsNonAdjData= null;
-
-  // --- To store the model adjusted forecast at the spine locations that are the
-  //     nearest to the tide gauges locations used for the adjustments.
-  //     INPUT ONLY
-  //private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsAdjForecast= null;
-  private Map<String, MeasurementCustomBundle> tgsNearestSpineLocationsAdjForecast= null;
+  // // --- To store the model adjusted forecast at the spine locations that are the
+  // //     nearest to the tide gauges locations used for the adjustments.
+  // //     INPUT ONLY
+  // //private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsAdjForecast= null;
+  // private Map<String, MeasurementCustomBundle> tgsNearestSpineLocationsAdjForecast= null;
 
   //private IWLAdjustment.Type adjType= null;
 
@@ -133,7 +129,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
 
       this.nonAdjFMFInputDataInfo= argsMap.get("--nonAdjFMFInputDataInfo");
 
-      slog.info(mmi+"Will use this.nonAdjFMFInputDataInfo="+this.nonAdjFMFInputDataInfo);
+      throw new RuntimeException(mmi+"Usage of the non-adjusted full model forecast not ready yet!!");
+       //slog.info(mmi+"Will use this.nonAdjFMFInputDataInfo="+this.nonAdjFMFInputDataInfo);
     }
 
     //slog.info(mmi+"Not ready yet!");
@@ -173,7 +170,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentType {
     }
 
     // --- Extract the relevant substrings that will be used to find the location tidal consts.
-    //    file on disk from the tidalConstsInputInfoStrSplit array
+    //     file on disk from the tidalConstsInputInfoStrSplit array
     final String tidalConstsTypeId= tidalConstsInputInfoStrSplit[1];
     final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
 

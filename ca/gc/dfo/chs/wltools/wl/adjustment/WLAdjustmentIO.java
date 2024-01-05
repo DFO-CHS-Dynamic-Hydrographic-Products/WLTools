@@ -84,8 +84,18 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   // --- could be one tide gauge OR one ship channel point location.
   protected WLLocation location= null;
 
-  // --- could be tide gauges OR any ship channel point locations.
+  // --- could be two or more tide gauges OR two or more ship channel point locations.
   protected List<WLLocation> locations= null;
+
+  // --- To store the considered region bounding box
+  //     EPSG:4326 coordinates (South-West corner at index 0
+  //     and North-East corber at index 1). The
+  //     region bounding box is built with the
+  //     smallest (lon,lat) coordinates for the SW
+  //     corner and the largest (lon,lat) coordinates
+  //     for the North-East corner. This is normally
+  //     used only by the SpineIPP and SpineFPP classes.
+  protected List<HBCoords> regionBBox= null;
 
   //protected String locationId= null;
   protected String locationIdInfo= null;
