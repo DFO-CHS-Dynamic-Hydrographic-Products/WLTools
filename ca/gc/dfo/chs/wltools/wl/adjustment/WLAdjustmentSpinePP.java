@@ -197,26 +197,19 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     this.locations.get(1).
       setConfig(mainJsonTGInfoMapObj.getJsonObject(this.locations.get(1).getIdentity()));
 
-    final double tgLoc0Lon= this.locations.get(0).getLongitude();
-    final double tgLoc0Lat= this.locations.get(0).getLatitude();
-    final double tgLoc1Lon= this.locations.get(1).getLongitude();
-    final double tgLoc1Lat= this.locations.get(1).getLatitude();    
-
-    final double tgLocationsHalfDistRadSquared=
-      Math.pow(0.5 * Trigonometry.getDistanceInRadians(tgLoc0Lon,tgLoc0Lat,tgLoc1Lon,tgLoc1Lat), 2);
+    // --- Now get the corresponding nearest ship channel points locations for those two TGs
+    //     from their json config:
+    final String tg0NearestSCLocId= this.locations.get(0).getNearestSpinePointId().
+      split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2] + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
     
-    final double tgLocationsCenterLon=
-      0.5 * (this.locations.get(0).getLongitude() + this.locations.get(1).getLongitude());
+    final String tg1NearestSCLocId= this.locations.get(1).getNearestSpinePointId().
+      split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2] + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
 
-    final double tgLocationsCenterLat=
-      0.5 * (this.locations.get(0).getLatitude() + this.locations.get(1).getLatitude());
-
-    slog.info(mmi+"tgLocationsCenterLon="+tgLocationsCenterLon);
-    slog.info(mmi+"tgLocationsCenterLat="+tgLocationsCenterLat);
-
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"tg0NearestSCLocId="+tg0NearestSCLocId);
+    slog.info(mmi+"tg1NearestSCLocId="+tg1NearestSCLocId);
     
+    // --- Now need to consider where to find the ship channel points locations
+    //     tidal consts. files in order to get their EPSG:4326 coordinates.
     if (!argsMap.keySet().contains("--tidalConstsInputInfo")) {
       throw new RuntimeException(mmi+
          "Must have the --tidalConstsInputInfo=<> defined in argsMap");
@@ -241,19 +234,9 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
                                  ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name()+
                                  " tidal prediction input file format allowed for now!!");
     }
-
-    //// --- Extract the relevant substrings that will be used to find the tidal consts.
-    ////     files for the ship channel point locations on disk from the tidalConstsInputInfoStrSplit array
-    //final String tidalConstsTypeId= tidalConstsInputInfoStrSplit[1];
-    //final String tidalConstsTypeModelId= tidalConstsInputInfoStrSplit[2];
-    //slog.info(mmi+"tidalConstsTypeId="+tidalConstsTypeId);
-    //slog.info(mmi+"tidalConstsTypeModelId="+tidalConstsTypeModelId);
      
     // --- Build the path of the main folder where we can find all tidal consts. files
     //       for all the ship channel point locations on disk.
-    //final String spineLocationsTCInputFolder= WLToolsIO.
-    //  getLocationNSTFHAFilePath(tidalConstsTypeId, tidalConstsTypeModelId, null); // this.locationIdInfo);
-
     final String mainTCInputDir= tidalConstsInputInfoStrSplit[1];
 	       
     slog.info(mmi+"mainTCInputDir="+mainTCInputDir);
@@ -262,6 +245,37 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
       WLToolsIO.getMainCfgDir() + mainTCInputDir + IWLToolsIO.SHIP_CHANNEL_POINTS_DEF_DIRNAME;
 
     slog.info(mmi+"shipChannelPointLocsTCInputDir="+shipChannelPointLocsTCInputDir);
+
+    final String tg0NearestSCLocTCFile=
+      shipChannelPointLocsTCInputDir + File.separator + tg0NearestSCLocId + IWLToolsIO.JSON_FEXT;
+    
+    final String tg1NearestSCLocTCFile=
+      shipChannelPointLocsTCInputDir + File.separator + tg1NearestSCLocId + IWLToolsIO.JSON_FEXT;
+
+    slog.info(mmi+"tg0NearestSCLocTCFile="+tg0NearestSCLocTCFile);
+    slog.info(mmi+"tg1NearestSCLocTCFile="+tg1NearestSCLocTCFile);
+
+    final HBCoords tg0NearestSCLocHBCoords= this.getHBCoordsFromNSTCJsonFile(tg0NearestSCLocTCFile);
+    final HBCoords tg1NearestSCLocHBCoords= this.getHBCoordsFromNSTCJsonFile(tg1NearestSCLocTCFile);
+
+    final double tg0NearestSCLocLon= tg0NearestSCLocHBCoords.getLongitude();
+    final double tg0NearestSCLocLat= tg0NearestSCLocHBCoords.getLatitude();
+    final double tg1NearestSCLocLon= tg1NearestSCLocHBCoords.getLongitude();
+    final double tg1NearestSCLocLat= tg1NearestSCLocHBCoords.getLatitude();    
+
+    final double tgsNearestsLocsDistRad= Trigonometry.
+      getDistanceInRadians(tg0NearestSCLocLon,tg0NearestSCLocLat,tg1NearestSCLocLon,tg1NearestSCLocLon);
+	
+    final double tgsNearestsLocsHalfDistRadSquared= Math.pow(0.5 * tgsNearestsLocsDistRad , 2);
+    
+    final double tgsNearestsLocsCenterLon=
+      0.5 * (tg0NearestSCLocHBCoords.getLongitude() + tg1NearestSCLocHBCoords.getLongitude());
+
+    final double tgsNearestsLocsCenterLat=
+      0.5 * (tg0NearestSCLocHBCoords.getLatitude() + tg1NearestSCLocHBCoords.getLatitude());
+
+    slog.info(mmi+"tgsNearestsLocsCenterLon="+tgsNearestsLocsCenterLon);
+    slog.info(mmi+"tgsNearestsLocsCenterLat="+tgsNearestsLocsCenterLat);
     
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);        

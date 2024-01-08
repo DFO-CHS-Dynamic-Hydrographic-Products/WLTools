@@ -117,7 +117,8 @@ abstract public class WLAdjustmentType
 	throw new RuntimeException(mmi+"twoSpineInterpTGIds must have length of 2 here!");
       }
       
-      this.locations= new ArrayList<WLLocation>(2);
+      //--- TODO: DO not assume that we only have two TGs here.
+      this.locations= new ArrayList<TideGaugeConfig>(2); //<WLLocation>(2);
       
       //this.location= new WLLocation(identity);
       this.locations.add(0, new TideGaugeConfig(twoSpineInterpTGIds[0]));

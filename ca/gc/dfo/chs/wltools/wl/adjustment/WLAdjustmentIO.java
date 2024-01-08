@@ -52,6 +52,7 @@ import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
@@ -84,8 +85,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   // --- could be one tide gauge OR one ship channel point location.
   protected WLLocation location= null;
 
-  // --- could be two or more tide gauges OR two or more ship channel point locations.
-  protected List<WLLocation> locations= null;
+  // --- could be two or more tide gauges.
+  protected List<TideGaugeConfig> locations= null;
 
   // --- To store the considered region bounding box
   //     EPSG:4326 coordinates (South-West corner at index 0
@@ -201,6 +202,34 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     slog.info(mmi+"this.adjType="+this.adjType.name());
 
     this.argsMapKeySet= argsMap.keySet();
+  }
+
+  // --- Returns the HBCoords read from a Non-Stationary tidal consts. json file.
+  final HBCoords getHBCoordsFromNSTCJsonFile(final String nsTCJsonFile) {
+
+    final String mmi= "getHBCoordsFromNSTCJsonFile: ";
+
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(nsTCJsonFile);
+
+    } catch (FileNotFoundException e) {
+      //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    // --- Get the main json object from the file
+    final JsonObject mainJsonTcDataInputObj=
+      Json.createReader(jsonFileInputStream).readObject();
+
+    // --- TODO: check if IWLLocation.INFO_JSON_DICT_KEY is a key
+    //     in the mainJsonTcDataInputObj
+    final JsonObject channelGridPointJsonObj=
+      mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
+  
+    return new HBCoords(channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
+			channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
   }
 
   // ---
