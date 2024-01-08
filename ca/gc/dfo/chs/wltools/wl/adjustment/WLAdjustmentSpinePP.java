@@ -17,10 +17,10 @@ import java.util.ArrayList;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.NavigableSet;
+import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
 //import java.util.stream.Stream;
-import java.nio.file.DirectoryStream;
-//import java.nio.file.PathMatcher;
-//import java.nio.file.FileSystems;
+//import java.nio.file.DirectoryStream;
 
 //import java.awt.geom.Point2D; //.Double;
 //import java.util.concurrent.ConcurrentHashMap;
@@ -76,6 +76,14 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
   //     point locations that are in-between those TGs
   //protected List<WLLocation> tgNeighLocations= null;
 
+  protected int scLoopEndIndex= -1;
+  protected int scLoopStartIndex= -1;
+    
+  protected int tg0NearestSCLocIndex= -1;
+  protected int tg1NearestSCLocIndex= -1;
+
+  protected String scLocFNameCommonPrefix= null;
+    
   // --- To store the considered region bounding box
   //     EPSG:4326 coordinates (South-West corner at index 0
   //     and North-East corber at index 1). The
@@ -90,34 +98,32 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
 
     //private Map<String, Double> twoNearestTGInfo= new HashMap<String, Double>(2);
 
-  protected Map<String, Double> shipChannelLocsDistances= null;
+  protected Map<String, Double> scLocsDistances= null;
     
   // --- The List<MeasurementCustom> where to store the adjusted long-term
-  //     "forecasts" at the ship channel point locations being processed.
-  //      -> OUTPUT
-  protected Map<String, List<MeasurementCustom>> shipChannelLocsAdjForecast= null;
+  //     "forecasts" at the ship channel point locations being processed (-> OUTPUT)
+  protected Map<String, List<MeasurementCustom>> scLocsAdjForecast= null;
   //private MeasurementCustomBundle spineLocationAdjForecast= null;
 
   // --- To store The initial NS_TIDE WL predictions at the Spine target location.
   // INPUT ONLY, not used if the spineLocationNonAdjForecast= is used
   //private List<MeasurementCustom> spineLocationNSTPred= null;
 
-  // --- To store the non-adjusted WL NS Tide WL pred (or FMF) data at the Spine
+  // --- To store the non-adjusted WL NS Tide WL pred (or FMF) data at the shio channel
   //     ship channel point locations (INPUT ONLY)
   //private List<MeasurementCustom> spineLocationNonAdjData= null;
-  protected Map<String, MeasurementCustomBundle> shipChannelLocsNonAdjData= null;
+  //protected Map<String, MeasurementCustomBundle> shipChannelLocsNonAdjData= null;
 
   // --- To store the NS_TIDE WL non-ajusted predictions at the Spine locations that are
   //     the nearest to the nearest tide gauges locations
   //     INPUT ONLY
   //private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsNonAdjData= null;
-  protected Map<String, MeasurementCustomBundle> tgsNearestSpineLocationsNonAdjData= null;
+  //protected Map<String, MeasurementCustomBundle> tgsNearestSpineLocationsNonAdjData= null;
 
-  // --- To store the model adjusted forecast at the spine locations that are the
-  //     nearest to the tide gauges locations used for the adjustments.
-  //     INPUT ONLY
+  // --- To store the model adjusted forecast at the ship channel points locations that are the
+  //     nearest to the tide gauges locations used for the adjustments (INPUT ONLY)
   //private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsAdjForecast= null;
-  protected Map<String, MeasurementCustomBundle> tgsNearestSpineLocationsAdjForecast= null;
+  protected Map<String, MeasurementCustomBundle> tgsNearestSCLocationsAdjForecast= null;
 
   //private IWLAdjustment.Type adjType= null;
 
@@ -294,27 +300,27 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     //     The distance in radians between the mid-point and the in-between ship channel points locations
     //     should be smaller that the radius of this circle.
     
-    final int tg0NearestSCLocIndex= Integer.
+    this.tg0NearestSCLocIndex= Integer.
       parseInt(tg0NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[1]);
     
-    final int tg1NearestSCLocIndex= Integer.
+    this.tg1NearestSCLocIndex= Integer.
       parseInt(tg1NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[1]);
 
-    slog.info(mmi+"tg0NearestSCLocIndex="+tg0NearestSCLocIndex);
-    slog.info(mmi+"tg1NearestSCLocIndex="+tg1NearestSCLocIndex);
+    slog.info(mmi+"this.tg0NearestSCLocIndex="+this.tg0NearestSCLocIndex);
+    slog.info(mmi+"this.tg1NearestSCLocIndex="+this.tg1NearestSCLocIndex);
 
     // --- Need to have a HBCoords object reference for the
     //     spatial linear interpolation of FMF residuals.
     HBCoords tgNearestSCLocCoordsRef= tg0NearestSCLocHBCoords;
     
-    int loopStartIndex= tg0NearestSCLocIndex + 1;
-    int loopEndIndex=   tg1NearestSCLocIndex - 1;
+    this.scLoopStartIndex= this.tg0NearestSCLocIndex + 1;
+    this.scLoopEndIndex=   this.tg1NearestSCLocIndex - 1;
 
-    // --- DO NOT ASSUME that tg0NearestSCLocIndex is smaller than tg1NearestSCLocIndex!!
-    if (tg0NearestSCLocIndex > tg1NearestSCLocIndex) {
+    // --- DO NOT ASSUME HERE that this.tg0NearestSCLocIndex is smaller than this.tg1NearestSCLocIndex!!
+    if (this.tg0NearestSCLocIndex > this.tg1NearestSCLocIndex) {
 	
-      loopStartIndex= tg1NearestSCLocIndex + 1;
-      loopEndIndex=  tg0NearestSCLocIndex - 1;
+      this.scLoopStartIndex= this.tg1NearestSCLocIndex + 1;
+      this.scLoopEndIndex=   this.tg0NearestSCLocIndex - 1;
 
       // --- Also need to use the HBCoord object of the tg1 here
       //     for the tgNearestSCLocCoordsRef (convention of using
@@ -325,23 +331,25 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     final double tgNearestSCLocLonRef= tgNearestSCLocCoordsRef.getLongitude();
     final double tgNearestSCLocLatRef= tgNearestSCLocCoordsRef.getLatitude();
     
-    slog.info(mmi+"loopStartIndex="+loopStartIndex);
-    slog.info(mmi+"loopEndIndex="+loopEndIndex);
+    slog.info(mmi+"this.scLoopStartIndex="+this.scLoopStartIndex);
+    slog.info(mmi+"this.scLoopEndIndex="+this.scLoopEndIndex);
 
-    // --- Get the file name prefix string to use.
-    final String scLocFNameShortPrefix= tg0NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
+    // --- Get the common file name prefix string to use for the ship channel points locations
+    this.scLocFNameCommonPrefix= tg0NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
 
-    this.shipChannelLocsDistances= new HashMap<String,Double>();
-    
+    this.scLocsDistances= new HashMap<String,Double>();
+
     // --- Get the HBCoords info of all the in-between ship channel points locations and also
     //     read the related prediction data for them.
-    for (int idx= loopStartIndex; idx <= loopEndIndex; idx++) {
+    for (int idx= this.scLoopStartIndex; idx <= this.scLoopEndIndex; idx++) {
 
-      final String scLocFNameLongPrefix= scLocFNameShortPrefix +
+      // --- Specific file name prefix string to use for the ship channel point location
+      //     being processed
+      final String scLocFNameSpecPrefix= this.scLocFNameCommonPrefix +
 	IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(idx);	
 
       final String scLocTCFile= shipChannelPointLocsTCInputDir + File.separator +
-	scLocFNameLongPrefix + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;	
+	scLocFNameSpecPrefix + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;	
 
       //slog.info(mmi+"scLocTCFile="+scLocTCFile);
       //slog.info(mmi+"Debug System.exit(0)");
@@ -358,7 +366,7 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
       //slog.info(mmi+"distanceFromMidPoint="+distanceFromMidPoint+", tgsNearestsLocsHalfDistRad="+tgsNearestsLocsHalfDistRad);
 
       if (distanceFromMidPoint > tgsNearestsLocsHalfDistRad) {
-	throw new RuntimeException(mmi+"distanceFromMidPoint > tgsNearestsLocsHalfDistRad for ship channell point location -> "+scLocFNameLongPrefix);
+	throw new RuntimeException(mmi+"distanceFromMidPoint > tgsNearestsLocsHalfDistRad for ship channell point location -> "+scLocFNameSpecPrefix);
       }
 
       //slog.info(mmi+"Debug System.exit(0)");
@@ -369,15 +377,15 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
 	getDistanceInRadians(scLocHBLon, scLocHBLat, tgNearestSCLocLonRef, tgNearestSCLocLatRef);
 
       // --- Store this distanceFromRef for later usage.
-      this.shipChannelLocsDistances.put(scLocFNameLongPrefix, distanceFromRef);
+      this.scLocsDistances.put(scLocFNameSpecPrefix, distanceFromRef);
 
-      // --- Now read the prediction data for this in-between ship channel point location.
-      // final String 
-      
+      //// --- Now read the prediction data for this in-between ship channel point location.
+      //final String fileGlobExpr=  
+      //final PathMatcher fileMatch= FileSystems.getDefault().getPathMatcher( "glob:"+)
     }
     
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);        
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);        
  
   } // --- main constructor
     

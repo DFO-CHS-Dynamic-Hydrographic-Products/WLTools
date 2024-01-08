@@ -2,6 +2,8 @@ package ca.gc.dfo.chs.wltools;
 
 // ---
 import java.util.List;
+import java.util.Iterator;
+
 import org.slf4j.Logger;
 //import java.time.Instant;
 //import java.util.HashMap;
@@ -11,6 +13,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
+
+// ---
+import java.nio.file.Path;
+import java.nio.file.DirectoryStream;
 
 //import javax.validation.constraints.NotNull;
 
@@ -96,7 +102,31 @@ public class WLToolsIO implements IWLToolsIO {
     final File fileOutThere= new File(filePath);
 
     return (fileOutThere.exists()) ? true: false;
+  }
 
+  // --- TODO: add some fool-proof checks
+  final public static String getSCLocFilePath(final List<Path> scLocsFilesPathsList, final String scLocFNameSubStr) {
+      
+      //final String mmi= "getSCLocFilePath: ";
+
+    String scLocFilePathRet= null;
+    
+    for (final Path scLocFilePath: scLocsFilesPathsList) {
+	
+      final String checkFPath= scLocFilePath.toString();
+
+      //slog.info(mmi+"checkFPath="+checkFPath);
+      
+      if (checkFPath.contains(scLocFNameSubStr)) {
+	  
+    	scLocFilePathRet= checkFPath;
+    	break;  
+       }
+    }
+
+    //slog.info(mmi+"scLocFilePathRet="+scLocFilePathRet);
+
+    return scLocFilePathRet;
   }
 
   // --- Build the path of the tide gauges info, file name in the cfg DB folders.
