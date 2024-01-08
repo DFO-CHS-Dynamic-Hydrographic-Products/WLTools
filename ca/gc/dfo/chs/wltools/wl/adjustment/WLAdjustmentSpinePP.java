@@ -90,9 +90,12 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
 
     //private Map<String, Double> twoNearestTGInfo= new HashMap<String, Double>(2);
 
+  protected Map<String, Double> shipChannelLocsDistances= null;
+    
   // --- The List<MeasurementCustom> where to store the adjusted long-term
-  //     "forecasts" at the Spine ship channel point locations being processed.
-  protected Map<String, List<MeasurementCustom>> spineLocationAdjForecast= null;
+  //     "forecasts" at the ship channel point locations being processed.
+  //      -> OUTPUT
+  protected Map<String, List<MeasurementCustom>> shipChannelLocsAdjForecast= null;
   //private MeasurementCustomBundle spineLocationAdjForecast= null;
 
   // --- To store The initial NS_TIDE WL predictions at the Spine target location.
@@ -102,7 +105,7 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
   // --- To store the non-adjusted WL NS Tide WL pred (or FMF) data at the Spine
   //     ship channel point locations (INPUT ONLY)
   //private List<MeasurementCustom> spineLocationNonAdjData= null;
-  protected Map<String, MeasurementCustomBundle> spineLocationNonAdjData= null;
+  protected Map<String, MeasurementCustomBundle> shipChannelLocsNonAdjData= null;
 
   // --- To store the NS_TIDE WL non-ajusted predictions at the Spine locations that are
   //     the nearest to the nearest tide gauges locations
@@ -199,11 +202,11 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
 
     // --- Now get the corresponding nearest ship channel points locations for those two TGs
     //     from their json config:
-    final String tg0NearestSCLocId= this.locations.get(0).getNearestSpinePointId().
-      split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2] + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
+    final String tg0NearestSCLocId= this.locations.get(0).
+      getNearestSpinePointId().split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2]; //+ INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
     
-    final String tg1NearestSCLocId= this.locations.get(1).getNearestSpinePointId().
-      split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2] + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
+    final String tg1NearestSCLocId= this.locations.get(1).
+      getNearestSpinePointId().split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2]; // + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
 
     slog.info(mmi+"tg0NearestSCLocId="+tg0NearestSCLocId);
     slog.info(mmi+"tg1NearestSCLocId="+tg1NearestSCLocId);
@@ -236,7 +239,7 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     }
      
     // --- Build the path of the main folder where we can find all tidal consts. files
-    //       for all the ship channel point locations on disk.
+    //     for all the ship channel point locations on disk.
     final String mainTCInputDir= tidalConstsInputInfoStrSplit[1];
 	       
     slog.info(mmi+"mainTCInputDir="+mainTCInputDir);
@@ -246,15 +249,18 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
 
     slog.info(mmi+"shipChannelPointLocsTCInputDir="+shipChannelPointLocsTCInputDir);
 
-    final String tg0NearestSCLocTCFile=
-      shipChannelPointLocsTCInputDir + File.separator + tg0NearestSCLocId + IWLToolsIO.JSON_FEXT;
+    // --- Build the paths to find the tidal consts. files of the two ship channel point locations
+    //     that are the nearests to the two TGs considered.
+    final String tg0NearestSCLocTCFile= shipChannelPointLocsTCInputDir + File.separator +
+      tg0NearestSCLocId + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
     
-    final String tg1NearestSCLocTCFile=
-      shipChannelPointLocsTCInputDir + File.separator + tg1NearestSCLocId + IWLToolsIO.JSON_FEXT;
+    final String tg1NearestSCLocTCFile= shipChannelPointLocsTCInputDir + File.separator +
+      tg1NearestSCLocId + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
 
     slog.info(mmi+"tg0NearestSCLocTCFile="+tg0NearestSCLocTCFile);
     slog.info(mmi+"tg1NearestSCLocTCFile="+tg1NearestSCLocTCFile);
 
+    // --- Get the HBCoords objects from the tidal consts. files of the two ship channel point locations
     final HBCoords tg0NearestSCLocHBCoords= this.getHBCoordsFromNSTCJsonFile(tg0NearestSCLocTCFile);
     final HBCoords tg1NearestSCLocHBCoords= this.getHBCoordsFromNSTCJsonFile(tg1NearestSCLocTCFile);
 
@@ -263,24 +269,115 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     final double tg1NearestSCLocLon= tg1NearestSCLocHBCoords.getLongitude();
     final double tg1NearestSCLocLat= tg1NearestSCLocHBCoords.getLatitude();    
 
-    final double tgsNearestsLocsDistRad= Trigonometry.
-      getDistanceInRadians(tg0NearestSCLocLon,tg0NearestSCLocLat,tg1NearestSCLocLon,tg1NearestSCLocLon);
-	
-    final double tgsNearestsLocsHalfDistRadSquared= Math.pow(0.5 * tgsNearestsLocsDistRad , 2);
-    
-    final double tgsNearestsLocsCenterLon=
-      0.5 * (tg0NearestSCLocHBCoords.getLongitude() + tg1NearestSCLocHBCoords.getLongitude());
+    // --- Calculate the polar stereographic great circle half-distance in radians between the two ship channel point locations
+    final double tgsNearestsLocsHalfDistRad= 0.5* Trigonometry.
+      getDistanceInRadians(tg0NearestSCLocLon,tg0NearestSCLocLat,tg1NearestSCLocLon,tg1NearestSCLocLat);
 
-    final double tgsNearestsLocsCenterLat=
-      0.5 * (tg0NearestSCLocHBCoords.getLatitude() + tg1NearestSCLocHBCoords.getLatitude());
+    // --- Calulate the square of the half distance between the two ship channel point locations
+    //     to use it later (it is in fact the radius of the circle that has its center at
+    //     the mid-point between that are the nearests to the two TGs considered
+    //final double tgsNearestsLocsHalfDistRadSquared= Math.pow(0.5 * tgsNearestsLocsDistRad, 2);
+    
+    // --- longitude of the mid-point between the two ship channel point locations
+    final double tgsNearestsLocsCenterLon= 0.5 * (tg0NearestSCLocLon + tg1NearestSCLocLon);
+
+    // --- latitude of the mid-point between the two ship channel point locations
+    final double tgsNearestsLocsCenterLat= 0.5 * (tg0NearestSCLocLat + tg1NearestSCLocLat);
 
     slog.info(mmi+"tgsNearestsLocsCenterLon="+tgsNearestsLocsCenterLon);
     slog.info(mmi+"tgsNearestsLocsCenterLat="+tgsNearestsLocsCenterLat);
+
+    // --- Now get the HBCoords of all the ship channel points locations that are in-between
+    //     the two ship channel points locations that are the nearests to the two TGs considered.
+    //     Verify at the same time if they are all inside the circle which center is located at the mid-point
+    //     between the two ship channel points locations that are the nearests to the two TGs considered.
+    //     The distance in radians between the mid-point and the in-between ship channel points locations
+    //     should be smaller that the radius of this circle.
+    
+    final int tg0NearestSCLocIndex= Integer.
+      parseInt(tg0NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[1]);
+    
+    final int tg1NearestSCLocIndex= Integer.
+      parseInt(tg1NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[1]);
+
+    slog.info(mmi+"tg0NearestSCLocIndex="+tg0NearestSCLocIndex);
+    slog.info(mmi+"tg1NearestSCLocIndex="+tg1NearestSCLocIndex);
+
+    // --- Need to have a HBCoords object reference for the
+    //     spatial linear interpolation of FMF residuals.
+    HBCoords tgNearestSCLocCoordsRef= tg0NearestSCLocHBCoords;
+    
+    int loopStartIndex= tg0NearestSCLocIndex + 1;
+    int loopEndIndex=   tg1NearestSCLocIndex - 1;
+
+    // --- DO NOT ASSUME that tg0NearestSCLocIndex is smaller than tg1NearestSCLocIndex!!
+    if (tg0NearestSCLocIndex > tg1NearestSCLocIndex) {
+	
+      loopStartIndex= tg1NearestSCLocIndex + 1;
+      loopEndIndex=  tg0NearestSCLocIndex - 1;
+
+      // --- Also need to use the HBCoord object of the tg1 here
+      //     for the tgNearestSCLocCoordsRef (convention of using
+      //     the smallest ship channel point location index for it)
+      tgNearestSCLocCoordsRef= tg1NearestSCLocHBCoords;
+    }
+
+    final double tgNearestSCLocLonRef= tgNearestSCLocCoordsRef.getLongitude();
+    final double tgNearestSCLocLatRef= tgNearestSCLocCoordsRef.getLatitude();
+    
+    slog.info(mmi+"loopStartIndex="+loopStartIndex);
+    slog.info(mmi+"loopEndIndex="+loopEndIndex);
+
+    // --- Get the file name prefix string to use.
+    final String scLocFNameShortPrefix= tg0NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
+
+    this.shipChannelLocsDistances= new HashMap<String,Double>();
+    
+    // --- Get the HBCoords info of all the in-between ship channel points locations and also
+    //     read the related prediction data for them.
+    for (int idx= loopStartIndex; idx <= loopEndIndex; idx++) {
+
+      final String scLocFNameLongPrefix= scLocFNameShortPrefix +
+	IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(idx);	
+
+      final String scLocTCFile= shipChannelPointLocsTCInputDir + File.separator +
+	scLocFNameLongPrefix + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;	
+
+      //slog.info(mmi+"scLocTCFile="+scLocTCFile);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+      
+      final HBCoords scLocHBCoords= this.getHBCoordsFromNSTCJsonFile(scLocTCFile);
+
+      final double scLocHBLon= scLocHBCoords.getLongitude();
+      final double scLocHBLat= scLocHBCoords.getLatitude();
+
+      final double distanceFromMidPoint= Trigonometry.
+	getDistanceInRadians(scLocHBLon, scLocHBLat, tgsNearestsLocsCenterLon, tgsNearestsLocsCenterLat);
+
+      //slog.info(mmi+"distanceFromMidPoint="+distanceFromMidPoint+", tgsNearestsLocsHalfDistRad="+tgsNearestsLocsHalfDistRad);
+
+      if (distanceFromMidPoint > tgsNearestsLocsHalfDistRad) {
+	throw new RuntimeException(mmi+"distanceFromMidPoint > tgsNearestsLocsHalfDistRad for ship channell point location -> "+scLocFNameLongPrefix);
+      }
+
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+      // --- Now calculate the distance from the HBCoords reference.
+      final double distanceFromRef= Trigonometry.
+	getDistanceInRadians(scLocHBLon, scLocHBLat, tgNearestSCLocLonRef, tgNearestSCLocLatRef);
+
+      // --- Store this distanceFromRef for later usage.
+      this.shipChannelLocsDistances.put(scLocFNameLongPrefix, distanceFromRef);
+
+      // --- Now read the prediction data for this in-between ship channel point location.
+      // final String 
+      
+    }
     
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);        
-
-  
  
   } // --- main constructor
     
