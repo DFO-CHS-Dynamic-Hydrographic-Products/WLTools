@@ -74,11 +74,11 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  // --- To store the non-ajusted WL predictions at the ship channel point locations that are
+  // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
   //     the nearest to the nearest tide gauges locations (INPUT ONLY)
   protected Map<String, MeasurementCustomBundle> tgsNearestSCLocationsNonAdjData= null;
 
-  // --- To store the non-ajusted WL predictions at the ship channel point locations that are
+  // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
   //     in-between the tide gauges locations being processed (INPUT ONLY) 
   protected Map<String, MeasurementCustomBundle> scLocsNonAdjData= null;
     
@@ -169,6 +169,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       throw new RuntimeException(mmi+"nsTidePredInputDataDirFilesList cannot be empty here!");
     }
 
+    this.scLocsNonAdjData= new HashMap<String, MeasurementCustomBundle>();
+    
     // --- Now read the related WL prediction data for the in-between ship channel
     //     points locations.
     for (int idx= this.scLoopStartIndex; idx <= this.scLoopEndIndex; idx++) {
@@ -181,7 +183,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       //slog.info(mmi+"scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
       
       final String scLocFilePath= WLToolsIO.
-     	getSCLocFilePath(nsTidePredInputDataDirFilesList,scLocFNameSpecSubStr);
+     	getSCLocFilePath(nsTidePredInputDataDirFilesList, scLocFNameSpecSubStr);
 
       try {
         scLocFilePath.length();
@@ -189,20 +191,51 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
         throw new RuntimeException(mmi+npe);
       }
 
-      //slog.info(mmi+"scLocFilePath="+scLocFilePath);
+      slog.info(mmi+"Reading scLocFilePath="+scLocFilePath+" for scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
       
+      this.scLocsNonAdjData.put(scLocFNameSpecSubStr,
+				new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(scLocFilePath, -1L, 0.0)));
+       
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
-      
     }
-	
+
+    // --- now read the non-adjusted WL prediction (or non-adjusted FMF) at the two ship channel locations
+    //     that are the nearest to the two tide gauges being processed. Use the convention that the ship channel
+    //     locations are ordered from lower to upper indices.
+
+    if (this.scLoopStartIndex == 0 ) {
+      throw new RuntimeException(mmi+"this.scLoopStartIndex cannot be 0 here!");
+    } 
+
+    // --- Lower side ship channel location: subtract 1 from scLoopStartIndex to build its proper str id
+    final String lowerSideScLocStrId= this.scLocFNameCommonPrefix +
+      IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopStartIndex-1);
+
+    final String lowerSideScLocFile= WLToolsIO.
+      getSCLocFilePath(nsTidePredInputDataDirFilesList, lowerSideScLocStrId);
+
+    this.scLocsNonAdjData.put(lowerSideScLocStrId,
+			      new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(lowerSideScLocFile, -1L, 0.0)));
+    
+    // --- upper side ship channel location: add 1 from scLoopEndIndex to build its proper str id
+    final String upperSideScLocStrId= this.scLocFNameCommonPrefix +
+      IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopEndIndex+1);
+
+    final String upperSideScLocFile= WLToolsIO.
+      getSCLocFilePath(nsTidePredInputDataDirFilesList, upperSideScLocStrId);
+
+    this.scLocsNonAdjData.put(upperSideScLocStrId,
+			      new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(upperSideScLocFile, -1L, 0.0)));
+    
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
     slog.info(mmi+"end");
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
-  }
+    
+  } // --- main constructor
 
   ///**
   // * Comments please.

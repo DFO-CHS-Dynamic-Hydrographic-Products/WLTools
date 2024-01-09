@@ -306,17 +306,26 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     this.tg1NearestSCLocIndex= Integer.
       parseInt(tg1NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[1]);
 
+    if (this.tg1NearestSCLocIndex == 0) {
+      throw new RuntimeException(mmi+"this.tg1NearestSCLocIndex cannot be 0 here!!");
+    }
+    
+    if (this.tg1NearestSCLocIndex == this.tg0NearestSCLocIndex) {
+      throw new RuntimeException(mmi+"this.tg1NearestSCLocIndex and this.tg0NearestSCLocIndex cannot be the same here!!");
+    }
+   
     slog.info(mmi+"this.tg0NearestSCLocIndex="+this.tg0NearestSCLocIndex);
     slog.info(mmi+"this.tg1NearestSCLocIndex="+this.tg1NearestSCLocIndex);
 
     // --- Need to have a HBCoords object reference for the
     //     spatial linear interpolation of FMF residuals.
     HBCoords tgNearestSCLocCoordsRef= tg0NearestSCLocHBCoords;
-    
+
+    // --- Case where this.tg0NearestSCLocIndex < this.tg1NearestSCLocIndex
     this.scLoopStartIndex= this.tg0NearestSCLocIndex + 1;
     this.scLoopEndIndex=   this.tg1NearestSCLocIndex - 1;
 
-    // --- DO NOT ASSUME HERE that this.tg0NearestSCLocIndex is smaller than this.tg1NearestSCLocIndex!!
+    // --- DO NOT ASSUME HERE that this.tg0NearestSCLocIndex is always smaller than this.tg1NearestSCLocIndex!!
     if (this.tg0NearestSCLocIndex > this.tg1NearestSCLocIndex) {
 	
       this.scLoopStartIndex= this.tg1NearestSCLocIndex + 1;
