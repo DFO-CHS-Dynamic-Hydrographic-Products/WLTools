@@ -82,6 +82,12 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
   protected int tg0NearestSCLocIndex= -1;
   protected int tg1NearestSCLocIndex= -1;
 
+  protected String lowerSideScLocStrId= null;
+  protected String upperSideScLocStrId= null;
+
+  protected String lowerSideScLocTGId= null;
+  protected String upperSideScLocTGId= null;
+
   protected String scLocFNameCommonPrefix= null;
     
   // --- To store the considered region bounding box
@@ -101,29 +107,18 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
   protected Map<String, Double> scLocsDistances= null;
     
   // --- The List<MeasurementCustom> where to store the adjusted long-term
-  //     "forecasts" at the ship channel point locations being processed (-> OUTPUT)
-  protected Map<String, List<MeasurementCustom>> scLocsAdjForecast= null;
-  //private MeasurementCustomBundle spineLocationAdjForecast= null;
+  //     "foreDictions" or "predCasts" at the ship channel point locations being processed (-> OUTPUT)
+  //
+  //     NOTES:
+  //        1. Map<String,> size is determined by the number of in-between ship channel points locations
+  //           that we have for a given pair of surrounding tide gauges.
+  //        2. List<MeasurementCustom> size is determined by the duration in the future and the time increment used.
+  protected Map<String, List<MeasurementCustom>> scLocsAdjLTFP= null;
 
-  // --- To store The initial NS_TIDE WL predictions at the Spine target location.
-  // INPUT ONLY, not used if the spineLocationNonAdjForecast= is used
-  //private List<MeasurementCustom> spineLocationNSTPred= null;
-
-  // --- To store the non-adjusted WL NS Tide WL pred (or FMF) data at the shio channel
-  //     ship channel point locations (INPUT ONLY)
-  //private List<MeasurementCustom> spineLocationNonAdjData= null;
-  //protected Map<String, MeasurementCustomBundle> shipChannelLocsNonAdjData= null;
-
-  // --- To store the NS_TIDE WL non-ajusted predictions at the Spine locations that are
-  //     the nearest to the nearest tide gauges locations
-  //     INPUT ONLY
-  //private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsNonAdjData= null;
-  //protected Map<String, MeasurementCustomBundle> tgsNearestSpineLocationsNonAdjData= null;
-
-  // --- To store the model adjusted forecast at the ship channel points locations that are the
-  //     nearest to the tide gauges locations used for the adjustments (INPUT ONLY)
-  //private Map<String, List<MeasurementCustom>> tgsNearestSpineLocationsAdjForecast= null;
-  protected Map<String, MeasurementCustomBundle> tgsNearestSCLocationsAdjForecast= null;
+  // --- To store the model adjusted forecast (medium term 48H) at the two ship channel points
+  //     locations that are the nearest to the tide gauges locations used for the adjustments (INPUT ONLY)
+  protected Map<String, MeasurementCustomBundle>
+    tgsNearestSCLocsAdjFMF= new HashMap<String, MeasurementCustomBundle>(2); //null;
 
   //private IWLAdjustment.Type adjType= null;
 
@@ -142,9 +137,10 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
       
     super(spinePPType,argsMap);
 
-    final String mmi=
-      "WLAdjustmentSpinePP(final WLAdjustment.Type spinePPType , final Map<String,String> argsMap) constructor ";
+    final String mmi= "WLAdjustmentSpinePP main constructor ";
 
+    slog.info(mmi+"start");
+    
     try {
       this.locations.size();
     } catch (NullPointerException npe){
@@ -164,7 +160,7 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
 
     // --- Get the path to the tide gauges info file on disk.
     final String tideGaugesInfoFile= WLToolsIO.
-	getTideGaugeInfoFilePath(tideGaugeLocationsDefFileName);
+      getTideGaugeInfoFilePath(tideGaugeLocationsDefFileName);
 
     slog.info(mmi+"tideGaugesInfoFile="+tideGaugesInfoFile); 	
     //slog.info(mmi+"Debug System.exit(0)");
@@ -298,7 +294,7 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     //     Verify at the same time if they are all inside the circle which center is located at the mid-point
     //     between the two ship channel points locations that are the nearests to the two TGs considered.
     //     The distance in radians between the mid-point and the in-between ship channel points locations
-    //     should be smaller that the radius of this circle.
+    //     MUST be smaller that the radius of this circle.
     
     this.tg0NearestSCLocIndex= Integer.
       parseInt(tg0NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[1]);
@@ -325,11 +321,17 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     this.scLoopStartIndex= this.tg0NearestSCLocIndex + 1;
     this.scLoopEndIndex=   this.tg1NearestSCLocIndex - 1;
 
+    this.lowerSideScLocTGId= this.locations.get(0).getIdentity();
+    this.upperSideScLocTGId= this.locations.get(1).getIdentity();
+
     // --- DO NOT ASSUME HERE that this.tg0NearestSCLocIndex is always smaller than this.tg1NearestSCLocIndex!!
     if (this.tg0NearestSCLocIndex > this.tg1NearestSCLocIndex) {
 	
       this.scLoopStartIndex= this.tg1NearestSCLocIndex + 1;
       this.scLoopEndIndex=   this.tg0NearestSCLocIndex - 1;
+
+      this.lowerSideScLocTGId= this.locations.get(1).getIdentity();
+      this.upperSideScLocTGId= this.locations.get(0).getIdentity();      
 
       // --- Also need to use the HBCoord object of the tg1 here
       //     for the tgNearestSCLocCoordsRef (convention of using
@@ -342,7 +344,13 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     
     slog.info(mmi+"this.scLoopStartIndex="+this.scLoopStartIndex);
     slog.info(mmi+"this.scLoopEndIndex="+this.scLoopEndIndex);
-
+    
+    slog.info(mmi+"this.lowerSideScLocTGId="+this.lowerSideScLocTGId);
+    slog.info(mmi+"this.upperSideScLocTGId="+this.upperSideScLocTGId);
+    
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+    
     // --- Get the common file name prefix string to use for the ship channel points locations
     this.scLocFNameCommonPrefix= tg0NearestSCLocId.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
 
@@ -392,6 +400,86 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
       //final String fileGlobExpr=  
       //final PathMatcher fileMatch= FileSystems.getDefault().getPathMatcher( "glob:"+)
     }
+
+    // --- Lower side ship channel location: subtract 1 from scLoopStartIndex to build its proper str id
+    this.lowerSideScLocStrId= this.scLocFNameCommonPrefix +
+      IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopStartIndex-1);    
+
+    // --- upper side ship channel location: add 1 from scLoopEndIndex to build its proper str id
+    this.upperSideScLocStrId= this.scLocFNameCommonPrefix +
+      IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopEndIndex+1);    
+
+    // --- Now read the adjusted FMF data at the two ship channel locations
+    //     that are the nearest to the two tide gauges being processed.
+    if (!argsMap.keySet().contains("--adjFMFAtTGSInputDataInfo")) {
+      throw new RuntimeException(mmi+
+         "Must have the --adjFMFAtTGSInputDataInfo=<Folder where to find all the adj. FMF at tide gauges> defined in argsMap");
+    }
+
+    // --- Now read the adjusted FMF WL data at the two ship channel points locations
+    //     that are the nearest to the two tide gauges that are now processed.
+    final String adjFMFAtTGSInputDataInfo= argsMap.get("--adjFMFAtTGSInputDataInfo");
+
+    final String [] adjFMFAtTGSInputDataInfoStrSplit=
+      adjFMFAtTGSInputDataInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+    if (adjFMFAtTGSInputDataInfoStrSplit.length != 2 ) {
+      throw new RuntimeException(mmi+"ERROR: adjFMFAtTGSInputDataInfoStrSplit.length != 2 !!!");
+    }
+
+    // --- Get the input file(s) format from the adjFMFAtTGSInputDataInfoStrSplit two Strings array
+    final String adjFMFAtTGSInputDataInfoFileFmt= adjFMFAtTGSInputDataInfoStrSplit[0];
+    
+    // --- Input file(s) format is not the same depending on the Spine adjustment type.
+    //     TODO: We will eventually only use the S-104 DCF8 HDF5 IO format at some point.
+    if (spinePPType == IWLAdjustment.Type.SpineIPP) {
+
+      // --- CHS_JSON for now for the SpineIP type
+      if (!adjFMFAtTGSInputDataInfoFileFmt.equals(IWLToolsIO.Format.CHS_JSON.name())) {
+	
+        throw new RuntimeException(mmi+"Only the:"+IWLToolsIO.Format.CHS_JSON.name()+
+                                 " adj. FMF WL data input file format allowed for now!!");
+      }
+      
+      // --- Get the paths of all the ship channel points locations adjusted FMF WL
+      //     data input files in a List<Path> object 
+      final List<Path> adjFMFAtTGSInputDataDirFilesList= WLToolsIO.
+	getRelevantFilesList(adjFMFAtTGSInputDataInfoStrSplit[1], "*"+IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX+"*"+IWLToolsIO.JSON_FEXT);
+
+      // --- Get the path of the ship channel point location adjusted FMF WL data
+      //     that is the nearest to the lower side (in terms of ship channel locations indices)
+      //     tide gauge.
+      final String fmfAdjAtLowerSideTGFile= WLToolsIO.
+	getSCLocFilePath(adjFMFAtTGSInputDataDirFilesList,this.lowerSideScLocTGId);
+
+      slog.info(mmi+"fmfAdjAtLowerSideTGFile="+fmfAdjAtLowerSideTGFile);
+
+      // --- Read the adjusted FMF WL data for the ship channel point location
+      //     that is the nearest to the lower side tide gauge.
+      this.tgsNearestSCLocsAdjFMF.put(this.lowerSideScLocTGId,
+				      new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(fmfAdjAtLowerSideTGFile, -1L, 0.0)));
+
+      // --- Get the path of the ship channel point location adjusted FMF WL data
+      //     that is the nearest to the upper side (in terms of ship channel locations indices)
+      //     tide gauge.
+      final String fmfAdjAtUpperSideTGFile= WLToolsIO.
+	getSCLocFilePath(adjFMFAtTGSInputDataDirFilesList,this.upperSideScLocTGId);
+
+      slog.info(mmi+"fmfAdjAtUpperSideTGFile="+fmfAdjAtUpperSideTGFile);
+
+      // --- Read the adjusted FMF WL data for the ship channel point location
+      //     that is the nearest to the upper side tide gauge.
+      this.tgsNearestSCLocsAdjFMF.put(this.upperSideScLocTGId,
+      				      new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(fmfAdjAtUpperSideTGFile, -1L, 0.0)));      
+      
+    } else if (spinePPType == IWLAdjustment.Type.SpineFPP) {
+       throw new RuntimeException(mmi+"SpineFPP type not ready yet!");
+       
+    } else {
+       throw new RuntimeException(mmi+"Invalid spinePPType -> "+spinePPType.name());
+    }
+
+    slog.info(mmi+"end");
     
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);        

@@ -639,6 +639,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     final String mmi= "getWLDataInJsonFmt: ";
 
+    slog.debug(mmi+"start");
+    
     //ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
 
     if ( timeIncrToUseSeconds > 0L &&
@@ -655,8 +657,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       throw new RuntimeException(mmi+npe);
     }
 
-    slog.info(mmi+"start: WLDataJsonFile=" + WLDataJsonFile+
-              ", fromZCToOtherDatumConvValue="+fromZCToOtherDatumConvValue);
+    slog.debug(mmi+"start: WLDataJsonFile=" + WLDataJsonFile+
+               ", fromZCToOtherDatumConvValue="+fromZCToOtherDatumConvValue);
 
     FileInputStream jsonFileInputStream= null;
 
@@ -753,20 +755,20 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     } // --- for (int itemIter= 0; itemIter< jsonWLDataArray.size(); itemIter++) loop block
 
-    slog.info(mmi+"tmpRetListMCs.size()="+tmpRetListMCs.size());
-    slog.info(mmi+"mcsAtNonValidTimeStamps.size="+mcsAtNonValidTimeStamps.size());
+    slog.debug(mmi+"tmpRetListMCs.size()="+tmpRetListMCs.size());
+    slog.debug(mmi+"mcsAtNonValidTimeStamps.size="+mcsAtNonValidTimeStamps.size());
 
     // --- Now check if the mssing WL data could be replaced by data that is reasonably close
     //     in terms of timestamps.
     if ( (timeIncrToUseSeconds > 0L) && (mcsAtNonValidTimeStamps.size() > 0 ) ) {
 
-      slog.info(mmi+"Trying to find WL replacements not too far in time for missing timestamps");
+      slog.debug(mmi+"Trying to find WL replacements not too far in time for missing timestamps");
 
       retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds,
         mcsAtNonValidTimeStamps,tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
 
-      slog.info(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
-      slog.info(mmi+"retListMCs.size() after WLMeasurement.findPossibleWLReplacements()="+retListMCs.size());
+      slog.debug(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
+      slog.debug(mmi+"retListMCs.size() after WLMeasurement.findPossibleWLReplacements()="+retListMCs.size());
 
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
@@ -781,9 +783,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"done with WLDataJsonFile=" + WLDataJsonFile);
+    slog.debug(mmi+"done with WLDataJsonFile=" + WLDataJsonFile);
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);

@@ -97,10 +97,21 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
     super(IWLAdjustment.Type.SpineIPP,argsMap);
 
-    final String mmi=
-      "WLAdjustmentSpineIPP(final WLAdjustment.Type adjType, final Map<String,String> argsMap) constructor ";
+    final String mmi= "WLAdjustmentSpineIPP main constructor ";
 
     slog.info(mmi+"start");
+
+    try {
+      this.lowerSideScLocStrId.length();	
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    try {
+      this.upperSideScLocStrId.length();	
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }   
     
     // --- Check if the non-adjusted full model forecast is available for this run.
     //     (If yes then it will be used instead of the NS Tide prediction at the
@@ -138,40 +149,15 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
                                  " WL prediction input file format allowed for now!!");
     }
 
-    // --- Build a Path object for the folder where we can find the ship channel
-    //     points locations WL prediction files  
-    final Path nsTidePredInputDataDir= FileSystems.
-      getDefault().getPath(nsTidePredInputDataInfoStrSplit[1]);
-
-    slog.info(mmi+"nsTidePredInputDataDir="+nsTidePredInputDataDir.toString());
-
-    // --- List all the ship channel points locations WL prediction files
-    //     using a DirectoryStream<Path> object     
-    DirectoryStream<Path> nsTidePredInputDataDirFilesDS= null;
-    
-    try {
-      nsTidePredInputDataDirFilesDS= Files.
-	newDirectoryStream(nsTidePredInputDataDir, "*"+this.scLocFNameCommonPrefix+"*"+IWLToolsIO.JSON_FEXT);
-      
-    } catch (IOException ioex) {
-      throw new RuntimeException(mmi+ioex);
-    }
-
-    // --- Now put the ship channel points locations WL prediction files
-    //     Path object in a List to be able to find the relevant ones.
-    List<Path> nsTidePredInputDataDirFilesList= new ArrayList<Path>();
-
-    for (final Path predInputFilePath: nsTidePredInputDataDirFilesDS) {
-      nsTidePredInputDataDirFilesList.add(predInputFilePath);
-    }
-
-    if (nsTidePredInputDataDirFilesList.size() == 0) {
-      throw new RuntimeException(mmi+"nsTidePredInputDataDirFilesList cannot be empty here!");
-    }
+    // --- Get all the paths of the ship channel points locations non-adjusted WL prediction files
+    final List<Path> nsTidePredInputDataDirFilesList= WLToolsIO.
+      getRelevantFilesList(nsTidePredInputDataInfoStrSplit[1], "*"+this.scLocFNameCommonPrefix+"*"+IWLToolsIO.JSON_FEXT);
 
     this.scLocsNonAdjData= new HashMap<String, MeasurementCustomBundle>();
+
+    slog.info(mmi+"Reading the non-adjusted WL data for all the in-between ship channel points locations");
     
-    // --- Now read the related WL prediction data for the in-between ship channel
+    // --- Now read the related WL prediction WL prediction (or non-adjusted FMF) data for the in-between ship channel
     //     points locations.
     for (int idx= this.scLoopStartIndex; idx <= this.scLoopEndIndex; idx++) {
 
@@ -191,7 +177,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
         throw new RuntimeException(mmi+npe);
       }
 
-      slog.info(mmi+"Reading scLocFilePath="+scLocFilePath+" for scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
+      slog.debug(mmi+"Reading scLocFilePath="+scLocFilePath+" for scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
       
       this.scLocsNonAdjData.put(scLocFNameSpecSubStr,
 				new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(scLocFilePath, -1L, 0.0)));
@@ -199,6 +185,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
     }
+    
+    slog.info(mmi+"Done reading the non-adjusted WL data for all the in-between ship channel points locations");
 
     // --- now read the non-adjusted WL prediction (or non-adjusted FMF) at the two ship channel locations
     //     that are the nearest to the two tide gauges being processed. Use the convention that the ship channel
@@ -209,31 +197,29 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     } 
 
     // --- Lower side ship channel location: subtract 1 from scLoopStartIndex to build its proper str id
-    final String lowerSideScLocStrId= this.scLocFNameCommonPrefix +
-      IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopStartIndex-1);
+    //final String lowerSideScLocStrId= this.scLocFNameCommonPrefix +
+    //  IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopStartIndex-1);
 
     final String lowerSideScLocFile= WLToolsIO.
-      getSCLocFilePath(nsTidePredInputDataDirFilesList, lowerSideScLocStrId);
+      getSCLocFilePath(nsTidePredInputDataDirFilesList, this.lowerSideScLocStrId);
 
-    this.scLocsNonAdjData.put(lowerSideScLocStrId,
+    this.scLocsNonAdjData.put(this.lowerSideScLocStrId,
 			      new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(lowerSideScLocFile, -1L, 0.0)));
     
     // --- upper side ship channel location: add 1 from scLoopEndIndex to build its proper str id
-    final String upperSideScLocStrId= this.scLocFNameCommonPrefix +
-      IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopEndIndex+1);
+    //final String upperSideScLocStrId= this.scLocFNameCommonPrefix +
+    //  IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopEndIndex+1);
 
     final String upperSideScLocFile= WLToolsIO.
-      getSCLocFilePath(nsTidePredInputDataDirFilesList, upperSideScLocStrId);
+      getSCLocFilePath(nsTidePredInputDataDirFilesList, this.upperSideScLocStrId);
 
-    this.scLocsNonAdjData.put(upperSideScLocStrId,
+    this.scLocsNonAdjData.put(this.upperSideScLocStrId,
 			      new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(upperSideScLocFile, -1L, 0.0)));
-    
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+ 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
     
   } // --- main constructor
 

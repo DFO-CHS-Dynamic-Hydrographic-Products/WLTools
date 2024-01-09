@@ -12,7 +12,7 @@ time java WLTools \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
 --tidalConstsInputInfo=NON_STATIONARY_JSON:tidal/nonStationary/StLawrence \ # needed to be able to get the coordinates of the Spine location from the related NS tidal config file
 --outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineIPP/20240104120000 \
---adjForecastAtTGSInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG/20240104120000 \
+--adjFMFAtTGSInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG/20240104120000 \
 --nsTidePredInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/20240104120000 \
 #--tideGaugePredictInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/20231212120000 \
 --writeAllData=true

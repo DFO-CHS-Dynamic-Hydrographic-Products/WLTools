@@ -2,7 +2,7 @@ package ca.gc.dfo.chs.wltools;
 
 // ---
 import java.util.List;
-import java.util.Iterator;
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 //import java.time.Instant;
@@ -16,6 +16,8 @@ import java.io.FileNotFoundException;
 
 // ---
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.FileSystems;
 import java.nio.file.DirectoryStream;
 
 //import javax.validation.constraints.NotNull;
@@ -102,6 +104,46 @@ public class WLToolsIO implements IWLToolsIO {
     final File fileOutThere= new File(filePath);
 
     return (fileOutThere.exists()) ? true: false;
+  }
+
+  // --- TODO: add some fool-proof checks
+  final public static List<Path> getRelevantFilesList(final String inputDir, final String relevantFilesRegExpr) {
+
+    final String mmi= "getRelevantFilesList: ";
+
+    slog.info(mmi+"start");
+    
+    // --- Build a Path object for the folder where we want to find relevant files  
+    final Path inputDataDir= FileSystems.getDefault().getPath(inputDir);
+
+    slog.info(mmi+"inputDataDir="+inputDataDir.toString());
+
+    // --- List all the relevant files in inputDir using a DirectoryStream<Path> object     
+    DirectoryStream<Path> inputDataDirFilesDS= null;
+    
+    try {
+      inputDataDirFilesDS= Files.
+	newDirectoryStream(inputDataDir, relevantFilesRegExpr);
+      
+    } catch (IOException ioex) {
+      throw new RuntimeException(mmi+ioex);
+    }
+
+    // --- Now put all the relevant files in a List<Path>
+    //     object to be returned
+    List<Path> inputDataDirFilesList= new ArrayList<Path>();    
+
+    for (final Path inputFilePath: inputDataDirFilesDS) {
+      inputDataDirFilesList.add(inputFilePath);
+    }
+
+    if (inputDataDirFilesList.size() == 0) {
+      throw new RuntimeException(mmi+"inputDataDirFilesList cannot be empty here!");
+    }
+    
+    slog.info(mmi+"end");
+
+    return inputDataDirFilesList;
   }
 
   // --- TODO: add some fool-proof checks
