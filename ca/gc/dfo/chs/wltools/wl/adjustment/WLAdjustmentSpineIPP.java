@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
-import java.util.Iterator;
+//import java.util.Iterator;
 import java.nio.file.Path;
 //import java.nio.file.Paths;
 import java.util.SortedSet;
@@ -75,12 +75,13 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
-  //     the nearest to the nearest tide gauges locations (INPUT ONLY)
-  protected Map<String, MeasurementCustomBundle> tgsNearestSCLocationsNonAdjData= null;
-
-  // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
   //     in-between the tide gauges locations being processed (INPUT ONLY) 
   protected Map<String, MeasurementCustomBundle> scLocsNonAdjData= null;
+
+  // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the two ship channel point locations that are
+  //     the nearest to the nearest tide gauges locations (INPUT ONLY)
+  protected Map<String, MeasurementCustomBundle>
+    tgsNearestSCLocsNonAdjData= new HashMap<String, MeasurementCustomBundle>(2); //null;    
     
   /**
    * Comments please!
@@ -157,8 +158,11 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
     slog.info(mmi+"Reading the non-adjusted WL data for all the in-between ship channel points locations");
     
-    // --- Now read the related WL prediction WL prediction (or non-adjusted FMF) data for the in-between ship channel
+    // --- Now read the related non-adjusted WL prediction (or non-adjusted FMF) data for the in-between ship channel
     //     points locations.
+    //
+    //     TODO: Loop on the String keys of the this.scLocsDistances HashMap (as it is done in the getAdjustment method)
+    //           instead of looping on the related integer indices.      
     for (int idx= this.scLoopStartIndex; idx <= this.scLoopEndIndex; idx++) {
 
       // --- Specific file name prefix string to use for the ship channel point location
@@ -203,8 +207,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     final String lowerSideScLocFile= WLToolsIO.
       getSCLocFilePath(nsTidePredInputDataDirFilesList, this.lowerSideScLocStrId);
 
-    this.scLocsNonAdjData.put(this.lowerSideScLocStrId,
-			      new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(lowerSideScLocFile, -1L, 0.0)));
+    this.tgsNearestSCLocsNonAdjData.put(this.lowerSideScLocStrId,
+			                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(lowerSideScLocFile, -1L, 0.0)));
     
     // --- upper side ship channel location: add 1 from scLoopEndIndex to build its proper str id
     //final String upperSideScLocStrId= this.scLocFNameCommonPrefix +
@@ -213,8 +217,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     final String upperSideScLocFile= WLToolsIO.
       getSCLocFilePath(nsTidePredInputDataDirFilesList, this.upperSideScLocStrId);
 
-    this.scLocsNonAdjData.put(this.upperSideScLocStrId,
-			      new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(upperSideScLocFile, -1L, 0.0)));
+    this.tgsNearestSCLocsNonAdjData.put(this.upperSideScLocStrId,
+	     		                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(upperSideScLocFile, -1L, 0.0)));
  
     slog.info(mmi+"end");
 
@@ -231,6 +235,131 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     final String mmi= "getAdjustment: ";
 
     slog.info(mmi+"start");
+
+    // --- Get a SortedSet of the Instants objects of the lower side
+    //     adj. FMF data (NOTE: we would get the exact same SortedSet using
+    //     the upper side adj. FMF data)
+    final SortedSet<Instant> adjFMFInstantsSet= this.
+      tgsNearestSCLocsAdjFMF.get(this.lowerSideScLocTGId).getInstantsKeySetCopy();
+
+    // --- Allocate memory for the Map <String, List<MeasurementCustom>>
+    //     that is used to store the adjusted "forecasted" WLs for all the
+    //     ship channel points locations.
+    this.scLocsAdjLTFP= new HashMap<String, List<MeasurementCustom>>();
+
+    // --- Allocate the two List<MeasurementCustom> objects for the two ship channel points
+    //     locations that are the nearest to the two tide gauges being processed
+    //     The data stored will simply be the already adj. FMF for these two locations. 
+    this.scLocsAdjLTFP.put(this.lowerSideScLocStrId, new ArrayList<MeasurementCustom>());
+    this.scLocsAdjLTFP.put(this.upperSideScLocStrId, new ArrayList<MeasurementCustom>());
+
+    // --- Get the String keys of all the in-between ship channel points locations
+    //     to loop on them to apply the WL adjustements at their locations.
+    //     NOTE: We do not need a SortedSet here, the order is not important
+    //     for the in-between ship channel points locations for the remainder of the processing
+    //final Set<String> scLocsDistancesKeySet= this.scLocsDistances.keySet();
+    //final SortedSet<String> scLocsKeySet= new TreeSet<String>(this.scLocsNonAdjData.keySet());
+    final Set<String> scLocsKeySet= this.scLocsNonAdjData.keySet();
+
+    // --- Allocate all the List<MeasurementCustom> objects that are in-between the
+    //     two ship channel points locations that are the nearest to the two tide gauges being processed
+    for (final String scLocStrId: scLocsKeySet ) {
+      this.scLocsAdjLTFP.put(scLocStrId, new ArrayList<MeasurementCustom>());
+    }
+
+    // --- Spare costly division operations in loops, multiply by the inverted value instead.
+    final double tgsNearestsLocsDistRadInv= 1.0/this.tgsNearestsLocsDistRad;
+	
+    // --- Loop on all the Instants of the adj. FMF data to adjust the WLs (either
+    //     WL predictions or non-adj. FMF data) for the in-between ship channel
+    //     points locations. We use a simple spatial linear interpolation of the
+    //     (adj. FMF WL at TGs - non-adjusted WL at TGs) residuals using the distance
+    //     in radians between the ship channel location that is the nearest to the
+    //     lower side TG and the in-between ship channel point location where we
+    //     have to adjust the WLs.
+    for(final Instant adjFMFInstant: adjFMFInstantsSet) {
+	
+	//slog.info(mmi+"adjFMFInstant="+adjFMFInstant.toString());
+
+      // --- Get the adj. FMF WL at the lower side ship channel location
+      final MeasurementCustom lowerSideSCLocAdjFMFMc= this.
+	tgsNearestSCLocsAdjFMF.get(this.lowerSideScLocTGId).getAtThisInstant(adjFMFInstant);
+
+      // --- Set the lower side ship channel location adj. WL value directly
+      //     using the FMF WL (no need for interp. here)
+      this.scLocsAdjLTFP.get(this.lowerSideScLocStrId).add( new MeasurementCustom(lowerSideSCLocAdjFMFMc));
+
+      // --- Get the adj. FMF WL at the upper side ship channel location
+      final MeasurementCustom upperSideSCLocAdjFMFMc= this.
+	tgsNearestSCLocsAdjFMF.get(this.upperSideScLocTGId).getAtThisInstant(adjFMFInstant);
+
+      // --- Set the upper side ship channel location adj. WL value directly
+      //     using the FMF WL (no need for interp. here)     
+      this.scLocsAdjLTFP.get(this.upperSideScLocStrId).add( new MeasurementCustom(upperSideSCLocAdjFMFMc));
+
+      // --- Now get the two (adj. FMF WL at TGs - non-adjusted WL at TGs) residuals for the lower and
+      //     upper side locations
+      final double lowerSideAdjFMFValue= lowerSideSCLocAdjFMFMc.getValue();
+      final double upperSideAdjFMFValue= upperSideSCLocAdjFMFMc.getValue();
+
+      //slog.info(mmi+"lowerSideAdjFMFValue="+lowerSideAdjFMFValue);
+      //slog.info(mmi+"upperSideAdjFMFValue="+upperSideAdjFMFValue);
+
+      final double lowerSideNonAdjValue= this.
+	tgsNearestSCLocsNonAdjData.get(this.lowerSideScLocStrId).getAtThisInstant(adjFMFInstant).getValue();
+
+      final double upperSideNonAdjValue= this.
+	tgsNearestSCLocsNonAdjData.get(this.upperSideScLocStrId).getAtThisInstant(adjFMFInstant).getValue();
+
+      //slog.info(mmi+"lowerSideNonAdjValue="+lowerSideNonAdjValue);
+      //slog.info(mmi+"upperSideNonAdjValue="+upperSideNonAdjValue);
+
+      final double lowerSideResValue= lowerSideAdjFMFValue - lowerSideNonAdjValue;
+      final double upperSideResValue= upperSideAdjFMFValue - upperSideNonAdjValue;
+
+      //slog.info(mmi+"lowerSideResValue="+lowerSideResValue);
+      //slog.info(mmi+"upperSideResValue="+upperSideResValue);
+
+      // --- Now adjust the non-adjusted WL prediction (or non-adjusted FMF) data for the in-between ship channel
+      //     points locations using the two residual values and the distance from the lower side ship channel location
+      //     NOTE: Order is not really important here since we have stored the related distances in the this.scLocsDistances HashMap
+      for (final String scLocStrId: scLocsKeySet ) { //scLocsDistancesKeySet) {
+	  
+	  //slog.info(mmi+"scLocStrId="+scLocStrId);
+
+	final double scLocDistRad= this.scLocsDistances.get(scLocStrId);
+
+	//slog.info(mmi+"scLocDistRad="+scLocDistRad);
+
+	final double scNonAdjValue= this.scLocsNonAdjData.
+	  get(scLocStrId).getAtThisInstant(adjFMFInstant).getValue();
+
+	//slog.info(mmi+"scNonAdjValue="+scNonAdjValue);
+
+	// --- Using just two costly multiplications here instead of four.
+	//     NOTE: recall that the scLocDistRad is the distance between the lower side
+	//           ship channel location and the in-between ship channel point location
+	//           being processed.
+        final double scAdjValue= scNonAdjValue + lowerSideResValue +
+	  tgsNearestsLocsDistRadInv * scLocDistRad * (upperSideResValue - lowerSideResValue);
+	  //(tgsNearestsLocsDistRadInv * scLocDistRad) * upperSideResValue + (1.0 - tgsNearestsLocsDistRadInv * scLocDistRad) * lowerSideResValue;
+
+        //slog.info(mmi+"scAdjValue="+scAdjValue+"\n");
+
+	// --- Uncertainty is 0.0 here for now.
+	this.scLocsAdjLTFP.get(scLocStrId).add(new MeasurementCustom(adjFMFInstant, scAdjValue, 0.0));
+
+	//if (scLocStrId.equals("gridPoint-1059")) {
+	//slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
+	//}
+	  
+      } // --- for (final String scLocStrId: scLocsDistancesKeySet) inner loop block
+	  
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+      
+    } // --- for(final Instant adjFMFInstant: adjFMFInstantsSet) outer loop block
 
     slog.info(mmi+"end");
 

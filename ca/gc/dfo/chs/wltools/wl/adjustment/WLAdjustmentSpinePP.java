@@ -89,6 +89,8 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
   protected String upperSideScLocTGId= null;
 
   protected String scLocFNameCommonPrefix= null;
+
+  protected double tgsNearestsLocsDistRad= -1.0; 
     
   // --- To store the considered region bounding box
   //     EPSG:4326 coordinates (South-West corner at index 0
@@ -271,9 +273,14 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     final double tg1NearestSCLocLon= tg1NearestSCLocHBCoords.getLongitude();
     final double tg1NearestSCLocLat= tg1NearestSCLocHBCoords.getLatitude();    
 
-    // --- Calculate the polar stereographic great circle half-distance in radians between the two ship channel point locations
-    final double tgsNearestsLocsHalfDistRad= 0.5* Trigonometry.
+    // --- Calculate the polar stereographic great circle distance in radians between the
+    //     two ship channel point locations that are the nearests to the two TGs considered.
+    this.tgsNearestsLocsDistRad= Trigonometry.
       getDistanceInRadians(tg0NearestSCLocLon,tg0NearestSCLocLat,tg1NearestSCLocLon,tg1NearestSCLocLat);
+    
+    // --- Need the polar stereographic great circle half-distance in radians between the
+    //     two ship channel point locations that are the nearests to the two TGs considered.
+    final double tgsNearestsLocsHalfDistRad= 0.5 * this.tgsNearestsLocsDistRad;
 
     // --- Calulate the square of the half distance between the two ship channel point locations
     //     to use it later (it is in fact the radius of the circle that has its center at
