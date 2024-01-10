@@ -88,29 +88,52 @@ abstract public class WLAdjustmentType
       throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
     }
 
-    // --- Get only the base name of the
+    // --- 
     this.locationIdInfo= argsMap.get("--locationIdInfo");
 
-    // --- Get only the base name of the this.locationIdInfo file path.
-    //this.locationId= new File(this.locationIdInfo).
+    slog.info(mmi+"this.locationIdInfo="+this.locationIdInfo);
+    
+    // --- Get only the base name of the this.locationIdInfo if it is a
+    //     path to a file having the IWLToolsIO.JSON_FEXT file name extension.
+    //     TODO: Verify if this is still needed.
     final String identity=
       new File(this.locationIdInfo).getName().replace(IWLToolsIO.JSON_FEXT,"");
 
+    slog.info(mmi+"identity="+identity);
+
+    // --- Process the identity String depending on the adjustment type.
+    //     TODO: Could be done in the specific dervived classes constructors?
     if (this.adjType == IWLAdjustment.Type.TideGauge) {
 
       this.location= new TideGaugeConfig(identity);
 
-    } else if (this.adjType == IWLAdjustment.Type.SpineIPP) {
+    } else if (this.adjType == IWLAdjustment.Type.SpineIPP || this.adjType == IWLAdjustment.Type.SpineFPP) {
 
-      this.location= new WLLocation(identity);
+      // --- Get the two ids of the CHS tide gauges that define an interpolation range for the ship
+      //     channel point locations that are in-between those two TG locations.
+      final String [] twoSpineInterpTGIds= identity.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
+      if (twoSpineInterpTGIds.length != 2) {
+	throw new RuntimeException(mmi+"twoSpineInterpTGIds must have length of 2 here!");
+      }
+      
+      //--- TODO: DO not assume that we only have two TGs here.
+      this.locations= new ArrayList<TideGaugeConfig>(2); //<WLLocation>(2);
+      
+      //this.location= new WLLocation(identity);
+      this.locations.add(0, new TideGaugeConfig(twoSpineInterpTGIds[0]));
+      this.locations.add(1, new TideGaugeConfig(twoSpineInterpTGIds[1]));
+
+      slog.info(mmi+"this.locations TG 0 id.="+this.locations.get(0).getIdentity());
+      slog.info(mmi+"this.locations TG 1 id.="+this.locations.get(1).getIdentity());
+      
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+      
       //throw new RuntimeException(mmi+"SpineIPP adjustment type not ready yet !!");
-
-    } else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
-
-      this.location= new WLLocation(identity);
-
-      throw new RuntimeException(mmi+"SpineFPP adjustment type not ready yet !!");
+      //} else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
+      //this.location= new WLLocation(identity);
+      //  throw new RuntimeException(mmi+"SpineFPP adjustment type not ready yet !!");
 
     } else {
        throw new RuntimeException(mmi+"Invalid adjustment type "+this.adjType.name()+" !!");
@@ -142,7 +165,8 @@ abstract public class WLAdjustmentType
       slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
-    }
+      
+    } // --- if (this.argsMapKeySet.contains("--modelForecastInputDataInfo") block
 
     slog.info(mmi+"end");
 
@@ -150,34 +174,42 @@ abstract public class WLAdjustmentType
     //System.exit(0);
   }
 
+  // ---
   final public WLLocation getLocation() {
     return this.location;
   }
 
+  // ---
   final public String getLocationIdentity() {
     return this.location.getIdentity();
   }
 
+  // ---
   final public String getFullForecastModelName() {
     return this.fullForecastModelName;
   }
 
+  // ---
   final public List<MeasurementCustom> getLocationPredData() {
     return (List<MeasurementCustom>) this.locationPredData;
   }
 
+  // ---
   final public List<MeasurementCustom> getNearestObsData() {
     return (List<MeasurementCustom>) this.nearestObsData.get(this.location.getIdentity());
   }
 
+  // --- 
   final public List<MeasurementCustom> getNearestObsData(final String locationId) {
     return (List<MeasurementCustom>) this.nearestObsData.get(locationId);
   }
 
+  // ---
   final public List<MeasurementCustom> getNearestModelData(final int whichType) {
     return (List<MeasurementCustom>) this.nearestModelData.get(whichType).get(this.location.getIdentity());
   }
 
+  // --- 
   final public List<MeasurementCustom> getNearestModelData(final int whichType, final String locationId) {
     return (List<MeasurementCustom>) this.nearestModelData.get(whichType).get(locationId);
   }

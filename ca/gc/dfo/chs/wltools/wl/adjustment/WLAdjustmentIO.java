@@ -52,6 +52,7 @@ import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
@@ -81,7 +82,21 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
   protected IWLAdjustment.Type adjType= null;
 
+  // --- could be one tide gauge OR one ship channel point location.
   protected WLLocation location= null;
+
+  // --- could be two or more tide gauges.
+  protected List<TideGaugeConfig> locations= null;
+
+  // --- To store the considered region bounding box
+  //     EPSG:4326 coordinates (South-West corner at index 0
+  //     and North-East corber at index 1). The
+  //     region bounding box is built with the
+  //     smallest (lon,lat) coordinates for the SW
+  //     corner and the largest (lon,lat) coordinates
+  //     for the North-East corner. This is normally
+  //     used only by the SpineIPP and SpineFPP classes.
+  //protected List<HBCoords> regionBBox= null;
 
   //protected String locationId= null;
   protected String locationIdInfo= null;
@@ -187,6 +202,34 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     slog.info(mmi+"this.adjType="+this.adjType.name());
 
     this.argsMapKeySet= argsMap.keySet();
+  }
+
+  // --- Returns the HBCoords read from a Non-Stationary tidal consts. json file.
+  final HBCoords getHBCoordsFromNSTCJsonFile(final String nsTCJsonFile) {
+
+    final String mmi= "getHBCoordsFromNSTCJsonFile: ";
+
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(nsTCJsonFile);
+
+    } catch (FileNotFoundException e) {
+      //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
+      throw new RuntimeException(mmi+e);
+    }
+
+    // --- Get the main json object from the file
+    final JsonObject mainJsonTcDataInputObj=
+      Json.createReader(jsonFileInputStream).readObject();
+
+    // --- TODO: check if IWLLocation.INFO_JSON_DICT_KEY is a key
+    //     in the mainJsonTcDataInputObj
+    final JsonObject channelGridPointJsonObj=
+      mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
+  
+    return new HBCoords(channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
+			channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
   }
 
   // ---
@@ -596,6 +639,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     final String mmi= "getWLDataInJsonFmt: ";
 
+    slog.debug(mmi+"start");
+    
     //ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
 
     if ( timeIncrToUseSeconds > 0L &&
@@ -612,8 +657,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       throw new RuntimeException(mmi+npe);
     }
 
-    slog.info(mmi+"start: WLDataJsonFile=" + WLDataJsonFile+
-              ", fromZCToOtherDatumConvValue="+fromZCToOtherDatumConvValue);
+    slog.debug(mmi+"start: WLDataJsonFile=" + WLDataJsonFile+
+               ", fromZCToOtherDatumConvValue="+fromZCToOtherDatumConvValue);
 
     FileInputStream jsonFileInputStream= null;
 
@@ -710,20 +755,20 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     } // --- for (int itemIter= 0; itemIter< jsonWLDataArray.size(); itemIter++) loop block
 
-    slog.info(mmi+"tmpRetListMCs.size()="+tmpRetListMCs.size());
-    slog.info(mmi+"mcsAtNonValidTimeStamps.size="+mcsAtNonValidTimeStamps.size());
+    slog.debug(mmi+"tmpRetListMCs.size()="+tmpRetListMCs.size());
+    slog.debug(mmi+"mcsAtNonValidTimeStamps.size="+mcsAtNonValidTimeStamps.size());
 
     // --- Now check if the mssing WL data could be replaced by data that is reasonably close
     //     in terms of timestamps.
     if ( (timeIncrToUseSeconds > 0L) && (mcsAtNonValidTimeStamps.size() > 0 ) ) {
 
-      slog.info(mmi+"Trying to find WL replacements not too far in time for missing timestamps");
+      slog.debug(mmi+"Trying to find WL replacements not too far in time for missing timestamps");
 
       retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds,
         mcsAtNonValidTimeStamps,tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
 
-      slog.info(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
-      slog.info(mmi+"retListMCs.size() after WLMeasurement.findPossibleWLReplacements()="+retListMCs.size());
+      slog.debug(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
+      slog.debug(mmi+"retListMCs.size() after WLMeasurement.findPossibleWLReplacements()="+retListMCs.size());
 
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
@@ -738,9 +783,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"done with WLDataJsonFile=" + WLDataJsonFile);
+    slog.debug(mmi+"done with WLDataJsonFile=" + WLDataJsonFile);
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
