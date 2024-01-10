@@ -447,11 +447,15 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
         throw new RuntimeException(mmi+"Only the:"+IWLToolsIO.Format.CHS_JSON.name()+
                                  " adj. FMF WL data input file format allowed for now!!");
       }
+
+      final String adjFMFAtTGSInputDataDir= adjFMFAtTGSInputDataInfoStrSplit[1];
+
+      slog.info(mmi+"adjFMFAtTGSInputDataDir="+adjFMFAtTGSInputDataDir);
       
       // --- Get the paths of all the ship channel points locations adjusted FMF WL
       //     data input files in a List<Path> object 
       final List<Path> adjFMFAtTGSInputDataDirFilesList= WLToolsIO.
-	getRelevantFilesList(adjFMFAtTGSInputDataInfoStrSplit[1], "*"+IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX+"*"+IWLToolsIO.JSON_FEXT);
+	getRelevantFilesList(adjFMFAtTGSInputDataDir, "*"+IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX+"*"+IWLToolsIO.JSON_FEXT);
 
       // --- Get the path of the ship channel point location adjusted FMF WL data
       //     that is the nearest to the lower side (in terms of ship channel locations indices)

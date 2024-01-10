@@ -147,7 +147,7 @@ final public class WLTools extends WLToolsIO {
                 IWLTools.Box.prediction.name()+" at a station or grid point.");
     }
 
-    //if (tool.equals("adjustment")) {
+    // --- WL adjustments tool
     if (tool.equals(IWLTools.Box.adjustment.name())) {
 
       mlog.info(mmi+"Doing WL forecast or prediction "+
@@ -155,51 +155,51 @@ final public class WLTools extends WLToolsIO {
 
       final WLAdjustment wlAdjustAtLocation= new WLAdjustment(argsMap);
 
-      //List<MeasurementCustom> adjustedWLForecast= null;
-
       // --- Check if we need to write all WL adj. data (input and results) on disk
       final String allAdjDataOutDir= writeAllData ? WLToolsIO.getOutputDirectory() : null;
 
       final List<MeasurementCustom> adjustedHWLPS=
         wlAdjustAtLocation.getAdjustment(allAdjDataOutDir); //.writeResult(finak string outFile); //
 
-      try {
-        WLToolsIO.getOutputDataFormat();
-      } catch (NullPointerException npe) {
-        throw new RuntimeException(mmi+npe);
+      // --- Write the WL adjustments results if adjustedHWLPS is not null
+      if (adjustedHWLPS != null ) {
+	  
+        try {
+          WLToolsIO.getOutputDataFormat();
+        } catch (NullPointerException npe) {
+          throw new RuntimeException(mmi+npe);
+        }
+
+        if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.CHS_JSON.name())) {
+          throw new RuntimeException(mmi+"Invalid output data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
+        }
+
+        mlog.info(mmi+"Writing this.locationAdjustedData results in folder -> "+WLToolsIO.getOutputDirectory());
+
+        final String hfpLeadTimeStr=
+          wlAdjustAtLocation.getFMFLeadTimeECCCOperStr() + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR;
+
+        //mlog.info(mmi+"hfpLeadTimeStr="+hfpLeadTimeStr);
+        //mlog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
+
+        final String adjustedHWLPSOutFName= hfpLeadTimeStr +
+          IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity();
+
+        mlog.info(mmi+"adjustedHWLPSOutFName="+adjustedHWLPSOutFName);
+
+        // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
+        //    output format.
+        WLToolsIO.writeToOutputDir(adjustedHWLPS,
+                                   IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()),
+                                   adjustedHWLPSOutFName, null );
+      } else {
+	mlog.info(mmi+"Assuming here that all the results have already been written by the WLAdjustment wlAdjustAtLocation object"); 
       }
-
-      if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.CHS_JSON.name())) {
-        mlog.error(mmi+"Invalid output data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
-      }
-
-      mlog.info(mmi+"Writing this.locationAdjustedData results in folder -> "+WLToolsIO.getOutputDirectory());
-
-      final String hfpLeadTimeStr=
-        wlAdjustAtLocation.getFMFLeadTimeECCCOperStr() + IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR;
-      //  getEventDate().toString().replace();
-
-      //mlog.info(mmi+"hfpLeadTimeStr="+hfpLeadTimeStr);
-      //mlog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-
-      final String adjustedHWLPSOutFName= hfpLeadTimeStr +
-        IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + wlAdjustAtLocation.getLocationIdentity();
-
-      mlog.info(mmi+"adjustedHWLPSOutFName="+adjustedHWLPSOutFName);
-
-      // -- Write the adjusted WL forecast results data on disk using the WLToolsIO.getOutputDataFormat()
-      //    output format.
-      WLToolsIO.writeToOutputDir(adjustedHWLPS,
-                                 IWLToolsIO.Format.valueOf(WLToolsIO.getOutputDataFormat()),
-                                 adjustedHWLPSOutFName, null );
-
+      
       //mlog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
     }
-
-    //if (tool.equals(IWLTools.Box.SpineIPP.name())) {
-    //}
 
     mlog.info(mmi+"end");
   }

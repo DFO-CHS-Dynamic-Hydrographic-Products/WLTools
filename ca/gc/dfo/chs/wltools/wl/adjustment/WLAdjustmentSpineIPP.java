@@ -76,12 +76,14 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
   // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
   //     in-between the tide gauges locations being processed (INPUT ONLY) 
-  protected Map<String, MeasurementCustomBundle> scLocsNonAdjData= null;
+  private Map<String, MeasurementCustomBundle> scLocsNonAdjData= null;
 
   // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the two ship channel point locations that are
   //     the nearest to the nearest tide gauges locations (INPUT ONLY)
-  protected Map<String, MeasurementCustomBundle>
-    tgsNearestSCLocsNonAdjData= new HashMap<String, MeasurementCustomBundle>(2); //null;    
+  private Map<String, MeasurementCustomBundle>
+    tgsNearestSCLocsNonAdjData= new HashMap<String, MeasurementCustomBundle>(2); //null;
+
+  private String fmfReferenceDateTimeStr= null;
     
   /**
    * Comments please!
@@ -112,7 +114,29 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       this.upperSideScLocStrId.length();	
     } catch (NullPointerException npe) {
       throw new RuntimeException(mmi+npe);
-    }   
+    }
+
+    try {
+       WLToolsIO.getOutputDataFormat();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    // --- Verfiy the output file(s) format before going further
+    if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.CHS_JSON.name())) {
+      throw new RuntimeException(mmi+"Invalid output file(s) data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
+    }
+
+    // --- Need to have the --fmfReferenceDateTimeStr arg option defined
+    if (!argsMap.keySet().contains("--fmfReferenceDateTimeStr")) {
+      throw new RuntimeException(mmi+"Must have the --referenceDateTimeStr=<datetime reference string> defind in the argsMap");
+    }
+
+    this.fmfReferenceDateTimeStr= argsMap.get("--fmfReferenceDateTimeStr");
+
+    slog.info(mmi+"this.fmfReferenceDateTimeStr="+this.fmfReferenceDateTimeStr);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
     
     // --- Check if the non-adjusted full model forecast is available for this run.
     //     (If yes then it will be used instead of the NS Tide prediction at the
@@ -236,6 +260,17 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
     slog.info(mmi+"start");
 
+    try {
+      outputDirectory.length();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"outputDirectory cannot be null here!!");
+    }
+
+    // --- Verfiy the output file(s) format before going further
+    if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.CHS_JSON.name())) {
+      throw new RuntimeException(mmi+"Invalid output file(s) data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
+    }    
+	
     // --- Get a SortedSet of the Instants objects of the lower side
     //     adj. FMF data (NOTE: we would get the exact same SortedSet using
     //     the upper side adj. FMF data)
@@ -285,23 +320,23 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       final MeasurementCustom lowerSideSCLocAdjFMFMc= this.
 	tgsNearestSCLocsAdjFMF.get(this.lowerSideScLocTGId).getAtThisInstant(adjFMFInstant);
 
-      // --- Set the lower side ship channel location adj. WL value directly
-      //     using the FMF WL (no need for interp. here)
-      this.scLocsAdjLTFP.get(this.lowerSideScLocStrId).add( new MeasurementCustom(lowerSideSCLocAdjFMFMc));
+      // --- Set the lower side ship channel location adj. MeasurementCustom object directly
+      //     using its FMF WL MeasurementCustom (no need for interp. here)
+      this.scLocsAdjLTFP.get(this.lowerSideScLocStrId).add( new MeasurementCustom(lowerSideSCLocAdjFMFMc) );
 
       // --- Get the adj. FMF WL at the upper side ship channel location
       final MeasurementCustom upperSideSCLocAdjFMFMc= this.
 	tgsNearestSCLocsAdjFMF.get(this.upperSideScLocTGId).getAtThisInstant(adjFMFInstant);
 
-      // --- Set the upper side ship channel location adj. WL value directly
-      //     using the FMF WL (no need for interp. here)     
-      this.scLocsAdjLTFP.get(this.upperSideScLocStrId).add( new MeasurementCustom(upperSideSCLocAdjFMFMc));
+      // --- Set the upper side ship channel location adj. MeasurementCustom object directly
+      //     using its FMF WL MeasurementCustom (no need for interp. here)     
+      this.scLocsAdjLTFP.get(this.upperSideScLocStrId).add( new MeasurementCustom(upperSideSCLocAdjFMFMc) );
 
       // --- Now get the two (adj. FMF WL at TGs - non-adjusted WL at TGs) residuals for the lower and
       //     upper side locations
       final double lowerSideAdjFMFValue= lowerSideSCLocAdjFMFMc.getValue();
       final double upperSideAdjFMFValue= upperSideSCLocAdjFMFMc.getValue();
-
+      
       //slog.info(mmi+"lowerSideAdjFMFValue="+lowerSideAdjFMFValue);
       //slog.info(mmi+"upperSideAdjFMFValue="+upperSideAdjFMFValue);
 
@@ -361,11 +396,53 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       
     } // --- for(final Instant adjFMFInstant: adjFMFInstantsSet) outer loop block
 
+    slog.info(mmi+"writing the CHS_JSON output files for all the ship channel points locations.");
+
+    final String outputFileNamesPrfx= this.fmfReferenceDateTimeStr +
+      IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX;
+    
+    // --- Now write the CHS_JSON output files for all the in between ship channel points locations.
+    for (final String scLocStrId: scLocsKeySet ) {
+
+	//final String scLocWLAdjOutFile= outputDirectory + File.separator + fmfReferenceDateTimeStr +
+	//IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX + scLocStrId + IWLToolsIO.JSON_FEXT;
+
+      final String scLocWLAdjOutFName= outputFileNamesPrfx + scLocStrId;
+      
+      slog.debug(mmi+"scLocWLAdjOutFName="+scLocWLAdjOutFName);
+
+      WLToolsIO.writeToOutputDir(this.scLocsAdjLTFP.get(scLocStrId),
+				 IWLToolsIO.Format.CHS_JSON, scLocWLAdjOutFName, outputDirectory);
+      
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+    }
+
+    // --- Now write the CHS_JSON output files for the two ship channel points locations.
+    //     that are the nearest to the two tide gauges being processed
+    final String lowerSideScLocWLAdjOutFName= outputFileNamesPrfx + this.lowerSideScLocStrId;
+
+    WLToolsIO.writeToOutputDir(this.scLocsAdjLTFP.get(this.lowerSideScLocStrId),
+			       IWLToolsIO.Format.CHS_JSON, lowerSideScLocWLAdjOutFName, outputDirectory);
+
+    // ---
+    final String upperSideScLocWLAdjOutFName= outputFileNamesPrfx + this.upperSideScLocStrId;
+
+    WLToolsIO.writeToOutputDir(this.scLocsAdjLTFP.get(this.upperSideScLocStrId),
+			       IWLToolsIO.Format.CHS_JSON, upperSideScLocWLAdjOutFName, outputDirectory);
+    
     slog.info(mmi+"end");
+
+    // --- Now 
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
 
-    return this.locationAdjustedData; //adjustmentRet;
+    // --- return null here to signal to the main class that
+    //     all the results have already been written in the
+    //     output folder by this class 
+    return null;
+    
+    //return this.locationAdjustedData; //adjustmentRet;
   }
 }

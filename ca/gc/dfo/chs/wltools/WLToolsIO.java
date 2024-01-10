@@ -246,7 +246,7 @@ public class WLToolsIO implements IWLToolsIO {
 
     final String mmi= "writeCHSJsonFormat: ";
 
-    slog.info(mmi+"start");
+    slog.debug(mmi+"start");
 
     try {
       wlDataToWrite.size();
@@ -272,7 +272,7 @@ public class WLToolsIO implements IWLToolsIO {
     final String jsonOutputFile= outputDirectoryArg +
       File.separator + jsonOutFileNamePrfx + IWLToolsIO.JSON_FEXT ;
 
-    slog.info(mmi+"jsonOutputFile="+jsonOutputFile);
+    slog.debug(mmi+"jsonOutputFile="+jsonOutputFile);
 
     FileOutputStream jsonFileOutputStream= null;
 
@@ -308,7 +308,7 @@ public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"end");
+    slog.debug(mmi+"end");
 
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
