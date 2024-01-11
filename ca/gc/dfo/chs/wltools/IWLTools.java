@@ -12,7 +12,7 @@ public interface IWLTools {
     analysis,
     prediction,
     adjustment,
-    merge
+    IPPAdjToS104DCF8
   }
 
   //--- Need to update BoxContentNames if we add
@@ -20,7 +20,7 @@ public interface IWLTools {
   String [] BoxContentNames= { Box.analysis.name(),
                                Box.prediction.name(),
                                Box.adjustment.name(),
-                               Box.merge.name() };
+			       Box.IPPAdjToS104DCF8.name() } ;
 
   Set<String> BoxContent= Set.of(BoxContentNames);
 }

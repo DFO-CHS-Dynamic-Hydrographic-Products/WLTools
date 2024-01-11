@@ -1,6 +1,7 @@
 package ca.gc.dfo.chs.wltools;
 
 // ---
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -41,7 +42,7 @@ import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 /**
  *
  */
-public class WLToolsIO implements IWLToolsIO {
+abstract public class WLToolsIO implements IWLToolsIO {
 
   private final static String whoAmI= "ca.gc.dfo.chs.wltools.WLToolsIO";
 
@@ -312,5 +313,46 @@ public class WLToolsIO implements IWLToolsIO {
 
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
+  }
+
+  // ---
+  final public static void IPPAdjToS104DCF8(final Map<String,String> argsMap) {
+
+    final String mmi= "IPPAdjToS104DCF8: ";
+
+    slog.info(mmi+"start");
+
+    if (!argsMap.containsKey("--inputDataFormat")) {
+      throw new RuntimeException(mmi+"Must have the mandatory option: --inputDataFormat defined !!");
+    }
+
+    final String checkInputDataFormat= argsMap.get("--inputDataFormat");
+
+    if (!checkInputDataFormat.equals(IWLToolsIO.Format.CHS_JSON.name())) {
+
+      throw new RuntimeException(mmi+"Invalid input data format ->"+checkInputDataFormat+
+				 " Only the "+IWLToolsIO.Format.CHS_JSON.name()+" input data format is accepted for now");
+    }
+
+    //slog.info(mmi+"Using the checkInputDataFormat="+checkInputDataFormat);
+
+    if (!argsMap.containsKey("--IPPAdjResultsInputDir")) {
+      throw new RuntimeException(mmi+"Must have the mandatory option: --IPPAdjResultsInputDir defined !!");
+    }
+
+    final String ippAdjResultsInputDir= argsMap.get("--IPPAdjResultsInputDir");
+
+    slog.info(mmi+"ippAdjResultsInputDir="+ippAdjResultsInputDir);
+
+    // --- 
+    if (checkInputDataFormat.equals(IWLToolsIO.Format.CHS_JSON.name())) {
+	    
+      slog.info(mmi+"The IPPAdj input data format is -> "+IWLToolsIO.Format.CHS_JSON.name());
+      
+      slog.info(mmi+"debug System.exit(0)");
+      System.exit(0); 
+    }
+
+    slog.info(mmi+"end");
   }
 }

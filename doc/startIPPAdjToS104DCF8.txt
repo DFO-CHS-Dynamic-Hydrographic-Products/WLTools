@@ -1,0 +1,8 @@
+export CLASSPATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/bin:/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib:$CLASSPATH
+export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib/as/hdfql:$LD_LIBRARY_PATH
+
+time java WLTools \
+--tool=IPPAdjToS104DCF8 \
+--inputDataFormat=CHS_JSON \
+--IPPAdjResultsInputDir=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineIPP/<YYYYMMDDhh0000> \
+--outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/IPPAdjToS104DCF8

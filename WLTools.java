@@ -50,12 +50,11 @@ final public class WLTools extends WLToolsIO {
     File binDir= null;
 
     try {
-
       binDir= new File(WLTools.class.
         getProtectionDomain().getCodeSource().getLocation().toURI());
 
     } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(mmi+e);
     }
 
     mlog.info(mmi+"binDir="+binDir);
@@ -68,26 +67,40 @@ final public class WLTools extends WLToolsIO {
     // --- Now get the --<option name>=<option value> from the args
     HashMap<String, String> argsMap= new HashMap<String,String>();
 
+    // ---
     for (final String arg: args) {
-      String[] parts = arg.split("=");
+
+      if (!arg.contains("=")) {
+	throw new RuntimeException(mmi+"Incorrect option arg -> "+arg+" we should have --<option name>=<option value> !!");
+      }
+	
+      final String [] parts= arg.split("=");
+
+      if (parts.length != 2 ) {
+        throw new RuntimeException(mmi+"Incorrect option arg -> "+arg+" we should have --<option name>=<option value> !!");
+      }
+
+      if (!parts[0].startsWith("--")) {
+	throw new RuntimeException(mmi+"Incorrect option arg -> "+arg+" All option args must start with the \"--\" prefix !");
+      }
+      
       argsMap.put(parts[0], parts[1]);
     }
 
-    //final [] String toolsIds= {  };
+    // --- Check the --tool value 
     if (!argsMap.keySet().contains("--tool")) {
 
       throw new RuntimeException(mmi+"Must have one of the --tool="+
                                  IWLTools.Box.prediction.name()+" OR --tool="+
                                  IWLTools.Box.adjustment.name()+" OR --tool="+
                                  IWLTools.Box.analysis.name()+" OR --tool="+
-                                 IWLTools.Box.merge.name()+" option defined !!");
+				 IWLTools.Box.IPPAdjToS104DCF8+" option defined !!");
     }
 
     final String tool= argsMap.get("--tool");
 
     // --- Validate the tool (Check if we have it in our IWLTools.Box enum)
     if (!IWLTools.BoxContent.contains(tool)) {
-
       throw new RuntimeException(mmi+"Invalid tool -> "+tool+
                                  " !!, must be one of "+IWLTools.BoxContent.toString());
     }
@@ -196,6 +209,17 @@ final public class WLTools extends WLToolsIO {
       } else {
 	mlog.info(mmi+"Assuming here that all the results have already been written by the WLAdjustment wlAdjustAtLocation object"); 
       }
+      
+      //mlog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+    }
+
+    // --- Conversion of adj. SpineIPP results to S104DCF8 file tool.
+    if (tool.equals(IWLTools.Box.IPPAdjToS104DCF8.name())) {
+
+      mlog.info(mmi+"Using the conversion of SpineIPP results to S104DCF8 tool");
+
+      WLToolsIO.IPPAdjToS104DCF8(argsMap);
       
       //mlog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
