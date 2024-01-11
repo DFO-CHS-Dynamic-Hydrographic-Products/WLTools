@@ -67,12 +67,11 @@ public interface IWLAdjustment extends ITimeMachine {
     Type.SpineIPP.name(),
     Type.SpineFPP.name()
   }; //,
-                               //Type.IWLS_WLO_QC.name(),
-                               //Type.MODEL_NEAREST_NEIGHBOR.name(),
-                               //Type.MODEL_BARYCENTRIC.name() };
-
+ 
+  // ---
   Set<String> allowedTypes= Set.of(allowedTypesDef);
 
+  // ---
   enum TideGaugeAdjMethod {
     CHS_IWLS_QC,
     SINGLE_TIMEDEP_FMF_ERROR_STATS,
@@ -80,6 +79,7 @@ public interface IWLAdjustment extends ITimeMachine {
     //ECCC_H2D2_FORECAST_AUTOREG
   }
 
+  // ---
   String [] TideGaugeAdjMethodsDef= {
     TideGaugeAdjMethod.CHS_IWLS_QC.name(),
     TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS.name(),
@@ -87,10 +87,27 @@ public interface IWLAdjustment extends ITimeMachine {
     //TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()
   };
 
+  // ---
   Set<String> allowedTideGaugeAdjMethods= Set.of(TideGaugeAdjMethodsDef);
 
-  //enum Target {
-  //  WDSFluvial //,
-  //  // WDSOceanic
-  //}
+  // --- To control which of the ship channel points locations that are
+  //     the nearest to the two tide gauge locations used for the SpinePP
+  //     adjustment types that we have to write (or not write) the adjusted
+  //     WL results. This is needed because the SpinePP processing parts
+  //     could be parallelized and we have to avoid having two separate
+  //     processing instances trying to write in the same file at the same
+  //     time (i.e. having a race condition).
+  enum SpinePPWriteCtrl {
+    LOWER_SIDE,
+    UPPER_SIDE,
+    BOTH_SIDES
+  }
+
+  String [] SpinePPWriteCtrlDef= {
+    SpinePPWriteCtrl.LOWER_SIDE.name(),
+    SpinePPWriteCtrl.UPPER_SIDE.name(),
+    SpinePPWriteCtrl.BOTH_SIDES.name()
+  };
+
+  Set<String> allowedSpinePPWriteCtrl= Set.of(SpinePPWriteCtrlDef);   
 }

@@ -258,7 +258,9 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
     final String mmi= "getAdjustment: ";
 
-    slog.info(mmi+"start");
+    slog.info(mmi+"start, this.spinePPWriteCtrl="+this.spinePPWriteCtrl.name());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     try {
       outputDirectory.length();
@@ -396,7 +398,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       
     } // --- for(final Instant adjFMFInstant: adjFMFInstantsSet) outer loop block
 
-    slog.info(mmi+"writing the CHS_JSON output files for all the ship channel points locations.");
+    slog.info(mmi+"writing the adj. WLs for all the ship channel point locations that are in-between the two tide gauges");
 
     final String outputFileNamesPrfx= this.fmfReferenceDateTimeStr +
       IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX;
@@ -418,18 +420,33 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       //System.exit(0);
     }
 
-    // --- Now write the CHS_JSON output files for the two ship channel points locations.
-    //     that are the nearest to the two tide gauges being processed
-    final String lowerSideScLocWLAdjOutFName= outputFileNamesPrfx + this.lowerSideScLocStrId;
+    // --- Now write the CHS_JSON output files for the two ship channel point locations.
+    //     that are the nearest to the two tide gauges that define the point location range
+    //     being processed. It is controlled by the this.spinePPWriteCtrl attribute.
+    
+    if (this.spinePPWriteCtrl == IWLAdjustment.SpinePPWriteCtrl.LOWER_SIDE || 
+	  this.spinePPWriteCtrl == IWLAdjustment.SpinePPWriteCtrl.BOTH_SIDES ) {
+	
+      // --- Lower side
+      final String lowerSideScLocWLAdjOutFName= outputFileNamesPrfx + this.lowerSideScLocStrId;
 
-    WLToolsIO.writeToOutputDir(this.scLocsAdjLTFP.get(this.lowerSideScLocStrId),
-			       IWLToolsIO.Format.CHS_JSON, lowerSideScLocWLAdjOutFName, outputDirectory);
+      slog.info(mmi+"Writing the adj. WLs of the ship channel point location related to the lower side tide gauge");
+      
+      WLToolsIO.writeToOutputDir(this.scLocsAdjLTFP.get(this.lowerSideScLocStrId),
+   			         IWLToolsIO.Format.CHS_JSON, lowerSideScLocWLAdjOutFName, outputDirectory);
+    }
+    
+    if (this.spinePPWriteCtrl == IWLAdjustment.SpinePPWriteCtrl.UPPER_SIDE || 
+	  this.spinePPWriteCtrl == IWLAdjustment.SpinePPWriteCtrl.BOTH_SIDES ) {
 
-    // ---
-    final String upperSideScLocWLAdjOutFName= outputFileNamesPrfx + this.upperSideScLocStrId;
+      // --- Upper side
+      final String upperSideScLocWLAdjOutFName= outputFileNamesPrfx + this.upperSideScLocStrId;
 
-    WLToolsIO.writeToOutputDir(this.scLocsAdjLTFP.get(this.upperSideScLocStrId),
-			       IWLToolsIO.Format.CHS_JSON, upperSideScLocWLAdjOutFName, outputDirectory);
+      slog.info(mmi+"Writing the adj. WLS of the ship channel point location related to the the upper side tide gauge");
+      
+      WLToolsIO.writeToOutputDir(this.scLocsAdjLTFP.get(this.upperSideScLocStrId),
+        			 IWLToolsIO.Format.CHS_JSON, upperSideScLocWLAdjOutFName, outputDirectory);
+    }
     
     slog.info(mmi+"end");
 
