@@ -61,6 +61,8 @@ abstract public class WLAdjustmentType
   protected IWLAdjustment.TideGaugeAdjMethod forecastAdjType=
     IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS; //MULT_TIMEDEP_FMF_ERROR_STATS;
 
+  protected IWLAdjustment.SpinePPWriteCtrl spinePPWriteCtrl= IWLAdjustment.SpinePPWriteCtrl.BOTH_SIDES;
+    
   /**
    * Comments please!
    */
@@ -93,40 +95,51 @@ abstract public class WLAdjustmentType
 
     slog.info(mmi+"this.locationIdInfo="+this.locationIdInfo);
     
-    // --- Get only the base name of the this.locationIdInfo if it is a
+    // --- Get only the base name of the this.locationIdInfo option value if it is a
     //     path to a file having the IWLToolsIO.JSON_FEXT file name extension.
     //     TODO: Verify if this is still needed.
-    final String identity=
+    final String identityInfo=
       new File(this.locationIdInfo).getName().replace(IWLToolsIO.JSON_FEXT,"");
 
-    slog.info(mmi+"identity="+identity);
+    slog.info(mmi+"identity="+identityInfo);
 
     // --- Process the identity String depending on the adjustment type.
     //     TODO: Could be done in the specific dervived classes constructors?
     if (this.adjType == IWLAdjustment.Type.TideGauge) {
 
-      this.location= new TideGaugeConfig(identity);
+      this.location= new TideGaugeConfig(identityInfo);
 
     } else if (this.adjType == IWLAdjustment.Type.SpineIPP || this.adjType == IWLAdjustment.Type.SpineFPP) {
 
-      // --- Get the two ids of the CHS tide gauges that define an interpolation range for the ship
-      //     channel point locations that are in-between those two TG locations.
-      final String [] twoSpineInterpTGIds= identity.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+      // --- Get the ids of the two CHS tide gauges that define an interpolation range for the ship
+      //     channel point locations that are in-between those two TG locations. the identity
+      final String [] spineInterpTGIdsInfo= identityInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-      if (twoSpineInterpTGIds.length != 2) {
-	throw new RuntimeException(mmi+"twoSpineInterpTGIds must have length of 2 here!");
+      if (spineInterpTGIdsInfo.length != 3) {
+	throw new RuntimeException(mmi+"spineInterpTGIdsInfo string array must have length of 3 here!");
       }
       
-      //--- TODO: DO not assume that we only have two TGs here.
+      //--- TODO: DO not assume that we have only two TGs here.
       this.locations= new ArrayList<TideGaugeConfig>(2); //<WLLocation>(2);
       
       //this.location= new WLLocation(identity);
-      this.locations.add(0, new TideGaugeConfig(twoSpineInterpTGIds[0]));
-      this.locations.add(1, new TideGaugeConfig(twoSpineInterpTGIds[1]));
+      this.locations.add(0, new TideGaugeConfig(spineInterpTGIdsInfo[0]));
+      this.locations.add(1, new TideGaugeConfig(spineInterpTGIdsInfo[1]));
 
       slog.info(mmi+"this.locations TG 0 id.="+this.locations.get(0).getIdentity());
       slog.info(mmi+"this.locations TG 1 id.="+this.locations.get(1).getIdentity());
+
+      final String checkSpinePPWriteCtrlType= spineInterpTGIdsInfo[2];
+
+      if (!allowedSpinePPWriteCtrl.contains(checkSpinePPWriteCtrlType)) {
+	throw new RuntimeException(mmi+"Invalid IWLAdjustment.SpinePPWriteCtrl type -> "+checkSpinePPWriteCtrlType);
+      }
       
+      // --- Set this.spinePPWriteCtrl enum value using the spineInterpTGIdsInfo[2] string
+      //     
+      this.spinePPWriteCtrl= IWLAdjustment.SpinePPWriteCtrl.valueOf(spineInterpTGIdsInfo[2]);
+
+      slog.info(mmi+"this.spinePPWriteCtrl="+this.spinePPWriteCtrl.name());
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
       
