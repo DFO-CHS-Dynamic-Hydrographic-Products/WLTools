@@ -273,12 +273,19 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       throw new RuntimeException(mmi+"Invalid output file(s) data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
     }
 
+    // --- Get the 1st (otherwise said the least recent in time) Instant object related
+    //     to the lower side tide gauge
     final Instant lowSideLocLeastRecentInstant=
       tgsNearestSCLocsAdjFMF.get(this.lowerSideScLocTGId).getLeastRecentInstantCopy();
 
+    // --- Get the 1st (otherwise said the least recent in time) Instant object related
+    //     to the upper side tide gauge    
     final Instant uppSideLocLeastRecentInstant=
       tgsNearestSCLocsAdjFMF.get(this.upperSideScLocTGId).getLeastRecentInstantCopy();
 
+    // --- Find which of those two Instant object is the most recent in time.
+    //     (this is done to ensure tha tw ehave time synchronization between
+    //      the two sets of adjusted FMF WL data)
     final String tgLocWithMostRecentInstantId= lowSideLocLeastRecentInstant.
       isAfter(uppSideLocLeastRecentInstant) ? this.lowerSideScLocTGId : this.upperSideScLocTGId;
 
