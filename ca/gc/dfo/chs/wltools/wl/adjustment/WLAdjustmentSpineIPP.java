@@ -271,13 +271,30 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     // --- Verfiy the output file(s) format before going further
     if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.CHS_JSON.name())) {
       throw new RuntimeException(mmi+"Invalid output file(s) data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
-    }    
-	
+    }
+
+    final Instant lowSideLocLeastRecentInstant=
+      tgsNearestSCLocsAdjFMF.get(this.lowerSideScLocTGId).getLeastRecentInstantCopy();
+
+    final Instant uppSideLocLeastRecentInstant=
+      tgsNearestSCLocsAdjFMF.get(this.upperSideScLocTGId).getLeastRecentInstantCopy();
+
+    final String tgLocWithMostRecentInstantId= lowSideLocLeastRecentInstant.
+      isAfter(uppSideLocLeastRecentInstant) ? this.lowerSideScLocTGId : this.upperSideScLocTGId;
+
+    slog.info(mmi+"lowSideLocLeastRecentInstant="+lowSideLocLeastRecentInstant.toString());
+    slog.info(mmi+"uppSideLocLeastRecentInstant="+uppSideLocLeastRecentInstant.toString());
+    //slog.info(mmi+"tgLocMostRecentInstant="+tgLocMostRecentInstant.toString());
+    slog.info(mmi+"tgLocWithMostRecentInstantId="+tgLocWithMostRecentInstantId);
+    
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+    
     // --- Get a SortedSet of the Instants objects of the lower side
     //     adj. FMF data (NOTE: we would get the exact same SortedSet using
     //     the upper side adj. FMF data)
     final SortedSet<Instant> adjFMFInstantsSet= this.
-      tgsNearestSCLocsAdjFMF.get(this.lowerSideScLocTGId).getInstantsKeySetCopy();
+      tgsNearestSCLocsAdjFMF.get(tgLocWithMostRecentInstantId).getInstantsKeySetCopy();
 
     // --- Allocate memory for the Map <String, List<MeasurementCustom>>
     //     that is used to store the adjusted "forecasted" WLs for all the
@@ -452,8 +469,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
     // --- Now 
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- return null here to signal to the main class that
     //     all the results have already been written in the
