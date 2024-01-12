@@ -73,7 +73,7 @@ final public class WLTools extends WLToolsIO {
       if (!arg.contains("=")) {
 	throw new RuntimeException(mmi+"Incorrect option arg -> "+arg+" we should have --<option name>=<option value> !!");
       }
-	
+
       final String [] parts= arg.split("=");
 
       if (parts.length != 2 ) {
@@ -219,7 +219,7 @@ final public class WLTools extends WLToolsIO {
 
       mlog.info(mmi+"Using the conversion of SpineIPP results to S104DCF8 tool");
 
-      WLToolsIO.IPPAdjToS104DCF8(argsMap);
+      WLToolsIO.ippAdjToS104DCF8(argsMap);
       
       //mlog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);

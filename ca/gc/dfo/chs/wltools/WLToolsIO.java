@@ -3,6 +3,8 @@ package ca.gc.dfo.chs.wltools;
 // ---
 import java.util.Map;
 import java.util.List;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
@@ -31,11 +33,18 @@ import javax.json.JsonObject;
 import javax.json.JsonWriter;
 import javax.json.JsonArrayBuilder;
 
-// ---
+// --- HDFql lib
+import as.hdfql.HDFql;
+import as.hdfql.HDFqlCursor;
+import as.hdfql.HDFqlConstants;
+
+// --- 
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 
@@ -316,9 +325,9 @@ abstract public class WLToolsIO implements IWLToolsIO {
   }
 
   // ---
-  final public static void IPPAdjToS104DCF8(final Map<String,String> argsMap) {
+  final public static void ippAdjToS104DCF8(final Map<String,String> argsMap) {
 
-    final String mmi= "IPPAdjToS104DCF8: ";
+    final String mmi= "ippAdjToS104DCF8: ";
 
     slog.info(mmi+"start");
 
@@ -342,17 +351,104 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     final String ippAdjResultsInputDir= argsMap.get("--IPPAdjResultsInputDir");
 
+    if (!checkForFileExistence(ippAdjResultsInputDir)) {
+      throw new RuntimeException(mmi+"ippAdjResultsInputDir folder not found !!");
+    } 
+    
     slog.info(mmi+"ippAdjResultsInputDir="+ippAdjResultsInputDir);
 
     // --- 
     if (checkInputDataFormat.equals(IWLToolsIO.Format.CHS_JSON.name())) {
 	    
       slog.info(mmi+"The IPPAdj input data format is -> "+IWLToolsIO.Format.CHS_JSON.name());
+
+      ippCHSJsonToS104DCF8(ippAdjResultsInputDir);
       
       slog.info(mmi+"debug System.exit(0)");
       System.exit(0); 
     }
 
+    //if (checkInputDataFormat.equals(IWLToolsIO.Format.ONELOC_S104DCF8.name())) {
+    //}
+
     slog.info(mmi+"end");
+
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0); 
   }
+
+  // ---
+  final public static void ippCHSJsonToS104DCF8(final String ippAdjResultsInputDir) {
+      
+    final String mmi= "ippCHSJsonToS104DCF8: ";
+
+    slog.info(mmi+"start, ippAdjResultsInputDir="+ippAdjResultsInputDir);
+
+    // --- Get the paths of all the ship channel points locations adjusted WL
+    //     (SpineIPP outputs) data input files (CHS_JSON format) in a List<Path> object 
+    final List<Path> adjSpineIPPInputDataFilesList=
+      getRelevantFilesList(ippAdjResultsInputDir, "*"+IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX+"*"+JSON_FEXT);
+
+    Map<String, MeasurementCustomBundle> allSCLocsIPPInputData= new HashMap<String, MeasurementCustomBundle>();
+
+    slog.info(mmi+"Reading all the SpineIPP results input files in CHS_JSON format");
+    
+    // --- Loop on all the files of all the ship channel point locations adjusted WL
+    //     (SpineIPP outputs) data input files (order is not important here since we are
+    //      using a Map to store the data using their num. ids as keys) 
+    for(final Path adjSpineIPPInputDataFilePath: adjSpineIPPInputDataFilesList) {
+
+      final String adjSpineIPPInputDataFileStr= adjSpineIPPInputDataFilePath.toString();
+	
+      slog.debug(mmi+"adjSpineIPPInputDataFileStr="+adjSpineIPPInputDataFileStr);
+
+      // --- Extract the name of the adjSpineIPPInputDataFile and get rid of its
+      //     JSON name extension at the same time
+      final String scLocFNamePrefix= new
+	File(adjSpineIPPInputDataFileStr).getName().replace(JSON_FEXT,"");
+
+      //slog.info(mmi+"scLocFNamePrefix="+scLocFNamePrefix);
+
+      // --- Split the file name prefix in its parts.
+      final String [] scLocFNamePrefixParts= scLocFNamePrefix.split(OUTPUT_DATA_FMT_SPLIT_CHAR);
+
+      // --- Must have 4 parts here
+      if (scLocFNamePrefixParts.length != 4) {
+	throw new RuntimeException(mmi+"scLocFNamePrefixParts.length != 4");
+      }
+
+      // --- Get the int num. id (String) of the ship channel point location
+      //final Integer scLocIndex= Integer.getInteger(scLocFNamePrefixParts[3]);
+      final String scLocIndexKeyStr= scLocFNamePrefixParts[3];
+
+      // --- Read the ship channel point location adjusted WL from its
+      //     CHS_JSON input file in the Map of MeasurementCustomBundle objects
+      allSCLocsIPPInputData.put(scLocIndexKeyStr,
+				new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0) ));
+      
+      //slog.info(mmi+"scLocFNamePrefixParts="+scLocFNamePrefixParts.toString());
+
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);       
+    }
+
+    slog.info(mmi+"Done with reading all the SpineIPP results input files");   
+
+    // --- Get the time intervall in seconds (the ship channel point location is not important)
+    //     Assuming that the String index "0" key exists in the allSCLocsIPPInputData Map
+    final Instant [] scLocInstants= allSCLocsIPPInputData.
+      get("0").getInstantsKeySetCopy().toArray(new Instant[0]);
+
+    slog.info(mmi+"scLocInstants[0]="+scLocInstants[0].toString());
+    slog.info(mmi+"scLocInstants[1]="+scLocInstants[1].toString());
+
+    final long timeIntervallSeconds=
+      scLocInstants[1].getEpochSecond() - scLocInstants[0].getEpochSecond();
+
+    slog.info(mmi+"timeIntervallSeconds="+timeIntervallSeconds);
+    
+    // --- Now do the conversion to S104 DCF8 format (one file forall the ship channel points locations).
+    
+    slog.info(mmi+"end");
+  }	
 }
