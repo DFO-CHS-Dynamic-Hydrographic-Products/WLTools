@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.List;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.SortedSet;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
 import java.nio.file.DirectoryStream;
+import java.nio.file.StandardCopyOption;
 
 //import javax.validation.constraints.NotNull;
 
@@ -38,7 +40,7 @@ import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
 
-// --- 
+// ---
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
@@ -47,6 +49,9 @@ import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
+
+// --- chs SProduct package
+import ca.gc.dfo.chs.dhp.ISProductIO;
 
 /**
  *
@@ -384,12 +389,52 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     slog.info(mmi+"start, ippAdjResultsInputDir="+ippAdjResultsInputDir);
 
+    final String ippAdjResultsInputDirName=  new File(ippAdjResultsInputDir).getName();
+
+    // --- Copy the S104 DCF8 template file from the dhp package config folder to the output folder
+    //     to use it as a target where to write (append mode) the new SpineIPP results.
+    final String s104Dcf8TmplFile= mainCfgDir +
+      File.separator + ISProductIO.PKG_LOWSTL_S104_DCF8_TMPLF_RPATH;
+
+    if (!checkForFileExistence(s104Dcf8TmplFile)) {
+      throw new RuntimeException(mmi+"Template file -> "+s104Dcf8TmplFile+" not found");
+    }
+    
+    slog.info(mmi+"s104Dcf8TmplFile="+s104Dcf8TmplFile);
+
+    // --- Need to convert the s104Dcf8TmplFile to a Path object in order
+    //     to copy it in the output folder with its new name which also needs to be a Path.
+    final Path s104Dcf8TmplFilePath= FileSystems.getDefault().getPath(s104Dcf8TmplFile);
+
+    final String outputFileName= ippAdjResultsInputDirName +
+      OUTPUT_DATA_FMT_SPLIT_CHAR + new File(s104Dcf8TmplFile).getName();
+
+    final Path outputFilePath= FileSystems.getDefault().
+	getPath(outputDirectory + File.separator + outputFileName);
+
+    slog.info(mmi+"outputFilePath="+outputFilePath.toString());
+
+    try {
+      Files.copy(s104Dcf8TmplFilePath, outputFilePath, StandardCopyOption.REPLACE_EXISTING);
+    } catch (IOException ioex) {
+      throw new RuntimeException(mmi+"Problem with Files.copy()!!");
+    }
+    
+    slog.info(mmi+"debug System.exit(0)");
+    System.exit(0);    
+
     // --- Get the paths of all the ship channel points locations adjusted WL
     //     (SpineIPP outputs) data input files (CHS_JSON format) in a List<Path> object 
     final List<Path> adjSpineIPPInputDataFilesList=
       getRelevantFilesList(ippAdjResultsInputDir, "*"+IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX+"*"+JSON_FEXT);
 
     Map<String, MeasurementCustomBundle> allSCLocsIPPInputData= new HashMap<String, MeasurementCustomBundle>();
+
+    // --- Need to determine the most recent Instant of all the ship channel grid point locations
+    //     (they could be slighly different at this point) then start with the 1970-01-01T00:00;00Z
+    //     as a time reference. Otherewise said it is the most recent Instant of all the least recent
+    //     Instant objects of all the ship channel grid point locations
+    Instant mostRecentFirstInstant= Instant.EPOCH;
 
     slog.info(mmi+"Reading all the SpineIPP results input files in CHS_JSON format");
     
@@ -424,28 +469,53 @@ abstract public class WLToolsIO implements IWLToolsIO {
       // --- Read the ship channel point location adjusted WL from its
       //     CHS_JSON input file in the Map of MeasurementCustomBundle objects
       allSCLocsIPPInputData.put(scLocIndexKeyStr,
-				new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0) ));
+	new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0) ));
       
       //slog.info(mmi+"scLocFNamePrefixParts="+scLocFNamePrefixParts.toString());
 
+      final Instant scLocLeastRecentInstantCheck=
+	allSCLocsIPPInputData.get(scLocIndexKeyStr).getLeastRecentInstantCopy();
+      
+      mostRecentFirstInstant= ( mostRecentFirstInstant.
+	isBefore(scLocLeastRecentInstantCheck) ) ? scLocLeastRecentInstantCheck: mostRecentFirstInstant;
+      
       //slog.info(mmi+"debug System.exit(0)");
       //System.exit(0);       
     }
 
     slog.info(mmi+"Done with reading all the SpineIPP results input files");   
 
-    // --- Get the time intervall in seconds (the ship channel point location is not important)
-    //     Assuming that the String index "0" key exists in the allSCLocsIPPInputData Map
-    final Instant [] scLocInstants= allSCLocsIPPInputData.
-      get("0").getInstantsKeySetCopy().toArray(new Instant[0]);
+    slog.info(mmi+"mostRecentFirstInstant="+mostRecentFirstInstant.toString());
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
 
-    slog.info(mmi+"scLocInstants[0]="+scLocInstants[0].toString());
-    slog.info(mmi+"scLocInstants[1]="+scLocInstants[1].toString());
+    // --- Take the SortedSet<Instant> of the "0" ship channel point location to
+    //     use it for the conversion loop starting at the mostRecentFirstInstant
+    //     (It is very unlikely that the mostRecentFirstInstant object key is not present
+    //     in the keys of the related MeasurementCustomBundle object)
+    final SortedSet<Instant> scLocsInstants= allSCLocsIPPInputData.
+      get("0").getInstantsKeySetCopy().tailSet(mostRecentFirstInstant);
+    
+    // --- Get the time intervall in seconds (the ship channel point location is not important here)
+    //     Assuming that the String index "0" key exists in the allSCLocsIPPInputData Map
+    final Instant [] scLocsInstantsArr= scLocsInstants.toArray(new Instant[0]);
+
+    slog.info(mmi+"scLocsInstantsArr[0]="+scLocsInstantsArr[0].toString());
+    slog.info(mmi+"scLocsInstantsArr[1]="+scLocsInstantsArr[1].toString());
 
     final long timeIntervallSeconds=
-      scLocInstants[1].getEpochSecond() - scLocInstants[0].getEpochSecond();
+      scLocsInstantsArr[1].getEpochSecond() - scLocsInstantsArr[0].getEpochSecond();
 
     slog.info(mmi+"timeIntervallSeconds="+timeIntervallSeconds);
+
+    final int nbInstants= scLocsInstants.size();
+
+    slog.info(mmi+"nbInstants="+nbInstants);
+
+    //// --- Copy the S104 DCF8 template file from the package config folder to the output folder
+    ////     to use it as a target for the new SpineIPP results.
+    //final String s104Dcf8FileTmpl= mainCfgDir + ISProductIO.PKG_LOWSTL_S104_DCF8_TMPL_FRPATH;
+    //slog.info(mmi+"
     
     // --- Now do the conversion to S104 DCF8 format (one file forall the ship channel points locations).
     
