@@ -163,9 +163,12 @@ public class S104Dcf8ToAscii {
             throw new RuntimeException(start + " source file doesn't contain enough data to generate file from specified start time");
         }
         /* Probably not the smartest way to do this loop */
-        for ( final Instant instantIter: mCBundle.getInstantsKeySet() ) {
+        for ( final Instant instantIter: mCBundle.getInstantsKeySetCopy() ) {
+	    
             if ((!(instantIter.isBefore(start))) && (instantIter.isBefore(end) || instantIter.equals(end))) {
+		
                 MeasurementCustom mc = mCBundle.getAtThisInstant(instantIter);
+		
                 if (!(type.equals("UU"))) {
                     doubleToSpineStringBuilder(mc.getValue(), stringBuilder);
                 } else {

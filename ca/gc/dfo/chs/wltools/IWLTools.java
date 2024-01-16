@@ -21,8 +21,8 @@ public interface IWLTools {
   String [] BoxContentNames= { Box.analysis.name(),
                                Box.prediction.name(),
                                Box.adjustment.name(),
-			       Box.IPPAdjToS104DCF8.name() } ;
-                               Box.S104Dcf8ToAscii.name()};
+			       Box.IPPAdjToS104DCF8.name(),
+                               Box.S104Dcf8ToAscii.name() };
 
 
   Set<String> BoxContent= Set.of(BoxContentNames);

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
+
 // ---
 import ca.gc.dfo.chs.wltools.IWLTools;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
@@ -95,12 +96,9 @@ final public class WLTools extends WLToolsIO {
                                  IWLTools.Box.prediction.name()+" OR --tool="+
                                  IWLTools.Box.adjustment.name()+" OR --tool="+
                                  IWLTools.Box.analysis.name()+" OR --tool="+
-<<<<<<< HEAD
-				 IWLTools.Box.IPPAdjToS104DCF8+" option defined !!");
-=======
-                                 IWLTools.Box.S104Dcf8ToAscii.name()+" OR --tool="+
-                                 IWLTools.Box.merge.name()+" option defined !!");
->>>>>>> main
+				 IWLTools.Box.IPPAdjToS104DCF8+" OR --tool "+
+                                 IWLTools.Box.S104Dcf8ToAscii.name()+" option defined !!");
+
     }
 
     final String tool= argsMap.get("--tool");
@@ -220,7 +218,6 @@ final public class WLTools extends WLToolsIO {
       //System.exit(0);
     }
 
-<<<<<<< HEAD
     // --- Conversion of adj. SpineIPP results to S104DCF8 file tool.
     if (tool.equals(IWLTools.Box.IPPAdjToS104DCF8.name())) {
 
@@ -231,7 +228,6 @@ final public class WLTools extends WLToolsIO {
       //mlog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
     }
-=======
         // S104Dcf8ToAscii
     if (tool.equals(IWLTools.Box.S104Dcf8ToAscii.name())) {
 
@@ -247,7 +243,6 @@ final public class WLTools extends WLToolsIO {
       }
       final String h5PathArg= argsMap.get("--h5Path");
 
-
       if (!argsMap.keySet().contains("--time")) {
         throw new RuntimeException(mmi+"Must have the --time=<ISO time> defined in the args.!");
       }
@@ -261,7 +256,6 @@ final public class WLTools extends WLToolsIO {
       S104Dcf8ToAscii.runConversion(timeArg, outputDirArg, h5PathArg, typeArg);
 
      }
->>>>>>> main
 
     mlog.info(mmi+"end");
   }
