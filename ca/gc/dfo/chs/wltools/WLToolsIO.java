@@ -420,8 +420,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+"Problem with Files.copy()!!");
     }
     
-    slog.info(mmi+"debug System.exit(0)");
-    System.exit(0);    
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);    
 
     // --- Get the paths of all the ship channel points locations adjusted WL
     //     (SpineIPP outputs) data input files (CHS_JSON format) in a List<Path> object 
@@ -511,13 +511,55 @@ abstract public class WLToolsIO implements IWLToolsIO {
     final int nbInstants= scLocsInstants.size();
 
     slog.info(mmi+"nbInstants="+nbInstants);
-
-    //// --- Copy the S104 DCF8 template file from the package config folder to the output folder
-    ////     to use it as a target for the new SpineIPP results.
-    //final String s104Dcf8FileTmpl= mainCfgDir + ISProductIO.PKG_LOWSTL_S104_DCF8_TMPL_FRPATH;
-    //slog.info(mmi+"
     
     // --- Now do the conversion to S104 DCF8 format (one file forall the ship channel points locations).
+
+    // --- Open the HDF5 output file in append mode (default when it is already existing);
+    final int checkOpenOutFile= HDFql.execute("USE FILE " + outputFilePath);
+
+    if (checkOpenOutFile != HDFqlConstants.SUCCESS ) {
+      throw new RuntimeException(mmi+"hdfql.execute problem: checkOpenOutFile="+checkOpenOutFile);
+    }
+
+    final int shf= HDFql.execute("SHOW USE FILE");
+    
+    slog.info(mmi+"shf="+shf);
+
+    // --- Need to update the issueDate and issueTime HDF5 root attributes
+    final String [] nowStrSplit= Instant.now().toString().split(ISO8601_DATETIME_SEP_CHAR);
+
+    final String YYYYMMDDStr= nowStrSplit[0];    
+
+    //slog.info(mmi+"YYYYMMDD="+YYYYMMDD); 
+    //slog.info(mmi+"nowStrSplit[1]="+nowStrSplit[1]);
+
+    // --- Instant.now() puts the milliseconds at the end of the String after a "."
+    //     split needs two escape backslashes here to get what we want.
+    final String hhmmssZStr= nowStrSplit[1].
+      split("\\.")[0].replace(INPUT_DATA_FMT_SPLIT_CHAR,"") + ISO8601_UTC_EXT;
+
+    //slog.info(mmi+"YYYYMMDD="+YYYYMMDD);
+    //slog.info(mmi+"hhmmssZ="+hhmmssZ);
+
+    HDFql.execute("USE GROUP "+ISProductIO.ROOT_GRP_ID);
+
+    final int sug= HDFql.execute("SHOW USE GROUP");
+
+    slog.info(mmi+"sug="+sug);
+
+    final int checkInsert= HDFql.execute("INSERT INTO issueDate VALUES FROM MEMORY " + HDFql.variableRegister(YYYYMMDDStr));
+    
+    //final int checkInsert= HDFql.execute("INSERT INTO " + ISProductIO.ISSUE_YYYYMMDD_ID +
+    //		                         " FROM MEMORY " + HDFql.variableRegister(YYYYMMDDStr));
+
+    slog.info(mmi+"checkInsert="+checkInsert);
+    
+    HDFql.variableUnregister(YYYYMMDDStr);
+    
+    //HDFql.execute("INSERT INTO "+ISProductIO.ISSUE_HHMMSS_ID+
+    //		  " VALUES FROM MEMORY  ", HDFql.variableRegister(hhmmssZStr));
+    
+    HDFql.execute("CLOSE FILE " + outputFilePath);
     
     slog.info(mmi+"end");
   }	
