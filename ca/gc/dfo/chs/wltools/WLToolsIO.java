@@ -523,15 +523,13 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     final int shf= HDFql.execute("SHOW USE FILE");
     
-    slog.info(mmi+"shf="+shf);
+    //slog.info(mmi+"shf="+shf);
 
     // --- Need to update the issueDate and issueTime HDF5 root attributes
     final String [] nowStrSplit= Instant.now().toString().split(ISO8601_DATETIME_SEP_CHAR);
 
-    final String YYYYMMDDStr= nowStrSplit[0];    
-
-    //slog.info(mmi+"YYYYMMDD="+YYYYMMDD); 
-    //slog.info(mmi+"nowStrSplit[1]="+nowStrSplit[1]);
+    // --- issueDate String 
+    final String YYYYMMDDStr= nowStrSplit[0];  
 
     // --- Instant.now() puts the milliseconds at the end of the String after a "."
     //     split needs two escape backslashes here to get what we want.
@@ -541,23 +539,24 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //slog.info(mmi+"YYYYMMDD="+YYYYMMDD);
     //slog.info(mmi+"hhmmssZ="+hhmmssZ);
 
+    // --- USE GROUP Probably not necessary here
     HDFql.execute("USE GROUP "+ISProductIO.ROOT_GRP_ID);
 
-    final int sug= HDFql.execute("SHOW USE GROUP");
+    // --- Need to use an array of one String for the YYYYMMDDStr String in order
+    //     to be able to update the related HDF5 String attribute
+    int cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.ISSUE_YYYYMMDD_ID +
+			   " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {YYYYMMDDStr} ) ); 
 
-    slog.info(mmi+"sug="+sug);
-
-    final int checkInsert= HDFql.execute("INSERT INTO issueDate VALUES FROM MEMORY " + HDFql.variableRegister(YYYYMMDDStr));
+    if (cqc != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.ISSUE_YYYYMMDD_ID+" ATTRIBUTE");
+    }
     
-    //final int checkInsert= HDFql.execute("INSERT INTO " + ISProductIO.ISSUE_YYYYMMDD_ID +
-    //		                         " FROM MEMORY " + HDFql.variableRegister(YYYYMMDDStr));
-
-    slog.info(mmi+"checkInsert="+checkInsert);
+    cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.ISSUE_HHMMSS_ID +
+		       " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {hhmmssZStr} ) );
     
-    HDFql.variableUnregister(YYYYMMDDStr);
-    
-    //HDFql.execute("INSERT INTO "+ISProductIO.ISSUE_HHMMSS_ID+
-    //		  " VALUES FROM MEMORY  ", HDFql.variableRegister(hhmmssZStr));
+    if (cqc != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.ISSUE_HHMMSS_ID+" ATTRIBUTE");
+    }
     
     HDFql.execute("CLOSE FILE " + outputFilePath);
     
