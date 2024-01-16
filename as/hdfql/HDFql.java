@@ -26,17 +26,17 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		private static Variable variableList[] = {null, null, null, null, null};
+		private static Variable variableList[] = {null, null, null, null, null, null, null, null};
 
 
 		static
 		{
 			Runtime.getRuntime().addShutdownHook(new Thread(()->variableUnregisterAll()));
-			javaSetEnvironment();
+			setEnvironment();
 		}
 
 
-		private HDFql()   // set constructor visibility to private to disable instantiation of the class
+		private HDFql()   // set constructor visibility to private (i.e. disable class instantiation)
 		{
 
 		}
@@ -46,11 +46,14 @@ public class HDFql implements HDFqlConstants {
 		{
 			public Object variable;
 			public Class type;
+			public Class className;
 
-			public Variable(Object variable, Class type)
+
+			public Variable(Object variable, Class type, Class className)
 			{
 				this.variable = variable;
 				this.type = type;
+				this.className = className;
 			}
 		}
 
@@ -60,6 +63,7 @@ public class HDFql implements HDFqlConstants {
 			int status;
 			int i;
 
+
 			if (script == null)
 			{
 				return executeReset();
@@ -68,7 +72,7 @@ public class HDFql implements HDFqlConstants {
 			status = execute(script, script.length(), JAVA);
 			if ((status & 0x100) != 0)   // check if a transient variable was used
 			{
-				for(i = 0; i < 5; i++)
+				for(i = 0; i < 8; i++)
 				{
 					if ((status & (1 << (i + 9))) != 0)
 					{
@@ -113,7 +117,7 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		public static int cursorGetCount()
+		public static long cursorGetCount()
 		{
 			return cursorGetCount(null);
 		}
@@ -125,7 +129,19 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		public static int cursorGetPosition()
+		public static int cursorGetDimensionCount()
+		{
+			return cursorGetDimensionCount(null);
+		}
+
+
+		public static long cursorGetDimension(int index)
+		{
+			return cursorGetDimension(null, index);
+		}
+
+
+		public static long cursorGetPosition()
 		{
 			return cursorGetPosition(null);
 		}
@@ -185,7 +201,7 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		public static int cursorAbsolute(int position)
+		public static int cursorAbsolute(long position)
 		{
 			return cursorAbsolute(null, position);
 		}
@@ -197,7 +213,7 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		public static int cursorRelative(int position)
+		public static int cursorRelative(long position)
 		{
 			return cursorRelative(null, position);
 		}
@@ -337,13 +353,25 @@ public class HDFql implements HDFqlConstants {
 
 		public static int variableRegister(Object variable)
 		{
-			return variableRegister(variable, NO);
+			return variableRegister(variable, null, NO);
+		}
+
+
+		public static int variableRegister(Object variable, Class variableClass)
+		{
+			return variableRegister(variable, variableClass, NO);
 		}
 
 
 		public static int variableTransientRegister(Object variable)
 		{
-			return variableRegister(variable, YES);
+			return variableRegister(variable, null, YES);
+		}
+
+
+		public static int variableTransientRegister(Object variable, Class variableClass)
+		{
+			return variableRegister(variable, variableClass, YES);
 		}
 
 
@@ -351,12 +379,13 @@ public class HDFql implements HDFqlConstants {
 		{
 			int i;
 
+
 			if (variable == null)
 			{
 				return ERROR_NO_ADDRESS;
 			}
 
-			for(i = 0; i < 5; i++)
+			for(i = 0; i < 8; i++)
 			{
 				if (variableList[i] != null && variable.equals(variableList[i].variable))
 				{
@@ -370,11 +399,12 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		public static int variableUnregisterAll()
+		public static void variableUnregisterAll()
 		{
 			int i;
 
-			for(i = 0; i < 5; i++)
+
+			for(i = 0; i < 8; i++)
 			{
 				if (variableList[i] != null)
 				{
@@ -382,8 +412,6 @@ public class HDFql implements HDFqlConstants {
 					variableList[i] = null;
 				}
 			}
-
-			return SUCCESS;
 		}
 
 
@@ -391,12 +419,13 @@ public class HDFql implements HDFqlConstants {
 		{
 			int i;
 
+
 			if (variable == null)
 			{
 				return ERROR_NO_ADDRESS;
 			}
 
-			for(i = 0; i < 5; i++)
+			for(i = 0; i < 8; i++)
 			{
 				if (variableList[i] != null && variable.equals(variableList[i].variable))
 				{
@@ -412,12 +441,13 @@ public class HDFql implements HDFqlConstants {
 		{
 			int i;
 
+
 			if (variable == null)
 			{
 				return ERROR_NO_ADDRESS;
 			}
 
-			for(i = 0; i < 5; i++)
+			for(i = 0; i < 8; i++)
 			{
 				if (variableList[i] != null && variable.equals(variableList[i].variable))
 				{
@@ -429,16 +459,17 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		public static int variableGetCount(Object variable)
+		public static long variableGetCount(Object variable)
 		{
 			int i;
+
 
 			if (variable == null)
 			{
 				return ERROR_NO_ADDRESS;
 			}
 
-			for(i = 0; i < 5; i++)
+			for(i = 0; i < 8; i++)
 			{
 				if (variableList[i] != null && variable.equals(variableList[i].variable))
 				{
@@ -450,37 +481,17 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		public static int variableGetSize(Object variable)
-		{
-			int i;
-
-			if (variable == null)
-			{
-				return ERROR_NO_ADDRESS;
-			}
-
-			for(i = 0; i < 5; i++)
-			{
-				if (variableList[i] != null && variable.equals(variableList[i].variable))
-				{
-					return variableGetSize(i);
-				}
-			}
-
-			return ERROR_NOT_REGISTERED;
-		}
-
-
 		public static int variableGetDimensionCount(Object variable)
 		{
 			int i;
 
+
 			if (variable == null)
 			{
 				return ERROR_NO_ADDRESS;
 			}
 
-			for(i = 0; i < 5; i++)
+			for(i = 0; i < 8; i++)
 			{
 				if (variableList[i] != null && variable.equals(variableList[i].variable))
 				{
@@ -496,12 +507,13 @@ public class HDFql implements HDFqlConstants {
 		{
 			int i;
 
+
 			if (variable == null)
 			{
 				return ERROR_NO_ADDRESS;
 			}
 
-			for(i = 0; i < 5; i++)
+			for(i = 0; i < 8; i++)
 			{
 				if (variableList[i] != null && variable.equals(variableList[i].variable))
 				{
@@ -513,43 +525,47 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		private static int variableRegister(Object variable, int variableTransient)
+		public static int mpiUseCommunicator(Object communicator)
 		{
-			Object tmp;
-			Class type0;
-			Class type1;
+			return ERROR_NOT_SUPPORTED;
+		}
+
+
+		private static int variableRegister(Object variable, Class variableClass, int variableTransient)
+		{
+			Class tmp;
+			int status;
 			int number;
+			int count;
 			int i;
+
 
 			if (variable == null)
 			{
 				return ERROR_NO_ADDRESS;
 			}
 
-			type0 = variable.getClass().getComponentType();   // get data type of variable (if variable is not an array it will return null)
-			if (type0 == null)
+			tmp = variable.getClass();
+			if (tmp.isArray() == false)   // only arrays are allowed (otherwise it is not possible to have a "real" reference of the object being registered)
 			{
 				return ERROR_UNEXPECTED_DATA_TYPE;
 			}
 
-			try
+			count = 0;
+			do
 			{
-				tmp = variable;
-				do
-				{
-					tmp = java.lang.reflect.Array.get(tmp, 0);
-					type1 = type0;
-					type0 = tmp.getClass().getComponentType();
-				}
-				while(type0 != null);
+				count++;
+				tmp = tmp.getComponentType();
 			}
-			catch(Exception e)
+			while(tmp.isArray() == true);
+
+			if (tmp == boolean.class || tmp == Boolean.class || tmp == char.class || tmp == Character.class)
 			{
-				type1 = type0;
+				return ERROR_UNEXPECTED_DATA_TYPE;
 			}
 
 			number = -1;
-			for(i = 0; i < 5; i++)
+			for(i = 0; i < 8; i++)
 			{
 				if (variableList[i] == null)
 				{
@@ -562,7 +578,11 @@ public class HDFql implements HDFqlConstants {
 				{
 					if (variable.equals(variableList[i].variable))
 					{
-						variableRegisterWithFields(i, variableTransient, null);
+						status = variableRegister(i, variableTransient, count, null, null);
+						if (status != SUCCESS)
+						{
+							return status;
+						}
 						return i;
 					}
 				}
@@ -573,16 +593,32 @@ public class HDFql implements HDFqlConstants {
 				return ERROR_FULL;
 			}
 
-			variableList[number] = new Variable(variable, type1);
-
-			if (type1 == byte.class || type1 == Byte.class || type1 == short.class || type1 == Short.class || type1 == int.class || type1 == Integer.class || type1 == long.class || type1 == Long.class || type1 == float.class || type1 == Float.class || type1 == double.class || type1 == Double.class || type1 == String.class)
+			if (tmp == byte.class || tmp == Byte.class || tmp == short.class || tmp == Short.class || tmp == int.class || tmp == Integer.class || tmp == long.class || tmp == Long.class || tmp == float.class || tmp == Float.class || tmp == double.class || tmp == Double.class || tmp == String.class || tmp == java.util.ArrayList.class)
 			{
-				variableRegisterWithFields(number, variableTransient, null);
+				status = variableRegister(number, variableTransient, count, null, null);
+			}
+			else if (tmp == Object.class)
+			{
+				if (variableClass == null)
+				{
+					status = variableRegister(number, variableTransient, count, null, null);
+				}
+				else
+				{
+					status = variableRegister(number, variableTransient, count, variableClass.getName().replace(".", "/"), variableGetFields(variableClass, null));
+				}
 			}
 			else   // User-defined class (i.e. compound)
 			{
-				variableRegisterWithFields(number, variableTransient, variableGetFields(type1, null));
+				status = variableRegister(number, variableTransient, count, tmp.getName().replace(".", "/"), variableGetFields(tmp, null));
 			}
+
+			if (status != SUCCESS)
+			{
+				return status;
+			}
+
+			variableList[number] = new Variable(variable, tmp, variableClass);
 
 			return number;
 		}
@@ -593,10 +629,13 @@ public class HDFql implements HDFqlConstants {
 			java.lang.reflect.Field fieldList[];
 			java.util.ArrayList<Object> result;
 			HDFql.Map map;
+			String className;
 			String fieldName;
 			String fullName;
 			Class tmp;
+			int count;
 			int i;
+
 
 			result = null;
 			fieldList = type.getDeclaredFields();
@@ -628,27 +667,115 @@ public class HDFql implements HDFqlConstants {
 							fullName = parentName + "." + map.member();
 						}
 					}
+
 					if (result == null)
 					{
 						result = new java.util.ArrayList<Object>();
 					}
+
+					count = 0;
 					tmp = fieldList[i].getType();
-					if (tmp == byte.class)   // it includes the OPAQUE data type as well
+					if (tmp.isArray() == false)
+					{
+						if (tmp == byte.class)   // it includes HDFQL_OPAQUE data type as well
+						{
+							className = "B";
+						}
+						else if (tmp == Byte.class)   // it includes HDFQL_OPAQUE data type as well
+						{
+							className = "Ljava/lang/Byte;";
+						}
+						else if (tmp == short.class)
+						{
+							className = "S";
+						}
+						else if (tmp == Short.class)
+						{
+							className = "Ljava/lang/Short;";
+						}
+						else if (tmp == int.class)
+						{
+							className = "I";
+						}
+						else if (tmp == Integer.class)
+						{
+							className = "Ljava/lang/Integer;";
+						}
+						else if (tmp == long.class)
+						{
+							className = "J";
+						}
+						else if (tmp == Long.class)
+						{
+							className = "Ljava/lang/Long;";
+						}
+						else if (tmp == float.class)
+						{
+							className = "F";
+						}
+						else if (tmp == Float.class)
+						{
+							className = "Ljava/lang/Float;";
+						}
+						else if (tmp == double.class)
+						{
+							className = "D";
+						}
+						else if (tmp == Double.class)
+						{
+							className = "Ljava/lang/Double;";
+						}
+						else if (tmp == String.class)
+						{
+							className = "Ljava/lang/String;";
+						}
+						else if (tmp == String.class)
+						{
+							className = "Ljava/util/ArrayList;";
+						}
+						else
+						{
+							if (tmp != boolean.class && tmp != Boolean.class && tmp != char.class && tmp != Character.class && fieldName.startsWith("this$") == false)   // User-defined class (i.e. compound)
+							{
+								className = "L" + tmp.getName().replace(".", "/") + ";";
+							}
+							else
+							{
+								className = null;
+							}
+						}
+					}
+					else
+					{
+						className = tmp.getName().replace(".", "/");
+						do
+						{
+							count++;
+							tmp = tmp.getComponentType();
+						}
+						while(tmp.isArray() == true);
+					}
+
+					if (tmp == byte.class)   // it includes HDFQL_OPAQUE data type as well
 					{
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(0);
-						result.add("B");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
-					else if (tmp == Byte.class)   // it includes the OPAQUE data type as well
+					else if (tmp == Byte.class)   // it includes HDFQL_OPAQUE data type as well
 					{
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(1);
-						result.add("Ljava/lang/Byte;");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == short.class)
@@ -656,8 +783,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(2);
-						result.add("S");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == Short.class)
@@ -665,8 +794,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(3);
-						result.add("Ljava/lang/Short;");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == int.class)
@@ -674,8 +805,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(4);
-						result.add("I");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == Integer.class)
@@ -683,8 +816,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(5);
-						result.add("Ljava/lang/Integer;");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == long.class)
@@ -692,8 +827,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(6);
-						result.add("J");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == Long.class)
@@ -701,8 +838,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(7);
-						result.add("Ljava/lang/Long;");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == float.class)
@@ -710,8 +849,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(8);
-						result.add("F");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == Float.class)
@@ -719,8 +860,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(9);
-						result.add("Ljava/lang/Float;");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == double.class)
@@ -728,8 +871,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(10);
-						result.add("D");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == Double.class)
@@ -737,8 +882,10 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(11);
-						result.add("Ljava/lang/Double;");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
 					else if (tmp == String.class)
@@ -746,19 +893,34 @@ public class HDFql implements HDFqlConstants {
 						result.add(type);
 						result.add(fullName);
 						result.add(fieldName);
+						result.add(count);
 						result.add(12);
-						result.add("Ljava/lang/String;");
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 						result.add(null);
 					}
-					else   // User-defined class (i.e. compound)
+					else if (tmp == java.util.ArrayList.class)
 					{
-						if (tmp != char.class && tmp != Character.class && fieldName.startsWith("this$") == false)
+						result.add(type);
+						result.add(fullName);
+						result.add(fieldName);
+						result.add(count);
+						result.add(13);
+						result.add(className);
+						result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
+						result.add(null);
+					}
+					else
+					{
+						if (tmp != boolean.class && tmp != Boolean.class && tmp != char.class && tmp != Character.class && fieldName.startsWith("this$") == false)   // User-defined class (i.e. compound)
 						{
 							result.add(type);
 							result.add(fullName);
 							result.add(fieldName);
-							result.add(13);
-							result.add("L" + tmp.getName().replace(".", "/") + ";");
+							result.add(count);
+							result.add(14);
+							result.add(className);
+							result.add(java.lang.reflect.Modifier.isStatic(fieldList[i].getModifiers()) ? 1 : 0);
 							result.add(variableGetFields(tmp, fullName));
 						}
 					}
@@ -769,1391 +931,201 @@ public class HDFql implements HDFqlConstants {
 		}
 
 
-		private static int variableCopyFrom(int number, int size)
+		private static long variableCopyFrom(int number, int type, long count)
 		{
-			Class type;
-
-			type = variableList[number].type;
-			if (type == byte.class)   // it includes the OPAQUE data type as well
-			{
-				return variableCopyFromChar(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Byte.class)   // it includes the OPAQUE data type as well
-			{
-				return variableCopyFromBoxedChar(variableList[number].variable, number, size, 0);
-			}
-			else if (type == short.class)
-			{
-				return variableCopyFromShort(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Short.class)
-			{
-				return variableCopyFromBoxedShort(variableList[number].variable, number, size, 0);
-			}
-			else if (type == int.class)
-			{
-				return variableCopyFromInt(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Integer.class)
-			{
-				return variableCopyFromBoxedInt(variableList[number].variable, number, size, 0);
-			}
-			else if (type == long.class)
-			{
-				return variableCopyFromLong(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Long.class)
-			{
-				return variableCopyFromBoxedLong(variableList[number].variable, number, size, 0);
-			}
-			else if (type == float.class)
-			{
-				return variableCopyFromFloat(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Float.class)
-			{
-				return variableCopyFromBoxedFloat(variableList[number].variable, number, size, 0);
-			}
-			else if (type == double.class)
-			{
-				return variableCopyFromDouble(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Double.class)
-			{
-				return variableCopyFromBoxedDouble(variableList[number].variable, number, size, 0);
-			}
-			else if (type == String.class)
-			{
-				return variableCopyFromString(variableList[number].variable, number, size, 0);
-			}
-			else   // User-defined class (i.e. compound)
-			{
-				return variableCopyFromObject(variableList[number].variable, number, size, 0);
-			}
-		}
+			Class tmp;
+			long current;
 
 
-		private static int variableCopyInto(int number, int size)
-		{
-			Class type;
-
-			type = variableList[number].type;
-			if (type == byte.class)   // it includes the OPAQUE data type as well
+			tmp = variableList[number].type;
+			if (tmp == byte.class || tmp == short.class || tmp == int.class || tmp == long.class || tmp == float.class ||  tmp == double.class)
 			{
-				return variableCopyIntoChar(variableList[number].variable, number, size, 0);
+				current = variableSetPrimitive(variableList[number].variable, number, type, count);
 			}
-			else if (type == Byte.class)   // it includes the OPAQUE data type as well
+			else if (tmp == Object.class)
 			{
-				return variableCopyIntoBoxedChar(variableList[number].variable, number, size, 0);
-			}
-			else if (type == short.class)
-			{
-				return variableCopyIntoShort(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Short.class)
-			{
-				return variableCopyIntoBoxedShort(variableList[number].variable, number, size, 0);
-			}
-			else if (type == int.class)
-			{
-				return variableCopyIntoInt(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Integer.class)
-			{
-				return variableCopyIntoBoxedInt(variableList[number].variable, number, size, 0);
-			}
-			else if (type == long.class)
-			{
-				return variableCopyIntoLong(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Long.class)
-			{
-				return variableCopyIntoBoxedLong(variableList[number].variable, number, size, 0);
-			}
-			else if (type == float.class)
-			{
-				return variableCopyIntoFloat(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Float.class)
-			{
-				return variableCopyIntoBoxedFloat(variableList[number].variable, number, size, 0);
-			}
-			else if (type == double.class)
-			{
-				return variableCopyIntoDouble(variableList[number].variable, number, size, 0);
-			}
-			else if (type == Double.class)
-			{
-				return variableCopyIntoBoxedDouble(variableList[number].variable, number, size, 0);
-			}
-			else if (type == String.class)
-			{
-				return variableCopyIntoString(variableList[number].variable, number, size, 0);
-			}
-			else   // User-defined class (i.e. compound)
-			{
-				return variableCopyIntoObject(variableList[number].variable, number, size, 0);
-			}
-		}
-
-
-		private static int variableCopyFromChar(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
+				if (((Object []) variableList[number].variable).length == 0)
 				{
-					count = variableCopyFromChar(java.lang.reflect.Array.get(variable, i), number, size, count);
+					current = count;
 				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
+				else
 				{
-					if (length < i)
+					if (type == TINYINT || type == UNSIGNED_TINYINT || type == SMALLINT || type == UNSIGNED_SMALLINT || type == INT || type == UNSIGNED_INT || type == BIGINT || type == UNSIGNED_BIGINT || type == FLOAT || type == DOUBLE || type == CHAR || type == OPAQUE)
 					{
-						variableSetChar((byte []) variable, number, count, length);
-						count += length;
+						current = variableSetPrimitive(((Object []) variableList[number].variable)[0], number, type, count);
 					}
 					else
 					{
-						variableSetChar((byte []) variable, number, count, i);
-						count += i;
+						current = variableSetObject(((Object []) variableList[number].variable)[0], number, type, count);
 					}
 				}
 			}
+			else   // Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, String.class, java.util.ArrayList.class or user-defined class (i.e. compound)
+			{
+				current = variableSetObject(variableList[number].variable, number, type, count);
+			}
 
-			return count;
+			return current;
 		}
 
 
-		private static int variableCopyFromBoxedChar(Object variable, int number, int size, int count)
+		private static int variableCopyInto(int number, int type, long count)
 		{
-			boolean flag;
-			int length;
-			int i;
+			Class tmp;
 
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
 
-			if (flag == true)
+			tmp = variableList[number].type;
+			if (tmp == byte.class || tmp == short.class || tmp == int.class || tmp == long.class || tmp == float.class || tmp == double.class)
 			{
-				for(i = 0; i < length && count < size; i++)
+				variableGetPrimitive(variableList[number].variable, number, type, count);
+			}
+			else if (tmp == Object.class)
+			{
+				if (((Object []) variableList[number].variable).length == 0)
 				{
-					count = variableCopyFromBoxedChar(java.lang.reflect.Array.get(variable, i), number, size, count);
+					return ERROR_EMPTY;
 				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
+				try
 				{
-					if (length < i)
+					if (type == TINYINT || type == UNSIGNED_TINYINT || type == CHAR || type == OPAQUE)
 					{
-						variableSetBoxedChar((Object []) variable, number, count, length);
-						count += length;
+						byte object[] = new byte[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetPrimitive(object, number, type, count);
 					}
-					else
+					else if (type == SMALLINT || type == UNSIGNED_SMALLINT)
 					{
-						variableSetBoxedChar((Object []) variable, number, count, i);
-						count += i;
+						short object[] = new short[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetPrimitive(object, number, type, count);
 					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromShort(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromShort(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
+					else if (type == INT || type == UNSIGNED_INT)
 					{
-						variableSetShort((short []) variable, number, count, length);
-						count += length;
+						int object[] = new int[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetPrimitive(object, number, type, count);
 					}
-					else
+					else if (type == BIGINT || type == UNSIGNED_BIGINT)
 					{
-						variableSetShort((short []) variable, number, count, i);
-						count += i;
+						long object[] = new long[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetPrimitive(object, number, type, count);
 					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromBoxedShort(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromBoxedShort(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
+					else if (type == FLOAT)
 					{
-						variableSetBoxedShort((Object []) variable, number, count, length);
-						count += length;
+						float object[] = new float[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetPrimitive(object, number, FLOAT, count);
 					}
-					else
+					else if (type == DOUBLE)
 					{
-						variableSetBoxedShort((Object []) variable, number, count, i);
-						count += i;
+						double object[] = new double[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetPrimitive(object, number, DOUBLE, count);
 					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromInt(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromInt(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
+					else if (type == VARTINYINT || type == UNSIGNED_VARTINYINT)
 					{
-						variableSetInt((int []) variable, number, count, length);
-						count += length;
+						@SuppressWarnings("unchecked")
+						java.util.ArrayList<Byte> object[] = new java.util.ArrayList[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetObject(object, number, type, count);
 					}
-					else
+					else if (type == VARSMALLINT || type == UNSIGNED_VARSMALLINT)
 					{
-						variableSetInt((int []) variable, number, count, i);
-						count += i;
+						@SuppressWarnings("unchecked")
+						java.util.ArrayList<Short> object[] = new java.util.ArrayList[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetObject(object, number, type, count);
+					}
+					else if (type == VARINT || type == UNSIGNED_VARINT)
+					{
+						@SuppressWarnings("unchecked")
+						java.util.ArrayList<Integer> object[] = new java.util.ArrayList[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetObject(object, number, type, count);
+					}
+					else if (type == VARBIGINT || type == UNSIGNED_VARBIGINT)
+					{
+						@SuppressWarnings("unchecked")
+						java.util.ArrayList<Long> object[] = new java.util.ArrayList[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetObject(object, number, type, count);
+					}
+					else if (type == VARFLOAT)
+					{
+						@SuppressWarnings("unchecked")
+						java.util.ArrayList<Float> object[] = new java.util.ArrayList[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetObject(object, number, type, count);
+					}
+					else if (type == VARDOUBLE)
+					{
+						@SuppressWarnings("unchecked")
+						java.util.ArrayList<Double> object[] = new java.util.ArrayList[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetObject(object, number, type, count);
+					}
+					else if (type == VARCHAR)
+					{
+						String object[] = new String[(int) count];
+
+
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetObject(object, number, VARCHAR, count);
+					}
+					else   // User-defined class (i.e. compound)
+					{
+						Object object;
+
+
+						if (variableList[number].className == null)
+						{
+							return ERROR_NOT_SPECIFIED;
+						}
+						object = java.lang.reflect.Array.newInstance(variableList[number].className, (int) count);
+						((Object []) variableList[number].variable)[0] = object;
+						variableGetObject(object, number, COMPOUND, count);
 					}
 				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromBoxedInt(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
+				catch(OutOfMemoryError e)
 				{
-					count = variableCopyFromBoxedInt(java.lang.reflect.Array.get(variable, i), number, size, count);
+					return ERROR_NOT_ENOUGH_MEMORY;
+				}
+				catch(Exception e)
+				{
+					return ERROR_UNKNOWN;
 				}
 			}
-			else
+			else   // Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, String.class, java.util.ArrayList.class or user-defined class (i.e. compound)
 			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetBoxedInt((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetBoxedInt((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
+				variableGetObject(variableList[number].variable, number, type, count);
 			}
 
-			return count;
-		}
-
-
-		private static int variableCopyFromLong(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromLong(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetLong((long []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetLong((long []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromBoxedLong(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromBoxedLong(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetBoxedLong((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetBoxedLong((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromFloat(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromFloat(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetFloat((float []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetFloat((float []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromBoxedFloat(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromBoxedFloat(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetBoxedFloat((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetBoxedFloat((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromDouble(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromDouble(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetDouble((double []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetDouble((double []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromBoxedDouble(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromBoxedDouble(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetBoxedDouble((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetBoxedDouble((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromString(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromString(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetString((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetString((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyFromObject(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyFromObject(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableSetObject((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableSetObject((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoChar(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoChar(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetChar((byte []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetChar((byte []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoBoxedChar(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoBoxedChar(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetBoxedChar((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetBoxedChar((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoShort(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoShort(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetShort((short []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetShort((short []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoBoxedShort(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoBoxedShort(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetBoxedShort((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetBoxedShort((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoInt(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoInt(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetInt((int []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetInt((int []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoBoxedInt(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoBoxedInt(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetBoxedInt((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetBoxedInt((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoLong(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoLong(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetLong((long []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetLong((long []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoBoxedLong(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoBoxedLong(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetBoxedLong((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetBoxedLong((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoFloat(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoFloat(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetFloat((float []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetFloat((float []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoBoxedFloat(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoBoxedFloat(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetBoxedFloat((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetBoxedFloat((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoDouble(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoDouble(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetDouble((double []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetDouble((double []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoBoxedDouble(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoBoxedDouble(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetBoxedDouble((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetBoxedDouble((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoString(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoString(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetString((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetString((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
-		}
-
-
-		private static int variableCopyIntoObject(Object variable, int number, int size, int count)
-		{
-			boolean flag;
-			int length;
-			int i;
-
-			length = java.lang.reflect.Array.getLength(variable);
-			try
-			{
-				flag = java.lang.reflect.Array.get(variable, 0).getClass().isArray();
-			}
-			catch(Exception e)
-			{
-				flag = false;
-			}
-
-			if (flag == true)
-			{
-				for(i = 0; i < length && count < size; i++)
-				{
-					count = variableCopyIntoObject(java.lang.reflect.Array.get(variable, i), number, size, count);
-				}
-			}
-			else
-			{
-				i = size - count;
-				if (i > 0)
-				{
-					if (length < i)
-					{
-						variableGetObject((Object []) variable, number, count, length);
-						count += length;
-					}
-					else
-					{
-						variableGetObject((Object []) variable, number, count, i);
-						count += i;
-					}
-				}
-			}
-
-			return count;
+			return SUCCESS;
 		}
 	
   public static int executeGetStatus() {
@@ -2172,6 +1144,10 @@ public class HDFql implements HDFqlConstants {
     return HDFqlJNI.errorGetMessage();
   }
 
+  public static int mpiUseDefaultCommunicator() {
+    return HDFqlJNI.mpiUseDefaultCommunicator();
+  }
+
   public static int mpiGetSize() {
     return HDFqlJNI.mpiGetSize();
   }
@@ -2180,40 +1156,8 @@ public class HDFql implements HDFqlConstants {
     return HDFqlJNI.mpiGetRank();
   }
 
-  private static int execute(String script, int scriptSize, int programmingLanguage) {
-    return HDFqlJNI.execute(script, scriptSize, programmingLanguage);
-  }
-
   private static int executeReset() {
     return HDFqlJNI.executeReset();
-  }
-
-  private static void variableRegisterWithFields(int number, int variableTransient, Object variableFieldList) {
-    HDFqlJNI.variableRegisterWithFields(number, variableTransient, variableFieldList);
-  }
-
-  private static void variableUnregister(int number) {
-    HDFqlJNI.variableUnregister(number);
-  }
-
-  private static int variableGetDataType(int number) {
-    return HDFqlJNI.variableGetDataType(number);
-  }
-
-  private static int variableGetCount(int number) {
-    return HDFqlJNI.variableGetCount(number);
-  }
-
-  private static int variableGetSize(int number) {
-    return HDFqlJNI.variableGetSize(number);
-  }
-
-  private static int variableGetDimensionCount(int number) {
-    return HDFqlJNI.variableGetDimensionCount(number);
-  }
-
-  private static long variableGetDimension(int number, int index) {
-    return HDFqlJNI.variableGetDimension(number, index);
   }
 
   public static int cursorInitialize(HDFqlCursor cursor) {
@@ -2224,8 +1168,8 @@ public class HDFql implements HDFqlConstants {
     return HDFqlJNI.cursorUse(HDFqlCursor.getCPtr(cursor), cursor);
   }
 
-  public static int cursorUseDefault() {
-    return HDFqlJNI.cursorUseDefault();
+  public static void cursorUseDefault() {
+    HDFqlJNI.cursorUseDefault();
   }
 
   public static int cursorClear(HDFqlCursor cursor) {
@@ -2240,7 +1184,7 @@ public class HDFql implements HDFqlConstants {
     return HDFqlJNI.cursorGetDataType(HDFqlCursor.getCPtr(cursor), cursor);
   }
 
-  public static int cursorGetCount(HDFqlCursor cursor) {
+  public static long cursorGetCount(HDFqlCursor cursor) {
     return HDFqlJNI.cursorGetCount(HDFqlCursor.getCPtr(cursor), cursor);
   }
 
@@ -2248,7 +1192,15 @@ public class HDFql implements HDFqlConstants {
     return HDFqlJNI.subcursorGetCount(HDFqlCursor.getCPtr(cursor), cursor);
   }
 
-  public static int cursorGetPosition(HDFqlCursor cursor) {
+  public static int cursorGetDimensionCount(HDFqlCursor cursor) {
+    return HDFqlJNI.cursorGetDimensionCount(HDFqlCursor.getCPtr(cursor), cursor);
+  }
+
+  public static long cursorGetDimension(HDFqlCursor cursor, int index) {
+    return HDFqlJNI.cursorGetDimension(HDFqlCursor.getCPtr(cursor), cursor, index);
+  }
+
+  public static long cursorGetPosition(HDFqlCursor cursor) {
     return HDFqlJNI.cursorGetPosition(HDFqlCursor.getCPtr(cursor), cursor);
   }
 
@@ -2288,7 +1240,7 @@ public class HDFql implements HDFqlConstants {
     return HDFqlJNI.subcursorPrevious(HDFqlCursor.getCPtr(cursor), cursor);
   }
 
-  public static int cursorAbsolute(HDFqlCursor cursor, int position) {
+  public static int cursorAbsolute(HDFqlCursor cursor, long position) {
     return HDFqlJNI.cursorAbsolute(HDFqlCursor.getCPtr(cursor), cursor, position);
   }
 
@@ -2296,7 +1248,7 @@ public class HDFql implements HDFqlConstants {
     return HDFqlJNI.subcursorAbsolute(HDFqlCursor.getCPtr(cursor), cursor, position);
   }
 
-  public static int cursorRelative(HDFqlCursor cursor, int position) {
+  public static int cursorRelative(HDFqlCursor cursor, long position) {
     return HDFqlJNI.cursorRelative(HDFqlCursor.getCPtr(cursor), cursor, position);
   }
 
@@ -2307,361 +1259,289 @@ public class HDFql implements HDFqlConstants {
   public static java.lang.Byte cursorGetTinyint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetTinyint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Byte((byte) convertChar(pointer));
-		return Byte.valueOf((byte) convertChar(pointer));
+		return new java.lang.Byte((byte) convertChar(pointer));
 	}
 
   public static java.lang.Byte subcursorGetTinyint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetTinyint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Byte((byte) convertChar(pointer));
-		return Byte.valueOf((byte) convertChar(pointer));
+		return new java.lang.Byte((byte) convertChar(pointer));
 	}
 
   public static java.lang.Byte cursorGetUnsignedTinyint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetUnsignedTinyint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Byte((byte) convertChar(pointer));
-		return Byte.valueOf((byte) convertChar(pointer));
+		return new java.lang.Byte((byte) convertChar(pointer));
 	}
 
   public static java.lang.Byte subcursorGetUnsignedTinyint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetUnsignedTinyint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Byte((byte) convertChar(pointer));
-		return Byte.valueOf((byte) convertChar(pointer));
+		return new java.lang.Byte((byte) convertChar(pointer));
 	}
 
   public static java.lang.Short cursorGetSmallint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetSmallint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Short(convertShort(pointer));
-		return Short.valueOf(convertShort(pointer));
+		return new java.lang.Short(convertShort(pointer));
 	}
 
   public static java.lang.Short subcursorGetSmallint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetSmallint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Short(convertShort(pointer));
-		return Short.valueOf(convertShort(pointer));
+		return new java.lang.Short(convertShort(pointer));
 	}
 
   public static java.lang.Short cursorGetUnsignedSmallint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetUnsignedSmallint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Short(convertShort(pointer));
-		return Short.valueOf(convertShort(pointer));
+		return new java.lang.Short(convertShort(pointer));
 	}
 
   public static java.lang.Short subcursorGetUnsignedSmallint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetUnsignedSmallint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Short(convertShort(pointer));
-		return Short.valueOf(convertShort(pointer));
+		return new java.lang.Short(convertShort(pointer));
 	}
 
   public static java.lang.Integer cursorGetInt(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetInt(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Integer(convertInt(pointer));
-		return Integer.valueOf(convertInt(pointer));
+		return new java.lang.Integer(convertInt(pointer));
 	}
 
   public static java.lang.Integer subcursorGetInt(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetInt(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Integer(convertInt(pointer));
-		return Integer.valueOf(convertInt(pointer));
+		return new java.lang.Integer(convertInt(pointer));
 	}
 
   public static java.lang.Integer cursorGetUnsignedInt(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetUnsignedInt(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Integer(convertInt(pointer));
-		return Integer.valueOf(convertInt(pointer));
+		return new java.lang.Integer(convertInt(pointer));
 	}
 
   public static java.lang.Integer subcursorGetUnsignedInt(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetUnsignedInt(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Integer(convertInt(pointer));
-		return Integer.valueOf(convertInt(pointer));
+		return new java.lang.Integer(convertInt(pointer));
 	}
 
   public static java.lang.Long cursorGetBigint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetBigint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Long(convertLong(pointer));
-		return Long.valueOf(convertLong(pointer));
+		return new java.lang.Long(convertLong(pointer));
 	}
 
   public static java.lang.Long subcursorGetBigint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetBigint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Long(convertLong(pointer));
-		return Long.valueOf(convertLong(pointer));
+		return new java.lang.Long(convertLong(pointer));
 	}
 
   public static java.lang.Long cursorGetUnsignedBigint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetUnsignedBigint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Long(convertLong(pointer));
-		return Long.valueOf(convertLong(pointer));
+		return new java.lang.Long(convertLong(pointer));
 	}
 
   public static java.lang.Long subcursorGetUnsignedBigint(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetUnsignedBigint(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Long(convertLong(pointer));
-		return Long.valueOf(convertLong(pointer));
+		return new java.lang.Long(convertLong(pointer));
 	}
 
   public static java.lang.Float cursorGetFloat(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetFloat(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Float(convertFloat(pointer));
-		return Float.valueOf(convertFloat(pointer));
+		return new java.lang.Float(convertFloat(pointer));
 	}
 
   public static java.lang.Float subcursorGetFloat(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetFloat(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Float(convertFloat(pointer));
-		return Float.valueOf(convertFloat(pointer));
+		return new java.lang.Float(convertFloat(pointer));
 	}
 
   public static java.lang.Double cursorGetDouble(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.cursorGetDouble(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Double(convertDouble(pointer));
-		return Double.valueOf(convertDouble(pointer));
+		return new java.lang.Double(convertDouble(pointer));
 	}
 
   public static java.lang.Double subcursorGetDouble(HDFqlCursor cursor) {
 		long pointer = HDFqlJNI.subcursorGetDouble(HDFqlCursor.getCPtr(cursor), cursor);
 
+
 		if (pointer == 0)
 		{
 			return null;
 		}
 
-		//return new java.lang.Double(convertDouble(pointer));
-		return Double.valueOf(convertDouble(pointer));
+		return new java.lang.Double(convertDouble(pointer));
 	}
 
   public static String cursorGetChar(HDFqlCursor cursor) {
     return HDFqlJNI.cursorGetChar(HDFqlCursor.getCPtr(cursor), cursor);
   }
 
-  private static void javaSetEnvironment() {
-    HDFqlJNI.javaSetEnvironment();
+  private static void variableUnregister(int number) {
+    HDFqlJNI.variableUnregister(number);
   }
 
-  private static void variableSetChar(byte[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetChar(variable, number, position, size);
+  private static int variableGetDataType(int number) {
+    return HDFqlJNI.variableGetDataType(number);
   }
 
-  private static void variableSetBoxedChar(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetBoxedChar(variable, number, position, size);
+  private static long variableGetCount(int number) {
+    return HDFqlJNI.variableGetCount(number);
   }
 
-  private static void variableSetShort(short[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetShort(variable, number, position, size);
+  private static int variableGetDimensionCount(int number) {
+    return HDFqlJNI.variableGetDimensionCount(number);
   }
 
-  private static void variableSetBoxedShort(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetBoxedShort(variable, number, position, size);
+  private static long variableGetDimension(int number, int index) {
+    return HDFqlJNI.variableGetDimension(number, index);
   }
 
-  private static void variableSetInt(int[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetInt(variable, number, position, size);
+  private static void setEnvironment() {
+    HDFqlJNI.setEnvironment();
   }
 
-  private static void variableSetBoxedInt(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetBoxedInt(variable, number, position, size);
+  private static int variableRegister(int number, int variableTransient, int variableDimensionCount, String variableClass, Object variableFieldList) {
+    return HDFqlJNI.variableRegister(number, variableTransient, variableDimensionCount, variableClass, variableFieldList);
   }
 
-  private static void variableSetLong(long[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetLong(variable, number, position, size);
+  private static long variableSetPrimitive(Object variable, int number, int type, long count) {
+    return HDFqlJNI.variableSetPrimitive(variable, number, type, count);
   }
 
-  private static void variableSetBoxedLong(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetBoxedLong(variable, number, position, size);
+  private static long variableSetObject(Object variable, int number, int type, long count) {
+    return HDFqlJNI.variableSetObject(variable, number, type, count);
   }
 
-  private static void variableSetFloat(float[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetFloat(variable, number, position, size);
+  private static void variableGetPrimitive(Object variable, int number, int type, long count) {
+    HDFqlJNI.variableGetPrimitive(variable, number, type, count);
   }
 
-  private static void variableSetBoxedFloat(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetBoxedFloat(variable, number, position, size);
-  }
-
-  private static void variableSetDouble(double[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetDouble(variable, number, position, size);
-  }
-
-  private static void variableSetBoxedDouble(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetBoxedDouble(variable, number, position, size);
-  }
-
-  private static void variableSetString(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetString(variable, number, position, size);
-  }
-
-  private static void variableSetObject(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableSetObject(variable, number, position, size);
-  }
-
-  private static void variableGetChar(byte[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetChar(variable, number, position, size);
-  }
-
-  private static void variableGetBoxedChar(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetBoxedChar(variable, number, position, size);
-  }
-
-  private static void variableGetShort(short[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetShort(variable, number, position, size);
-  }
-
-  private static void variableGetBoxedShort(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetBoxedShort(variable, number, position, size);
-  }
-
-  private static void variableGetInt(int[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetInt(variable, number, position, size);
-  }
-
-  private static void variableGetBoxedInt(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetBoxedInt(variable, number, position, size);
-  }
-
-  private static void variableGetLong(long[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetLong(variable, number, position, size);
-  }
-
-  private static void variableGetBoxedLong(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetBoxedLong(variable, number, position, size);
-  }
-
-  private static void variableGetFloat(float[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetFloat(variable, number, position, size);
-  }
-
-  private static void variableGetBoxedFloat(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetBoxedFloat(variable, number, position, size);
-  }
-
-  private static void variableGetDouble(double[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetDouble(variable, number, position, size);
-  }
-
-  private static void variableGetBoxedDouble(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetBoxedDouble(variable, number, position, size);
-  }
-
-  private static void variableGetString(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetString(variable, number, position, size);
-  }
-
-  private static void variableGetObject(Object[] variable, int number, int position, int size) {
-    HDFqlJNI.variableGetObject(variable, number, position, size);
+  private static void variableGetObject(Object variable, int number, int type, long count) {
+    HDFqlJNI.variableGetObject(variable, number, type, count);
   }
 
   private static char convertChar(long pointer) {
@@ -2686,6 +1566,10 @@ public class HDFql implements HDFqlConstants {
 
   private static double convertDouble(long pointer) {
     return HDFqlJNI.convertDouble(pointer);
+  }
+
+  private static int execute(String script, int scriptSize, int programmingLanguage) {
+    return HDFqlJNI.execute(script, scriptSize, programmingLanguage);
   }
 
 }

@@ -12,7 +12,8 @@ public interface IWLTools {
     analysis,
     prediction,
     adjustment,
-    IPPAdjToS104DCF8
+    IPPAdjToS104DCF8,
+    S104Dcf8ToAscii
   }
 
   //--- Need to update BoxContentNames if we add
@@ -21,6 +22,8 @@ public interface IWLTools {
                                Box.prediction.name(),
                                Box.adjustment.name(),
 			       Box.IPPAdjToS104DCF8.name() } ;
+                               Box.S104Dcf8ToAscii.name()};
+
 
   Set<String> BoxContent= Set.of(BoxContentNames);
 }
