@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
 // ---
 import ca.gc.dfo.chs.wltools.IWLTools;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
@@ -80,6 +81,7 @@ final public class WLTools extends WLToolsIO {
                                  IWLTools.Box.prediction.name()+" OR --tool="+
                                  IWLTools.Box.adjustment.name()+" OR --tool="+
                                  IWLTools.Box.analysis.name()+" OR --tool="+
+                                 IWLTools.Box.S104Dcf8ToAscii.name()+" OR --tool="+
                                  IWLTools.Box.merge.name()+" option defined !!");
     }
 
@@ -200,6 +202,36 @@ final public class WLTools extends WLToolsIO {
       //mlog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
     }
+
+        // S104Dcf8ToAscii
+    if (tool.equals(IWLTools.Box.S104Dcf8ToAscii.name())) {
+
+      mlog.info(mmi+"Generating SPINE Ascii files from S-104 Dcf8");
+
+      if (!argsMap.keySet().contains("--outputDirectory")) {
+        throw new RuntimeException(mmi+"Must have the --outputDirectory=<path to the output dir.> defined in the args.!");
+      }
+        final String outputDirArg= argsMap.get("--outputDirectory");
+
+      if (!argsMap.keySet().contains("--h5Path")) {
+        throw new RuntimeException(mmi+"Must have the --h5Path=<path to S-104 file.> defined in the args.!");
+      }
+      final String h5PathArg= argsMap.get("--h5Path");
+
+
+      if (!argsMap.keySet().contains("--time")) {
+        throw new RuntimeException(mmi+"Must have the --time=<ISO time> defined in the args.!");
+      }
+      final String timeArg= argsMap.get("--time");
+
+      if (!argsMap.keySet().contains("--type")) {
+        throw new RuntimeException(mmi+"Must have file type --type=UU,30,Q2,Q3,Q4 defined in the args.!");
+      }
+      final String typeArg= argsMap.get("--type");
+
+      S104Dcf8ToAscii.runConversion(timeArg, outputDirArg, h5PathArg, typeArg);
+
+     }
 
     mlog.info(mmi+"end");
   }
