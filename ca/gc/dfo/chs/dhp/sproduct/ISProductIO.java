@@ -2,18 +2,29 @@ package ca.gc.dfo.chs.dhp;
 
 // --
 import java.io.File;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 
 // ---
 public interface ISProductIO {
 
-  enum Id {
+  enum FeatId {
     S104,
     S111
   }
-    
-  String CURRENTS_PR0D_ID= Id.S111.name(); //"S111";
-  String WATLEVLS_PR0D_ID= Id.S104.name(); //"S104";
-    
+  
+  Map<FeatId,String> FEATURE_IDS=
+    Collections.unmodifiableMap(			
+       new HashMap<FeatId, String>() {{
+ 	 put(FeatId.S104,"WaterLevel");
+	 put(FeatId.S111,"SurfaceCurrent");
+       }}       
+    );
+								      
+  String CURRENTS_PR0D_ID= FeatId.S111.name(); //"S111";
+  String WATLEVLS_PR0D_ID= FeatId.S104.name(); //"S104";
+     
   String HDF5_FEXT= ".h5";
 
   String PKG_CFG_MAIN_DIR= "dhp";
@@ -22,7 +33,7 @@ public interface ISProductIO {
 
   String PKG_CFG_MAIN_DCF8_TMPLF_DIR= PKG_CFG_MAIN_TMPLF_DIR + File.separator + "DCF8";
 
-  String PKG_CFG_MAIN_DCF8_104_TMPLF_DIR= PKG_CFG_MAIN_DCF8_TMPLF_DIR + File.separator + Id.S104.name(); //WATLEVELS_PR0D_ID;
+  String PKG_CFG_MAIN_DCF8_104_TMPLF_DIR= PKG_CFG_MAIN_DCF8_TMPLF_DIR + File.separator + FeatId.S104.name(); //WATLEVELS_PR0D_ID;
     
   // --- Relative path of the S104 DCF8 template file for the HSTLT_WLPS of the lower St. Lawrence (a.k.a Spine)
   //     (NOTE: The version v1.0 is hardcoded here, not a good idea we need to do something else more generic here!) 
@@ -30,10 +41,18 @@ public interface ISProductIO {
     File.separator + "v1.0" + File.separator +"DCF8_104_HSTLT_WLPS_LOWSTL_30D_U" + HDF5_FEXT;
 
   // ---
-  String ROOT_GRP_ID= "/";
+  String GRP_SEP_ID= "/";
     
-  String ISSUE_YYYYMMDD_ID= "issueDate";
-  String ISSUE_HHMMSS_ID=   "issueTime";
+  String ROOT_GRP_ID= GRP_SEP_ID;
 
-  
+  String ISSUE_HHMMSS_ID=   "issueTime";    
+  String ISSUE_YYYYMMDD_ID= "issueDate";
+
+  String FCST_ID= ".01";
+  String PRED_ID= ".02";
+  String OBSV_ID= ".03";  
+
+  String LEAST_RECENT_TIMESTAMP_ID= "dateTimeOfFirstRecord";
+  String MOST_RECENT_TIMESTAMP_ID= "dateTimeOfLastRecord";   
+      
 }

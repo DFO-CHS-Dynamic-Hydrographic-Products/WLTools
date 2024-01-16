@@ -9,8 +9,6 @@ import java.util.SortedSet;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
-//import java.time.Instant;
-//import java.util.HashMap;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -40,7 +38,7 @@ import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
 
-// ---
+// --- chs WLTools package
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
@@ -51,6 +49,7 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 
 // --- chs SProduct package
+import ca.gc.dfo.chs.dhp.SProduct;
 import ca.gc.dfo.chs.dhp.ISProductIO;
 
 /**
@@ -495,6 +494,15 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //     in the keys of the related MeasurementCustomBundle object)
     final SortedSet<Instant> scLocsInstants= allSCLocsIPPInputData.
       get("0").getInstantsKeySetCopy().tailSet(mostRecentFirstInstant);
+
+    // --- mostRecentSCLocsInstant is in fact the Instant related to the last timestamp.
+    final Instant mostRecentSCLocsInstant= scLocsInstants.last();
+
+    // --- leastRecentSCLocsInstant is in fact the Instant related to the first timestamp.
+    final Instant leastRecentSCLocsInstant= scLocsInstants.first();
+
+    slog.info(mmi+"leastRecentSCLocsInstant="+leastRecentSCLocsInstant.toString());
+    slog.info(mmi+"mostRecentSCLocsInstant="+mostRecentSCLocsInstant.toString());
     
     // --- Get the time intervall in seconds (the ship channel point location is not important here)
     //     Assuming that the String index "0" key exists in the allSCLocsIPPInputData Map
@@ -511,8 +519,10 @@ abstract public class WLToolsIO implements IWLToolsIO {
     final int nbInstants= scLocsInstants.size();
 
     slog.info(mmi+"nbInstants="+nbInstants);
+
+    System.out.flush();
     
-    // --- Now do the conversion to S104 DCF8 format (one file forall the ship channel points locations).
+    // --- Now do the conversion to S104 DCF8 format (one file for all the ship channel points locations).
 
     // --- Open the HDF5 output file in append mode (default when it is already existing);
     final int checkOpenOutFile= HDFql.execute("USE FILE " + outputFilePath);
@@ -539,24 +549,68 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //slog.info(mmi+"YYYYMMDD="+YYYYMMDD);
     //slog.info(mmi+"hhmmssZ="+hhmmssZ);
 
+    // --- MUST use HDFql.variableTransientRegister here!
+    SProduct.updTransientAttrInGroup(ISProductIO.ISSUE_YYYYMMDD_ID, ISProductIO.GRP_SEP_ID,
+                                     HDFql.variableTransientRegister(new String [] {YYYYMMDDStr}) );
+    
     // --- USE GROUP Probably not necessary here
-    HDFql.execute("USE GROUP "+ISProductIO.ROOT_GRP_ID);
+    //HDFql.execute("USE GROUP "+ISProductIO.GRP_SEP_ID);
 
-    // --- Need to use an array of one String for the YYYYMMDDStr String in order
+    //// --- Need to use an array of one String for the YYYYMMDDStr String in order
     //     to be able to update the related HDF5 String attribute
-    int cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.ISSUE_YYYYMMDD_ID +
-			   " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {YYYYMMDDStr} ) ); 
+    //int cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.ISSUE_YYYYMMDD_ID +
+    //			   " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {YYYYMMDDStr} ) );     
+    //if (cqc != HDFqlConstants.SUCCESS) {
+    //  throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.ISSUE_YYYYMMDD_ID+" ATTRIBUTE");
+    //}
+    // int cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.ISSUE_HHMMSS_ID +
+    // 			   " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {hhmmssZStr} ) );
+    // if (cqc != HDFqlConstants.SUCCESS) {
+    //   throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.ISSUE_HHMMSS_ID+" ATTRIBUTE");
+    // }
 
-    if (cqc != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.ISSUE_YYYYMMDD_ID+" ATTRIBUTE");
-    }
+    SProduct.updTransientAttrInGroup(ISProductIO.ISSUE_HHMMSS_ID, ISProductIO.GRP_SEP_ID,
+				     HDFql.variableTransientRegister( new String [] {hhmmssZStr} ) );
+				     
+    final String s104FeatureId= ISProductIO.FEATURE_IDS.get(ISProductIO.FeatId.S104);
+
+    final String s104FcstDataGrpId= ISProductIO.GRP_SEP_ID +
+      s104FeatureId + ISProductIO.GRP_SEP_ID + s104FeatureId + ISProductIO.FCST_ID;
     
-    cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.ISSUE_HHMMSS_ID +
-		       " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {hhmmssZStr} ) );
+    // --- Set the GROUP to the S104 /<feature id>.<NN>/<feature id>.<NN> for the forecast type
+    //cqc= HDFql.execute("USE GROUP " + s104FcstDataGrpId);
+    //if (cqc != HDFqlConstants.SUCCESS) {
+    //  throw new RuntimeException(mmi+"Group: "+s104FcstDataGrpId+" not found in HDF5 output file!");
+    //}
+
+    // --- Update the first and last timestamps attributes of the
+    //     S104 /<feature id>.<NN>/<feature id>.<NN> GROUP 
+    final String firstTimeStampStr=
+      leastRecentSCLocsInstant.toString()
+       .replace(OUTPUT_DATA_FMT_SPLIT_CHAR, "")
+	 .replace(INPUT_DATA_FMT_SPLIT_CHAR,"");
+
+    final String lastTimeStampStr=
+      mostRecentSCLocsInstant.toString()
+       .replace(OUTPUT_DATA_FMT_SPLIT_CHAR, "")
+	 .replace(INPUT_DATA_FMT_SPLIT_CHAR,"");
+
+    SProduct.updTransientAttrInGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
+				     HDFql.variableTransientRegister( new String [] {firstTimeStampStr} ) ); 
     
-    if (cqc != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.ISSUE_HHMMSS_ID+" ATTRIBUTE");
-    }
+    //cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.LEAST_RECENT_TIMESTAMP_ID +
+    //		       " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {firstTimeStampStr} ) );
+    //if (cqc != HDFqlConstants.SUCCESS) {
+    //  throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.LEAST_RECENT_TIMESTAMP_ID+" ATTRIBUTE");
+    //}
+    // cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.MOST_RECENT_TIMESTAMP_ID +
+    // 		       " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ) );
+    // if (cqc != HDFqlConstants.SUCCESS) {
+    //   throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.LEAST_RECENT_TIMESTAMP_ID+" ATTRIBUTE");
+    // }
+
+    SProduct.updTransientAttrInGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
+				     HDFql.variableTransientRegister( new String [] {lastTimeStampStr}) );
     
     HDFql.execute("CLOSE FILE " + outputFilePath);
     
