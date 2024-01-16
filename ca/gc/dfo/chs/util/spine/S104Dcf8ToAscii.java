@@ -145,7 +145,7 @@ public class S104Dcf8ToAscii {
         stringBuilder.append(formatedNum);
     }
 
-    private static void lineBuilderSpineAscii(Instant start, Instant end, MeasurementCustomBundle mCBundle,StringBuilder stringBuilder, Boolean values) {
+    private static void lineBuilderSpineAscii(Instant start, Instant end, MeasurementCustomBundle mCBundle,StringBuilder stringBuilder, String type) {
         /*
          * Append new line to existing StringBuilder from MeasurementCustomBundle containing Spine station data
          * Start appending values from the Instant defined in the "start" parameter
@@ -154,7 +154,7 @@ public class S104Dcf8ToAscii {
          * @param end (Instant) Final timestamp for ASCII file
          * @param mCBundle (MeasurementCustomBundle) station data
          * @param stringBuilder (StringBuilder) string builder object
-         * @param values (Boolean) if set to False, will use uncertainty field instead of values
+         * @param type (String)  ASCII file type
          */
         if (!(mCBundle.contains(start))) {
             throw new RuntimeException(start + " start time not indexed in source data");
@@ -166,7 +166,7 @@ public class S104Dcf8ToAscii {
         for ( final Instant instantIter: mCBundle.getInstantsKeySet() ) {
             if ((!(instantIter.isBefore(start))) && (instantIter.isBefore(end) || instantIter.equals(end))) {
                 MeasurementCustom mc = mCBundle.getAtThisInstant(instantIter);
-                if (values) {
+                if (!(type.equals("UU"))) {
                     doubleToSpineStringBuilder(mc.getValue(), stringBuilder);
                 } else {
                     doubleToSpineStringBuilder(mc.getUncertainty(), stringBuilder);
@@ -174,7 +174,13 @@ public class S104Dcf8ToAscii {
             } 
 
         }
-        stringBuilder.append(" \n");
+        // replace EOL semicolon with space for 30, UU
+        if (type.equals("30") || type.equals("UU")) {
+            stringBuilder.setLength(stringBuilder.length() - 1);
+            stringBuilder.append(" ");
+        }
+        
+        stringBuilder.append("\n");
     }
 
     private static Instant getEndTime(String type,  Instant start){
@@ -254,23 +260,10 @@ public class S104Dcf8ToAscii {
 
 
         /* Build String */
-        if(type.equals("UU")) {
-
-            for(int i = 0; i < fileData.size(); i++) {         
-                    lineBuilderSpineAscii(timeInstant,end,fileData.get(i),stringBuilder,false);
-            }
-
-        } else if (type.equals("30") || type.equals("Q2") || type.equals("Q3") || type.equals("Q4")) {
-
-            for(int i = 0; i < fileData.size(); i++) {
-                    lineBuilderSpineAscii(timeInstant,end,fileData.get(i),stringBuilder,true);
-            }
-
-        } else {
-            throw new RuntimeException("Invalid type, must be 30, Q1, Q2, Q4 or UU");       
+        for(int i = 0; i < fileData.size(); i++) {         
+            lineBuilderSpineAscii(timeInstant,end,fileData.get(i),stringBuilder,type);
         }
 
-        
         /* Write file */
         File file = new File(outputDir + "/" + fileName);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
