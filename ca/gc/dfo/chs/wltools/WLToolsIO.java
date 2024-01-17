@@ -425,6 +425,13 @@ abstract public class WLToolsIO implements IWLToolsIO {
     final List<Path> adjSpineIPPInputDataFilesList=
       getRelevantFilesList(ippAdjResultsInputDir, "*"+IWLAdjustmentIO.ADJ_HFP_ATTG_FNAME_PRFX+"*"+JSON_FEXT);
 
+    // --- Unlikely bu twe never know!
+    if (adjSpineIPPInputDataFilesList.size() > IWLAdjustmentIO.MAX_SCLOCS_NB) {
+	
+      throw new RuntimeException(mmi+"Too many ship channel point locations! -> "+
+	 adjSpineIPPInputDataFilesList.size()+", Max is -> "+ WLAdjustmentIO.MAX_SCLOCS_NB);
+    }
+    
     Map<String, MeasurementCustomBundle> allSCLocsIPPInputData= new HashMap<String, MeasurementCustomBundle>();
 
     // --- Need to determine the most recent Instant of all the ship channel grid point locations
@@ -483,7 +490,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"Done with reading all the SpineIPP results input files");
 
     // --- Get the number of ship channel point locations.
-    final int nbSCPointLocs= adjSpineIPPInputDataFilesList.size();
+    final int nbSCPointLocs= allSCLocsIPPInputData.size(); //adjSpineIPPInputDataFilesList.size();
 
     slog.info(mmi+"nbSCPointLocs="+nbSCPointLocs);
     
@@ -524,6 +531,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"nbInstants="+nbInstants);
 
     System.out.flush();
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
     
     // --- Now do the conversion to S104 DCF8 format (one file for all the ship channel points locations).
 
@@ -533,9 +542,6 @@ abstract public class WLToolsIO implements IWLToolsIO {
     if (checkOpenOutFile != HDFqlConstants.SUCCESS ) {
       throw new RuntimeException(mmi+"hdfql.execute problem: checkOpenOutFile="+checkOpenOutFile);
     }
-
-    //final int shf= HDFql.execute("SHOW USE FILE");    
-    //slog.info(mmi+"shf="+shf);
 
     // --- Need to update the issueDate and issueTime HDF5 root attributes
     final String [] nowStrSplit= Instant.now().toString().split(ISO8601_DATETIME_SEP_CHAR);
@@ -577,27 +583,107 @@ abstract public class WLToolsIO implements IWLToolsIO {
        .replace(OUTPUT_DATA_FMT_SPLIT_CHAR, "")
 	 .replace(INPUT_DATA_FMT_SPLIT_CHAR,"");
 
-    // --- Update the first (least recent) timestamp HDF5 file attrbute
-    //     in the S104 forecast feature code HDF5 GROUP id.   
+    // --- Update the first (least recent) timestamp HDF5 file attribute
+    //     in the S104 forecast feature code HDF5 GROUP   
     SProduct.updTransientAttrInGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( new String [] {firstTimeStampStr} ) ); 
+				     HDFql.variableTransientRegister( new String [] {firstTimeStampStr} )); 
     
-    // --- Update the last (most recent) timestamp HDF5 file attrbute
-    //     in the S104 forecast feature code HDF5 GROUP id.  
+    // --- Update the last (most recent) timestamp HDF5 file attribute
+    //     in the S104 forecast feature code HDF5 GROUP  
     SProduct.updTransientAttrInGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( new String [] {lastTimeStampStr}) );
+				     HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
 
     final int [] tmpNBSCPointLocsArr=  new int [] {nbSCPointLocs};
     
-    // --- Update the number of GROUPS for the point locations HDF5 file attrbute
-    //     in the S104 forecast feature code HDF5 GROUP id.  
+    // --- Update the number of GROUPS for the point locations HDF5 file attribute
+    //     in the S104 forecast feature code HDF5 GROUP  
     SProduct.updTransientAttrInGroup(ISProductIO.NB_GROUPS_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( tmpNBSCPointLocsArr ) );
+				     HDFql.variableTransientRegister( tmpNBSCPointLocsArr ));
 
-    // --- Update the number of "stations" for the point locations HDF5 file attrbute
-    //     in the S104 forecast feature code HDF5 GROUP id (Same as for the number of GROUPS for DCF8).  
+    // --- Update the number of "stations" for the point locations HDF5 file attribute
+    //     in the S104 forecast feature code HDF5 GROUP (Same as for the number of GROUPS for DCF8).  
     SProduct.updTransientAttrInGroup(ISProductIO.NB_STATIONS_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( tmpNBSCPointLocsArr ) );
+				     HDFql.variableTransientRegister( tmpNBSCPointLocsArr ));
+
+    // --- Update the nb. of timestamps HDF5 file attribute
+    //     in the S104 forecast feature code HDF5 GROUP
+    SProduct.updTransientAttrInGroup(ISProductIO.NB_TIMESTAMPS_ID, s104FcstDataGrpId,
+				     HDFql.variableTransientRegister( new int [] {nbInstants} ));
+    
+    // --- Update the time intervall of the timestamps HDF5 file attribute
+    //     in the S104 forecast feature code HDF5 GROUP
+    SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, s104FcstDataGrpId,
+				     HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
+
+    // --- Now looping on the ship channel point locations to update their metadata and
+    //     their water levels and related uncertainties.
+    for (final String scLocStrId: allSCLocsIPPInputData.keySet() ) {
+  
+      slog.info(mmi+"scLocStrId="+scLocStrId);
+
+      final String scLocGrpNNNNIdStr= s104FcstDataGrpId + ISProductIO.GRP_SEP_ID +
+	ISProductIO.GRP_PRFX + String.format("%04d", Integer.parseInt(scLocStrId) + 1) ;
+
+      slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
+
+      int checkStatus= HDFql.execute("USE GROUP "+scLocGrpNNNNIdStr);
+
+      if (checkStatus != HDFqlConstants.SUCCESS) {
+
+	// --- TODO: Create the new GROUP if not found instead of crashing here 
+	throw new RuntimeException(mmi+"GROUP -> "+scLocGrpNNNNIdStr+ " not found in the output file!");
+      }
+
+      // --- Update the ship channel location string id. in his own group
+      SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STNID_ID, scLocGrpNNNNIdStr,
+				       HDFql.variableTransientRegister( new String [] {scLocStrId} ));
+
+      final String scLocStnName= IWLAdjustmentIO.SCLOC_STN_ID_PRFX + scLocStrId;
+
+      // --- Update the ship channel location string (human readable) name
+      SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_NAME_ID, scLocGrpNNNNIdStr,
+				       HDFql.variableTransientRegister( new String [] {scLocStnName} ));
+      
+      // --- Update the nb. of timestamps HDF5 file attribute
+      //     in the ship channel point location Group_nnnn
+      SProduct.updTransientAttrInGroup(ISProductIO.NB_TIMESTAMPS_ID, scLocGrpNNNNIdStr,
+      			               HDFql.variableTransientRegister( new int [] {nbInstants} ));
+
+      // --- Update the first timestamp for this ship channel location
+      //     (Same value as for the S104 feature forecast GROUP)
+      SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID, scLocGrpNNNNIdStr,
+				       HDFql.variableTransientRegister( new String [] {firstTimeStampStr} ));
+
+      // --- Update the last timestamp for this ship channel location
+      //     (Same value as for the S104 feature forecast GROUP)
+      SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID, scLocGrpNNNNIdStr,
+				       HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
+
+      // --- Update the time intervall of the timestamps HDF5 file attribute
+      //     for this ship channel location (Same value as for the S104 feature forecast GROUP)
+      SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, scLocGrpNNNNIdStr,
+  				       HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
+
+      // --- 
+      final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
+
+      slog.info(mmi+"valuesDSetIdInGrp="+valuesDSetIdInGrp);
+      slog.info(mmi+" checkStatus bef. comm="+checkStatus);
+
+      //checkStatus= HDFql.execute("SHOW DIMENSION DATASET " + valuesDSetIdInGrp);
+      //final long checkValuesDSetDim= HDFql.execute("SHOW DIMENSION DATASET " + valuesDSetIdInGrp);
+  
+      checkStatus= HDFql.execute("ALTER DIMENSION "+valuesDSetIdInGrp+" TO 14402");
+
+      if (checkStatus != HDFqlConstants.SUCCESS) {  
+        throw new RuntimeException(mmi+"HDFql.execute \"ALTER DIMENSION <>\" command failed with status -> "+checkStatus+" !");
+      }
+      
+      //slog.info(mmi+"checkValuesDSetDim="+checkValuesDSetDim);
+      
+      slog.info(mmi+"debug System.exit(0)");
+      System.exit(0);
+    }
     
     HDFql.execute("CLOSE FILE " + outputFilePath);
     

@@ -23,6 +23,10 @@ public interface ISProductIO {
 	 put(FeatId.S111,"SurfaceCurrent");
        }}       
     );
+
+  // // --- Cannot have more than 9999 of ship channel
+  // //     point locations.
+  // int MAX_SCLOCS_NB= 9999;  
 								      
   String CURRENTS_PR0D_ID= FeatId.S111.name(); //"S111";
   String WATLEVLS_PR0D_ID= FeatId.S104.name(); //"S104";
@@ -47,6 +51,8 @@ public interface ISProductIO {
     
   String ROOT_GRP_ID= GRP_SEP_ID;
 
+  String GRP_PRFX= "Group_";
+    
   String ISSUE_HHMMSS_ID=   "issueTime";    
   String ISSUE_YYYYMMDD_ID= "issueDate";
 
@@ -59,4 +65,19 @@ public interface ISProductIO {
 
   String NB_GROUPS_ID= "numGRP";
   String NB_STATIONS_ID= "numberOfStations";
+
+  String NB_TIMESTAMPS_ID= "numberOfTimes";
+  String TIME_INTRV_ID= "timeRecordInterval";
+
+  String VAL_DSET_ID= "values";
+
+  // String SCLOC_STN_ID_PRFX= "STLT_WLPS ship channel point location #";
+
+  // --- Specific HDF5 attritbutes ids for DCF8
+  String DCF8_STN_LAST_TIMESTAMP_ID= "endDateTime";
+  String DCF8_STN_FIRST_TIMESTAMP_ID= "startDateTime";
+    
+  String DCF8_STNID_ID= "stationIdentification";
+
+  String DCF8_STN_NAME_ID= "stationName"; 
 }

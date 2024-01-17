@@ -98,5 +98,13 @@ public interface IWLAdjustmentIO {
 
   String FMF_RESIDUALS_STATS_TDEP_OFST_SECONDS_JSON_KEY= "secondsOffset";
 
-    //String SHIP_CHANNEL_POINTS_DEF_DIRNAME= "channelGridPointsInfoDef";  
+  // --- Specific definitions for HSTLT_WLPS (a.k,a Spine)
+
+  // --- Cannot have more than 9999 of ship channel
+  //     point locations.
+  int MAX_SCLOCS_NB= 9999;
+
+  String SCLOC_STN_ID_PRFX= "HSTLT_WLPS ship channel point location #";
+
+    //String SHIP_CHANNEL_POINTS_DEF_DIRNAME= "channelGridPointsInfoDef";
 }
