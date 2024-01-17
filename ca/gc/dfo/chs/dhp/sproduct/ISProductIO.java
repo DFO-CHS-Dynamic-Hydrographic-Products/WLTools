@@ -9,11 +9,13 @@ import java.util.Collections;
 // ---
 public interface ISProductIO {
 
+  // ---
   enum FeatId {
     S104,
     S111
   }
-  
+
+  // ---
   Map<FeatId,String> FEATURE_IDS=
     Collections.unmodifiableMap(			
        new HashMap<FeatId, String>() {{
@@ -54,5 +56,7 @@ public interface ISProductIO {
 
   String LEAST_RECENT_TIMESTAMP_ID= "dateTimeOfFirstRecord";
   String MOST_RECENT_TIMESTAMP_ID= "dateTimeOfLastRecord";   
-      
+
+  String NB_GROUPS_ID= "numGRP";
+  String NB_STATIONS_ID= "numberOfStations";
 }

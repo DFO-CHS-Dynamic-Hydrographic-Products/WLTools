@@ -23,8 +23,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
 
-//import javax.validation.constraints.NotNull;
-
 // ---
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -482,8 +480,13 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //System.exit(0);       
     }
 
-    slog.info(mmi+"Done with reading all the SpineIPP results input files");   
+    slog.info(mmi+"Done with reading all the SpineIPP results input files");
 
+    // --- Get the number of ship channel point locations.
+    final int nbSCPointLocs= adjSpineIPPInputDataFilesList.size();
+
+    slog.info(mmi+"nbSCPointLocs="+nbSCPointLocs);
+    
     slog.info(mmi+"mostRecentFirstInstant="+mostRecentFirstInstant.toString());
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
@@ -524,15 +527,14 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     // --- Now do the conversion to S104 DCF8 format (one file for all the ship channel points locations).
 
-    // --- Open the HDF5 output file in append mode (default when it is already existing);
+    // --- Open the S104 DCF8 HDF5 output file in append mode (default when it is already existing);
     final int checkOpenOutFile= HDFql.execute("USE FILE " + outputFilePath);
 
     if (checkOpenOutFile != HDFqlConstants.SUCCESS ) {
       throw new RuntimeException(mmi+"hdfql.execute problem: checkOpenOutFile="+checkOpenOutFile);
     }
 
-    final int shf= HDFql.execute("SHOW USE FILE");
-    
+    //final int shf= HDFql.execute("SHOW USE FILE");    
     //slog.info(mmi+"shf="+shf);
 
     // --- Need to update the issueDate and issueTime HDF5 root attributes
@@ -553,36 +555,16 @@ abstract public class WLToolsIO implements IWLToolsIO {
     SProduct.updTransientAttrInGroup(ISProductIO.ISSUE_YYYYMMDD_ID, ISProductIO.GRP_SEP_ID,
                                      HDFql.variableTransientRegister(new String [] {YYYYMMDDStr}) );
     
-    // --- USE GROUP Probably not necessary here
-    //HDFql.execute("USE GROUP "+ISProductIO.GRP_SEP_ID);
-
-    //// --- Need to use an array of one String for the YYYYMMDDStr String in order
-    //     to be able to update the related HDF5 String attribute
-    //int cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.ISSUE_YYYYMMDD_ID +
-    //			   " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {YYYYMMDDStr} ) );     
-    //if (cqc != HDFqlConstants.SUCCESS) {
-    //  throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.ISSUE_YYYYMMDD_ID+" ATTRIBUTE");
-    //}
-    // int cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.ISSUE_HHMMSS_ID +
-    // 			   " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {hhmmssZStr} ) );
-    // if (cqc != HDFqlConstants.SUCCESS) {
-    //   throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.ISSUE_HHMMSS_ID+" ATTRIBUTE");
-    // }
-
     SProduct.updTransientAttrInGroup(ISProductIO.ISSUE_HHMMSS_ID, ISProductIO.GRP_SEP_ID,
 				     HDFql.variableTransientRegister( new String [] {hhmmssZStr} ) );
-				     
+
+    // --- Get the S104 feature code String
     final String s104FeatureId= ISProductIO.FEATURE_IDS.get(ISProductIO.FeatId.S104);
 
+    // --- Build the S104 forecast feature code HDF5 GROUP id. 
     final String s104FcstDataGrpId= ISProductIO.GRP_SEP_ID +
       s104FeatureId + ISProductIO.GRP_SEP_ID + s104FeatureId + ISProductIO.FCST_ID;
     
-    // --- Set the GROUP to the S104 /<feature id>.<NN>/<feature id>.<NN> for the forecast type
-    //cqc= HDFql.execute("USE GROUP " + s104FcstDataGrpId);
-    //if (cqc != HDFqlConstants.SUCCESS) {
-    //  throw new RuntimeException(mmi+"Group: "+s104FcstDataGrpId+" not found in HDF5 output file!");
-    //}
-
     // --- Update the first and last timestamps attributes of the
     //     S104 /<feature id>.<NN>/<feature id>.<NN> GROUP 
     final String firstTimeStampStr=
@@ -595,22 +577,27 @@ abstract public class WLToolsIO implements IWLToolsIO {
        .replace(OUTPUT_DATA_FMT_SPLIT_CHAR, "")
 	 .replace(INPUT_DATA_FMT_SPLIT_CHAR,"");
 
+    // --- Update the first (least recent) timestamp HDF5 file attrbute
+    //     in the S104 forecast feature code HDF5 GROUP id.   
     SProduct.updTransientAttrInGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
 				     HDFql.variableTransientRegister( new String [] {firstTimeStampStr} ) ); 
     
-    //cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.LEAST_RECENT_TIMESTAMP_ID +
-    //		       " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {firstTimeStampStr} ) );
-    //if (cqc != HDFqlConstants.SUCCESS) {
-    //  throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.LEAST_RECENT_TIMESTAMP_ID+" ATTRIBUTE");
-    //}
-    // cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+ ISProductIO.MOST_RECENT_TIMESTAMP_ID +
-    // 		       " VALUES FROM MEMORY " + HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ) );
-    // if (cqc != HDFqlConstants.SUCCESS) {
-    //   throw new RuntimeException(mmi+"Problem with HDFql INSERT for "+ISProductIO.LEAST_RECENT_TIMESTAMP_ID+" ATTRIBUTE");
-    // }
-
+    // --- Update the last (most recent) timestamp HDF5 file attrbute
+    //     in the S104 forecast feature code HDF5 GROUP id.  
     SProduct.updTransientAttrInGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
 				     HDFql.variableTransientRegister( new String [] {lastTimeStampStr}) );
+
+    final int [] tmpNBSCPointLocsArr=  new int [] {nbSCPointLocs};
+    
+    // --- Update the number of GROUPS for the point locations HDF5 file attrbute
+    //     in the S104 forecast feature code HDF5 GROUP id.  
+    SProduct.updTransientAttrInGroup(ISProductIO.NB_GROUPS_ID, s104FcstDataGrpId,
+				     HDFql.variableTransientRegister( tmpNBSCPointLocsArr ) );
+
+    // --- Update the number of "stations" for the point locations HDF5 file attrbute
+    //     in the S104 forecast feature code HDF5 GROUP id (Same as for the number of GROUPS for DCF8).  
+    SProduct.updTransientAttrInGroup(ISProductIO.NB_STATIONS_ID, s104FcstDataGrpId,
+				     HDFql.variableTransientRegister( tmpNBSCPointLocsArr ) );
     
     HDFql.execute("CLOSE FILE " + outputFilePath);
     

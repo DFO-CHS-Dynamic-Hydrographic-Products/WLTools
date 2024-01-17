@@ -33,7 +33,7 @@ abstract public class SProduct implements ISProductIO {
 
     if (cqc != HDFqlConstants.SUCCESS) {
       throw new RuntimeException(mmi+
-        "Problem with HDFql command INSERT INTO ATTRIBUTE "+attrId+"  VALUES FROM MEMORY ");
+        "Problem with HDFql command INSERT INTO ATTRIBUTE "+attrId+" VALUES FROM MEMORY ");
     }  
   }
     
