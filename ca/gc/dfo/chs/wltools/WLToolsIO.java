@@ -533,10 +533,14 @@ abstract public class WLToolsIO implements IWLToolsIO {
     System.out.flush();
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
+
+    // --- Use only one thread for HDFql operations. It avoids a possible cluttering-up of the cores 
+    //     because HDFql try to use all the core available by default which is not a good idea most of
+    //     the time.
+    HDFql.execute("SET THREAD 1");
     
     // --- Now do the conversion to S104 DCF8 format (one file for all the ship channel points locations).
-
-    // --- Open the S104 DCF8 HDF5 output file in append mode (default when it is already existing);
+    //     first open the unique S104 DCF8 HDF5 output file in append mode (default when it is already existing);
     final int checkOpenOutFile= HDFql.execute("USE FILE " + outputFilePath);
 
     if (checkOpenOutFile != HDFqlConstants.SUCCESS ) {
@@ -593,7 +597,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     SProduct.updTransientAttrInGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
 				     HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
 
-    final int [] tmpNBSCPointLocsArr=  new int [] {nbSCPointLocs};
+    final int [] tmpNBSCPointLocsArr= new int [] {nbSCPointLocs};
     
     // --- Update the number of GROUPS for the point locations HDF5 file attribute
     //     in the S104 forecast feature code HDF5 GROUP  
@@ -663,7 +667,6 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //     for this ship channel location (Same value as for the S104 feature forecast GROUP)
       SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, scLocGrpNNNNIdStr,
   				       HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
-
       // --- 
       final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
 
@@ -673,11 +676,10 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //checkStatus= HDFql.execute("SHOW DIMENSION DATASET " + valuesDSetIdInGrp);
       //final long checkValuesDSetDim= HDFql.execute("SHOW DIMENSION DATASET " + valuesDSetIdInGrp);
   
-      checkStatus= HDFql.execute("ALTER DIMENSION "+valuesDSetIdInGrp+" TO 14402");
-
-      if (checkStatus != HDFqlConstants.SUCCESS) {  
-        throw new RuntimeException(mmi+"HDFql.execute \"ALTER DIMENSION <>\" command failed with status -> "+checkStatus+" !");
-      }
+      //checkStatus= HDFql.execute("ALTER DIMENSION "+valuesDSetIdInGrp+" TO 14402");
+      //if (checkStatus != HDFqlConstants.SUCCESS) {  
+      //  throw new RuntimeException(mmi+"HDFql.execute \"ALTER DIMENSION <>\" command failed with status -> "+checkStatus+" !");
+      //}
       
       //slog.info(mmi+"checkValuesDSetDim="+checkValuesDSetDim);
       
