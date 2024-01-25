@@ -434,18 +434,37 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     //slog.info(mmi+"checkTestOutFile="+checkTestOutFile);
     
-    final SProduct.S104DataCompoundType cpdt0= new SProduct().new S104DataCompoundType(0.0, (byte)3, 0.0);
-    final SProduct.S104DataCompoundType cpdt1= new SProduct().new S104DataCompoundType(6.9, (byte)3, 0.69);
+    //final SProduct.S104DataCompoundType cpdt0= new SProduct().new S104DataCompoundType(0.0, (byte)3, 0.0);
+    //final SProduct.S104DataCompoundType cpdt1= new SProduct().new S104DataCompoundType(6.9, (byte)3, 0.69);
 
     // --- Need to enclose the values string in quotes otherwise HDFql raises a parse error
-    cd= HDFql.execute("CREATE DATASET \"values\" AS COMPOUND(WaterLevelHeight AS DOUBLE, WaterLevelTrend AS UNSIGNED TINYINT, Uncertainty AS DOUBLE) (2)");
+    //cd= HDFql.execute("CREATE DATASET \"values\" AS "+
+    cd= HDFql.execute("CREATE DATASET values_ AS "+
+    		      "COMPOUND(WaterLevelHeight AS FLOAT, Uncertainty AS FLOAT)(4)");
+    //		      "VALUES((0.0, 3, 0.0), (6.9, 3, 0.69))") ;
+
+    //cd= HDFql.execute("CREATE DATASET my_dataset5 AS COMPOUND(description AS CHAR(7), index AS INT)(3) VALUES((Toronto, 10), (Nairobi, 12), (Caracas, 11))");
+    
     slog.info(mmi+"cd="+cd);
 
-    final SProduct.S104DataCompoundType [] cpdtArr= new SProduct.S104DataCompoundType [] {cpdt0, cpdt1};
+    float [] testd= new float [] { 1.0f, .11f, 2.0f, .22f, 3.f, .33f, 4.f, .44f } ; //.333f };
+    //float [][] testd= new float [][] { {1.0f, .11f}, {2.0f, .22f}, {3.f, .33f}, {4.f, .44f} } ;
 
-    int nbt= HDFql.variableTransientRegister(cpdtArr); // SProduct.S104DataCompoundType.class);
+    int nbt= HDFql.variableRegister(testd);
+
+    slog.info(mmi+" nbt="+nbt);
+
+    cd= HDFql.execute("INSERT INTO values_ VALUES FROM MEMORY " + nbt);
+
+    slog.info(mmi+"cd="+cd);
+    
+    //final SProduct.S104DataCompoundType [] cpdtArr= new SProduct.S104DataCompoundType [] {cpdt0, cpdt1};
+    //int nbt= HDFql.variableRegister(  new SProduct.S104DataCompoundType [] {cpdt0});
+    //int nbt= HDFql.variableTransientRegister(cpdtArr); // SProduct.S104DataCompoundType.class);
     //int nbt= HDFql.variableRegister(cpdtArr);
     //slog.info(mmi+" nbt="+nbt);
+
+    //cd= HDFql.execute("INSERT 
     
     HDFql.execute("CLOSE FILE " + TestOutFilePath );
     
