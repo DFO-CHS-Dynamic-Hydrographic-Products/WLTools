@@ -33,6 +33,7 @@ import javax.json.JsonArrayBuilder;
 
 // --- HDFql lib
 import as.hdfql.HDFql;
+import as.hdfql.HDFqlJNI;
 import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
 
@@ -64,6 +65,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
   static private String outputDirectory= null;
 
   static private String outputDataFormat= null;
+
+    //static private HDFqlJNI hdfqlJNI= new HDFqlJNI();
 
   //public WLToolsIO(final String mainCfgDirArg) {
   //  mainCfgDir= mainCfgDirArg;
@@ -416,9 +419,38 @@ abstract public class WLToolsIO implements IWLToolsIO {
     } catch (IOException ioex) {
       throw new RuntimeException(mmi+"Problem with Files.copy()!!");
     }
+
+    slog.info(mmi+"file copy done");
+
+    final String TestOutFilePath= outputDirectory + "/TestCompound.h5";
+
+    final int checkTestOutFile= HDFql.execute("CREATE TRUNCATE FILE " + TestOutFilePath);
+
+    int cd= HDFql.execute("USE FILE " + TestOutFilePath);
+    slog.info(mmi+"cd="+cd);
     
-    //slog.info(mmi+"debug System.exit(0)");
-    //System.exit(0);    
+    cd= HDFql.execute("USE GROUP /");
+    slog.info(mmi+"cd="+cd);
+
+    //slog.info(mmi+"checkTestOutFile="+checkTestOutFile);
+    
+    final SProduct.S104DataCompoundType cpdt0= new SProduct().new S104DataCompoundType(0.0, (byte)3, 0.0);
+    final SProduct.S104DataCompoundType cpdt1= new SProduct().new S104DataCompoundType(6.9, (byte)3, 0.69);
+
+    // --- Need to enclose the values string in quotes otherwise HDFql raises a parse error
+    cd= HDFql.execute("CREATE DATASET \"values\" AS COMPOUND(WaterLevelHeight AS DOUBLE, WaterLevelTrend AS UNSIGNED TINYINT, Uncertainty AS DOUBLE) (2)");
+    slog.info(mmi+"cd="+cd);
+
+    final SProduct.S104DataCompoundType [] cpdtArr= new SProduct.S104DataCompoundType [] {cpdt0, cpdt1};
+
+    int nbt= HDFql.variableTransientRegister(cpdtArr); // SProduct.S104DataCompoundType.class);
+    //int nbt= HDFql.variableRegister(cpdtArr);
+    //slog.info(mmi+" nbt="+nbt);
+    
+    HDFql.execute("CLOSE FILE " + TestOutFilePath );
+    
+    slog.info(mmi+"debug System.exit(0)");
+    System.exit(0);    
 
     // --- Get the paths of all the ship channel points locations adjusted WL
     //     (SpineIPP outputs) data input files (CHS_JSON format) in a List<Path> object 

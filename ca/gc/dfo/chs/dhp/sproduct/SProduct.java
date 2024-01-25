@@ -12,12 +12,27 @@ import as.hdfql.HDFqlConstants;
 import ca.gc.dfo.chs.dhp.ISProductIO;
 
 // ---
-abstract public class SProduct implements ISProductIO {
+//abstract public class SProduct implements ISProductIO {
+public class SProduct implements ISProductIO {
 
   private final static String whoAmI= "ca.gc.dfo.chs.dhp.SProduct";
 
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  // --- 
+  public class S104DataCompoundType {
+      
+    double WaterLevelHeight;
+    byte   WaterLevelTrend;
+    double Uncertainty;
+
+    public S104DataCompoundType(final double waterLevelHeight, final byte waterLevelTrend, final double uncertainty) {
+	this.WaterLevelHeight= waterLevelHeight;
+	this.WaterLevelTrend= waterLevelTrend;
+	this.Uncertainty= uncertainty;
+    }
+  }
+    
   // ---
   static public void updTransientAttrInGroup(final String attrId, final String groupId, final int transientAttrId ) {
 

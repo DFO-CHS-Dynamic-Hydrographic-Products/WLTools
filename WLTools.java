@@ -13,7 +13,6 @@ import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
 
 // ---
 import ca.gc.dfo.chs.wltools.IWLTools;
@@ -30,10 +29,16 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
+import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
+
+import as.hdfql.HDFqlJNI;
+
 /**
  * Comments please!
  */
 final public class WLTools extends WLToolsIO {
+
+  //static { System.loadLibrary("HDFql"); }
 
   // ---
   static public void main (String[] args) {
@@ -41,7 +46,11 @@ final public class WLTools extends WLToolsIO {
     //System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
     //System.setProperty(org.slf4j.impl.SimpleLogger.defaultLogLevel,"ERROR");
 
+    //System.loadLibrary("HDFql");
+
     final String mmi= "WLTools main: ";
+
+    //final HDFqlJNI hdfqlJNI= new HDFqlJNI();
 
     final Logger mlog= LoggerFactory.getLogger(mmi);
 
