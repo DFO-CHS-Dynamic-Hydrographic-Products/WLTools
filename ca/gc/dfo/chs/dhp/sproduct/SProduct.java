@@ -24,12 +24,12 @@ public class SProduct implements ISProductIO {
       
     double WaterLevelHeight;
     byte   WaterLevelTrend;
-    double Uncertainty;
+      //double Uncertainty;
 
-    public S104DataCompoundType(final double waterLevelHeight, final byte waterLevelTrend, final double uncertainty) {
+      public S104DataCompoundType(final double waterLevelHeight, final byte waterLevelTrend) { //, final double uncertainty) {
 	this.WaterLevelHeight= waterLevelHeight;
 	this.WaterLevelTrend= waterLevelTrend;
-	this.Uncertainty= uncertainty;
+	//this.Uncertainty= uncertainty;
     }
   }
     
