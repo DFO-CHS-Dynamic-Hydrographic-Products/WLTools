@@ -248,17 +248,17 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
 	       
     slog.info(mmi+"mainTCInputDir="+mainTCInputDir);
 
-    final String shipChannelPointLocsTCInputDir=
-      WLToolsIO.getMainCfgDir() + mainTCInputDir + IWLToolsIO.SHIP_CHANNEL_POINTS_DEF_DIRNAME;
+    final String shipChannelPointLocsTCInputDir= WLToolsIO.getMainCfgDir() +
+      File.separator + mainTCInputDir + IWLToolsIO.SHIP_CHANNEL_POINTS_DEF_DIRNAME;
 
     slog.info(mmi+"shipChannelPointLocsTCInputDir="+shipChannelPointLocsTCInputDir);
 
     // --- Build the paths to find the tidal consts. files of the two ship channel point locations
     //     that are the nearests to the two TGs considered.
-    final String tg0NearestSCLocTCFile= shipChannelPointLocsTCInputDir + File.separator +
+    final String tg0NearestSCLocTCFile= shipChannelPointLocsTCInputDir + //File.separator +
       tg0NearestSCLocId + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
     
-    final String tg1NearestSCLocTCFile= shipChannelPointLocsTCInputDir + File.separator +
+    final String tg1NearestSCLocTCFile= shipChannelPointLocsTCInputDir + //File.separator +
       tg1NearestSCLocId + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
 
     slog.info(mmi+"tg0NearestSCLocTCFile="+tg0NearestSCLocTCFile);
