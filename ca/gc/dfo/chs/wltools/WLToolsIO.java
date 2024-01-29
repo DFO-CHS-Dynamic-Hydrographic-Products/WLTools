@@ -421,42 +421,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+"Problem with Files.copy()!!");
     }
 
-    slog.info(mmi+"file copy done");
-
-    //final String TestOutFilePath= outputDirectory + "/TestCompound.h5";
-    //final int checkTestOutFile= HDFql.execute("CREATE TRUNCATE FILE " + TestOutFilePath);
-    //int cd= HDFql.execute("USE FILE " + TestOutFilePath);
-    //slog.info(mmi+"cd="+cd);
-    //cd= HDFql.execute("USE GROUP /");
-    //slog.info(mmi+"cd="+cd);
-    //slog.info(mmi+"checkTestOutFile="+checkTestOutFile);
-    //final SProduct.S104DataCompoundType cpdt0= new SProduct().new S104DataCompoundType(0.0, (byte)3); //, 0.0);
-    //final SProduct.S104DataCompoundType cpdt1= new SProduct().new S104DataCompoundType(6.9, (byte)2); //, 0.69);
-    // --- Need to enclose the values string in quotes otherwise HDFql raises a parse error
-    //cd= HDFql.execute("CREATE DATASET \"values\" AS "+
-    //cd= HDFql.execute("CREATE DATASET \"values\" AS "+
-    //		      "COMPOUND(WaterLevelHeight AS FLOAT, Uncertainty AS FLOAT)(4)");
-    //		      //"COMPOUND(WaterLevelHeight AS FLOAT, WaterLevelTrend AS INT)(2)");
-    //		      "VALUES((0.0, 3, 0.0), (6.9, 3, 0.69))") ;
-    //cd= HDFql.execute("CREATE DATASET my_dataset5 AS COMPOUND(description AS CHAR(7), index AS INT)(3) VALUES((Toronto, 10), (Nairobi, 12), (Caracas, 11))");
-    //slog.info(mmi+"cd="+cd);
-    //float [] testd= new float [] { 1.0f, .11f, 2.0f, .22f, 3.f, .33f, 4.f, .44f };
-    //int nbt= HDFql.variableRegister(testd);
-    //int nbt= HDFql.variableRegister(new SProduct.S104DataCompoundType [] { cpdt0, cpdt1 });
-    //slog.info(mmi+" nbt="+nbt);
-    //cd= HDFql.execute("INSERT INTO \"values\" VALUES FROM MEMORY " + nbt);
-    //slog.info(mmi+"cd INSERT ="+cd);
-    //cd= HDFql.execute("DROP DATASET \"values\"");
-    //slog.info(mmi+"cd DROP ="+cd);    
-    //final SProduct.S104DataCompoundType [] cpdtArr= new SProduct.S104DataCompoundType [] {cpdt0, cpdt1};
-    //int nbt= HDFql.variableRegister(  new SProduct.S104DataCompoundType [] {cpdt0});
-    //int nbt= HDFql.variableTransientRegister(cpdtArr); // SProduct.S104DataCompoundType.class);
-    //int nbt= HDFql.variableRegister(cpdtArr);
-    //slog.info(mmi+" nbt="+nbt);
-    //cd= HDFql.execute("INSERT 
-    //HDFql.execute("CLOSE FILE " + TestOutFilePath );
-    //slog.info(mmi+"debug System.exit(0)");
-    //System.exit(0);    
+    slog.info(mmi+"file template copy done");
 
     // --- Get the paths of all the ship channel points locations adjusted WL
     //     (SpineIPP outputs) data input files (CHS_JSON format) in a List<Path> object 
@@ -672,7 +637,9 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //     in the S104 forecast feature code HDF5 GROUP
     SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, s104FcstDataGrpId,
 				     HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
-
+    
+    int checkStatus= -1;
+	
     // --- Now looping on the ship channel point locations to update their metadata and
     //     their water levels and related uncertainties.
     for (final String scLocStrId: allSCLocsIPPInputData.keySet() ) {
@@ -682,9 +649,9 @@ abstract public class WLToolsIO implements IWLToolsIO {
       final String scLocGrpNNNNIdStr= s104FcstDataGrpId + ISProductIO.GRP_SEP_ID +
 	ISProductIO.GRP_PRFX + String.format("%04d", Integer.parseInt(scLocStrId) + 1) ;
 
-      slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
+      //slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
 
-      int checkStatus= HDFql.execute("USE GROUP "+scLocGrpNNNNIdStr);
+      checkStatus= HDFql.execute("USE GROUP "+scLocGrpNNNNIdStr);
 
       if (checkStatus != HDFqlConstants.SUCCESS) {
 
@@ -692,7 +659,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	throw new RuntimeException(mmi+"GROUP -> "+scLocGrpNNNNIdStr+ " not found in the output file!");
       }
 
-      slog.info(mmi+"scLocStrId="+scLocStrId);
+      //slog.info(mmi+"scLocStrId="+scLocStrId);
 
       // --- Update the ship channel location string id. in his own group
       SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STNID_ID, scLocGrpNNNNIdStr,
@@ -700,7 +667,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       final String scLocStnName= IWLAdjustmentIO.SCLOC_STN_ID_PRFX + scLocStrId;
 
-      slog.info(mmi+"scLocStnName="+scLocStnName);
+      //slog.info(mmi+"scLocStnName="+scLocStnName);
 
       // --- Update the ship channel location string (human readable) name
       SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_NAME_ID, scLocGrpNNNNIdStr,
@@ -728,7 +695,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       // --- 
       final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
 
-      slog.info(mmi+"valuesDSetIdInGrp="+valuesDSetIdInGrp);
+      //slog.info(mmi+"valuesDSetIdInGrp="+valuesDSetIdInGrp);
       //slog.info(mmi+" checkStatus bef. comm="+checkStatus);
 
       // --- Delete dataset to beable to re-create it with its new dimension (nbInstants)
@@ -738,9 +705,9 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	throw new RuntimeException(mmi+"Cannot delete dataset -> "+valuesDSetIdInGrp);
       }
 
-      slog.info(mmi+"ISProductIO.S104_CMPD_TYPE_HGHT_ID="+ISProductIO.S104_CMPD_TYPE_HGHT_ID);
+      //slog.info(mmi+"ISProductIO.S104_CMPD_TYPE_HGHT_ID="+ISProductIO.S104_CMPD_TYPE_HGHT_ID);
       
-      // --- re-create dataset with its new dimension (nbInstants)
+      // --- re-create dataset of compound type of 2 items with its new dimension (nbInstants)
       checkStatus= HDFql.execute("CREATE DATASET \""+valuesDSetIdInGrp+"\" AS COMPOUND("+
         ISProductIO.S104_CMPD_TYPE_HGHT_ID+" AS FLOAT, "+ISProductIO.FEAT_CMPD_TYPE_UNCERT_ID+" AS FLOAT)(+"+nbInstants+")");
 
@@ -757,8 +724,9 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //       WL value at timestamp t+2*intervall, WL uncertainty at timestamp t+2*intervall,
       //       ...
       //     }
-      //List<Float> tmpValuesList= new ArrayList<Float>(nbInstants*2);
-      float [] tmpValuesArr= new float[nbInstants*2];
+      //
+      //     this means that the tmpValuesArr needs to have 2*nbInstants
+      float [] tmpValuesArr= new float[2*nbInstants];
 
       int valIdx=0;
       int uctIdx=1;
@@ -774,51 +742,39 @@ abstract public class WLToolsIO implements IWLToolsIO {
         //slog.info(mmi+"debug System.exit(0)");
         //System.exit(0);        
 
-	// --- (value,uncertainty) couple
-	//tmpValuesList.add(mc.getValue().floatValue());
-	//tmpValuesList.add(mc.getUncertainty().floatValue());
-
+	// --- (values,uncertainty) compound type pair in successive order
+	//     TODO: Fool-proof checks for valIdx and uctIdx 
 	tmpValuesArr[valIdx]= mc.getValue().floatValue();
 	tmpValuesArr[uctIdx]= mc.getUncertainty().floatValue();
 
+	// --- Need to increment both indices by 2 here.
 	valIdx += 2;
         uctIdx += 2;
-
-	//if (uctIdx>=)
       }
 
-      //final Float [] tmpValuesArr= new Float []
-
-      //final float [] farr= tmpValuesList.toArray(new float [0]);
-      slog.info(mmi+"tmpValuesArr[0]="+tmpValuesArr[0]);
-      slog.info(mmi+"tmpValuesArr[1]="+tmpValuesArr[1]);
-      
-      //final int registerNb= HDFql.variableRegister( new Float [] {tmpValuesList} );
+      // --- Register tmpValuesArr in the HDFql world.
       final int registerNb= HDFql.variableTransientRegister(tmpValuesArr);
 
       if (registerNb < 0) {
 	throw new RuntimeException(mmi+"Problem with HDFql.variableRegister(tmpValues), registerNb  ->"+registerNb);
       }
 
+      // --- Put the (values,uncertainty) compound type pairs in the dataset.
       checkStatus= HDFql.execute("INSERT INTO \""+valuesDSetIdInGrp+"\" VALUES FROM MEMORY " + registerNb);
 
       if (checkStatus != HDFqlConstants.SUCCESS) {
 	throw new RuntimeException(mmi+"Problem with INSERT INTO for dataset -> " + valuesDSetIdInGrp);
       }      
       
-      //final long checkValuesDSetDim= HDFql.execute("SHOW DIMENSION DATASET " + valuesDSetIdInGrp);
-      //checkStatus= HDFql.execute("ALTER DIMENSION "+valuesDSetIdInGrp+" TO 14402");
-      //if (checkStatus != HDFqlConstants.SUCCESS) {  
-      //  throw new RuntimeException(mmi+"HDFql.execute \"ALTER DIMENSION <>\" command failed with status -> "+checkStatus+" !");
-      //}
-      
-      //slog.info(mmi+"checkValuesDSetDim="+checkValuesDSetDim);
-      
       //slog.info(mmi+"debug System.exit(0)");
       //System.exit(0);
     }
     
-    HDFql.execute("CLOSE FILE " + outputFilePath);
+    checkStatus= HDFql.execute("CLOSE FILE " + outputFilePath);
+
+    if (checkStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql CLOSE FILE for file -> " +outputFilePath);
+    }      
     
     slog.info(mmi+"end");
   }	
