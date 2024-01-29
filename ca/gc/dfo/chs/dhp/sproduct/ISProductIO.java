@@ -24,6 +24,13 @@ public interface ISProductIO {
        }}       
     );
 
+  // ---
+  String FEAT_CMPD_TYPE_UNCERT_ID= "Uncertainty";
+    
+  // ---
+  String S104_CMPD_TYPE_HGHT_ID= FEATURE_IDS.get(FeatId.S104) + "Height";
+  //String S104_CMPD_TYPE_TRND_ID= FEATURE_IDS.get(FeatId.S104) + "Trend";
+
   // // --- Cannot have more than 9999 of ship channel
   // //     point locations.
   // int MAX_SCLOCS_NB= 9999;  

@@ -31,12 +31,18 @@ public class SProduct implements ISProductIO {
 	this.WaterLevelTrend= waterLevelTrend;
 	//this.Uncertainty= uncertainty;
     }
-  }
+  }  
     
   // ---
   static public void updTransientAttrInGroup(final String attrId, final String groupId, final int transientAttrId ) {
 
     final String mmi= "updateTransientAttrInGroup: ";
+
+    //slog.info(mmi+"transientAttrId="+transientAttrId);
+
+    if (transientAttrId < 0) {
+      throw new RuntimeException(mmi+"Invalid transientAttrId="+transientAttrId);
+    }
       
     int cqc= HDFql.execute("USE GROUP "+groupId);
 
@@ -47,8 +53,8 @@ public class SProduct implements ISProductIO {
     cqc= HDFql.execute("INSERT INTO ATTRIBUTE "+attrId+" VALUES FROM MEMORY "+ transientAttrId);
 
     if (cqc != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+
-        "Problem with HDFql command INSERT INTO ATTRIBUTE "+attrId+" VALUES FROM MEMORY ");
+      throw new RuntimeException(mmi+"Problem with HDFql command INSERT INTO ATTRIBUTE "+
+				 attrId+" VALUES FROM MEMORY, error code cqc="+cqc+", transientAttrId="+transientAttrId);
     }  
   }
     

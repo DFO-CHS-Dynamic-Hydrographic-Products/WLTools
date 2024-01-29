@@ -308,7 +308,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       jsonArrayBuilderObj.
         add( Json.createObjectBuilder().
           add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
-	    add(IWLToolsIO.UNCERTAINTY_JSON_KEY, mc.getUncertainty() ).
+	    add(IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty() ).
               add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
               //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
     }
@@ -467,7 +467,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     if (adjSpineIPPInputDataFilesList.size() > IWLAdjustmentIO.MAX_SCLOCS_NB) {
 	
       throw new RuntimeException(mmi+"Too many ship channel point locations! -> "+
-	 adjSpineIPPInputDataFilesList.size()+", Max is -> "+ WLAdjustmentIO.MAX_SCLOCS_NB);
+	adjSpineIPPInputDataFilesList.size()+", Max is -> "+ WLAdjustmentIO.MAX_SCLOCS_NB);
     }
     
     Map<String, MeasurementCustomBundle> allSCLocsIPPInputData= new HashMap<String, MeasurementCustomBundle>();
@@ -533,7 +533,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       
       slog.info(mmi+"nb. files read="+allSCLocsIPPInputData.size());
 
-      if (allSCLocsIPPInputData.size() == 20 ) { break; }
+      if (allSCLocsIPPInputData.size() == 50 ) { break; }
       //if (scLocIndexKeyStr.equals("0"))  { break; }
       
       //slog.info(mmi+"debug System.exit(0)");
@@ -677,7 +677,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //     their water levels and related uncertainties.
     for (final String scLocStrId: allSCLocsIPPInputData.keySet() ) {
   
-      slog.info(mmi+"scLocStrId="+scLocStrId);
+	//slog.info(mmi+"scLocStrId="+scLocStrId);
 
       final String scLocGrpNNNNIdStr= s104FcstDataGrpId + ISProductIO.GRP_SEP_ID +
 	ISProductIO.GRP_PRFX + String.format("%04d", Integer.parseInt(scLocStrId) + 1) ;
@@ -692,11 +692,15 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	throw new RuntimeException(mmi+"GROUP -> "+scLocGrpNNNNIdStr+ " not found in the output file!");
       }
 
+      slog.info(mmi+"scLocStrId="+scLocStrId);
+
       // --- Update the ship channel location string id. in his own group
       SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STNID_ID, scLocGrpNNNNIdStr,
 				       HDFql.variableTransientRegister( new String [] {scLocStrId} ));
 
       final String scLocStnName= IWLAdjustmentIO.SCLOC_STN_ID_PRFX + scLocStrId;
+
+      slog.info(mmi+"scLocStnName="+scLocStnName);
 
       // --- Update the ship channel location string (human readable) name
       SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_NAME_ID, scLocGrpNNNNIdStr,
@@ -744,11 +748,63 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	throw new RuntimeException(mmi+"Cannot re-create dataset -> "+valuesDSetIdInGrp);
       }
 
+      // --- Get the MeasurementCustomBundle for this ship channel point location
+      final MeasurementCustomBundle scLocMCB= allSCLocsIPPInputData.get(scLocStrId);
+
+      // --- Need to bundle both the WL and their related uncertainties in a temp List here
+      //     { WL value at timestamp t, WL uncertainty at timestamp t,
+      //       WL value at timestamp t+intervall, WL uncertainty at timestamp t+intervall,
+      //       WL value at timestamp t+2*intervall, WL uncertainty at timestamp t+2*intervall,
+      //       ...
+      //     }
+      //List<Float> tmpValuesList= new ArrayList<Float>(nbInstants*2);
+      float [] tmpValuesArr= new float[nbInstants*2];
+
+      int valIdx=0;
+      int uctIdx=1;
+
       // --- Loop on all the relevant and ordered (increasing) Instant objects
       //     of this ship channel point location
       for (final Instant scLocsInstant : scLocsInstants) {
-         
+
+	final MeasurementCustom mc= scLocMCB.getAtThisInstant(scLocsInstant);   
+
+	//slog.info(mmi+"mc.getValue()="+mc.getValue());
+	//slog.info(mmi+"mc.getUncertainty()="+mc.getUncertainty());
+        //slog.info(mmi+"debug System.exit(0)");
+        //System.exit(0);        
+
+	// --- (value,uncertainty) couple
+	//tmpValuesList.add(mc.getValue().floatValue());
+	//tmpValuesList.add(mc.getUncertainty().floatValue());
+
+	tmpValuesArr[valIdx]= mc.getValue().floatValue();
+	tmpValuesArr[uctIdx]= mc.getUncertainty().floatValue();
+
+	valIdx += 2;
+        uctIdx += 2;
+
+	//if (uctIdx>=)
       }
+
+      //final Float [] tmpValuesArr= new Float []
+
+      //final float [] farr= tmpValuesList.toArray(new float [0]);
+      slog.info(mmi+"tmpValuesArr[0]="+tmpValuesArr[0]);
+      slog.info(mmi+"tmpValuesArr[1]="+tmpValuesArr[1]);
+      
+      //final int registerNb= HDFql.variableRegister( new Float [] {tmpValuesList} );
+      final int registerNb= HDFql.variableTransientRegister(tmpValuesArr);
+
+      if (registerNb < 0) {
+	throw new RuntimeException(mmi+"Problem with HDFql.variableRegister(tmpValues), registerNb  ->"+registerNb);
+      }
+
+      checkStatus= HDFql.execute("INSERT INTO \""+valuesDSetIdInGrp+"\" VALUES FROM MEMORY " + registerNb);
+
+      if (checkStatus != HDFqlConstants.SUCCESS) {
+	throw new RuntimeException(mmi+"Problem with INSERT INTO for dataset -> " + valuesDSetIdInGrp);
+      }      
       
       //final long checkValuesDSetDim= HDFql.execute("SHOW DIMENSION DATASET " + valuesDSetIdInGrp);
       //checkStatus= HDFql.execute("ALTER DIMENSION "+valuesDSetIdInGrp+" TO 14402");
@@ -758,8 +814,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
       
       //slog.info(mmi+"checkValuesDSetDim="+checkValuesDSetDim);
       
-      slog.info(mmi+"debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);
     }
     
     HDFql.execute("CLOSE FILE " + outputFilePath);
