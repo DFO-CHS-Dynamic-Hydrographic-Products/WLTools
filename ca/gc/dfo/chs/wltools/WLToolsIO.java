@@ -308,7 +308,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
       jsonArrayBuilderObj.
         add( Json.createObjectBuilder().
           add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
-            add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
+	    add(IWLToolsIO.UNCERTAINTY_JSON_KEY, mc.getUncertainty() ).
+              add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
               //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
     }
 
@@ -422,55 +423,40 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     slog.info(mmi+"file copy done");
 
-    final String TestOutFilePath= outputDirectory + "/TestCompound.h5";
-
-    final int checkTestOutFile= HDFql.execute("CREATE TRUNCATE FILE " + TestOutFilePath);
-
-    int cd= HDFql.execute("USE FILE " + TestOutFilePath);
-    slog.info(mmi+"cd="+cd);
-    
-    cd= HDFql.execute("USE GROUP /");
-    slog.info(mmi+"cd="+cd);
-
+    //final String TestOutFilePath= outputDirectory + "/TestCompound.h5";
+    //final int checkTestOutFile= HDFql.execute("CREATE TRUNCATE FILE " + TestOutFilePath);
+    //int cd= HDFql.execute("USE FILE " + TestOutFilePath);
+    //slog.info(mmi+"cd="+cd);
+    //cd= HDFql.execute("USE GROUP /");
+    //slog.info(mmi+"cd="+cd);
     //slog.info(mmi+"checkTestOutFile="+checkTestOutFile);
-    
     //final SProduct.S104DataCompoundType cpdt0= new SProduct().new S104DataCompoundType(0.0, (byte)3); //, 0.0);
     //final SProduct.S104DataCompoundType cpdt1= new SProduct().new S104DataCompoundType(6.9, (byte)2); //, 0.69);
-
     // --- Need to enclose the values string in quotes otherwise HDFql raises a parse error
     //cd= HDFql.execute("CREATE DATASET \"values\" AS "+
-    cd= HDFql.execute("CREATE DATASET \"values\" AS "+
-    		      "COMPOUND(WaterLevelHeight AS FLOAT, Uncertainty AS FLOAT)(4)");
-		      //"COMPOUND(WaterLevelHeight AS FLOAT, WaterLevelTrend AS INT)(2)");
+    //cd= HDFql.execute("CREATE DATASET \"values\" AS "+
+    //		      "COMPOUND(WaterLevelHeight AS FLOAT, Uncertainty AS FLOAT)(4)");
+    //		      //"COMPOUND(WaterLevelHeight AS FLOAT, WaterLevelTrend AS INT)(2)");
     //		      "VALUES((0.0, 3, 0.0), (6.9, 3, 0.69))") ;
-
     //cd= HDFql.execute("CREATE DATASET my_dataset5 AS COMPOUND(description AS CHAR(7), index AS INT)(3) VALUES((Toronto, 10), (Nairobi, 12), (Caracas, 11))");
-    
-    slog.info(mmi+"cd="+cd);
-
-    float [] testd= new float [] { 1.0f, .11f, 2.0f, .22f, 3.f, .33f, 4.f, .44f };
-    
-    int nbt= HDFql.variableRegister(testd);
+    //slog.info(mmi+"cd="+cd);
+    //float [] testd= new float [] { 1.0f, .11f, 2.0f, .22f, 3.f, .33f, 4.f, .44f };
+    //int nbt= HDFql.variableRegister(testd);
     //int nbt= HDFql.variableRegister(new SProduct.S104DataCompoundType [] { cpdt0, cpdt1 });
-
-    slog.info(mmi+" nbt="+nbt);
-
-    cd= HDFql.execute("INSERT INTO \"values\" VALUES FROM MEMORY " + nbt);
-
-    slog.info(mmi+"cd="+cd);
-    
+    //slog.info(mmi+" nbt="+nbt);
+    //cd= HDFql.execute("INSERT INTO \"values\" VALUES FROM MEMORY " + nbt);
+    //slog.info(mmi+"cd INSERT ="+cd);
+    //cd= HDFql.execute("DROP DATASET \"values\"");
+    //slog.info(mmi+"cd DROP ="+cd);    
     //final SProduct.S104DataCompoundType [] cpdtArr= new SProduct.S104DataCompoundType [] {cpdt0, cpdt1};
     //int nbt= HDFql.variableRegister(  new SProduct.S104DataCompoundType [] {cpdt0});
     //int nbt= HDFql.variableTransientRegister(cpdtArr); // SProduct.S104DataCompoundType.class);
     //int nbt= HDFql.variableRegister(cpdtArr);
     //slog.info(mmi+" nbt="+nbt);
-
     //cd= HDFql.execute("INSERT 
-    
-    HDFql.execute("CLOSE FILE " + TestOutFilePath );
-    
-    slog.info(mmi+"debug System.exit(0)");
-    System.exit(0);    
+    //HDFql.execute("CLOSE FILE " + TestOutFilePath );
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);    
 
     // --- Get the paths of all the ship channel points locations adjusted WL
     //     (SpineIPP outputs) data input files (CHS_JSON format) in a List<Path> object 
@@ -493,6 +479,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     Instant mostRecentFirstInstant= Instant.EPOCH;
 
     slog.info(mmi+"Reading all the SpineIPP results input files in CHS_JSON format");
+
+    String scLocWithMostRecent1stInstant= "0";
     
     // --- Loop on all the files of all the ship channel point locations adjusted WL
     //     (SpineIPP outputs) data input files (order is not important here since we are
@@ -532,8 +520,21 @@ abstract public class WLToolsIO implements IWLToolsIO {
       final Instant scLocLeastRecentInstantCheck=
 	allSCLocsIPPInputData.get(scLocIndexKeyStr).getLeastRecentInstantCopy();
       
-      mostRecentFirstInstant= ( mostRecentFirstInstant.
-	isBefore(scLocLeastRecentInstantCheck) ) ? scLocLeastRecentInstantCheck: mostRecentFirstInstant;
+      //mostRecentFirstInstant= ( mostRecentFirstInstant.
+      // isBefore(scLocLeastRecentInstantCheck) ) ? scLocLeastRecentInstantCheck: mostRecentFirstInstant;
+
+      // --- Update the mostRecentFirstInstant if needed and also update
+      //     the related scLocWithMostRecent1stInstant String
+      if ( mostRecentFirstInstant.isBefore(scLocLeastRecentInstantCheck) ) {
+	  
+	 mostRecentFirstInstant= scLocLeastRecentInstantCheck;
+	 scLocWithMostRecent1stInstant= scLocIndexKeyStr;
+      }
+      
+      slog.info(mmi+"nb. files read="+allSCLocsIPPInputData.size());
+
+      if (allSCLocsIPPInputData.size() == 20 ) { break; }
+      //if (scLocIndexKeyStr.equals("0"))  { break; }
       
       //slog.info(mmi+"debug System.exit(0)");
       //System.exit(0);       
@@ -547,15 +548,16 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"nbSCPointLocs="+nbSCPointLocs);
     
     slog.info(mmi+"mostRecentFirstInstant="+mostRecentFirstInstant.toString());
+    slog.info(mmi+"scLocWithMostRecent1stInstant="+scLocWithMostRecent1stInstant);
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
 
-    // --- Take the SortedSet<Instant> of the "0" ship channel point location to
+    // --- Take the SortedSet<Instant> of the ship channel point location
+    //     that is indexed at scLocWithMostRecent1stInstant to
     //     use it for the conversion loop starting at the mostRecentFirstInstant
-    //     (It is very unlikely that the mostRecentFirstInstant object key is not present
-    //     in the keys of the related MeasurementCustomBundle object)
+    //     of all the timestamps of the all the ship channel point locations
     final SortedSet<Instant> scLocsInstants= allSCLocsIPPInputData.
-      get("0").getInstantsKeySetCopy().tailSet(mostRecentFirstInstant);
+      get(scLocWithMostRecent1stInstant).getInstantsKeySetCopy().tailSet(mostRecentFirstInstant);
 
     // --- mostRecentSCLocsInstant is in fact the Instant related to the last timestamp.
     final Instant mostRecentSCLocsInstant= scLocsInstants.last();
@@ -723,11 +725,32 @@ abstract public class WLToolsIO implements IWLToolsIO {
       final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
 
       slog.info(mmi+"valuesDSetIdInGrp="+valuesDSetIdInGrp);
-      slog.info(mmi+" checkStatus bef. comm="+checkStatus);
+      //slog.info(mmi+" checkStatus bef. comm="+checkStatus);
 
-      //checkStatus= HDFql.execute("SHOW DIMENSION DATASET " + valuesDSetIdInGrp);
+      // --- Delete dataset to beable to re-create it with its new dimension (nbInstants)
+      checkStatus= HDFql.execute("DROP DATASET " + valuesDSetIdInGrp);
+
+      if (checkStatus != HDFqlConstants.SUCCESS) {
+	throw new RuntimeException(mmi+"Cannot delete dataset -> "+valuesDSetIdInGrp);
+      }
+
+      slog.info(mmi+"ISProductIO.S104_CMPD_TYPE_HGHT_ID="+ISProductIO.S104_CMPD_TYPE_HGHT_ID);
+      
+      // --- re-create dataset with its new dimension (nbInstants)
+      checkStatus= HDFql.execute("CREATE DATASET \""+valuesDSetIdInGrp+"\" AS COMPOUND("+
+        ISProductIO.S104_CMPD_TYPE_HGHT_ID+" AS FLOAT, "+ISProductIO.FEAT_CMPD_TYPE_UNCERT_ID+" AS FLOAT)(+"+nbInstants+")");
+
+      if (checkStatus != HDFqlConstants.SUCCESS) {
+	throw new RuntimeException(mmi+"Cannot re-create dataset -> "+valuesDSetIdInGrp);
+      }
+
+      // --- Loop on all the relevant and ordered (increasing) Instant objects
+      //     of this ship channel point location
+      for (final Instant scLocsInstant : scLocsInstants) {
+         
+      }
+      
       //final long checkValuesDSetDim= HDFql.execute("SHOW DIMENSION DATASET " + valuesDSetIdInGrp);
-  
       //checkStatus= HDFql.execute("ALTER DIMENSION "+valuesDSetIdInGrp+" TO 14402");
       //if (checkStatus != HDFqlConstants.SUCCESS) {  
       //  throw new RuntimeException(mmi+"HDFql.execute \"ALTER DIMENSION <>\" command failed with status -> "+checkStatus+" !");
