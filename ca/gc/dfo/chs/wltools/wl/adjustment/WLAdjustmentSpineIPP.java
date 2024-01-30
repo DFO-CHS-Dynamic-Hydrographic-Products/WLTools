@@ -388,10 +388,17 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
       //slog.info(mmi+"lowerSideAdjFMFValue="+lowerSideAdjFMFValue);
       //slog.info(mmi+"upperSideAdjFMFValue="+upperSideAdjFMFValue);
-
       //slog.info(mmi+"this.lowerSideScLocStrId="+this.lowerSideScLocStrId);
       //slog.info(mmi+"this.upperSideScLocStrId="+this.upperSideScLocStrId);
 
+      final double lowerSideAdjFMFValUncrt= lowerSideSCLocAdjFMFMc.getUncertainty();
+      final double upperSideAdjFMFValUncrt= upperSideSCLocAdjFMFMc.getUncertainty();
+
+      //slog.info(mmi+"lowerSideAdjFMFValUncrt="+lowerSideAdjFMFValUncrt);
+      //slog.info(mmi+"upperSideAdjFMFValUncrt="+upperSideAdjFMFValUncrt);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+      
       final double lowerSideNonAdjValue= this.
 	tgsNearestSCLocsNonAdjData.get(this.lowerSideScLocStrId).getAtThisInstant(adjFMFInstant).getValue();
 
@@ -433,8 +440,18 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
         //slog.info(mmi+"scAdjValue="+scAdjValue+"\n");
 
-	// --- Uncertainty is 0.0 here for now.
-	this.scLocsAdjLTFP.get(scLocStrId).add(new MeasurementCustom(adjFMFInstant, scAdjValue, 0.0));
+	// --- Linearly interpolate the uncertainties at the ship channel location
+	//     being processed.
+	final double scAdjValUncrt= lowerSideAdjFMFValUncrt +
+	    tgsNearestsLocsDistRadInv * scLocDistRad * (upperSideAdjFMFValUncrt - lowerSideAdjFMFValUncrt) ;
+
+        //slog.info(mmi+"scAdjValUncrt="+scAdjValUncrt);
+	//slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);
+      	
+	// --- Set the MeasurementCustom with the interpolated values (WL, related uncertainty)
+	//     for the adjFMFInstant at at the ship channel location being processed.
+	this.scLocsAdjLTFP.get(scLocStrId).add(new MeasurementCustom(adjFMFInstant, scAdjValue, scAdjValUncrt));
 
 	//if (scLocStrId.equals("gridPoint-49")) {
 	//slog.info(mmi+"Debug System.exit(0)");
