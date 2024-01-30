@@ -195,7 +195,7 @@ abstract public class WLStationPredFactory
     //this.stationId= stationId;
 
     final String [] tidalConstsInputInfoStrSplit=
-       tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+      tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
     if (tidalConstsInputInfoStrSplit.length != 3) {
       throw new RuntimeException(mmi+"ERROR: tidalConstsInputInfoStrSplit.length != 3 !!");

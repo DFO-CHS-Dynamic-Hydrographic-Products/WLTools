@@ -211,7 +211,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     final String subRegionIdInfo= locationIdInfoSplit[1];
     final String locationIdSpec= locationIdInfoSplit[2];
 
-    return mainCfgDir + "tidal/nonStationary/" + regionIdInfo + "/dischargeClusters/" +
+    return mainCfgDir + "/tidal/nonStationary/" + regionIdInfo + "/dischargeClusters/" +
            subRegionIdInfo + File.separator + tidalConstsTypeId + File.separator + tidalConstsTypeModelId +
            File.separator + locationIdSpec + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
   }
