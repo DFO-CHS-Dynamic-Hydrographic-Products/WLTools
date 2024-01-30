@@ -443,7 +443,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //     Instant objects of all the ship channel grid point locations
     Instant mostRecentFirstInstant= Instant.EPOCH;
 
-    slog.info(mmi+"Reading all the SpineIPP results input files in CHS_JSON format");
+    slog.info(mmi+"Reading all the SpineIPP results input files in CHS_JSON format (could take 5-7 mins)");
 
     String scLocWithMostRecent1stInstant= "0";
     
@@ -454,7 +454,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       final String adjSpineIPPInputDataFileStr= adjSpineIPPInputDataFilePath.toString();
 	
-      slog.debug(mmi+"adjSpineIPPInputDataFileStr="+adjSpineIPPInputDataFileStr);
+      //slog.debug(mmi+"adjSpineIPPInputDataFileStr="+adjSpineIPPInputDataFileStr);
 
       // --- Extract the name of the adjSpineIPPInputDataFile and get rid of its
       //     JSON name extension at the same time
@@ -490,17 +490,12 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       // --- Update the mostRecentFirstInstant if needed and also update
       //     the related scLocWithMostRecent1stInstant String
-      if ( mostRecentFirstInstant.isBefore(scLocLeastRecentInstantCheck) ) {
-	  
+      if ( mostRecentFirstInstant.isBefore(scLocLeastRecentInstantCheck) ) {	  
 	 mostRecentFirstInstant= scLocLeastRecentInstantCheck;
 	 scLocWithMostRecent1stInstant= scLocIndexKeyStr;
       }
       
-      slog.info(mmi+"nb. files read="+allSCLocsIPPInputData.size());
-
-      if (allSCLocsIPPInputData.size() == 50 ) { break; }
-      //if (scLocIndexKeyStr.equals("0"))  { break; }
-      
+      //slog.info(mmi+"nb. files read="+allSCLocsIPPInputData.size());
       //slog.info(mmi+"debug System.exit(0)");
       //System.exit(0);       
     }
