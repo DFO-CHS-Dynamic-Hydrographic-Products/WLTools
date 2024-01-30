@@ -370,8 +370,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       ippCHSJsonToS104DCF8(ippAdjResultsInputDir);
       
-      slog.info(mmi+"debug System.exit(0)");
-      System.exit(0); 
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0); 
     }
 
     //if (checkInputDataFormat.equals(IWLToolsIO.Format.ONELOC_S104DCF8.name())) {
