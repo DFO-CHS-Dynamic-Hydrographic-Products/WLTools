@@ -13,7 +13,7 @@ import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
+
 // ---
 import ca.gc.dfo.chs.wltools.IWLTools;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
@@ -29,10 +29,16 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
+import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
+
+import as.hdfql.HDFqlJNI;
+
 /**
  * Comments please!
  */
 final public class WLTools extends WLToolsIO {
+
+  //static { System.loadLibrary("HDFql"); }
 
   // ---
   static public void main (String[] args) {
@@ -40,7 +46,11 @@ final public class WLTools extends WLToolsIO {
     //System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
     //System.setProperty(org.slf4j.impl.SimpleLogger.defaultLogLevel,"ERROR");
 
+    //System.loadLibrary("HDFql");
+
     final String mmi= "WLTools main: ";
+
+    //final HDFqlJNI hdfqlJNI= new HDFqlJNI();
 
     final Logger mlog= LoggerFactory.getLogger(mmi);
 
@@ -51,12 +61,11 @@ final public class WLTools extends WLToolsIO {
     File binDir= null;
 
     try {
-
       binDir= new File(WLTools.class.
         getProtectionDomain().getCodeSource().getLocation().toURI());
 
     } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException(mmi+e);
     }
 
     mlog.info(mmi+"binDir="+binDir);
@@ -69,27 +78,42 @@ final public class WLTools extends WLToolsIO {
     // --- Now get the --<option name>=<option value> from the args
     HashMap<String, String> argsMap= new HashMap<String,String>();
 
+    // ---
     for (final String arg: args) {
-      String[] parts = arg.split("=");
+
+      if (!arg.contains("=")) {
+	throw new RuntimeException(mmi+"Incorrect option arg -> "+arg+" we should have --<option name>=<option value> !!");
+      }
+
+      final String [] parts= arg.split("=");
+
+      if (parts.length != 2 ) {
+        throw new RuntimeException(mmi+"Incorrect option arg -> "+arg+" we should have --<option name>=<option value> !!");
+      }
+
+      if (!parts[0].startsWith("--")) {
+	throw new RuntimeException(mmi+"Incorrect option arg -> "+arg+" All option args must start with the \"--\" prefix !");
+      }
+      
       argsMap.put(parts[0], parts[1]);
     }
 
-    //final [] String toolsIds= {  };
+    // --- Check the --tool value 
     if (!argsMap.keySet().contains("--tool")) {
 
       throw new RuntimeException(mmi+"Must have one of the --tool="+
                                  IWLTools.Box.prediction.name()+" OR --tool="+
                                  IWLTools.Box.adjustment.name()+" OR --tool="+
                                  IWLTools.Box.analysis.name()+" OR --tool="+
-                                 IWLTools.Box.S104Dcf8ToAscii.name()+" OR --tool="+
-                                 IWLTools.Box.merge.name()+" option defined !!");
+				 IWLTools.Box.IPPAdjToS104DCF8+" OR --tool "+
+                                 IWLTools.Box.S104Dcf8ToAscii.name()+" option defined !!");
+
     }
 
     final String tool= argsMap.get("--tool");
 
     // --- Validate the tool (Check if we have it in our IWLTools.Box enum)
     if (!IWLTools.BoxContent.contains(tool)) {
-
       throw new RuntimeException(mmi+"Invalid tool -> "+tool+
                                  " !!, must be one of "+IWLTools.BoxContent.toString());
     }
@@ -203,6 +227,16 @@ final public class WLTools extends WLToolsIO {
       //System.exit(0);
     }
 
+    // --- Conversion of adj. SpineIPP results to S104DCF8 file tool.
+    if (tool.equals(IWLTools.Box.IPPAdjToS104DCF8.name())) {
+
+      mlog.info(mmi+"Using the conversion of SpineIPP results to S104DCF8 tool");
+
+      WLToolsIO.ippAdjToS104DCF8(argsMap);
+      
+      //mlog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+    }
         // S104Dcf8ToAscii
     if (tool.equals(IWLTools.Box.S104Dcf8ToAscii.name())) {
 
@@ -217,7 +251,6 @@ final public class WLTools extends WLToolsIO {
         throw new RuntimeException(mmi+"Must have the --h5Path=<path to S-104 file.> defined in the args.!");
       }
       final String h5PathArg= argsMap.get("--h5Path");
-
 
       if (!argsMap.keySet().contains("--time")) {
         throw new RuntimeException(mmi+"Must have the --time=<ISO time> defined in the args.!");

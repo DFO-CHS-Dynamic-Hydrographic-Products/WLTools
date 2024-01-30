@@ -197,12 +197,13 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       //slog.info(mmi+"scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
       
       final String scLocFilePath= WLToolsIO.
-     	getSCLocFilePath(nsTidePredInputDataDirFilesList, scLocFNameSpecSubStr);
+     	getSCLocFilePath(nsTidePredInputDataDirFilesList, scLocFNameSpecSubStr +IWLToolsIO.JSON_FEXT);
 
       try {
         scLocFilePath.length();
       } catch (NullPointerException npe) {
-        throw new RuntimeException(mmi+npe);
+        throw new RuntimeException(mmi+"Non-adjusted input file with name extension -> "+
+				   scLocFNameSpecSubStr+ IWLToolsIO.JSON_FEXT + " not found");
       }
 
       slog.debug(mmi+"Reading scLocFilePath="+scLocFilePath+" for scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
@@ -228,9 +229,20 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     //final String lowerSideScLocStrId= this.scLocFNameCommonPrefix +
     //  IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopStartIndex-1);
 
-    final String lowerSideScLocFile= WLToolsIO.
-      getSCLocFilePath(nsTidePredInputDataDirFilesList, this.lowerSideScLocStrId);
+    slog.info(mmi+"this.lowerSideScLocStrId="+this.lowerSideScLocStrId);
 
+    final String lowerSideScLocFile= WLToolsIO.
+      getSCLocFilePath(nsTidePredInputDataDirFilesList, this.lowerSideScLocStrId + IWLToolsIO.JSON_FEXT);
+
+    try {
+      lowerSideScLocFile.length();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"Non-adjusted input file with name extension -> "+
+				 this.lowerSideScLocStrId + IWLToolsIO.JSON_FEXT + " not found");
+    }
+    
+    slog.info(mmi+"lowerSideScLocFile="+lowerSideScLocFile);
+    
     this.tgsNearestSCLocsNonAdjData.put(this.lowerSideScLocStrId,
 			                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(lowerSideScLocFile, -1L, 0.0)));
     
@@ -238,8 +250,19 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     //final String upperSideScLocStrId= this.scLocFNameCommonPrefix +
     //  IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopEndIndex+1);
 
+    slog.info(mmi+"this.upperSideScLocStrId="+this.upperSideScLocStrId);
+    
     final String upperSideScLocFile= WLToolsIO.
-      getSCLocFilePath(nsTidePredInputDataDirFilesList, this.upperSideScLocStrId);
+      getSCLocFilePath(nsTidePredInputDataDirFilesList, this.upperSideScLocStrId + IWLToolsIO.JSON_FEXT);
+
+    try {
+      upperSideScLocFile.length();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"Non-adjusted input file with name extension -> "+
+				 this.upperSideScLocStrId + IWLToolsIO.JSON_FEXT + " not found");
+    }
+   
+    slog.info(mmi+"upperSideScLocFile="+upperSideScLocFile);
 
     this.tgsNearestSCLocsNonAdjData.put(this.upperSideScLocStrId,
 	     		                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(upperSideScLocFile, -1L, 0.0)));
@@ -273,12 +296,19 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       throw new RuntimeException(mmi+"Invalid output file(s) data format -> "+WLToolsIO.getOutputDataFormat()+" for the adjustment tool!");
     }
 
+    // --- Get the 1st (otherwise said the least recent in time) Instant object related
+    //     to the lower side tide gauge
     final Instant lowSideLocLeastRecentInstant=
       tgsNearestSCLocsAdjFMF.get(this.lowerSideScLocTGId).getLeastRecentInstantCopy();
 
+    // --- Get the 1st (otherwise said the least recent in time) Instant object related
+    //     to the upper side tide gauge    
     final Instant uppSideLocLeastRecentInstant=
       tgsNearestSCLocsAdjFMF.get(this.upperSideScLocTGId).getLeastRecentInstantCopy();
 
+    // --- Find which of those two Instant object is the most recent in time.
+    //     (this is done to ensure tha tw ehave time synchronization between
+    //      the two sets of adjusted FMF WL data)
     final String tgLocWithMostRecentInstantId= lowSideLocLeastRecentInstant.
       isAfter(uppSideLocLeastRecentInstant) ? this.lowerSideScLocTGId : this.upperSideScLocTGId;
 
@@ -331,7 +361,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     //     in radians between the ship channel location that is the nearest to the
     //     lower side TG and the in-between ship channel point location where we
     //     have to adjust the WLs.
-    for(final Instant adjFMFInstant: adjFMFInstantsSet) {
+    for (final Instant adjFMFInstant: adjFMFInstantsSet) {
 	
 	//slog.info(mmi+"adjFMFInstant="+adjFMFInstant.toString());
 
@@ -355,9 +385,12 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       //     upper side locations
       final double lowerSideAdjFMFValue= lowerSideSCLocAdjFMFMc.getValue();
       final double upperSideAdjFMFValue= upperSideSCLocAdjFMFMc.getValue();
-      
+
       //slog.info(mmi+"lowerSideAdjFMFValue="+lowerSideAdjFMFValue);
       //slog.info(mmi+"upperSideAdjFMFValue="+upperSideAdjFMFValue);
+
+      //slog.info(mmi+"this.lowerSideScLocStrId="+this.lowerSideScLocStrId);
+      //slog.info(mmi+"this.upperSideScLocStrId="+this.upperSideScLocStrId);
 
       final double lowerSideNonAdjValue= this.
 	tgsNearestSCLocsNonAdjData.get(this.lowerSideScLocStrId).getAtThisInstant(adjFMFInstant).getValue();
@@ -379,7 +412,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       //     NOTE: Order is not really important here since we have stored the related distances in the this.scLocsDistances HashMap
       for (final String scLocStrId: scLocsKeySet ) { //scLocsDistancesKeySet) {
 	  
-	  //slog.info(mmi+"scLocStrId="+scLocStrId);
+	//slog.info(mmi+"scLocStrId="+scLocStrId);
 
 	final double scLocDistRad= this.scLocsDistances.get(scLocStrId);
 
@@ -403,7 +436,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 	// --- Uncertainty is 0.0 here for now.
 	this.scLocsAdjLTFP.get(scLocStrId).add(new MeasurementCustom(adjFMFInstant, scAdjValue, 0.0));
 
-	//if (scLocStrId.equals("gridPoint-1059")) {
+	//if (scLocStrId.equals("gridPoint-49")) {
 	//slog.info(mmi+"Debug System.exit(0)");
         //System.exit(0);
 	//}
@@ -466,8 +499,6 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     }
     
     slog.info(mmi+"end");
-
-    // --- Now 
 
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);

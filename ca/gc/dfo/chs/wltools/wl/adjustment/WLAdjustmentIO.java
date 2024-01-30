@@ -634,8 +634,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   /**
    * Comments please!
    */
-  final static ArrayList<MeasurementCustom> getWLDataInJsonFmt(final String WLDataJsonFile,
-                                                               final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
+  final public static ArrayList<MeasurementCustom>
+      getWLDataInJsonFmt(final String WLDataJsonFile, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
 
     final String mmi= "getWLDataInJsonFmt: ";
 
