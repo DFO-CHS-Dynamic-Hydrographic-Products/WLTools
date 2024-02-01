@@ -634,9 +634,19 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final long longTermMergeSecondsRef= mostRecentAdjFMFInstant.getEpochSecond();
 
     // --- Get copies of all the Instant object of the WL prediction data starting
-    //     at the last (most recent) Instant object of the adj. FMF WL data. 
-    final SortedSet<Instant> predMcbInstantsTailSet=
-      wlPredMCB.getInstantsKeySetCopy().tailSet(mostRecentAdjFMFInstant);
+    //     at the Instant object of the adj. FMF WL data that is the 1st after the
+    //     last (most recent) Instant object (0therwise we end-up with a duplicate
+    //     Instant having two different WL values), Need to convert the wlPredMCB.getInstantsKeySetCopy()
+    //     SortedSet to a temp. TreeSet object with which we can use its tailSet method with the
+    //     false arg. to begin the NavigableSet at the Instant that follows the
+    //     mostRecentAdjFMFInstant object.
+    final NavigableSet<Instant> predMcbInstantsTailSet=
+      new TreeSet(wlPredMCB.getInstantsKeySetCopy()).tailSet(mostRecentAdjFMFInstant,false);
+
+    // --- This way of defining the predMcbInstantsTailSet was causing
+    //     that we ended-up with duplicate Instant having two different WL values)
+    //final SortedSet<Instant> predMcbInstantsTailSet= 
+    //  wlPredMCB.getInstantsKeySetCopy().tailSet(mostRecentAdjFMFInstant);
 
     // --- long term decaying time factor for adjusting-merging WL values
     final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
