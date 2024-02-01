@@ -37,3 +37,14 @@ then
   echo "ant -buildfile ${javaCodeBaseMainDir}/ant/antCompMain.xml FAILED!!"
   exit 1
 fi
+
+# --- cd in the bin folder
+cd ${javaMainClassDestDir}
+
+# --- (re-)create symlink for ECCC maestro world
+ln -sf WLTools.class WLTools
+
+# --- Set the executable flag of the WLTools.class file
+#     for ECCC maestro world
+chmod +x WLTools.class
+
