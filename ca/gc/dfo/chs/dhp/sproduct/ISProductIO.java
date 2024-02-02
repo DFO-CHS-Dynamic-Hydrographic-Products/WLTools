@@ -18,9 +18,32 @@ public interface ISProductIO {
   // ---
   Map<FeatId,String> FEATURE_IDS=
     Collections.unmodifiableMap(			
-       new HashMap<FeatId, String>() {{
+       new HashMap<FeatId, String>() { {
+	   
  	 put(FeatId.S104,"WaterLevel");
 	 put(FeatId.S111,"SurfaceCurrent");
+	 
+       } }       
+    );
+
+  // ---
+  enum S104TrendFlag {
+    Unknown,
+    Increasing,
+    Decreasing,
+    Steady
+  }
+
+  // ---
+  Map<S104TrendFlag,Byte> S104_TREND_FLAGS=
+    Collections.unmodifiableMap(			
+       new HashMap<S104TrendFlag,Byte>() {{
+	   
+	 put(S104TrendFlag.Unknown,    (byte)0);
+	 put(S104TrendFlag.Decreasing, (byte)1);
+	 put(S104TrendFlag.Increasing, (byte)2);
+	 put(S104TrendFlag.Steady,     (byte)3);
+	 
        }}       
     );
 
@@ -29,7 +52,7 @@ public interface ISProductIO {
     
   // ---
   String S104_CMPD_TYPE_HGHT_ID= FEATURE_IDS.get(FeatId.S104) + "Height";
-  //String S104_CMPD_TYPE_TRND_ID= FEATURE_IDS.get(FeatId.S104) + "Trend";
+  String S104_CMPD_TYPE_TRND_ID= FEATURE_IDS.get(FeatId.S104) + "Trend";
 
   // // --- Cannot have more than 9999 of ship channel
   // //     point locations.
@@ -42,11 +65,14 @@ public interface ISProductIO {
 
   String PKG_CFG_MAIN_DIR= "dhp";
 
-  String PKG_CFG_MAIN_TMPLF_DIR= PKG_CFG_MAIN_DIR + File.separator + "templates";
+  String PKG_CFG_MAIN_TMPLF_DIR=
+    PKG_CFG_MAIN_DIR + File.separator + "templates";
 
-  String PKG_CFG_MAIN_DCF8_TMPLF_DIR= PKG_CFG_MAIN_TMPLF_DIR + File.separator + "DCF8";
+  String PKG_CFG_MAIN_DCF8_TMPLF_DIR=
+    PKG_CFG_MAIN_TMPLF_DIR + File.separator + "DCF8";
 
-  String PKG_CFG_MAIN_DCF8_104_TMPLF_DIR= PKG_CFG_MAIN_DCF8_TMPLF_DIR + File.separator + FeatId.S104.name(); //WATLEVELS_PR0D_ID;
+  String PKG_CFG_MAIN_DCF8_104_TMPLF_DIR=
+    PKG_CFG_MAIN_DCF8_TMPLF_DIR + File.separator + FeatId.S104.name(); //WATLEVELS_PR0D_ID;
     
   // --- Relative path of the S104 DCF8 template file for the HSTLT_WLPS of the lower St. Lawrence (a.k.a Spine)
   //     (NOTE: The version v1.0 is hardcoded here, not a good idea we need to do something else more generic here!) 
@@ -86,5 +112,5 @@ public interface ISProductIO {
     
   String DCF8_STNID_ID= "stationIdentification";
 
-  String DCF8_STN_NAME_ID= "stationName"; 
+  String DCF8_STN_NAME_ID= "stationName";   
 }

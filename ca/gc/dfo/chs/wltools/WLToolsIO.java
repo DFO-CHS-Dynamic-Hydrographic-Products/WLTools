@@ -31,12 +31,6 @@ import javax.json.JsonObject;
 import javax.json.JsonWriter;
 import javax.json.JsonArrayBuilder;
 
-// --- HDFql lib
-import as.hdfql.HDFql;
-import as.hdfql.HDFqlJNI;
-import as.hdfql.HDFqlCursor;
-import as.hdfql.HDFqlConstants;
-
 // --- chs WLTools package
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
@@ -47,9 +41,16 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 
-// --- chs SProduct package
+// --- CHS SProduct package
 import ca.gc.dfo.chs.dhp.SProduct;
 import ca.gc.dfo.chs.dhp.ISProductIO;
+import ca.gc.dfo.chs.dhp.S104DCF8CompoundType;
+
+// --- HDFql lib
+import as.hdfql.HDFql;
+import as.hdfql.HDFqlJNI;
+import as.hdfql.HDFqlCursor;
+import as.hdfql.HDFqlConstants;
 
 /**
  *
@@ -540,11 +541,12 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     slog.info(mmi+"timeIntervallSeconds="+timeIntervallSeconds);
 
+    // --- Get the nb. of Instants (timestamps)
     final int nbInstants= scLocsInstants.size();
 
     slog.info(mmi+"nbInstants="+nbInstants);
 
-    System.out.flush();
+    //System.out.flush();
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
 
@@ -611,6 +613,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     SProduct.updTransientAttrInGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
 				     HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
 
+    // --- Define the unary array of int for the nb. of ship channel point locations.
     final int [] tmpNBSCPointLocsArr= new int [] {nbSCPointLocs};
     
     // --- Update the number of GROUPS for the point locations HDF5 file attribute
@@ -632,15 +635,26 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //     in the S104 forecast feature code HDF5 GROUP
     SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, s104FcstDataGrpId,
 				     HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
+
+    // --- Now using the unknown WL trend flag (useless for Spine stuff for now).
+    final byte unknownTrendByte= ISProductIO
+      .S104_TREND_FLAGS.get(ISProductIO.S104TrendFlag.Unknown).byteValue();
+
+    // --- Need to use an array of S104DCF8CompoundType objects in order
+    //     to fill-up the HDF5 dataset of S104 compound types objects for
+    //     this ship channel point location (Dimension -> nbInstants)
+    final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= new S104DCF8CompoundType[nbInstants];
+    //final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= S104DCF8CompoundType.createAndInitArray(nbInstants);
     
     int checkStatus= -1;
 	
-    // --- Now looping on the ship channel point locations to update their metadata and
-    //     their water levels and related uncertainties.
+    // --- Now loop on all the ship channel point locations to update their metadata and
+    //     their water levels and related uncertainties (Unknown trend flags for now).
     for (final String scLocStrId: allSCLocsIPPInputData.keySet() ) {
   
 	//slog.info(mmi+"scLocStrId="+scLocStrId);
 
+      // --- Define the name of the HDF5 GROUP for this specific ship channel point location.
       final String scLocGrpNNNNIdStr= s104FcstDataGrpId + ISProductIO.GRP_SEP_ID +
 	ISProductIO.GRP_PRFX + String.format("%04d", Integer.parseInt(scLocStrId) + 1) ;
 
@@ -649,7 +663,6 @@ abstract public class WLToolsIO implements IWLToolsIO {
       checkStatus= HDFql.execute("USE GROUP "+scLocGrpNNNNIdStr);
 
       if (checkStatus != HDFqlConstants.SUCCESS) {
-
 	// --- TODO: Create the new GROUP if not found instead of crashing here 
 	throw new RuntimeException(mmi+"GROUP -> "+scLocGrpNNNNIdStr+ " not found in the output file!");
       }
@@ -660,11 +673,12 @@ abstract public class WLToolsIO implements IWLToolsIO {
       SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STNID_ID, scLocGrpNNNNIdStr,
 				       HDFql.variableTransientRegister( new String [] {scLocStrId} ));
 
+      // --- Define the ship channel location string (human readable) name
       final String scLocStnName= IWLAdjustmentIO.SCLOC_STN_ID_PRFX + scLocStrId;
 
       //slog.info(mmi+"scLocStnName="+scLocStnName);
 
-      // --- Update the ship channel location string (human readable) name
+      // --- Update the ship channel location string (human readable) name HDF5 attribute.
       SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_NAME_ID, scLocGrpNNNNIdStr,
 				       HDFql.variableTransientRegister( new String [] {scLocStnName} ));
       
@@ -693,7 +707,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //slog.info(mmi+"valuesDSetIdInGrp="+valuesDSetIdInGrp);
       //slog.info(mmi+" checkStatus bef. comm="+checkStatus);
 
-      // --- Delete dataset to beable to re-create it with its new dimension (nbInstants)
+      // --- Delete dataset to be able to re-create it with its new dimension (nbInstants)
       checkStatus= HDFql.execute("DROP DATASET " + valuesDSetIdInGrp);
 
       if (checkStatus != HDFqlConstants.SUCCESS) {
@@ -702,30 +716,29 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       //slog.info(mmi+"ISProductIO.S104_CMPD_TYPE_HGHT_ID="+ISProductIO.S104_CMPD_TYPE_HGHT_ID);
       
-      // --- re-create dataset of compound type of 2 items with its new dimension (nbInstants)
-      checkStatus= HDFql.execute("CREATE DATASET \""+valuesDSetIdInGrp+"\" AS COMPOUND("+
-        ISProductIO.S104_CMPD_TYPE_HGHT_ID+" AS FLOAT, "+ISProductIO.FEAT_CMPD_TYPE_UNCERT_ID+" AS FLOAT)(+"+nbInstants+")");
+      // --- re-create dataset of compound type of 3 items with its new dimension (nbInstants)
+      checkStatus= HDFql.execute("CREATE DATASET \""+
+        valuesDSetIdInGrp+"\" AS COMPOUND("+ISProductIO.S104_CMPD_TYPE_HGHT_ID+" AS FLOAT, "+
+	  ISProductIO.FEAT_CMPD_TYPE_UNCERT_ID+" AS FLOAT, "+ISProductIO.S104_CMPD_TYPE_TRND_ID +" as UNSIGNED TINYINT)(+"+nbInstants+")");
 
       if (checkStatus != HDFqlConstants.SUCCESS) {
 	throw new RuntimeException(mmi+"Cannot re-create dataset -> "+valuesDSetIdInGrp);
       }
 
-      // --- Get the MeasurementCustomBundle for this ship channel point location
+      // --- Get the MeasurementCustomBundle object for this ship channel point location
       final MeasurementCustomBundle scLocMCB= allSCLocsIPPInputData.get(scLocStrId);
 
-      // --- Need to bundle both the WL and their related uncertainties in a temp List here
-      //     { WL value at timestamp t, WL uncertainty at timestamp t,
-      //       WL value at timestamp t+intervall, WL uncertainty at timestamp t+intervall,
-      //       WL value at timestamp t+2*intervall, WL uncertainty at timestamp t+2*intervall,
-      //       ...
-      //     }
-      //
-      //     this means that the tmpValuesArr needs to have 2*nbInstants
-      float [] tmpValuesArr= new float[2*nbInstants];
+      // --- Now using the unknown WL trend flag (useless for Spine stuff for now).
+      //final byte unknownTrendByte= ISProductIO
+      //	.S104_TREND_DEF.get(ISProductIO.S104TrendIds.Unknown).byteValue();
 
-      int valIdx=0;
-      int uctIdx=1;
-
+      // --- Need to use an array of S104DCF8CompoundType objects in order
+      //     to fill-up the HDF5 dataset of S104 compound types objects for
+      //     this ship channel point location (Dimension -> nbInstants)
+      //S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= new S104DCF8CompoundType[nbInstants];
+      
+      int cmpdTypeIdx=0;
+      
       // --- Loop on all the relevant and ordered (increasing) Instant objects
       //     of this ship channel point location
       for (final Instant scLocsInstant : scLocsInstants) {
@@ -735,26 +748,30 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	//slog.info(mmi+"mc.getValue()="+mc.getValue());
 	//slog.info(mmi+"mc.getUncertainty()="+mc.getUncertainty());
         //slog.info(mmi+"debug System.exit(0)");
-        //System.exit(0);        
+        //System.exit(0);
 
-	// --- (values,uncertainty) compound type pair in successive order
-	//     TODO: Fool-proof checks for valIdx and uctIdx 
-	tmpValuesArr[valIdx]= mc.getValue().floatValue();
-	tmpValuesArr[uctIdx]= mc.getUncertainty().floatValue();
+	if (cmpdTypeIdx == nbInstants) {
+	  throw new RuntimeException(mmi+"Cannot have cmpdTypeIdx == nbInstants in loop !!");
+	}
 
-	// --- Need to increment both indices by 2 here.
-	valIdx += 2;
-        uctIdx += 2;
+	  //s104Dcf8CmpdTypeArray[cmpdTypeIdx++]
+	  //.set(mc.getValue().floatValue(), mc.getUncertainty().floatValue(), unknownTrendByte);
+						 
+        s104Dcf8CmpdTypeArray[cmpdTypeIdx++]= new
+	  S104DCF8CompoundType(mc.getValue().floatValue(), mc.getUncertainty().floatValue(), unknownTrendByte);
       }
+
+      //slog.info(mmi+"s104Dcf8CmpdTypeArray now filled-up");
 
       // --- Register tmpValuesArr in the HDFql world.
-      final int registerNb= HDFql.variableTransientRegister(tmpValuesArr);
+      //final int registerNb= HDFql.variableTransientRegister(tmpValuesArr);
+      final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
 
       if (registerNb < 0) {
-	throw new RuntimeException(mmi+"Problem with HDFql.variableRegister(tmpValues), registerNb  ->"+registerNb);
+	throw new RuntimeException(mmi+"Problem with HDFql.variableRegister(variableTransientRegisters104Dcf8CmpdTypeArray), registerNb  ->"+registerNb);
       }
 
-      // --- Put the (values,uncertainty) compound type pairs in the dataset.
+      // --- Put the (values,uncertainty) compound type items in the dataset.
       checkStatus= HDFql.execute("INSERT INTO \""+valuesDSetIdInGrp+"\" VALUES FROM MEMORY " + registerNb);
 
       if (checkStatus != HDFqlConstants.SUCCESS) {
