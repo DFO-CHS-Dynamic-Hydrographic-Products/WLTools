@@ -204,33 +204,34 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     this.argsMapKeySet= argsMap.keySet();
   }
 
-  // --- Returns the HBCoords read from a Non-Stationary tidal consts. json file.
-  final HBCoords getHBCoordsFromNSTCJsonFile(final String nsTCJsonFile) {
+  // --- It does the same thing as the  HBCoords.getFromCHSJSONTCFile() method
+  // // --- Returns the HBCoords read from a Non-Stationary tidal consts. json file.
+  // final HBCoords getHBCoordsFromNSTCJsonFile(final String nsTCJsonFile) {
 
-    final String mmi= "getHBCoordsFromNSTCJsonFile: ";
+  //   final String mmi= "getHBCoordsFromNSTCJsonFile: ";
 
-    FileInputStream jsonFileInputStream= null;
+  //   FileInputStream jsonFileInputStream= null;
 
-    try {
-      jsonFileInputStream= new FileInputStream(nsTCJsonFile);
+  //   try {
+  //     jsonFileInputStream= new FileInputStream(nsTCJsonFile);
 
-    } catch (FileNotFoundException e) {
-      //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
-      throw new RuntimeException(mmi+e);
-    }
+  //   } catch (FileNotFoundException e) {
+  //     //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
+  //     throw new RuntimeException(mmi+e);
+  //   }
 
-    // --- Get the main json object from the file
-    final JsonObject mainJsonTcDataInputObj=
-      Json.createReader(jsonFileInputStream).readObject();
+  //   // --- Get the main json object from the file
+  //   final JsonObject mainJsonTcDataInputObj=
+  //     Json.createReader(jsonFileInputStream).readObject();
 
-    // --- TODO: check if IWLLocation.INFO_JSON_DICT_KEY is a key
-    //     in the mainJsonTcDataInputObj
-    final JsonObject channelGridPointJsonObj=
-      mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
+  //   // --- TODO: check if IWLLocation.INFO_JSON_DICT_KEY is a key
+  //   //     in the mainJsonTcDataInputObj
+  //   final JsonObject channelGridPointJsonObj=
+  //     mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
   
-    return new HBCoords(channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
-			channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
-  }
+  //   return new HBCoords(channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
+  // 			channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
+  // }
 
   // ---
   final MeasurementCustomBundle getMcbWLOData() {

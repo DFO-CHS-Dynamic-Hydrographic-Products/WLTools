@@ -20,6 +20,7 @@ import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
@@ -29,9 +30,8 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
-import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
-
-import as.hdfql.HDFqlJNI;
+//import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
+//import as.hdfql.HDFqlJNI;
 
 /**
  * Comments please!

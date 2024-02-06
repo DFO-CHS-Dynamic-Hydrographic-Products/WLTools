@@ -72,41 +72,23 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  // --- Info about the TGs that define the range of the ship channel
-  //     point locations that are in-between those TGs
-  //protected List<WLLocation> tgNeighLocations= null;
+  // --- Moved to WLSCReachIntrpUnit class  
+  // protected int scLoopEndIndex= -1;
+  // protected int scLoopStartIndex= -1;
+  // protected int tg0NearestSCLocIndex= -1;
+  // protected int tg1NearestSCLocIndex= -1;
+  // protected String lowerSideScLocStrId= null;
+  // protected String upperSideScLocStrId= null;
+  // protected String lowerSideScLocTGId= null;
+  // protected String upperSideScLocTGId= null;
+  // protected String scLocFNameCommonPrefix= null;
+  // protected double tgsNearestsLocsDistRad= -1.0; 
+  // protected Map<String, Double> scLocsDistances= null;
 
-  protected int scLoopEndIndex= -1;
-  protected int scLoopStartIndex= -1;
+  protected JsonObject mainJsonTGInfoMapObj= null;
     
-  protected int tg0NearestSCLocIndex= -1;
-  protected int tg1NearestSCLocIndex= -1;
-
-  protected String lowerSideScLocStrId= null;
-  protected String upperSideScLocStrId= null;
-
-  protected String lowerSideScLocTGId= null;
-  protected String upperSideScLocTGId= null;
-
-  protected String scLocFNameCommonPrefix= null;
-
-  protected double tgsNearestsLocsDistRad= -1.0; 
-    
-  // --- To store the considered region bounding box
-  //     EPSG:4326 coordinates (South-West corner at index 0
-  //     and North-East corber at index 1). The
-  //     region bounding box is built with the
-  //     smallest (lon,lat) coordinates for the SW
-  //     corner and the largest (lon,lat) coordinates
-  //     for the North-East corner. This is normally
-  //     used only by the SpineIPP and SpineFPP classes.
-  //protected List<HBCoords> regionBBox= new ArrayList<HBCoords>(2); //null;
-    
-  protected String nonAdjFMFInputDataInfo= null;
-
-    //private Map<String, Double> twoNearestTGInfo= new HashMap<String, Double>(2);
-
-  protected Map<String, Double> scLocsDistances= null;
+  // -- Not used for now
+  //protected String nonAdjFMFInputDataInfo= null;
     
   // --- The List<MeasurementCustom> where to store the adjusted long-term
   //     "foreDictions" or "predCasts" at the ship channel point locations being processed (-> OUTPUT)
@@ -117,11 +99,11 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
   //        2. List<MeasurementCustom> size is determined by the duration in the future and the time increment used.
   protected Map<String, List<MeasurementCustom>> scLocsAdjLTFP= null;
 
-  // --- To store the model adjusted forecast (medium term 48H) at the two ship channel points
+  // --- To store the model adjusted forecast (medium term 48H) at the ship channel points
   //     locations that are the nearest to the tide gauges locations used for the adjustments (INPUT ONLY)
-  protected Map<String, MeasurementCustomBundle>
-    tgsNearestSCLocsAdjFMF= new HashMap<String, MeasurementCustomBundle>(2); //null;
-
+  protected Map<String, MeasurementCustomBundle> tgsNearestSCLocsAdjFMF= null;
+    //  tgsNearestSCLocsAdjFMF= new HashMap<String, MeasurementCustomBundle>(2); //null;
+    
   //private IWLAdjustment.Type adjType= null;
 
   /**
@@ -145,13 +127,13 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     
     try {
       this.locations.size();
-    } catch (NullPointerException npe){
+    } catch (NullPointerException npe) {
       throw new RuntimeException(mmi+"this.locations cannot be null here !");
     }
 
-    if (this.locations.size() != 2) {
-      throw new RuntimeException(mmi+"this.location.size() != 2 !!");
-    }
+    //if (this.locations.size() != 2) {
+    //  throw new RuntimeException(mmi+"this.location.size() != 2 !!");
+    //}
     
     if (!argsMap.keySet().contains("--tideGaugeLocationsDefFileName")) {
       throw new RuntimeException(mmi+
@@ -179,7 +161,8 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     }
 
     // --- JSON reader for the CHS tide gauges info file.
-    final JsonObject mainJsonTGInfoMapObj= Json.
+    //final JsonObject mainJsonTGInfoMapObj= Json.
+    this.mainJsonTGInfoMapObj= Json.
       createReader(jsonFileInputStream).readObject();
 
     // --- We can close the tide gauges info Json file now
@@ -188,7 +171,11 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     } catch (IOException e) {
       throw new RuntimeException(mmi+e);
     }
+    
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);
 
+    // --- Moved to WLSCReachIntrpUnit class
     // --- Set the configurations of the two tide gauges that
     //     defines the ship channel points locations range where
     //     we need to linearly interpolate the residuals between
@@ -198,22 +185,21 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     //     at some point so we would then have to iterate on
     //     the number of TGs wanted and not assume that we
     //     have only two TGs to use here.
-    this.locations.get(0).
-      setConfig(mainJsonTGInfoMapObj.getJsonObject(this.locations.get(0).getIdentity()));
+    //this.locations.get(0).
+    //  setConfig(mainJsonTGInfoMapObj.getJsonObject(this.locations.get(0).getIdentity()));
 
-    this.locations.get(1).
-      setConfig(mainJsonTGInfoMapObj.getJsonObject(this.locations.get(1).getIdentity()));
+    //this.locations.get(1).
+    //  setConfig(mainJsonTGInfoMapObj.getJsonObject(this.locations.get(1).getIdentity()));
 
-    // --- Now get the corresponding nearest ship channel points locations for those two TGs
-    //     from their json config:
-    final String tg0NearestSCLocId= this.locations.get(0).
-      getNearestSpinePointId().split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2]; //+ INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
+    //// --- Now get the corresponding nearest ship channel points locations for those two TGs
+    ////     from their json config:
+    //final String tg0NearestSCLocId= this.locations.get(0).
+    //  getNearestSpinePointId().split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2]; //+ INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
     
-    final String tg1NearestSCLocId= this.locations.get(1).
-      getNearestSpinePointId().split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2]; // + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
-
-    slog.info(mmi+"tg0NearestSCLocId="+tg0NearestSCLocId);
-    slog.info(mmi+"tg1NearestSCLocId="+tg1NearestSCLocId);
+    //final String tg1NearestSCLocId= this.locations.get(1).
+    //  getNearestSpinePointId().split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[2]; // + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX;
+    //slog.info(mmi+"tg0NearestSCLocId="+tg0NearestSCLocId);
+    //slog.info(mmi+"tg1NearestSCLocId="+tg1NearestSCLocId);
     
     // --- Now need to consider where to find the ship channel points locations
     //     tidal consts. files in order to get their EPSG:4326 coordinates.
@@ -253,16 +239,15 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
 
     slog.info(mmi+"shipChannelPointLocsTCInputDir="+shipChannelPointLocsTCInputDir);
 
-    // --- Build the paths to find the tidal consts. files of the two ship channel point locations
-    //     that are the nearests to the two TGs considered.
-    final String tg0NearestSCLocTCFile= shipChannelPointLocsTCInputDir + //File.separator +
-      tg0NearestSCLocId + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
-    
-    final String tg1NearestSCLocTCFile= shipChannelPointLocsTCInputDir + //File.separator +
-      tg1NearestSCLocId + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
-
-    slog.info(mmi+"tg0NearestSCLocTCFile="+tg0NearestSCLocTCFile);
-    slog.info(mmi+"tg1NearestSCLocTCFile="+tg1NearestSCLocTCFile);
+    // --- Moved to WLSCReachIntrpUnit class
+    // // --- Build the paths to find the tidal consts. files of the two ship channel point locations
+    // //     that are the nearests to the two TGs considered.
+    // final String tg0NearestSCLocTCFile= shipChannelPointLocsTCInputDir + //File.separator +
+    //   tg0NearestSCLocId + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
+    // final String tg1NearestSCLocTCFile= shipChannelPointLocsTCInputDir + //File.separator +
+    //   tg1NearestSCLocId + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;
+    // slog.info(mmi+"tg0NearestSCLocTCFile="+tg0NearestSCLocTCFile);
+    // slog.info(mmi+"tg1NearestSCLocTCFile="+tg1NearestSCLocTCFile);
 
     // --- Get the HBCoords objects from the tidal consts. files of the two ship channel point locations
     final HBCoords tg0NearestSCLocHBCoords= this.getHBCoordsFromNSTCJsonFile(tg0NearestSCLocTCFile);
@@ -416,6 +401,8 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
     this.upperSideScLocStrId= this.scLocFNameCommonPrefix +
       IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopEndIndex+1);    
 
+    // --- the rest of the code has to be transfered in the WLAdjustmentSpineIPP class
+    
     // --- Now read the adjusted FMF data at the two ship channel locations
     //     that are the nearest to the two tide gauges being processed.
     if (!argsMap.keySet().contains("--adjFMFAtTGSInputDataInfo")) {
@@ -423,8 +410,7 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
          "Must have the --adjFMFAtTGSInputDataInfo=<Folder where to find all the adj. FMF at tide gauges> defined in argsMap");
     }
 
-    // --- Now read the adjusted FMF WL data at the two ship channel points locations
-    //     that are the nearest to the two tide gauges that are now processed.
+    // ---
     final String adjFMFAtTGSInputDataInfo= argsMap.get("--adjFMFAtTGSInputDataInfo");
 
     final String [] adjFMFAtTGSInputDataInfoStrSplit=

@@ -107,10 +107,14 @@ abstract public class WLAdjustmentType
     //     TODO: Could be done in the specific dervived classes constructors?
     if (this.adjType == IWLAdjustment.Type.TideGauge) {
 
+      slog.info(mmi+"Using "+ IWLAdjustment.Type.TideGauge.name()+" adjustment type");
+	
       this.location= new TideGaugeConfig(identityInfo);
 
-    } else if (this.adjType == IWLAdjustment.Type.SpineIPP || this.adjType == IWLAdjustment.Type.SpineFPP) {
+    } else if (this.adjType == IWLAdjustment.Type.SpineIPP) {
 
+      slog.info(mmi+"Using "+ IWLAdjustment.Type.SpineIPP.name()+" adjustment type");	
+	
       // --- Get the ids of the two CHS tide gauges that define an interpolation range for the ship
       //     channel point locations that are in-between those two TG locations. the identity
       final String [] spineInterpTGIdsInfo= identityInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
@@ -119,7 +123,7 @@ abstract public class WLAdjustmentType
 	throw new RuntimeException(mmi+"spineInterpTGIdsInfo string array must have length of 3 here!");
       }
       
-      //--- TODO: DO not assume that we have only two TGs here.
+      //---
       this.locations= new ArrayList<TideGaugeConfig>(2); //<WLLocation>(2);
       
       //this.location= new WLLocation(identity);
@@ -148,6 +152,12 @@ abstract public class WLAdjustmentType
       //this.location= new WLLocation(identity);
       //  throw new RuntimeException(mmi+"SpineFPP adjustment type not ready yet !!");
 
+    } else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
+
+      slog.info(mmi+"Using "+ IWLAdjustment.Type.SpineFPP.name()+" adjustment type");
+
+      this.locations= new ArrayList<TideGaugeConfig>();
+      
     } else {
        throw new RuntimeException(mmi+"Invalid adjustment type "+this.adjType.name()+" !!");
     }

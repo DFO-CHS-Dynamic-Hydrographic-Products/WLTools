@@ -73,7 +73,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
    * Usual class static log utility.
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
-
+    
   // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
   //     in-between the tide gauges locations being processed (INPUT ONLY) 
   private Map<String, MeasurementCustomBundle> scLocsNonAdjData= null;
@@ -83,6 +83,8 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
   private Map<String, MeasurementCustomBundle>
     tgsNearestSCLocsNonAdjData= new HashMap<String, MeasurementCustomBundle>(2); //null;
 
+  private WLSCReachIntrpUnit scReachIntrpUnit= null;
+    
   private String fmfReferenceDateTimeStr= null;
     
   /**
@@ -104,6 +106,24 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
 
     slog.info(mmi+"start");
 
+    if (this.locations.size() != 2) {
+      throw new RuntimeException(mmi+"this.location.size() != 2 !!");
+    }
+
+    // --- Allocate only one item for the HashMap<String,WLSCReachIntrpUnit>
+    //     this.scReachIntrpUnits object here.
+    //this.scReachIntrpUnits= new HashMap<String,WLSCReachIntrpUnit>(1);
+    
+    // --- Allocate only two items for the HashMap<String, MeasurementCustomBundle>
+    //     this.tgsNearestSCLocsAdjFM object here.
+    this.tgsNearestSCLocsAdjFMF= new HashMap<String, MeasurementCustomBundle>(2); 
+
+    this.scReachIntrpUnits= new WLSCReachIntrpUnit(this.mainJsonTGInfoMapObj);
+    
+    
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);    
+    
     try {
       this.lowerSideScLocStrId.length();	
     } catch (NullPointerException npe) {
