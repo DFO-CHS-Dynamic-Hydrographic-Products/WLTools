@@ -608,6 +608,8 @@ abstract public class WLAdjustmentFMF
 
     // --- Loop on all the Instant objects of the actuFMFInstantsSet
     for (final Instant actualFMFInstant: actuFMFInstantsSet) {
+
+      //slog.info(mmi+"actualFMFInstant="+actualFMFInstant.toString());
 	
       //--- Get the time offset in seconds between the actualFMFInstant and the
       //    leastRecentActualFMFSeconds to use it for indexing in the timeDepResidualsStats Map
@@ -664,8 +666,15 @@ abstract public class WLAdjustmentFMF
 	
 	//slog.info(mmi+"Remove this debug exit 0 when this replacement strategy has been validated");
         //System.exit(0);
-      }      
+      }
+
+      //slog.info(mmi+"end loop for instant:"+actualFMFInstant.toString());
     }
+
+    //slog.info(mmi+"tesing this.haveWLOData part 1");
+    //slog.info(mmi+"this.haveWLOData part 1="+this.haveWLOData);
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
     
     // --- Get a copy of the SortedSet of Instant objects of the FMF data.
     //final
@@ -675,6 +684,9 @@ abstract public class WLAdjustmentFMF
     //NavigableSet<Instant> actuFMFInstantsSet= new TreeSet(actualFMFMcb.getInstantsKeySetCopy());
 
     //slog.info(mmi+"1st actuFMFInstant before tailSet: "+actuFMFInstantsSet.first());
+
+    //slog.info(mmi+"tesing this.haveWLOData part 2");
+    //slog.info(mmi+"this.haveWLOData part 2="+this.haveWLOData);
     
     if (this.haveWLOData) {
 
@@ -688,7 +700,6 @@ abstract public class WLAdjustmentFMF
       actuFMFInstantsSet= actuFMFInstantsSet.tailSet(this.mostRecentWLOInstant, true);
     }
 
-    slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
     slog.info(mmi+"1st actuFMFInstant that will be used: "+actuFMFInstantsSet.first().toString());
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
@@ -764,7 +775,8 @@ abstract public class WLAdjustmentFMF
     // --- Write the TG time dependent residual stats to be able to use them
     //     for other cases where no WLO data is available. NOTE we write it
     //     even if the previous TG time dependent residual stats was used
-    //     in order to facilitate the management of this data
+    //     (which means that no WLO data is available for the TG) in order
+    //      to facilitate the management of this data.
     this.writeTGTimeDepResidualsStats(wlLocationIdentity,
                                       timeDepResidualsStats, tgResidualsStatsIODirectory);
     slog.info(mmi+"end");
@@ -773,5 +785,6 @@ abstract public class WLAdjustmentFMF
     //System.exit(0);
 
     return this;
-  }
+    
+  } // --- method multTimeDepFMFErrorStatsAdj
 }
