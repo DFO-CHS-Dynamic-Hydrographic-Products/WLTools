@@ -142,8 +142,8 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
   }
 
   // ---

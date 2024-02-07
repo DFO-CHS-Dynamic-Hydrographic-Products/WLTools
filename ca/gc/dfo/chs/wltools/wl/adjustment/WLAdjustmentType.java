@@ -101,7 +101,7 @@ abstract public class WLAdjustmentType
     final String identityInfo=
       new File(this.locationIdInfo).getName().replace(IWLToolsIO.JSON_FEXT,"");
 
-    slog.info(mmi+"identity="+identityInfo);
+    slog.info(mmi+"identityInfo="+identityInfo);
 
     // --- Process the identity String depending on the adjustment type.
     //     TODO: Could be done in the specific dervived classes constructors?
@@ -123,40 +123,44 @@ abstract public class WLAdjustmentType
 	throw new RuntimeException(mmi+"spineInterpTGIdsInfo string array must have length of 3 here!");
       }
       
-      //---
-      this.locations= new ArrayList<TideGaugeConfig>(2); //<WLLocation>(2);
-      
-      //this.location= new WLLocation(identity);
+      // --- Only processing two tide gauges at a time for SpineIPP for now because
+      //     it runs under an ECCC maestro LOOP parallelization instance
+      this.locations= new ArrayList<TideGaugeConfig>(2);
+
+      // --- Allocate the two TideGaugeConfig objects for the two tide gauge locations 
       this.locations.add(0, new TideGaugeConfig(spineInterpTGIdsInfo[0]));
       this.locations.add(1, new TideGaugeConfig(spineInterpTGIdsInfo[1]));
 
       slog.info(mmi+"this.locations TG 0 id.="+this.locations.get(0).getIdentity());
       slog.info(mmi+"this.locations TG 1 id.="+this.locations.get(1).getIdentity());
 
+      // --- Get the flag that controls which tide gauge(s) results have to be
+      //     written for the outputs (Need to avoid writing the same results twice on disk)
       final String checkSpinePPWriteCtrlType= spineInterpTGIdsInfo[2];
 
-      if (!allowedSpinePPWriteCtrl.contains(checkSpinePPWriteCtrlType)) {
+      // --- Check if this flag is valid.
+      if (!this.allowedSpinePPWriteCtrl.contains(checkSpinePPWriteCtrlType)) {
 	throw new RuntimeException(mmi+"Invalid IWLAdjustment.SpinePPWriteCtrl type -> "+checkSpinePPWriteCtrlType);
       }
       
       // --- Set this.spinePPWriteCtrl enum value using the spineInterpTGIdsInfo[2] string
-      //     
       this.spinePPWriteCtrl= IWLAdjustment.SpinePPWriteCtrl.valueOf(spineInterpTGIdsInfo[2]);
 
       slog.info(mmi+"this.spinePPWriteCtrl="+this.spinePPWriteCtrl.name());
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
       
-      //throw new RuntimeException(mmi+"SpineIPP adjustment type not ready yet !!");
-      //} else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
-      //this.location= new WLLocation(identity);
-      //  throw new RuntimeException(mmi+"SpineFPP adjustment type not ready yet !!");
 
     } else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
 
       slog.info(mmi+"Using "+ IWLAdjustment.Type.SpineFPP.name()+" adjustment type");
 
+      // --- Allocate all the TideGaugeConfig objects for all the tide gauge locations 
       this.locations= new ArrayList<TideGaugeConfig>();
+      
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);
+      
       
     } else {
        throw new RuntimeException(mmi+"Invalid adjustment type "+this.adjType.name()+" !!");
