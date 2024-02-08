@@ -73,6 +73,10 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
 
     final String adjType= argsMap.get("--adjType");
 
+    // slog.info(mmi+"adjType="+adjType);
+    // slog.info(mmi+"Debug System.exit(0)");
+    // System.exit(0);
+
     if (!IWLAdjustment.allowedTypes.contains(adjType)) {
       throw new RuntimeException(mmi+"Invalid WL adjustment type -> "+adjType+
                                  " ! Must be one of -> "+IWLAdjustment.allowedTypes.toString());
@@ -94,7 +98,9 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
     //}
 
     slog.info(mmi+"Will use WL adjustment type "+adjType);
-
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+    
     //slog.info(mmi+"Will use input data type -> "+
     //          inputDataType+" with input data format -> "+inputDataFormat);
 

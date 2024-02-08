@@ -84,7 +84,7 @@ abstract public class WLAdjustmentType
 
     final String mmi= "WLAdjustmentType main constructor: ";
 
-    slog.info(mmi+"start");
+    slog.info(mmi+"start, this.adjType="+this.adjType);
 
     if (!this.argsMapKeySet.contains("--locationIdInfo")) {
       throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
@@ -115,8 +115,8 @@ abstract public class WLAdjustmentType
 
       slog.info(mmi+"Using "+ IWLAdjustment.Type.SpineIPP.name()+" adjustment type");	
 	
-      // --- Get the ids of the two CHS tide gauges that define an interpolation range for the ship
-      //     channel point locations that are in-between those two TG locations. the identity
+      // --- Get the ids of the two CHS tide gauges that define the spatial interpolation range for the ship
+      //     channel point locations that are in-between those two TG locations.
       final String [] spineInterpTGIdsInfo= identityInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
       if (spineInterpTGIdsInfo.length != 3) {
@@ -150,16 +150,26 @@ abstract public class WLAdjustmentType
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
       
-
     } else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
 
       slog.info(mmi+"Using "+ IWLAdjustment.Type.SpineFPP.name()+" adjustment type");
 
-      // --- Allocate all the TideGaugeConfig objects for all the tide gauge locations 
-      this.locations= new ArrayList<TideGaugeConfig>();
+      // --- Get all the ids of the CHS tide gauges that define the spatial interpolation range(s) for the ship
+      //     channel point locations that are in-between those TG locations.
+      final String [] spineInterpTGIdsInfo= identityInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+      if (spineInterpTGIdsInfo.length < 2) {
+	throw new RuntimeException(mmi+"spineInterpTGIdsInfo String array must have at least two items here!");
+      }
+
+      slog.info(mmi+"spineInterpTGIdsInfo.length="+spineInterpTGIdsInfo.length);
+
+      // --- Allocate all the TideGaugeConfig objects for all the tide gauge locations defined in
+      //     the spineInterpTGIdsInfo String array
+      this.locations= new ArrayList<TideGaugeConfig>(spineInterpTGIdsInfo.length);
       
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
       
       
     } else {

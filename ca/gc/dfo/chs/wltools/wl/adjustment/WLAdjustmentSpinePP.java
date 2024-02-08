@@ -194,17 +194,18 @@ abstract public class WLAdjustmentSpinePP extends WLAdjustmentType {
                                  " tidal prediction input file format allowed for now!!");
     }
      
-    // --- Build the path of the main folder where we can find all tidal consts. files
+    // --- Build the path of the main folder where we can find all tidal conststituents files
     //     for all the ship channel point locations on disk.
     final String mainTCInputDir= tidalConstsInputInfoStrSplit[1];
 	       
     slog.info(mmi+"mainTCInputDir="+mainTCInputDir);
 
-    //final String shipChannelPointLocsTCInputDir= WLToolsIO.getMainCfgDir() +
+    // --- Define the path (as a String) of the main folder where we can find all tidal conststituents files
+    //     for all the ship channel point locations on disk.
     this.shipChannelPointLocsTCInputDir= WLToolsIO.getMainCfgDir() + 	
       File.separator + mainTCInputDir + IWLToolsIO.SHIP_CHANNEL_POINTS_DEF_DIRNAME;
 
-    slog.info(mmi+"this.shipChannelPointLocsTCInputDir="+this,shipChannelPointLocsTCInputDir);
+    slog.info(mmi+"this.shipChannelPointLocsTCInputDir="+this.shipChannelPointLocsTCInputDir);
 
     slog.info(mmi+"end");
     
