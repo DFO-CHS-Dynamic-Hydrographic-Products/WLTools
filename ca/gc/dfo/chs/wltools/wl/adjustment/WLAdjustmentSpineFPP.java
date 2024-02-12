@@ -41,6 +41,7 @@ import javax.json.JsonArray;
 import javax.json.JsonValue;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonReaderFactory;
 
 import java.io.IOException;
 import java.io.FileInputStream;
@@ -248,6 +249,14 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP {
       ioe.printStackTrace();    	
       throw new RuntimeException(mmi+ioe+"\nProblem with new uc.getInputStream()");
     }
+
+    //final Map<String, Object> config = new HashMap<>();
+    
+    final JsonReader jsr= Json.createReaderFactory(null).createReader(ist);
+
+    final JsonArray stnWLOJsArray= jsr.readArray();
+
+    for (final 
     
     slog.info(mmi+"end");
     
