@@ -8,11 +8,13 @@ import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.ArrayList;
 
+// ---
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
@@ -22,6 +24,10 @@ import java.nio.file.Files;
 import java.nio.file.FileSystems;
 import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
+
+// ---
+import java.net.URL;
+import java.net.URLConnection;
 
 // ---
 import javax.json.Json;
@@ -789,5 +795,35 @@ abstract public class WLToolsIO implements IWLToolsIO {
     }      
     
     slog.info(mmi+"end");
-  }	
+  }
+
+  // ---
+  public final static JsonArray getJsonArrayFromAPIRequest(final String apiRequestStr) {
+
+    final String mmi= "getJsonArrayFromAPIRequest: ";
+      
+    URLConnection uc= null;
+
+    try {
+      uc= new URL(apiRequestStr).openConnection();
+    } catch (IOException ioe) {
+      ioe.printStackTrace();	
+      throw new RuntimeException(mmi+ioe+"\nProblem with openConnection() with apiRequestStr -> "+apiRequestStr);
+    }
+
+    InputStream ist= null;
+
+    try {
+      ist= uc.getInputStream();
+    } catch (IOException ioe) {
+      ioe.printStackTrace();    	
+      throw new RuntimeException(mmi+ioe+"\nProblem with new uc.getInputStream() with apiRequestStr -> "+apiRequestStr);
+    }
+
+    //final JsonReader jsr= Json.createReaderFactory(null).createReader(ist);
+    //return jsr.readArray();
+
+    return Json.createReaderFactory(null).createReader(ist).readArray();
+    
+  } // --- getJsonArrayFromAPIRequest method
 }

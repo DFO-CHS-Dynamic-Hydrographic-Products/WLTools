@@ -167,10 +167,18 @@ abstract public class WLAdjustmentType
       // --- Allocate all the TideGaugeConfig objects for all the tide gauge locations defined in
       //     the spineInterpTGIdsInfo String array
       this.locations= new ArrayList<TideGaugeConfig>(spineInterpTGIdsInfo.length);
-      
+
+      // ---
+      for (int tgIter= 0; tgIter < spineInterpTGIdsInfo.length; tgIter++ ) {
+
+	slog.info(mmi+"Instantiating TideGaugeConfig object for tide gauge -> "+spineInterpTGIdsInfo[tgIter]);
+	  
+	this.locations.add(tgIter, new TideGaugeConfig(spineInterpTGIdsInfo[tgIter]));
+      }
+
+      //slog.info(mmi+"this.locations.size()="+this.locations.size());
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
-      
       
     } else {
        throw new RuntimeException(mmi+"Invalid adjustment type "+this.adjType.name()+" !!");

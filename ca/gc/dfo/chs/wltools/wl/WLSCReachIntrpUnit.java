@@ -107,10 +107,20 @@ final public class WLSCReachIntrpUnit implements IWL {
     this.lowerSideScLocTGId= tg0Cfg.getIdentity();
     this.upperSideScLocTGId= tg1Cfg.getIdentity();
 
-    // --- Need to get the 2 tide gauges config from the json main config object.     
-    tg0Cfg.setConfig(mainJsonTGInfoMapObj.getJsonObject(this.lowerSideScLocTGId));
-    tg1Cfg.setConfig(mainJsonTGInfoMapObj.getJsonObject(this.upperSideScLocTGId));
+    // --- Need to get the 2 tide gauges config from the json main config object.
+    //     if their config is not yet done.
+    if (!tg0Cfg.isConfigOkay()) {
+	    
+      slog.info(mmi+"Setting the config of tide gauge -> "+this.lowerSideScLocTGId);
+      tg0Cfg.setConfig(mainJsonTGInfoMapObj.getJsonObject(this.lowerSideScLocTGId));
+    }
 
+    if (!tg1Cfg.isConfigOkay()) {
+
+      slog.info(mmi+"Setting the config of tide gauge -> "+this.upperSideScLocTGId);	    
+      tg1Cfg.setConfig(mainJsonTGInfoMapObj.getJsonObject(this.upperSideScLocTGId));
+    }
+	
     // --- Now get the corresponding nearest ship channel points locations for those two TGs
     //     from their json config:
     final String tg0NearestSCLocId= tg0Cfg.

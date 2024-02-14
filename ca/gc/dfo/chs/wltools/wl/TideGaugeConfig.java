@@ -24,16 +24,6 @@ import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 //import ca.gc.dfo.chs.wltools.util.HBCoords;
 
-//---
-//import ca.gc.dfo.chs.wltools.numbercrunching.D1Data;
-//import ca.gc.dfo.chs.wltools.numbercrunching.D2Data;
-
-//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D1Data;
-//import ca.gc.dfo.iwls.fmservice.modeling.numbercrunching.D2Data;
-
-//---
-//---
-
 /**
  *
  */
@@ -50,8 +40,12 @@ final public class TideGaugeConfig extends WLLocation implements ITideGaugeConfi
 
   private JsonObject fmsJsonObject= null;
 
+  private boolean configIsOkay= false;
+
   public TideGaugeConfig(final String identity) {
     super(identity);
+
+    this.configIsOkay= false;
   }
 
   public TideGaugeConfig setConfig(final JsonObject tgJsonObj) {
@@ -78,22 +72,28 @@ final public class TideGaugeConfig extends WLLocation implements ITideGaugeConfi
     //this.setHBCoords(tgJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
     //                 tgJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
 
+    this.configIsOkay= true;
+    
     return this;
   }
 
-  final public String getHrName() {
+  public boolean isConfigOkay() {
+    return this.configIsOkay;
+  }	
+
+  public String getHrName() {
     return this.hrName;
   }
 
-  final public String getECCCId() {
+  public String getECCCId() {
     return this.ECCCId;
   }
 
-  final public String getNearestSpinePointId() {
+  public String getNearestSpinePointId() {
     return this.nearestSpinePointId;
   }
 
-  final public JsonObject getFmsJsonObject () {
+  public JsonObject getFmsJsonObject () {
     return this.fmsJsonObject;
   }
 }

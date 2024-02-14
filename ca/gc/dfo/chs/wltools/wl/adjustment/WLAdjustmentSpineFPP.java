@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.TreeSet;
 //import java.util.Iterator;
 import java.nio.file.Path;
-import java.net.URLEncoder;
+//import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.io.InputStream;
 import java.util.SortedSet;
@@ -28,7 +28,7 @@ import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
-import java.io.UnsupportedEncodingException;
+//import java.io.UnsupportedEncodingException;
 //import java.nio.file.DirectoryIteratorException;
 
 // ---
@@ -57,6 +57,7 @@ import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
+import ca.gc.dfo.chs.wltools.wl.WLSCReachIntrpUnit;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
@@ -79,6 +80,13 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP {
    * Usual class static log utility.
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
+
+  // --- TODO: Define the iwlsApiBaseUrl String with an --iwlsApiBaseUrl option passed to the main script. 
+  private final String iwlsApiBaseUrl= "https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations";
+    
+  private Map<String,WLSCReachIntrpUnit> scReachIntrpUnits= null;
+
+  private Map<String,MeasurementCustomBundle> wloMCBundles= null;
 
   // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
   //     in-between the tide gauges locations being processed (INPUT ONLY) 
@@ -110,17 +118,27 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP {
 
     slog.info(mmi+"start");
 
-    // try {
-    //   this.lowerSideScLocStrId.length();	
-    // } catch (NullPointerException npe) {
-    //   throw new RuntimeException(mmi+npe);
-    // }
+    try {
+      this.locations.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"this.locations cannot be null here !");
+    }
 
-    // try {
-    //   this.upperSideScLocStrId.length();	
-    // } catch (NullPointerException npe) {
-    //   throw new RuntimeException(mmi+npe);
-    // }
+    if (this.locations.size() == 0) {
+      throw new RuntimeException(mmi+"this.locations cannot be empty here !");
+    }
+
+    try {
+      this.shipChannelPointLocsTCInputDir.hashCode();	
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }   
+    
+    try {
+      this.mainJsonTGInfoMapObj.hashCode();	
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }      
 
     try {
       WLToolsIO.getOutputDataFormat();
@@ -200,65 +218,51 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP {
       throw new RuntimeException(mmi+" inputFileDldLocalDest -> "+inputFileDldLocalDest+" not found !");
     }
 
-    // --- TODO: Now check if we have at least 31 days of data in the future for the S104 DCF8 input file.
+    // --- TODO: Now check if we have at least 15 days of data in the future for the S104 DCF8 input file.
     //     If not we stop the exec.
     
     // --- TODO: Tell the HDFql world to use just one thread here.
+
+    // --- Get the info about the QUE IWLS "stations" to determine
+    //     their ids (string) 
+    final JsonArray iwlsStationsInfo= WLToolsIO
+      .getJsonArrayFromAPIRequest(this.iwlsApiBaseUrl+"?chs-region-code=QUE");
+
+    slog.info(mmi+"iwlsStationsInfo.getJsonObject(2).getString(code)="+iwlsStationsInfo.getJsonObject(2).getString("code"));
+
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);
     
-    // --- Now get the WLO data from the IWLS for all the tide gauge locations.
-    URLConnection uc= null;
-
-    String ec1;
-    String ec2;
-
-    try {
-      ec1= URLEncoder.encode("2024-02-06T06%3A00%3A00Z","UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(mmi+e);
-    }
-
-    try {
-      ec2= URLEncoder.encode("2024-02-08T11%3A00%3A00Z","UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(mmi+e);
-    }   
- 
-    //final String es=
-    // "https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations/5cebf1e23d0f4a073c4bc0f6/data?time-series-code=wlo&from="+ec1+"&to="+ec2;
-
-    final String es=
-	"https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations/5cebf1e23d0f4a073c4bc0f6/data?time-series-code=wlo&from=2024-02-06T06%3A00%3A00Z&to=2024-02-08T11%3A00%3A00Z";
-	
-    try {
-     uc= new URL(es).openConnection();
-    } catch (IOException ioe) {
-      ioe.printStackTrace();	
-      throw new RuntimeException(mmi+ioe+"\nProblem with openConnection()");
-    }
-
-    // --- no neee for a ":" char here after the accept
-    //uc.setRequestProperty("accept ", "*/*");
-
-    InputStream ist= null;
-	//InputStreamReader inputStreamReader= null;
-
-    try {
-      ist= uc.getInputStream();
-	//inputStreamReader= new InputStreamReader(uc.getInputStream());
-    } catch (IOException ioe) {
-      ioe.printStackTrace();    	
-      throw new RuntimeException(mmi+ioe+"\nProblem with new uc.getInputStream()");
-    }
-
-    //final Map<String, Object> config = new HashMap<>();
-    
-    final JsonReader jsr= Json.createReaderFactory(null).createReader(ist);
-
-    final JsonArray stnWLOJsArray= jsr.readArray();
-
-    final JsonObject tjo= stnWLOJsArray.getJsonObject(0);
-    
-    slog.info(mmi+"tjo value="+tjo.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue());
+    // // --- Now get the WLO data from the IWLS for all the tide gauge locations.
+    // URLConnection uc= null;
+    // //final String es=
+    // // "https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations/5cebf1e23d0f4a073c4bc0f6/data?time-series-code=wlo&from="+ec1+"&to="+ec2
+    // //for (int tgIter= 0; tgIter < this.locations.size(); tgIter++) {  	
+    // //}
+    // final String es=
+    // 	"https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations/5cebf1e23d0f4a073c4bc0f6/data?time-series-code=wlo&from=2024-02-06T06%3A00%3A00Z&to=2024-02-08T11%3A00%3A00Z";
+    // try {
+    //   uc= new URL(es).openConnection();
+    // } catch (IOException ioe) {
+    //   ioe.printStackTrace();	
+    //   throw new RuntimeException(mmi+ioe+"\nProblem with openConnection()");
+    // }
+    // // --- no neee for a ":" char here after the accept
+    // //uc.setRequestProperty("accept ", "*/*");
+    // InputStream ist= null;
+    // 	//InputStreamReader inputStreamReader= null;
+    // try {
+    //   ist= uc.getInputStream();
+    // 	//inputStreamReader= new InputStreamReader(uc.getInputStream());
+    // } catch (IOException ioe) {
+    //   ioe.printStackTrace();    	
+    //   throw new RuntimeException(mmi+ioe+"\nProblem with new uc.getInputStream()");
+    // }
+    // //final Map<String, Object> config = new HashMap<>();
+    // final JsonReader jsr= Json.createReaderFactory(null).createReader(ist);
+    // final JsonArray stnWLOJsArray= jsr.readArray();
+    // //final JsonObject tjo= stnWLOJsArray.getJsonObject(0);
+    // //slog.info(mmi+"tjo value="+tjo.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue());
     
     slog.info(mmi+"end");
     
