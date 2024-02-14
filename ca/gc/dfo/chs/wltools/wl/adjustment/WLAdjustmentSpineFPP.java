@@ -256,7 +256,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP {
 
     final JsonArray stnWLOJsArray= jsr.readArray();
 
-    for (final 
+    final JsonObject tjo= stnWLOJsArray.getJsonObject(0);
+    
+    slog.info(mmi+"tjo value="+tjo.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue());
     
     slog.info(mmi+"end");
     

@@ -3,7 +3,7 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 
 time java WLTools \
 --tool=adjustment \
---adjType=SpineFPP
+--adjType=SpineFPP \
 --tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
 --tidalConstsInputInfo=NON_STATIONARY_JSON:tidal/nonStationary/StLawrence \
 --inputDataFormat=DHP_S104_DCF8 \
