@@ -55,5 +55,5 @@ public interface IWLToolsIO {
 
   String IWLS_DB_QCFLAG_KEY= "qcFlagCode";
 
-  String WLS_DB_QCFLAG_VALID= "1";
+  String IWLS_DB_QCFLAG_VALID= "1";
 }

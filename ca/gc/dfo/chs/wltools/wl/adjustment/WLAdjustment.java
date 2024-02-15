@@ -131,7 +131,7 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
 
     if (adjType.equals(IWLAdjustment.Type.SpineFPP.name())) {
 
-      slog.info(mmi+"Doing Spine WL adjustment intial pre-processing (IPP) type setup");
+      slog.info(mmi+"Doing Spine WL adjustment final pre-processing (FPP) type setup");
 
       //this.adjType=IWLAdjustment.Type.WDS;
       //final String wdsLocationIdInfoFile=

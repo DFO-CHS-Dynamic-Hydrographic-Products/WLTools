@@ -219,6 +219,10 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       throw new RuntimeException(mmi+" inputFileDldLocalDest -> "+inputFileDldLocalDest+" not found !");
     }
 
+    slog.info(mmi+"Now getting the last WLO data for the TGs from the IWLS API");
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
+    
     // --- TODO: Now check if we have at least 15 days of data in the future for the S104 DCF8 input file.
     //     If not we stop the exec.
     // --- TODO: Tell the HDFql world to use just one thread here.
@@ -266,7 +270,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	
       final String tgNumStrCode= tgCfg.getIdentity();
 
-      //slog.info(mmi+"tgNumStrCode="+tgNumStrCode);
+      slog.info(mmi+"tgNumStrCode="+tgNumStrCode);
+      
       String iwlsStnId= null;
 
       // --- Loop on all the IWLS stations retreived from the request on the IWLS API
@@ -320,11 +325,15 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
         this.wloMCBundles.put(tgCfg,
 			      WLToolsIO.getMCBFromIWLSJsonArray(iwlsJSTGWLOData, tgCfg.getZcVsVertDatum()));
 	
-	slog.info(mmi+"debug exit 0");
-        System.exit(0);
-      }
-      
+	//slog.info(mmi+"debug exit 0");
+        //System.exit(0);
+	
+      } // --- End if-else block
     } // --- outer for loop block
+
+    final Set<TideGaugeConfig> tgsWithValidWLOData= this.wloMCBundles.keySet();
+
+    slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data");
 
     // --- Now read the S104 DCF8 input HDF5 file using HDFql lib
     
