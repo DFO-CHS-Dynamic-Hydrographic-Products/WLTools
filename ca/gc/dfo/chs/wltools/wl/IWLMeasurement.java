@@ -14,6 +14,8 @@ package ca.gc.dfo.chs.wltools.wl;
  */
 public interface IWLMeasurement extends IWL {
 
+  int MIN_NUMBER_OF_WL_HFOSC_RMV= 3;
+
   /**
    * @return The wrapped Measurement seconds since the epoch(normally in UTC)
    */

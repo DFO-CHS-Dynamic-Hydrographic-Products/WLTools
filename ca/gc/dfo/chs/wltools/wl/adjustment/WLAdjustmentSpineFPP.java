@@ -321,9 +321,21 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	
         //slog.info(mmi+"iwlsJSTGWLOData.getJsonObject(0).getJsonNumber(value).doubleValue()="+
 	//	  iwlsJSTGWLOData.getJsonObject(0).getJsonNumber("value").doubleValue());
-	
-        this.wloMCBundles.put(tgCfg,
-			      WLToolsIO.getMCBFromIWLSJsonArray(iwlsJSTGWLOData, tgCfg.getZcVsVertDatum()));
+
+	// --- Get the MeasurementCustomBundle object of the valid WLO data
+	//     for this TG.
+	final MeasurementCustomBundle checkMcb= WLToolsIO
+	  .getMCBFromIWLSJsonArray(iwlsJSTGWLOData, tgCfg.getZcVsVertDatum(), true);
+
+	// --- Add the MeasurementCustomBundle object of the valid WLO data
+	//     for this TG. If checkMcb == null this means that there is either
+	//     not enough valid WLO data or no data at all for this TG
+	if ( checkMcb != null ) { 
+	  this.wloMCBundles.put(tgCfg, checkMcb);
+	  
+	} else {
+	  slog.warn(mmi+"WARNING!!: Not enough valid WLO data or no data at all for this TG now-> "+tgNumStrCode);
+	}
 	
 	//slog.info(mmi+"debug exit 0");
         //System.exit(0);

@@ -341,13 +341,16 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
      try {
        wlMcList.size();
-
      } catch (NullPointerException npe) {
        throw new RuntimeException(mmi+npe);
      }
 
      final int nbWLIn= wlMcList.size();
 
+     if (nbWLIn < MIN_NUMBER_OF_WL_HFOSC_RMV) {
+        throw new RuntimeException(mmi+"Cannot have nbWLIn="+nbWLIn+" < MIN_NUMBER_OF_WL_HFOSC_RMV here !!");
+     }
+     
      // --- Simply use a three values moving average
      //     NOTE: time incr. intervall should be no more than 15mins (3mins is better)
      //     otherwise it could produce unrealistic results.

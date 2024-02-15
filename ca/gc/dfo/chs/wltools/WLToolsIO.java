@@ -837,7 +837,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
   // --- TODO: Pass the time incr. in seconds to remove the data at time stamps
   //     that are not a mutiple of this time incr. in seconds.
-  public final static MeasurementCustomBundle getMCBFromIWLSJsonArray(final JsonArray iwlsJsonArray, final double datumConvValue) {
+  public final static MeasurementCustomBundle
+      getMCBFromIWLSJsonArray(final JsonArray iwlsJsonArray, final double datumConvValue, final boolean applyHFOscRemoval) {
       
     final String mmi= "getMCBFromIWLSJsonArray: ";
 
@@ -878,9 +879,24 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
 
-    // --- NOTE: Using the time incr. 
-    return new MeasurementCustomBundle(WLMeasurement
-      .removeHFWLOscillations(IWLAdjustment.MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS,tmpWLDataList));
+    MeasurementCustomBundle mcbRet= null;
+
+    if (tmpWLDataList.size() > IWLMeasurement.MIN_NUMBER_OF_WL_HFOSC_RMV) {
+
+      // --- We have at least IWLAdjustment.MIN_NUMBER_OF_OBS_SPINE_FPP valid WLO data
+      //     Apply the removeHFWLOscillations method to the WLO data and create the
+      //     MeasurementCustomBundle to return with the filtered tmpWLDataList
+      if (applyHFOscRemoval) {
+	  
+        mcbRet= new MeasurementCustomBundle(WLMeasurement
+          .removeHFWLOscillations(IWLAdjustment.MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS,tmpWLDataList));
 	
+      } else {
+	 mcbRet= new MeasurementCustomBundle(tmpWLDataList);
+      }
+    }
+    
+    return mcbRet;
+    
   } // --- method getMCBFromIWLSJsonArray
 }
