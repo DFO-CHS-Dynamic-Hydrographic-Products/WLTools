@@ -28,6 +28,7 @@ import java.nio.file.StandardCopyOption;
 // ---
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.HttpURLConnection;
 
 // ---
 import javax.json.Json;
@@ -803,9 +804,11 @@ abstract public class WLToolsIO implements IWLToolsIO {
     final String mmi= "getJsonArrayFromAPIRequest: ";
       
     URLConnection uc= null;
+    //HttpURLConnection uc= null;
 
     try {
       uc= new URL(apiRequestStr).openConnection();
+	//uc= new HttpURLConnection(new URL(apiRequestStr))
     } catch (IOException ioe) {
       ioe.printStackTrace();	
       throw new RuntimeException(mmi+ioe+"\nProblem with openConnection() with apiRequestStr -> "+apiRequestStr);

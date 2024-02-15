@@ -56,6 +56,7 @@ import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
+import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.wl.WLSCReachIntrpUnit;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -71,7 +72,7 @@ import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 /**
  * Comments please!
  */
-final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP {
+final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements IWLAdjustment {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpineFPP: ";
@@ -86,7 +87,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP {
     
   private Map<String,WLSCReachIntrpUnit> scReachIntrpUnits= null;
 
-  private Map<String,MeasurementCustomBundle> wloMCBundles= null;
+  private Map<TideGaugeConfig, MeasurementCustomBundle> wloMCBundles= null;
 
   // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
   //     in-between the tide gauges locations being processed (INPUT ONLY) 
@@ -228,8 +229,91 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP {
     final JsonArray iwlsStationsInfo= WLToolsIO
       .getJsonArrayFromAPIRequest(this.iwlsApiBaseUrl+"?chs-region-code=QUE");
 
-    slog.info(mmi+"iwlsStationsInfo.getJsonObject(2).getString(code)="+iwlsStationsInfo.getJsonObject(2).getString("code"));
+    //slog.info(mmi+"iwlsStationsInfo.getJsonObject(2).getString(code)="+iwlsStationsInfo.getJsonObject(2).getString("code"));
 
+    // ---
+    //Map<TideGaugeConfig, String> tgsData= new HashMap<TideGaugeConfig,String>();
+    this.wloMCBundles= new HashMap<TideGaugeConfig, MeasurementCustomBundle>();
+
+    // --- Subtract SHORT_TERM_FORECAST_TS_OFFSET_SECONDS from now
+    //     (Normally 6 hours in seconds in the past)
+    final Instant whatTimeIsItNow= Instant.now();
+
+    final Instant timeOffsetInPast= whatTimeIsItNow.minusSeconds(SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
+    final Instant timeOffsetInFutr= whatTimeIsItNow.plusSeconds(MIN_FULL_FORECAST_DURATION_SECONDS);
+
+    final String timeOffsetInPastStr= timeOffsetInPast.toString();
+    final String timeOffsetInFutrStr= timeOffsetInFutr.toString();
+
+    final String timeOffsetInPastReqStr= timeOffsetInPastStr.substring(0,13) + IWLAdjustmentIO.IWLS_DB_DTIME_END_STR;
+    final String timeOffsetInFutrReqStr= timeOffsetInFutrStr.substring(0,13) + IWLAdjustmentIO.IWLS_DB_DTIME_END_STR;
+
+    slog.info(mmi+"timeOffsetInPastReqStr="+timeOffsetInPastReqStr);
+    slog.info(mmi+"timeOffsetInFutrReqStr="+timeOffsetInFutrReqStr);
+
+    final String timePastFutrFrameReqStr=
+       "data?time-series-code=wlo&from="+timeOffsetInPastReqStr+"&to="+timeOffsetInFutrReqStr;
+    
+    // slog.info(mmi+"debug exit 0");
+    // System.exit(0);
+    
+    // --- Loop on the TGs of this.locations ArrayList (TGs num str ids.
+    //     passed as argument to the main program.
+    for (int tgIter= 0; tgIter < this.locations.size(); tgIter++) {
+
+      final TideGaugeConfig tgCfg= this.locations.get(tgIter);
+	
+      final String tgNumStrCode= tgCfg.getIdentity();
+
+      //slog.info(mmi+"tgNumStrCode="+tgNumStrCode);
+      String iwlsStnId= null;
+
+      // --- Loop on all the IWLS stations retreived from the request on the IWLS API
+      //     for getting stations informations.
+      for (int jsoIter= 0; jsoIter < iwlsStationsInfo.size(); jsoIter++) {
+
+	final JsonObject iwlsStnInfo= iwlsStationsInfo.getJsonObject(jsoIter);
+	  
+	final String checkLocNumStrId= iwlsStnInfo.getString(IWLAdjustmentIO.IWLS_DB_TG_NUM_STRID_KEY);
+
+        //final String checkLocName= iwlsStnInfo.getString("officialName");
+	//if (checkLocName.equals("Lanoraie")) {
+	//if (tgNumStrCode.equals("15860")) {
+	//  slog.info(mmi+"Lanoraie?: checkLocName="+checkLocName);
+	//}
+
+	if (checkLocNumStrId.equals(tgNumStrCode)) {
+	  iwlsStnId=  iwlsStnInfo.getString(IWLAdjustmentIO.IWLS_DB_TG_STR_ID_KEY);
+	  break;
+	}
+      } // --- inner for loop block
+
+      // ---
+      if (iwlsStnId == null) {
+	slog.warn(mmi+"WARNING!: No metadata info was found for TG -> "+tgNumStrCode);
+	
+      } else {
+
+	slog.info(mmi+"Using IWLS id -> "+iwlsStnId+" for TG -> "+tgNumStrCode);
+
+        final String tgWLOAPIRequest= this.iwlsApiBaseUrl +
+	  File.separator + iwlsStnId + File.separator + timePastFutrFrameReqStr;
+
+	slog.info(mmi+"tgWLOAPIRequest="+tgWLOAPIRequest);        
+
+	// --- Get the more recent WLO data for this TG from the IWLS DB  
+	final JsonArray iwlsJSTGWLOData= WLToolsIO
+	 .getJsonArrayFromAPIRequest(tgWLOAPIRequest);
+	
+        //final List<MeasurementCustom> tmpWLOData= 
+        //this.wloMCBundles.put(tgCfg, new 
+	
+	slog.info(mmi+"debug exit 0");
+        System.exit(0);
+      }
+      
+    } // --- outer for loop block
+    
     slog.info(mmi+"debug exit 0");
     System.exit(0);
     

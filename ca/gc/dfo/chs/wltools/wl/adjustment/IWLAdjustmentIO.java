@@ -106,5 +106,10 @@ public interface IWLAdjustmentIO {
 
   String SCLOC_STN_ID_PRFX= "HSTLT_WLPS ship channel point location #";
 
-    //String SHIP_CHANNEL_POINTS_DEF_DIRNAME= "channelGridPointsInfoDef";
+  //String SHIP_CHANNEL_POINTS_DEF_DIRNAME= "channelGridPointsInfoDef";
+
+  String IWLS_DB_TG_STR_ID_KEY= "id";  
+  String IWLS_DB_TG_NUM_STRID_KEY= "code";
+
+  String IWLS_DB_DTIME_END_STR= "%3A00%3A00Z";
 }
