@@ -50,6 +50,7 @@ import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.IWLMeasurement;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
@@ -553,12 +554,23 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         //slog.info(mmi+"Debug System.exit(0)");
         //System.exit(0);
 
-        // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
-        //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
-        //     method to it before the assignation.
-        this.nearestObsData.put(this.location.getIdentity(),
-                                WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
 
+	if (tmpWLOMcList.size() >= IWLMeasurement.MIN_NUMBER_OF_WL_HFOSC_RMV) {
+	    
+          // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
+          //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
+          //     method to it before the assignation itself
+          this.nearestObsData.put(this.location.getIdentity(),
+                                   WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
+        } else {
+
+	  slog.warn(mmi+"WARNING!!: Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations method for TGat location -> "+this.location.getIdentity());
+
+	  // --- Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations
+	  //     method, just assign the tmpWLOMcList as is
+	  this.nearestObsData.put(this.location.getIdentity(), tmpWLOMcList);
+	}
+	
         slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
 
       } else {
