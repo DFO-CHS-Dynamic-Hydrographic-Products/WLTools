@@ -108,8 +108,10 @@ public interface IWLAdjustmentIO {
 
   //String SHIP_CHANNEL_POINTS_DEF_DIRNAME= "channelGridPointsInfoDef";
 
-  String IWLS_DB_TG_STR_ID_KEY= "id";  
-  String IWLS_DB_TG_NUM_STRID_KEY= "code";
-
-  String IWLS_DB_DTIME_END_STR= "%3A00%3A00Z";
+  // --- MOved to IWLToolsIO
+  //String IWLS_DB_TG_STR_ID_KEY= "id";
+  //String IWLS_DB_TG_NUM_STRID_KEY= "code";
+  //String IWLS_DB_DTIME_END_STR= "%3A00%3A00Z";
+  //String IWLS_DB_QCFLAG_KEY= "qcFlagCode";
+  //String WLS_DB_QCFLAG_VALID= "1";
 }

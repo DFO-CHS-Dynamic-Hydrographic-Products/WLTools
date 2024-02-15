@@ -221,9 +221,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     // --- TODO: Now check if we have at least 15 days of data in the future for the S104 DCF8 input file.
     //     If not we stop the exec.
-    
     // --- TODO: Tell the HDFql world to use just one thread here.
-
+    
     // --- Get the info about the QUE IWLS "stations" to determine
     //     their ids (string) 
     final JsonArray iwlsStationsInfo= WLToolsIO
@@ -245,8 +244,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     final String timeOffsetInPastStr= timeOffsetInPast.toString();
     final String timeOffsetInFutrStr= timeOffsetInFutr.toString();
 
-    final String timeOffsetInPastReqStr= timeOffsetInPastStr.substring(0,13) + IWLAdjustmentIO.IWLS_DB_DTIME_END_STR;
-    final String timeOffsetInFutrReqStr= timeOffsetInFutrStr.substring(0,13) + IWLAdjustmentIO.IWLS_DB_DTIME_END_STR;
+    final String timeOffsetInPastReqStr= timeOffsetInPastStr.substring(0,13) + IWLToolsIO.IWLS_DB_DTIME_END_STR;
+    final String timeOffsetInFutrReqStr= timeOffsetInFutrStr.substring(0,13) + IWLToolsIO.IWLS_DB_DTIME_END_STR;
 
     slog.info(mmi+"timeOffsetInPastReqStr="+timeOffsetInPastReqStr);
     slog.info(mmi+"timeOffsetInFutrReqStr="+timeOffsetInFutrReqStr);
@@ -262,6 +261,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     for (int tgIter= 0; tgIter < this.locations.size(); tgIter++) {
 
       final TideGaugeConfig tgCfg= this.locations.get(tgIter);
+
+      //tgCfg.setConfig(this.mainJsonTGInfoMapObj.getJsonObject());
 	
       final String tgNumStrCode= tgCfg.getIdentity();
 
@@ -274,7 +275,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
 	final JsonObject iwlsStnInfo= iwlsStationsInfo.getJsonObject(jsoIter);
 	  
-	final String checkLocNumStrId= iwlsStnInfo.getString(IWLAdjustmentIO.IWLS_DB_TG_NUM_STRID_KEY);
+	final String checkLocNumStrId= iwlsStnInfo.getString(IWLToolsIO.IWLS_DB_TG_NUM_STRID_KEY);
 
         //final String checkLocName= iwlsStnInfo.getString("officialName");
 	//if (checkLocName.equals("Lanoraie")) {
@@ -283,12 +284,13 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	//}
 
 	if (checkLocNumStrId.equals(tgNumStrCode)) {
-	  iwlsStnId=  iwlsStnInfo.getString(IWLAdjustmentIO.IWLS_DB_TG_STR_ID_KEY);
+	  iwlsStnId= iwlsStnInfo.getString(IWLToolsIO.IWLS_DB_TG_STR_ID_KEY);
 	  break;
 	}
       } // --- inner for loop block
 
-      // ---
+      // --- TODO: Put the code of this if-else block in another method of
+      //     the same class or inside another class
       if (iwlsStnId == null) {
 	slog.warn(mmi+"WARNING!: No metadata info was found for TG -> "+tgNumStrCode);
 	
@@ -304,15 +306,32 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	// --- Get the more recent WLO data for this TG from the IWLS DB  
 	final JsonArray iwlsJSTGWLOData= WLToolsIO
 	 .getJsonArrayFromAPIRequest(tgWLOAPIRequest);
+
+	if (iwlsJSTGWLOData.size() == 0) {
+	  slog.warn(mmi+"WARNING!: Seems that there is no WLO data for TG -> "+tgNumStrCode+", skipping it !!");  
+	  continue; // --- the inner for loop
+	}
+
+        tgCfg.setConfig(this.mainJsonTGInfoMapObj.getJsonObject(tgNumStrCode));
 	
-        //final List<MeasurementCustom> tmpWLOData= 
-        //this.wloMCBundles.put(tgCfg, new 
+        //slog.info(mmi+"iwlsJSTGWLOData.getJsonObject(0).getJsonNumber(value).doubleValue()="+
+	//	  iwlsJSTGWLOData.getJsonObject(0).getJsonNumber("value").doubleValue());
+	
+        this.wloMCBundles.put(tgCfg,
+			      WLToolsIO.getMCBFromIWLSJsonArray(iwlsJSTGWLOData, tgCfg.getZcVsVertDatum()));
 	
 	slog.info(mmi+"debug exit 0");
         System.exit(0);
       }
       
     } // --- outer for loop block
+
+    // --- Now read the S104 DCF8 input HDF5 file using HDFql lib
+    
+    // --- TODO: Now check if we have at least 15 days of data in the future for the S104 DCF8 input file.
+    //     If not we stop the exec.
+    
+    // --- TODO: Tell the HDFql world to use just one thread here.
     
     slog.info(mmi+"debug exit 0");
     System.exit(0);

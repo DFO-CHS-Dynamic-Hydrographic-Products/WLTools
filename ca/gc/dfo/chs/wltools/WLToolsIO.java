@@ -41,6 +41,7 @@ import javax.json.JsonArrayBuilder;
 // --- chs WLTools package
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
+import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
@@ -798,7 +799,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"end");
   }
 
-  // ---
+  // --- TODO1: Use the HttpURLConnection class instead of the URLConnection class?
+  //     TODO2: Manage errors in a more fool-proof manner?     
   public final static JsonArray getJsonArrayFromAPIRequest(final String apiRequestStr) {
 
     final String mmi= "getJsonArrayFromAPIRequest: ";
@@ -829,4 +831,46 @@ abstract public class WLToolsIO implements IWLToolsIO {
     return Json.createReaderFactory(null).createReader(ist).readArray();
     
   } // --- getJsonArrayFromAPIRequest method
+
+  // ---
+  public final static MeasurementCustomBundle getMCBFromIWLSJsonArray(final JsonArray iwlsJsonArray, final double datumConvValue) {
+      
+    final String mmi= "getMCBFromIWLSJsonArray: ";
+
+    try {
+      iwlsJsonArray.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe+" iwlsJsonArray cannot be null here !!");
+    }
+
+    if (iwlsJsonArray.size() == 0) {
+      throw new RuntimeException(mmi+"Cannot have iwlsJsonArray.size() == 0 here !!");
+    }
+
+    List<MeasurementCustom> tmpWLDataList= new ArrayList<MeasurementCustom>(iwlsJsonArray.size());
+
+    for (int itemIter= 0; itemIter < iwlsJsonArray.size(); itemIter++) {
+
+       final JsonObject jsoItem= iwlsJsonArray.get(itemIter);
+
+       final String checkQCFlag= jsoItem.getString(IWLToolsIO.IWLS_DB_QCFLAG_KEY);
+
+       if (checkQCFlag.equals(IWLToolsIO.IWLS_DB_QCFLAG_VALID)) {
+
+	  final double itemValue= jsoItem.get(IWLToolsIO.VALUE_JSON_KEY);
+	  final Instant itemInstant= jsoItem.get(IWLToolsIO.VALUE_JSON_KEY);
+
+	  slog.info(mmi+"itemValue="+itemValue);
+	  slog.info(mmi+"itemInstant="+itemInstant.toString());
+          slog.info(mmi+"debug exit 0");
+          System.exit(0);
+	  
+	  tmpWLDataList.add( new MeasurementCustom(itemInstant,itemValue, IWL.MINIMUM_UNCERTAINTY_METERS));
+       }	
+    }
+
+    return new MeasurementCustomBundle(WLMeasurement
+      .removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS,tmpWLDataList));
+	
+  } // --- method getMCBFromIWLSJsonArray
 }
