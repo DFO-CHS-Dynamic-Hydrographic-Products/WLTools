@@ -43,9 +43,15 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonReaderFactory;
 
+// ---
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+
+// // ---
+// import as.hdfql.HDFql;
+// import as.hdfql.HDFqlCursor;
+// import as.hdfql.HDFqlConstants;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
@@ -347,12 +353,26 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data");
 
-    // --- Now read the S104 DCF8 input HDF5 file using HDFql lib
+    // --- Now get a List of MeasurementCustomBundle objects from the S104 DCF8 input HDF5 file
+    //     that contains the model WL forecast for all the ship channel points locations. 
+    List<MeasurementCustomBundle> mcbsFromS104DCF8= WLToolsIO.getMCBsFromS104DCF8File(inputFileDldLocalDest);
     
-    // --- TODO: Now check if we have at least 15 days of data in the future for the S104 DCF8 input file.
-    //     If not we stop the exec.
-    
-    // --- TODO: Tell the HDFql world to use just one thread here.
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);
+
+    // --- TODO: Now check if we have at least 5(?) days of data in the future for the S104 DCF8 input file.
+    //     If not we stop the exec??  
+
+    // --- TODO: Now check if the most recent WLO data timestamp is more recent than the
+    //     least recent model forecast data timestamp for all the tide gauges that
+    //     have valid WLO data. If the most recent time stamp of the WLO data of
+    //     a given tide gauge is before the least recent model forecast data timestamp
+    //     then this WLO data for this tide gauge is useless for the Spine FPP WL adjustments
+    //     and we remove this tide gauge from this.wloMCBundles Map of MeasurementCustomBundle
+    //     objects.
+
+    // --- TODO: Now build the Map of WLSCReachIntrpUnit objects that will be used for the
+    //     Spine FPP WL adjustment type.
     
     slog.info(mmi+"debug exit 0");
     System.exit(0);

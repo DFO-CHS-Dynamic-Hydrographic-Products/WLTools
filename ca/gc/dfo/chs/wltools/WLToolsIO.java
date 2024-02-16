@@ -800,8 +800,77 @@ abstract public class WLToolsIO implements IWLToolsIO {
     }      
     
     slog.info(mmi+"end");
-  }
+    
+  } // --- method ippCHSJsonToS104DCF8 
 
+  // ---
+  //public final static Map<String,MeasurementCustomBundle> getMCBFromS104DCF8File() {
+  public final static List<MeasurementCustomBundle> getMCBsFromS104DCF8File(final String s104DCF8FilePath) {
+
+    final String mmi= "getMCBFromS104DCF8File: ";
+
+    try {
+      s104DCF8FilePath.hashCode();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe+" s104DCF8FilePath cannot be null here !!");
+    }
+
+    if (!checkForFileExistence(s104DCF8FilePath)) {
+      throw new RuntimeException(mmi+"s104DCF8FilePath -> "+s104DCF8FilePath+" not found !!");
+    }
+    
+    slog.info(mmi+"start");
+
+    // --- Tell the HDFql lib to use just one thread here.
+    int hdfqlCmdStatus= HDFql.execute("SET THREAD 1");
+
+        if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql command \"SET THREAD 1\" !!");
+    }
+
+    hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+s104DCF8FilePath);
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "+s104DCF8FilePath+" !!");
+    }
+
+    // --- Get the S104 feature code String
+    final String s104FeatureId= ISProductIO.FEATURE_IDS.get(ISProductIO.FeatId.S104);
+
+    // --- Build the S104 forecast feature code HDF5 GROUP id. 
+    final String s104FcstDataGrpId= ISProductIO.GRP_SEP_ID +
+      s104FeatureId + ISProductIO.GRP_SEP_ID + s104FeatureId + ISProductIO.FCST_ID;
+
+    hdfqlCmdStatus= HDFql.execute("USE GROUP "+s104FcstDataGrpId);
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql command \"USE GROUP \" for GROUP -> "+s104FcstDataGrpId);
+    }
+
+    int nbLocations= -1;
+    
+    hdfqlCmdStatus= HDFql
+      .execute("SELECT FROM "+ISProductIO.NB_STATIONS_ID+" INTO MEMORY "+ HDFql.variableTransientRegister(nbLocations));
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql command \"SELECT FROM \" for attribute -> "+ISProductIO.NB_STATIONS_ID);    
+    }
+    
+    List<MeasurementCustomBundle> mcbsFromS104DCF8= new ArrayList<MeasurementCustomBundle>(); //(nbLocations);
+
+    hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+s104DCF8FilePath);
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql close file command \"CLOSE FILE \" for file -> "+s104DCF8FilePath+" !!");
+    }    
+    
+    slog.info(mmi+"end");
+    slog.info(mmi+"debug System.exit(0)");
+    System.exit(0);
+
+    return mcbsFromS104DCF8;
+  }	
+    
   // --- TODO1: Use the HttpURLConnection class instead of the URLConnection class?
   //     TODO2: Manage errors in a more fool-proof manner?     
   public final static JsonArray getJsonArrayFromAPIRequest(final String apiRequestStr) {
