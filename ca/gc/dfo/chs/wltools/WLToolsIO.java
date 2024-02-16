@@ -708,7 +708,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID, scLocGrpNNNNIdStr,
 				       HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
 
-      // --- Update the time intervall of the timestamps HDF5 file attribute
+      // --- Update the time interval of the timestamps HDF5 file attribute
       //     for this ship channel location (Same value as for the S104 feature forecast GROUP)
       SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, scLocGrpNNNNIdStr,
   				       HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
@@ -774,8 +774,10 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       //slog.info(mmi+"s104Dcf8CmpdTypeArray now filled-up");
 
-      // --- Register tmpValuesArr in the HDFql world.
-      //final int registerNb= HDFql.variableTransientRegister(tmpValuesArr);
+      // --- Register tmpValuesArr for the HDFql lib, need to do it
+      //     for each INSERT command (i.e. for each ship channel point location) 
+      //     TODO check if we have a performance gain by using the HDFql.variableRegister
+      //     method just once outside of the loop on the ship channel point locations.
       final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
 
       if (registerNb < 0) {
@@ -862,23 +864,68 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     slog.info(mmi+"nbInstants[0]="+nbInstants[0]);
 
+    final String [] dateTimeOfFirstRecord= {""};
+    
+    SProduct.setTransientAttrFromGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfFirstRecord));
+
+    slog.info(mmi+"dateTimeOfFirstRecord[0]="+dateTimeOfFirstRecord[0]);
+
+    final String fmfLeastRecentInstantStr= dateTimeOfFirstRecord[0].substring(0,4)   + ISO8601_YYYYMMDD_SEP_CHAR +
+	                                   dateTimeOfFirstRecord[0].substring(4,6)   + ISO8601_YYYYMMDD_SEP_CHAR +
+	                                   dateTimeOfFirstRecord[0].substring(6,8)   + ISO8601_DATETIME_SEP_CHAR +
+	                                   dateTimeOfFirstRecord[0].substring(9,11)  + INPUT_DATA_FMT_SPLIT_CHAR +
+	                                   dateTimeOfFirstRecord[0].substring(11,13) + INPUT_DATA_FMT_SPLIT_CHAR + "00Z";
+    
+    slog.info(mmi+"fmfLeastRecentInstantStr="+fmfLeastRecentInstantStr);
+    
+    final Instant fmfLeastRecentInstant= Instant.parse(fmfLeastRecentInstantStr);
+
+    //slog.info(mmi+"fmfLeastRecentInstant.toString()="+fmfLeastRecentInstant.toString());
+
+    final String [] dateTimeOfLastRecord= {""};
+    
+    SProduct.setTransientAttrFromGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfLastRecord));    
+
+    slog.info(mmi+"dateTimeOfLastRecord[0]="+dateTimeOfLastRecord[0]);
+
+    final int [] timeIntervalSeconds=
+      { (int)IWLAdjustment.MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS };
+    
+    SProduct.setTransientAttrFromGroup(ISProductIO.TIME_INTRV_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(timeIntervalSeconds));
+
+    slog.info(mmi+"timeIntervalSeconds[0]="+timeIntervalSeconds[0]);
+    
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
+    
     List<MeasurementCustom> tmpScLocMCList= new ArrayList<MeasurementCustom>(nbInstants[0]);
     
     List<MeasurementCustomBundle> mcbsFromS104DCF8=
       new ArrayList<MeasurementCustomBundle>(nbScLocs[0]);
 
+    // --- Use an array of Instant objects to define them just once.
+    final Instant [] fmfInstants= new Instant[nbInstants[0]];
+    
     // --- Allocate the array of S104DCF8CompoundType objects.
     final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= new S104DCF8CompoundType[nbInstants[0]];
-
+    
     // --- Instantiate all S104DCF8CompoundType objects in the s104Dcf8CmpdTypeArray
     for (int instantIdx= 0; instantIdx < nbInstants[0]; instantIdx++) {
+	
       s104Dcf8CmpdTypeArray[instantIdx]= new S104DCF8CompoundType();
+      
+      fmfInstants[instantIdx]= fmfLeastRecentInstant.plusSeconds(instantIdx*timeIntervalSeconds[0]);
     }
 
-    final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
-
-    if (registerNb < 0) {
-      throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), registerNb ->"+registerNb);
+    // ---
+    //final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
+    final int s104Dcf8CmpdTypeArrRegisterNb= HDFql.variableRegister(s104Dcf8CmpdTypeArray);
+    
+    if (s104Dcf8CmpdTypeArrRegisterNb < 0) {
+      throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), s104Dcf8CmpdTypeArrRegisterNb ->"+s104Dcf8CmpdTypeArrRegisterNb);
     }
 
     // --- Loop on all the ship channel point locations (int indices here)
@@ -888,7 +935,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       final String scLocGrpNNNNIdStr= s104FcstDataGrpId +
 	ISProductIO.GRP_SEP_ID + ISProductIO.GRP_PRFX + String.format("%04d", scLoc + 1);
 
-      //slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
+      slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
 
       hdfqlCmdStatus= HDFql.execute("USE GROUP "+scLocGrpNNNNIdStr);
 
@@ -896,25 +943,68 @@ abstract public class WLToolsIO implements IWLToolsIO {
         throw new RuntimeException(mmi+"Group: "+scLocGrpNNNNIdStr+" not found in input file -> "+s104DCF8FilePath);
       }
 
+      final String [] checkStartDate= {""};
+
+      SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID,
+					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkStartDate));
+
+      if (!checkStartDate[0].equals(dateTimeOfFirstRecord[0])) {
+	throw new RuntimeException(mmi+"Must have checkStartDate[0] being the same as dateTimeOfFirstRecord[0] here!!");
+      }
+
+      final String [] checkLastDate= {""};
+
+      SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID,
+					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkLastDate));
+
+      if (!checkLastDate[0].equals(dateTimeOfLastRecord[0])) {
+	throw new RuntimeException(mmi+"Must have checkLastDate[0] being the same as dateTimeOfLastRecord[0] here!!");
+      }      
+
       final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
 
-      hdfqlCmdStatus= HDFql.execute("SELECT FROM DATASET \""+valuesDSetIdInGrp+"\" INTO MEMORY " + registerNb);
+      hdfqlCmdStatus= HDFql.execute("SELECT FROM DATASET \""+valuesDSetIdInGrp+"\" INTO MEMORY " + s104Dcf8CmpdTypeArrRegisterNb);
 
       if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
         throw new RuntimeException(mmi+"Problem with HDFql cmd \"SELECT FROM DATASET \""+
 				   valuesDSetIdInGrp+"\" INTO MEMORY, hdfqlCmdStatus="+ hdfqlCmdStatus );
       }
 
+      //slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
       //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getWaterLevelHeight()="+s104Dcf8CmpdTypeArray[0].getWaterLevelHeight());
-      //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getUncertainty()="+s104Dcf8CmpdTypeArray[0].getUncertainty());
+      //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getUncertainty()="+s104Dcf8CmpdTypeArray[0].getUncertainty()+"\n");
       //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getWaterLevelTrend()="+s104Dcf8CmpdTypeArray[0].getWaterLevelTrend());
+
+      //--- Now populate the tmpScLocMCList ArrayList with the content of the
+      //    s104Dcf8CmpdTypeArray for this ship channel point location for all
+      //    the timestamps.
+      for (int instantIdx= 0; instantIdx < nbInstants[0]; instantIdx++) {
+
+	final S104DCF8CompoundType s104CmpTypeAtInstant= s104Dcf8CmpdTypeArray[instantIdx];
+
+	// --- Using a copy of the Instant objects for the eventDate attribute of the
+	//     MeasurementCustom object.
+	final MeasurementCustom mcAtInstant= new MeasurementCustom( fmfInstants[instantIdx].plusSeconds(0L),
+								    Double.valueOf(s104CmpTypeAtInstant.getWaterLevelHeight()),
+								    Double.valueOf(s104CmpTypeAtInstant.getUncertainty()) ) ;
+	  
+	tmpScLocMCList.add(instantIdx, mcAtInstant);
+      }
+
+      // --- Finally create the MeasurementCustomBundle object for this ship channel point location
+      mcbsFromS104DCF8.add(new MeasurementCustomBundle(tmpScLocMCList));
       
-      slog.info(mmi+"debug System.exit(0)");
-      System.exit(0);
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);
+      
+    } // --- Loop block on all the ship channel point locations 
 
-       //mcbsFromS104DCF8.add(new  MeasurementCustomBundle(tmpScLocMCList));
-    }
-
+    hdfqlCmdStatus= HDFql.variableUnregister(s104Dcf8CmpdTypeArray);
+    
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql.unregisterVariable(registerNb)!!, hdfqlCmdStatus="+hdfqlCmdStatus);
+    } 
+ 
     hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+s104DCF8FilePath);
 
     if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
