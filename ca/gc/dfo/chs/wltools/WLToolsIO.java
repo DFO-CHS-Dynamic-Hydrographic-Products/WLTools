@@ -779,7 +779,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
 
       if (registerNb < 0) {
-	throw new RuntimeException(mmi+"Problem with HDFql.variableRegister(variableTransientRegisters104Dcf8CmpdTypeArray), registerNb  ->"+registerNb);
+	throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), registerNb  ->"+registerNb);
       }
 
       // --- Put the (values,uncertainty) compound type items in the dataset.
@@ -825,13 +825,14 @@ abstract public class WLToolsIO implements IWLToolsIO {
     int hdfqlCmdStatus= HDFql.execute("SET THREAD 1");
 
         if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql command \"SET THREAD 1\" !!");
+      throw new RuntimeException(mmi+"Problem with HDFql command \"SET THREAD 1\", hdfqlCmdStatus="+hdfqlCmdStatus);
     }
 
     hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+s104DCF8FilePath);
 
     if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "+s104DCF8FilePath+" !!");
+      throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "
+				 +s104DCF8FilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
     }
 
     // --- Get the S104 feature code String
@@ -841,22 +842,78 @@ abstract public class WLToolsIO implements IWLToolsIO {
     final String s104FcstDataGrpId= ISProductIO.GRP_SEP_ID +
       s104FeatureId + ISProductIO.GRP_SEP_ID + s104FeatureId + ISProductIO.FCST_ID;
 
-    hdfqlCmdStatus= HDFql.execute("USE GROUP "+s104FcstDataGrpId);
+    // --- Get the number of ship channel point locations
+    //     from the ISProductIO.NB_STATIONS_ID attribute.
+    
+    // --- Need to use a local array of int here and not
+    //     pass a new int [] {<an int variable>} directly
+    //     to  HDFql.variableTransientRegister
+    final int [] nbScLocs= {0};
 
-    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql command \"USE GROUP \" for GROUP -> "+s104FcstDataGrpId);
+    SProduct.setTransientAttrFromGroup(ISProductIO.NB_STATIONS_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbScLocs));
+
+    slog.info(mmi+"nbScLocs[0]="+nbScLocs[0]);
+
+    final int [] nbInstants= {0};
+
+    SProduct.setTransientAttrFromGroup(ISProductIO.NB_TIMESTAMPS_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbInstants));
+
+    slog.info(mmi+"nbInstants[0]="+nbInstants[0]);
+
+    List<MeasurementCustom> tmpScLocMCList= new ArrayList<MeasurementCustom>(nbInstants[0]);
+    
+    List<MeasurementCustomBundle> mcbsFromS104DCF8=
+      new ArrayList<MeasurementCustomBundle>(nbScLocs[0]);
+
+    // --- Allocate the array of S104DCF8CompoundType objects.
+    final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= new S104DCF8CompoundType[nbInstants[0]];
+
+    // --- Instantiate all S104DCF8CompoundType objects in the s104Dcf8CmpdTypeArray
+    for (int instantIdx= 0; instantIdx < nbInstants[0]; instantIdx++) {
+      s104Dcf8CmpdTypeArray[instantIdx]= new S104DCF8CompoundType();
     }
 
-    int nbLocations= -1;
-    
-    hdfqlCmdStatus= HDFql
-      .execute("SELECT FROM "+ISProductIO.NB_STATIONS_ID+" INTO MEMORY "+ HDFql.variableTransientRegister(nbLocations));
+    final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
 
-    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql command \"SELECT FROM \" for attribute -> "+ISProductIO.NB_STATIONS_ID);    
+    if (registerNb < 0) {
+      throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), registerNb ->"+registerNb);
     }
-    
-    List<MeasurementCustomBundle> mcbsFromS104DCF8= new ArrayList<MeasurementCustomBundle>(); //(nbLocations);
+
+    // --- Loop on all the ship channel point locations (int indices here)
+    for (int scLoc= 0; scLoc < nbScLocs[0]; scLoc++) {
+
+      // --- Define the name of the HDF5 GROUP for this specific ship channel point location.
+      final String scLocGrpNNNNIdStr= s104FcstDataGrpId +
+	ISProductIO.GRP_SEP_ID + ISProductIO.GRP_PRFX + String.format("%04d", scLoc + 1);
+
+      //slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
+
+      hdfqlCmdStatus= HDFql.execute("USE GROUP "+scLocGrpNNNNIdStr);
+
+      if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+        throw new RuntimeException(mmi+"Group: "+scLocGrpNNNNIdStr+" not found in input file -> "+s104DCF8FilePath);
+      }
+
+      final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
+
+      hdfqlCmdStatus= HDFql.execute("SELECT FROM DATASET \""+valuesDSetIdInGrp+"\" INTO MEMORY " + registerNb);
+
+      if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+        throw new RuntimeException(mmi+"Problem with HDFql cmd \"SELECT FROM DATASET \""+
+				   valuesDSetIdInGrp+"\" INTO MEMORY, hdfqlCmdStatus="+ hdfqlCmdStatus );
+      }
+
+      //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getWaterLevelHeight()="+s104Dcf8CmpdTypeArray[0].getWaterLevelHeight());
+      //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getUncertainty()="+s104Dcf8CmpdTypeArray[0].getUncertainty());
+      //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getWaterLevelTrend()="+s104Dcf8CmpdTypeArray[0].getWaterLevelTrend());
+      
+      slog.info(mmi+"debug System.exit(0)");
+      System.exit(0);
+
+       //mcbsFromS104DCF8.add(new  MeasurementCustomBundle(tmpScLocMCList));
+    }
 
     hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+s104DCF8FilePath);
 
