@@ -38,10 +38,13 @@ final public class MeasurementCustomBundle {
   //private Set<Instant> instantsKeySet= null;
   private SortedSet<Instant> instantsKeySet= null;
 
+  private long dataTimeIntervallSeconds= -1;
+
   // ---
   public MeasurementCustomBundle() {
     this.mcData= null;
     this.instantsKeySet= null;
+    this.dataTimeIntervallSeconds= -1;
   }
 
   // ---
@@ -68,6 +71,18 @@ final public class MeasurementCustomBundle {
 
       //this.instantsKeySet= this.mcData.keySet();
       this.instantsKeySet= new TreeSet<Instant>(this.mcData.keySet());
+
+      if (mcDataList.size() >= 2) {
+      
+        // --- Note: this is useless for WLO data because the time incr. between sucessive data
+        //     can be non-constant in case WLO data are missing
+	this.dataTimeIntervallSeconds=
+	  mcDataList.get(1).getEventDate().getEpochSecond() - mcDataList.get(0).getEventDate().getEpochSecond();
+
+        if (dataTimeIntervallSeconds < 0) {
+	  throw new RuntimeException(mmi+"dataTimeIntervallSeconds cannot be < 0 here !");
+        }
+      }
 
     } else {
       slog.warn(mmi+"Empty mcDataList !! Nothing to do here !!");
@@ -145,6 +160,11 @@ final public class MeasurementCustomBundle {
     }
 
     return (this.instantsKeySet != null) ? new TreeSet(this.instantsKeySet) : null ; //mcData.keySet();
+  }
+
+  // ---
+  public long getDataTimeIntervallSeconds() {
+    return this.dataTimeIntervallSeconds;
   }
 
   // --- Can return null !!

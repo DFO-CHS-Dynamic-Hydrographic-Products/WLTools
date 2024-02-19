@@ -14,8 +14,8 @@ public interface IWLAdjustment extends ITimeMachine {
   // --- nb. of days in the future for the FMF data to have to ensure
   //     that we at least have 30 days for the interpolations.
   //     A warning is raised in the log if the nb. of days in the future
-  //     for the FMF data is < SPINE_FPP_MIN_NBDAYS_INFUTR
-  long SPINE_FPP_MIN_NBDAYS_INFUTR= 35L;
+  //     for the FMF data is < SPINE_FPP_WARN_NBDAYS_INFUTR
+  long SPINE_FPP_WARN_NBDAYS_INFUTR= 35L;
 
   // --- Stop the exec if we only have 72 hours of FMF data
   //     in the future.

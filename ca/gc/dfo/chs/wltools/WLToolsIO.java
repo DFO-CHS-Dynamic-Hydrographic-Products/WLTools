@@ -1062,10 +1062,9 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
   } // --- getJsonArrayFromAPIRequest method
 
-  // --- TODO: Pass the time incr. in seconds to remove the data at time stamps
-  //     that are not a mutiple of this time incr. in seconds.
-  public final static MeasurementCustomBundle
-      getMCBFromIWLSJsonArray(final JsonArray iwlsJsonArray, final double datumConvValue, final boolean applyHFOscRemoval) {
+  // ---
+  public final static MeasurementCustomBundle getMCBFromIWLSJsonArray(final JsonArray iwlsJsonArray,
+		                                                      final long timeIntrvSeconds, final double datumConvValue, final boolean applyHFOscRemoval) {
       
     final String mmi= "getMCBFromIWLSJsonArray: ";
 
@@ -1079,6 +1078,10 @@ abstract public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+"Cannot have iwlsJsonArray.size() == 0 here !!");
     }
 
+    if (timeIntrvSeconds <= 1L) {
+      throw new RuntimeException(mmi+"Invalid timeIntrvSeconds -> "+timeIntrvSeconds+", it must be at least 1 second !!");
+    }
+	
     List<MeasurementCustom> tmpWLDataList= new ArrayList<MeasurementCustom>(iwlsJsonArray.size());
 
     for (int itemIter= 0; itemIter < iwlsJsonArray.size(); itemIter++) {
@@ -1097,8 +1100,11 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	 //slog.info(mmi+"itemInstant="+itemInstant.toString());
          //slog.info(mmi+"debug exit 0");
          //System.exit(0);
-	  
-	 tmpWLDataList.add( new MeasurementCustom(itemInstant, itemValue + datumConvValue, IWL.MINIMUM_UNCERTAINTY_METERS));
+
+	 // --- Only use data that has its Instant being an exact multiple of the timeIntrvSeconds
+	 if ((itemInstant.getEpochSecond() % timeIntrvSeconds) == 0) {
+	   tmpWLDataList.add( new MeasurementCustom(itemInstant, itemValue + datumConvValue, IWL.MINIMUM_UNCERTAINTY_METERS));
+	 }
        }	
     }
 

@@ -225,6 +225,47 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       throw new RuntimeException(mmi+" inputFileDldLocalDest -> "+inputFileDldLocalDest+" not found !");
     }
 
+    // --- Now get a List of MeasurementCustomBundle objects from the S104 DCF8 input HDF5 file
+    //     that contains the full model WL forecast (FMF) for all the ship channel points locations. 
+    List<MeasurementCustomBundle> mcbsFromS104DCF8= WLToolsIO.getMCBsFromS104DCF8File(inputFileDldLocalDest);
+
+    final long fmfTimeIntrvSeconds= mcbsFromS104DCF8.get(0).getDataTimeIntervallSeconds();
+
+    slog.info(mmi+"fmfTimeIntrvSeconds="+fmfTimeIntrvSeconds);
+    //slog.info(mmi+"debug exit 0");
+    ///System.exit(0);
+
+    // --- 
+    final Instant whatTimeIsItNow= Instant.now();
+
+    final Instant fmfLeastRecentInstant= mcbsFromS104DCF8.get(0).getLeastRecentInstantCopy();
+    slog.info(mmi+"fmfLeastRecentInstant="+fmfLeastRecentInstant.toString());
+
+    final Instant fmfMostRecentInstant= mcbsFromS104DCF8.get(0).getMostRecentInstantCopy();
+    slog.info(mmi+"fmfMostRecentInstant="+fmfMostRecentInstant.toString());
+
+    // --- Now check if we have at least sufficient days of data in the future for the S104 DCF8 input file.
+    //     (If not we stop the exec??)
+    final long timeDiffSeconds= fmfMostRecentInstant.getEpochSecond() - whatTimeIsItNow.getEpochSecond();
+
+    final long fmfNbDaysInFutr= timeDiffSeconds/SECONDS_PER_DAY;
+    slog.info(mmi+"fmfNbDaysInFutr="+fmfNbDaysInFutr);
+
+    if (fmfNbDaysInFutr < 0L)   {
+      throw new RuntimeException(mmi+"Invalid full model forecast data: it is completely in the past compared to now !!");
+    }
+
+    final long fmfNbHoursInFutr= timeDiffSeconds/SECONDS_PER_HOUR;
+    slog.info(mmi+"fmfNbHoursInFutr="+fmfNbHoursInFutr);
+
+    if (fmfNbHoursInFutr < 0)   {
+      throw new RuntimeException(mmi+"Invalid full model forecast data: less than 72 hours in the future compared to now !!");
+    }
+
+    if (fmfNbDaysInFutr < SPINE_FPP_WARN_NBDAYS_INFUTR) {
+      slog.warn(mmi+"fmfNbDaysInFutr < "+SPINE_FPP_WARN_NBDAYS_INFUTR+" days in the future compared to now  !!"); 
+    }   
+    
     slog.info(mmi+"Now getting the last WLO data for the TGs from the IWLS API");
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
@@ -239,15 +280,17 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       .getJsonArrayFromAPIRequest(this.iwlsApiBaseUrl+"?chs-region-code=QUE");
 
     //slog.info(mmi+"iwlsStationsInfo.getJsonObject(2).getString(code)="+iwlsStationsInfo.getJsonObject(2).getString("code"));
-
+    //System.out.flush();
+    
     // ---
     //Map<TideGaugeConfig, String> tgsData= new HashMap<TideGaugeConfig,String>();
     this.wloMCBundles= new HashMap<TideGaugeConfig, MeasurementCustomBundle>();
 
+    //// --- 
+    //final Instant whatTimeIsItNow= Instant.now();
+
     // --- Subtract SHORT_TERM_FORECAST_TS_OFFSET_SECONDS from now
     //     (Normally 6 hours in seconds in the past)
-    final Instant whatTimeIsItNow= Instant.now();
-
     final Instant timeOffsetInPast= whatTimeIsItNow.minusSeconds(SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
     final Instant timeOffsetInFutr= whatTimeIsItNow.plusSeconds(MIN_FULL_FORECAST_DURATION_SECONDS);
 
@@ -259,7 +302,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     slog.info(mmi+"timeOffsetInPastReqStr="+timeOffsetInPastReqStr);
     slog.info(mmi+"timeOffsetInFutrReqStr="+timeOffsetInFutrReqStr);
+    //System.out.flush();
 
+    // --- Build the String for the IWLS API request in terms of time frame
     final String timePastFutrFrameReqStr=
        "data?time-series-code=wlo&from="+timeOffsetInPastReqStr+"&to="+timeOffsetInFutrReqStr;
     
@@ -277,6 +322,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       final String tgNumStrCode= tgCfg.getIdentity();
 
       slog.info(mmi+"tgNumStrCode="+tgNumStrCode);
+      //System.out.flush();
       
       String iwlsStnId= null;
 
@@ -308,15 +354,17 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       } else {
 
 	slog.info(mmi+"Using IWLS id -> "+iwlsStnId+" for TG -> "+tgNumStrCode);
+	//System.out.flush();
 
         final String tgWLOAPIRequest= this.iwlsApiBaseUrl +
 	  File.separator + iwlsStnId + File.separator + timePastFutrFrameReqStr;
 
-	slog.info(mmi+"tgWLOAPIRequest="+tgWLOAPIRequest);        
+	slog.info(mmi+"tgWLOAPIRequest="+tgWLOAPIRequest);
+	//System.out.flush();
 
-	// --- Get the more recent WLO data for this TG from the IWLS DB  
+	// --- Get the more recent WLO data for this TG from the IWLS DB
 	final JsonArray iwlsJSTGWLOData= WLToolsIO
-	 .getJsonArrayFromAPIRequest(tgWLOAPIRequest);
+	  .getJsonArrayFromAPIRequest(tgWLOAPIRequest);
 
 	if (iwlsJSTGWLOData.size() == 0) {
 	  slog.warn(mmi+"WARNING!: Seems that there is no WLO data for TG -> "+tgNumStrCode+", skipping it !!");  
@@ -328,20 +376,30 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
         //slog.info(mmi+"iwlsJSTGWLOData.getJsonObject(0).getJsonNumber(value).doubleValue()="+
 	//	  iwlsJSTGWLOData.getJsonObject(0).getJsonNumber("value").doubleValue());
 
+	slog.info(mmi+"bef. getMCBFromIWLSJsonArray()");
+	//System.out.flush();
+
 	// --- Get the MeasurementCustomBundle object of the valid WLO data
-	//     for this TG.
+	//     for this TG but only for timestamps that are consistent with the fmfTimeIntrvSeconds
 	final MeasurementCustomBundle checkMcb= WLToolsIO
-	  .getMCBFromIWLSJsonArray(iwlsJSTGWLOData, tgCfg.getZcVsVertDatum(), true);
+	  .getMCBFromIWLSJsonArray(iwlsJSTGWLOData, fmfTimeIntrvSeconds, tgCfg.getZcVsVertDatum(), true);
+
+	slog.info(mmi+"aft. getMCBFromIWLSJsonArray()");
+	//System.out.flush();
 
 	// --- Add the MeasurementCustomBundle object of the valid WLO data
 	//     for this TG. If checkMcb == null this means that there is either
 	//     not enough valid WLO data or no data at all for this TG
-	if ( checkMcb != null ) { 
+	if ( checkMcb != null ) {
+	    
 	  this.wloMCBundles.put(tgCfg, checkMcb);
+          slog.info(mmi+"Got "+this.wloMCBundles.get(tgCfg).size()+" valid WLO data for TG -> "+tgNumStrCode);
 	  
 	} else {
 	  slog.warn(mmi+"WARNING!!: Not enough valid WLO data or no data at all for this TG now-> "+tgNumStrCode);
 	}
+
+	//System.out.flush();
 	
 	//slog.info(mmi+"debug exit 0");
         //System.exit(0);
@@ -349,47 +407,25 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       } // --- End if-else block
     } // --- outer for loop block
 
-    final Set<TideGaugeConfig> tgsWithValidWLOData= this.wloMCBundles.keySet();
+    Set<TideGaugeConfig> tgsWithValidWLOData= this.wloMCBundles.keySet();
 
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data before checking time sync. with FMF data");
+    System.out.flush();
 
-    // --- Now get a List of MeasurementCustomBundle objects from the S104 DCF8 input HDF5 file
-    //     that contains the model WL forecast for all the ship channel points locations. 
-    List<MeasurementCustomBundle> mcbsFromS104DCF8= WLToolsIO.getMCBsFromS104DCF8File(inputFileDldLocalDest);
-
-    final Instant fmfLeastRecentInstant= mcbsFromS104DCF8.get(0).getLeastRecentInstantCopy();
-    slog.info(mmi+"fmfLeastRecentInstant="+fmfLeastRecentInstant.toString());
-
-    final Instant fmfMostRecentInstant= mcbsFromS104DCF8.get(0).getMostRecentInstantCopy();
-    slog.info(mmi+"fmfMostRecentInstant="+fmfMostRecentInstant.toString());
-
-    // --- TODO: Now check if we have at least 5(?) days of data in the future for the S104 DCF8 input file.
-    //     If not we stop the exec??
-
-    final long timeDiffSeconds= fmfMostRecentInstant.getEpochSecond() - whatTimeIsItNow.getEpochSecond();
-
-    final long fmfNbDaysInFutr= timeDiffSeconds/SECONDS_PER_DAY;
-    slog.info(mmi+"fmfNbDaysInFutr="+fmfNbDaysInFutr);
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
     
-    if (fmfNbDaysInFutr < 0L)   {
-      throw new RuntimeException(mmi+"Invalid full model forecast data: it is completely in the past compared to now !!");
-    }
-
-    final long fmfNbHoursInFutr= timeDiffSeconds/SECONDS_PER_HOUR;
-    slog.info(mmi+"fmfNbHoursInFutr="+fmfNbHoursInFutr);
-    
-    if (fmfNbHoursInFutr < 0)   {
-      throw new RuntimeException(mmi+"Invalid full model forecast data: less than 72 hours in the future compared to now !!");
-    }       
-
-    // --- TODO: Now check if the most recent WLO data timestamp is more recent than the
+    // --- Now check if the most recent WLO data timestamp is more recent than the
     //     least recent model forecast data timestamp for all the tide gauges that
     //     have valid WLO data. If the most recent time stamp of the WLO data of
     //     a given tide gauge is before the least recent model forecast data timestamp
     //     then this WLO data for this tide gauge is useless for the Spine FPP WL adjustments
     //     and we remove this tide gauge from this.wloMCBundles Map of MeasurementCustomBundle
-    //     objects.
+    //     objects. Also determine the least recent valid Instant of the WLO data to use it to
+    //     synchronize the (WLO-FMF) residuals for their spatial interp. between the tide gauges.
 
+    Instant tgsLeastRecentValidWLOInstant= Instant.ofEpochSecond((long)Integer.MAX_VALUE);
+    
     for (final TideGaugeConfig tgCfg: tgsWithValidWLOData) {
        
 	//slog.info(mmi+"Checking WLO data time sync with the FMF data for tide gauge -> "+ tgCfg.getIdentity());
@@ -401,15 +437,100 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
 	this.wloMCBundles.remove(tgCfg);
       }
+
+      tgsLeastRecentValidWLOInstant= (tgWLOMostRecentInstant
+	.isBefore(tgsLeastRecentValidWLOInstant) ) ? tgWLOMostRecentInstant : tgsLeastRecentValidWLOInstant;
     }
+
+    // --- Update the tgsWithValidWLOData Set in case one TG was removed
+    tgsWithValidWLOData= this.wloMCBundles.keySet();
 
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data after checking time sync. with FMF data");
 
+    slog.info(mmi+"tgsLeastRecentValidWLOInstant="+tgsLeastRecentValidWLOInstant.toString());
+    System.out.flush();
+
+    //for (final TideGaugeConfig tgc: tgsWithValidWLOData) {
+    //	slog.info(mmi+"tgc id="+tgc.getIdentity());
+    //}
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
+    
+    // --- Build a Map<TideGaugeConfig,Double> for the (WLO-FMF) residuals.
+    Map<TideGaugeConfig,Double> tgsResiduals= new HashMap<TideGaugeConfig,Double>(this.locations.size());
+    
+    // --- Set the residuals at the TGs locations. The residual
+    //     Double object is set to null if the WLO data is not
+    //     available for a given TG
+    for (int tgLocIdx= 0; tgLocIdx < this.locations.size(); tgLocIdx++) {
+
+      final TideGaugeConfig tgCfg= this.locations.get(tgLocIdx);
+
+      //slog.info(mmi+"tgCfg num. str id="+tgCfg.getIdentity());
+      //final int tgNearestScLocIndex= Integer.parseInt(tgCfg
+      //	.getNearestSpinePointId().split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[1]);
+      //slog.info(mmi+"tgNearestScLocIndex="+tgNearestScLocIndex);
+      //slog.info(mmi+"debug exit 0");
+      //System.out.flush();
+      //System.exit(0);   
+      
+      if (tgsWithValidWLOData.contains(tgCfg)) {
+
+	if (!tgCfg.isConfigOkay()) {
+	  throw new RuntimeException(mmi+"Must have tgCfg.isConfigOkay() == true here for TG -> "+tgCfg.getIdentity());
+	}
+	  
+        final int tgNearestScLocIndex= Integer.parseInt(tgCfg
+	  .getNearestSpinePointId().split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[1]);
+
+        slog.info(mmi+"tgNearestScLocIndex="+tgNearestScLocIndex);
+	    
+	slog.info(mmi+"Got valid WLO for TG -> "+tgCfg.getIdentity());
+	System.out.flush();
+
+	final double tgWLOAtInstant= this.wloMCBundles
+	  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
+
+	final double tgFMFAtInstant= mcbsFromS104DCF8
+	  .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
+	  
+	tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
+
+	slog.info(mmi+"residual="+tgsResiduals.get(tgCfg)+" at TG -> "+tgCfg.getIdentity());
+	System.out.flush();
+
+	//slog.info(mmi+"debug exit 0");
+        //System.exit(0);
+			 
+      } else {
+	slog.warn(mmi+"WARNING: No valid WLO to use for residual at TG -> "+tgCfg.getIdentity());
+	tgsResiduals.put(tgCfg, null);
+      }	
+    }
+
+    // --- Set the residuals of the upstreammost TG at 0.0
+    //     in case it is not available
+    if (tgsResiduals.get(this.locations.get(0)) == null ) {
+
+      slog.warn(mmi+"WARNING: No valid WLO to use for residual at upstreammost TG -> "+
+		this.locations.get(0).getIdentity()+", just setting it at 0.0");
+      
+      tgsResiduals.put(this.locations.get(0), 0.0);
+    }
+    
+    // --- Set the residuals of the downtreammost TG at 0.0
+    //     in case it is not available
+    if (tgsResiduals.get(this.locations.get(this.locations.size()-1)) == null ) {
+	
+      slog.warn(mmi+"WARNING: No valid WLO to use for residual at downstreammost TG -> "+
+		this.locations.get(this.locations.size()-1).getIdentity()+", just setting it at 0.0");
+	
+      tgsResiduals.put(this.locations.get(this.locations.size()-1), 0.0);
+    }
+    
     // --- TODO: Now build the Map of WLSCReachIntrpUnit objects that will be used for the
     //     Spine FPP WL adjustment type.
-    
-    
-    
+ 
     slog.info(mmi+"debug exit 0");
     System.exit(0);
     
