@@ -901,8 +901,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
     
-    List<MeasurementCustom> tmpScLocMCList= new ArrayList<MeasurementCustom>(nbInstants[0]);
-    
+    // --- Create the ArrayList of the MeasurementCustomBundle objects
+    //     (one for each ship channel point location)
     List<MeasurementCustomBundle> mcbsFromS104DCF8=
       new ArrayList<MeasurementCustomBundle>(nbScLocs[0]);
 
@@ -928,6 +928,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), s104Dcf8CmpdTypeArrRegisterNb ->"+s104Dcf8CmpdTypeArrRegisterNb);
     }
 
+    slog.info(mmi+"Reading the full model forecast data for all the ship channel point locations from the HDF5 file, could take ~10 secs");
+
     // --- Loop on all the ship channel point locations (int indices here)
     for (int scLoc= 0; scLoc < nbScLocs[0]; scLoc++) {
 
@@ -935,7 +937,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       final String scLocGrpNNNNIdStr= s104FcstDataGrpId +
 	ISProductIO.GRP_SEP_ID + ISProductIO.GRP_PRFX + String.format("%04d", scLoc + 1);
 
-      slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
+      //slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
 
       hdfqlCmdStatus= HDFql.execute("USE GROUP "+scLocGrpNNNNIdStr);
 
@@ -975,6 +977,10 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getUncertainty()="+s104Dcf8CmpdTypeArray[0].getUncertainty()+"\n");
       //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getWaterLevelTrend()="+s104Dcf8CmpdTypeArray[0].getWaterLevelTrend());
 
+      // --- NOTE: Performance is way better if we re-create the tmpScLocMCList ArrayList object here
+      //           instead of creating it just once outside the outer loop on the ship channel point locations
+      List<MeasurementCustom> tmpScLocMCList= new ArrayList<MeasurementCustom>(nbInstants[0]); 
+      
       //--- Now populate the tmpScLocMCList ArrayList with the content of the
       //    s104Dcf8CmpdTypeArray for this ship channel point location for all
       //    the timestamps.
@@ -983,12 +989,16 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	final S104DCF8CompoundType s104CmpTypeAtInstant= s104Dcf8CmpdTypeArray[instantIdx];
 
 	// --- Using a copy of the Instant objects for the eventDate attribute of the
-	//     MeasurementCustom object.
+	//     new MeasurementCustom object.
 	final MeasurementCustom mcAtInstant= new MeasurementCustom( fmfInstants[instantIdx].plusSeconds(0L),
 								    Double.valueOf(s104CmpTypeAtInstant.getWaterLevelHeight()),
 								    Double.valueOf(s104CmpTypeAtInstant.getUncertainty()) ) ;
-	  
+
+	// --- No need to use the instantIdx itself here but
+	//     there is no significant performance degradation
+	//     compared to the simple add() without an index.
 	tmpScLocMCList.add(instantIdx, mcAtInstant);
+	//tmpScLocMCList.add(mcAtInstant);
       }
 
       // --- Finally create the MeasurementCustomBundle object for this ship channel point location
@@ -1003,7 +1013,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
       throw new RuntimeException(mmi+"Problem with HDFql.unregisterVariable(registerNb)!!, hdfqlCmdStatus="+hdfqlCmdStatus);
-    } 
+    }
  
     hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+s104DCF8FilePath);
 
@@ -1012,8 +1022,9 @@ abstract public class WLToolsIO implements IWLToolsIO {
     }    
     
     slog.info(mmi+"end");
-    slog.info(mmi+"debug System.exit(0)");
-    System.exit(0);
+    
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
 
     return mcbsFromS104DCF8;
   }	

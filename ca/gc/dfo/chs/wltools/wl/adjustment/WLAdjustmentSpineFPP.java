@@ -351,17 +351,36 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     final Set<TideGaugeConfig> tgsWithValidWLOData= this.wloMCBundles.keySet();
 
-    slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data");
+    slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data before checking time sync. with FMF data");
 
     // --- Now get a List of MeasurementCustomBundle objects from the S104 DCF8 input HDF5 file
     //     that contains the model WL forecast for all the ship channel points locations. 
     List<MeasurementCustomBundle> mcbsFromS104DCF8= WLToolsIO.getMCBsFromS104DCF8File(inputFileDldLocalDest);
-    
-    slog.info(mmi+"debug exit 0");
-    System.exit(0);
+
+    final Instant fmfLeastRecentInstant= mcbsFromS104DCF8.get(0).getLeastRecentInstantCopy();
+    slog.info(mmi+"fmfLeastRecentInstant="+fmfLeastRecentInstant.toString());
+
+    final Instant fmfMostRecentInstant= mcbsFromS104DCF8.get(0).getMostRecentInstantCopy();
+    slog.info(mmi+"fmfMostRecentInstant="+fmfMostRecentInstant.toString());
 
     // --- TODO: Now check if we have at least 5(?) days of data in the future for the S104 DCF8 input file.
-    //     If not we stop the exec??  
+    //     If not we stop the exec??
+
+    final long timeDiffSeconds= fmfMostRecentInstant.getEpochSecond() - whatTimeIsItNow.getEpochSecond();
+
+    final long fmfNbDaysInFutr= timeDiffSeconds/SECONDS_PER_DAY;
+    slog.info(mmi+"fmfNbDaysInFutr="+fmfNbDaysInFutr);
+    
+    if (fmfNbDaysInFutr < 0L)   {
+      throw new RuntimeException(mmi+"Invalid full model forecast data: it is completely in the past compared to now !!");
+    }
+
+    final long fmfNbHoursInFutr= timeDiffSeconds/SECONDS_PER_HOUR;
+    slog.info(mmi+"fmfNbHoursInFutr="+fmfNbHoursInFutr);
+    
+    if (fmfNbHoursInFutr < 0)   {
+      throw new RuntimeException(mmi+"Invalid full model forecast data: less than 72 hours in the future compared to now !!");
+    }       
 
     // --- TODO: Now check if the most recent WLO data timestamp is more recent than the
     //     least recent model forecast data timestamp for all the tide gauges that
@@ -371,8 +390,25 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     //     and we remove this tide gauge from this.wloMCBundles Map of MeasurementCustomBundle
     //     objects.
 
+    for (final TideGaugeConfig tgCfg: tgsWithValidWLOData) {
+       
+	//slog.info(mmi+"Checking WLO data time sync with the FMF data for tide gauge -> "+ tgCfg.getIdentity());
+
+      final Instant tgWLOMostRecentInstant= this.wloMCBundles.get(tgCfg).getMostRecentInstantCopy();
+
+      if (tgWLOMostRecentInstant.isBefore(fmfLeastRecentInstant)) {
+	slog.warn(mmi+"WARNING: most recent WLO data timestamp is in the past compared to FMF data for tide gauge -> "+tgCfg.getIdentity()+", rejecting it for the adjustments!");
+
+	this.wloMCBundles.remove(tgCfg);
+      }
+    }
+
+    slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data after checking time sync. with FMF data");
+
     // --- TODO: Now build the Map of WLSCReachIntrpUnit objects that will be used for the
     //     Spine FPP WL adjustment type.
+    
+    
     
     slog.info(mmi+"debug exit 0");
     System.exit(0);
