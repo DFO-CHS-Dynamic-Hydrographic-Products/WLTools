@@ -66,7 +66,11 @@ final public class MeasurementCustomBundle {
       this.mcData= new HashMap<Instant, MeasurementCustom>();
 
       for (final MeasurementCustom mcIter: mcDataList) {
-        this.mcData.put(mcIter.getEventDate(), mcIter);
+
+	// --- Use a copy for the Instant key instead of a reference.
+	//     Behavior should be the same.
+	this.mcData.put(mcIter.getEventDate().plusSeconds(0L), mcIter);
+	//this.mcData.put(mcIter.getEventDate(), mcIter);
       }
 
       //this.instantsKeySet= this.mcData.keySet();
@@ -150,6 +154,7 @@ final public class MeasurementCustomBundle {
 
   // --- Can return null!!
   public SortedSet<Instant> getInstantsKeySetCopy() {
+  //public TreeSet<Instant> getInstantsKeySetCopy() {
 
     final String mmi= "getInstantsKeySetCopy: ";
 
@@ -159,7 +164,13 @@ final public class MeasurementCustomBundle {
       throw new RuntimeException(mmi+npe);
     }
 
-    return (this.instantsKeySet != null) ? new TreeSet(this.instantsKeySet) : null ; //mcData.keySet();
+    //TreeSet ret= null;
+    //if (this.instantsKeySet != null) {
+    //  ret= new TreeSet(this.instantsKeySet);
+    //}
+    //return (SortedSet<Instant>)ret;
+
+    return (this.instantsKeySet != null) ? new TreeSet<Instant>(this.instantsKeySet) : null ; //mcData.keySet();
   }
 
   // ---

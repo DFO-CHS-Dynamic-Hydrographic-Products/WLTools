@@ -410,7 +410,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     Set<TideGaugeConfig> tgsWithValidWLOData= this.wloMCBundles.keySet();
 
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data before checking time sync. with FMF data");
-    System.out.flush();
+    //System.out.flush();
 
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
@@ -448,7 +448,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data after checking time sync. with FMF data");
 
     slog.info(mmi+"tgsLeastRecentValidWLOInstant="+tgsLeastRecentValidWLOInstant.toString());
-    System.out.flush();
+    //System.out.flush();
 
     //for (final TideGaugeConfig tgc: tgsWithValidWLOData) {
     //	slog.info(mmi+"tgc id="+tgc.getIdentity());
@@ -486,18 +486,28 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
         slog.info(mmi+"tgNearestScLocIndex="+tgNearestScLocIndex);
 	    
 	slog.info(mmi+"Got valid WLO for TG -> "+tgCfg.getIdentity());
-	System.out.flush();
+	//System.out.flush();
 
-	final double tgWLOAtInstant= this.wloMCBundles
-	  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
+	final MeasurementCustom mcCheck= this.wloMCBundles
+	  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant);
+
+        if (mcCheck == null) {
+	    //slog.warn(mmi+"WARNING: no WLO data at Instant ->"+tgsLeastRecentValidWLOInstant.toString()+" for TG ->"+tgCfg.getIdentity());
+	    throw new RuntimeException(mmi+"no WLO data at Instant ->"+tgsLeastRecentValidWLOInstant.toString()+" for TG ->"+tgCfg.getIdentity()); 
+	}
+	
+	final double tgWLOAtInstant= mcCheck.getValue();
+	//  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
 
 	final double tgFMFAtInstant= mcbsFromS104DCF8
 	  .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
 	  
 	tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
-
+	
+        slog.info(mmi+"tgWLOAtInstant="+tgWLOAtInstant);
+	slog.info(mmi+"tgFMFAtInstant="+tgFMFAtInstant);
 	slog.info(mmi+"residual="+tgsResiduals.get(tgCfg)+" at TG -> "+tgCfg.getIdentity());
-	System.out.flush();
+	//System.out.flush();
 
 	//slog.info(mmi+"debug exit 0");
         //System.exit(0);

@@ -604,7 +604,7 @@ abstract public class WLAdjustmentFMF
     final SortedSet<Long> validLonIdxKeySet= new TreeSet<Long>(timeDepResidualsStats.keySet());
 
     // --- Need to use a NavigableSet here to be able to use its specific tailSet() method later
-    NavigableSet<Instant> actuFMFInstantsSet= new TreeSet(actualFMFMcb.getInstantsKeySetCopy());   
+    NavigableSet<Instant> actuFMFInstantsSet= new TreeSet<Instant>(actualFMFMcb.getInstantsKeySetCopy());   
 
     // --- Loop on all the Instant objects of the actuFMFInstantsSet
     for (final Instant actualFMFInstant: actuFMFInstantsSet) {

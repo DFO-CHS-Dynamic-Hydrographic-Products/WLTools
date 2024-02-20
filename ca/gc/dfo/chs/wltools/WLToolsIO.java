@@ -564,7 +564,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     // --- Use only one thread for HDFql operations. It avoids a possible cluttering-up of the cores 
     //     because HDFql try to use all the core available by default which is not a good idea most of
     //     the time.
-    HDFql.execute("SET THREAD 1");
+    //HDFql.execute("SET THREAD 1");
     
     // --- Now do the conversion to S104 DCF8 format (one file for all the ship channel points locations).
     //     first open the unique S104 DCF8 HDF5 output file in append mode (default when it is already existing);
@@ -823,14 +823,13 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     slog.info(mmi+"start");
 
-    // --- Tell the HDFql lib to use just one thread here.
-    int hdfqlCmdStatus= HDFql.execute("SET THREAD 1");
+    //// --- Tell the HDFql lib to use just one thread here.
+    //HDFql.execute("SET THREAD 1");
+    //if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+    //  throw new RuntimeException(mmi+"Problem with HDFql command \"SET THREAD 1\", hdfqlCmdStatus="+hdfqlCmdStatus);
+    //}
 
-        if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql command \"SET THREAD 1\", hdfqlCmdStatus="+hdfqlCmdStatus);
-    }
-
-    hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+s104DCF8FilePath);
+    int hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+s104DCF8FilePath);
 
     if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
       throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "

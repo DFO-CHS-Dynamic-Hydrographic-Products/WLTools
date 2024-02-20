@@ -689,7 +689,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //     false arg. to begin the NavigableSet at the Instant that follows the
     //     mostRecentAdjFMFInstant object.
     final NavigableSet<Instant> predMcbInstantsTailSet=
-      new TreeSet(wlPredMCB.getInstantsKeySetCopy()).tailSet(mostRecentAdjFMFInstant,false);
+      new TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).tailSet(mostRecentAdjFMFInstant,false);
 
     // --- This way of defining the predMcbInstantsTailSet was causing
     //     that we ended-up with duplicate Instant having two different WL values)
