@@ -824,7 +824,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"start");
 
     //// --- Tell the HDFql lib to use just one thread here.
-    //HDFql.execute("SET THREAD 1");
+    HDFql.execute("SET THREAD 1");
+    
     //if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
     //  throw new RuntimeException(mmi+"Problem with HDFql command \"SET THREAD 1\", hdfqlCmdStatus="+hdfqlCmdStatus);
     //}
@@ -849,21 +850,24 @@ abstract public class WLToolsIO implements IWLToolsIO {
     // --- Need to use a local array of int here and not
     //     pass a new int [] {<an int variable>} directly
     //     to  HDFql.variableTransientRegister
-    final int [] nbScLocs= {0};
+    //final int [] nbScLocs= {0};
+    Integer [] nbScLocs= {0};
 
     SProduct.setTransientAttrFromGroup(ISProductIO.NB_STATIONS_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbScLocs));
 
     slog.info(mmi+"nbScLocs[0]="+nbScLocs[0]);
 
-    final int [] nbInstants= {0};
+    //final int [] nbInstants= {0};
+    Integer [] nbInstants= {0};
 
     SProduct.setTransientAttrFromGroup(ISProductIO.NB_TIMESTAMPS_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbInstants));
 
     slog.info(mmi+"nbInstants[0]="+nbInstants[0]);
 
-    final String [] dateTimeOfFirstRecord= {""};
+    //final String [] dateTimeOfFirstRecord= {""};
+    String [] dateTimeOfFirstRecord= {""};
     
     SProduct.setTransientAttrFromGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfFirstRecord));
@@ -882,14 +886,16 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     //slog.info(mmi+"fmfLeastRecentInstant.toString()="+fmfLeastRecentInstant.toString());
 
-    final String [] dateTimeOfLastRecord= {""};
+    //final String [] dateTimeOfLastRecord= {""};
+    String [] dateTimeOfLastRecord= {""};
     
     SProduct.setTransientAttrFromGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfLastRecord));    
 
     slog.info(mmi+"dateTimeOfLastRecord[0]="+dateTimeOfLastRecord[0]);
 
-    final int [] timeIntervalSeconds=
+    //final int [] timeIntervalSeconds=
+    Integer [] timeIntervalSeconds=
       { (int)IWLAdjustment.MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS };
     
     SProduct.setTransientAttrFromGroup(ISProductIO.TIME_INTRV_ID,
@@ -906,7 +912,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
       new ArrayList<MeasurementCustomBundle>(nbScLocs[0]);
 
     // --- Use an array of Instant objects to define them just once.
-    final Instant [] fmfInstants= new Instant[nbInstants[0]];
+    //final Instant [] fmfInstants= new Instant[nbInstants[0]];
+    Instant [] fmfInstants= new Instant[nbInstants[0]];
     
     // --- Allocate the array of S104DCF8CompoundType objects.
     final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= new S104DCF8CompoundType[nbInstants[0]];
@@ -916,7 +923,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	
       s104Dcf8CmpdTypeArray[instantIdx]= new S104DCF8CompoundType();
       
-      fmfInstants[instantIdx]= fmfLeastRecentInstant.plusSeconds(instantIdx*timeIntervalSeconds[0]);
+      fmfInstants[instantIdx]= fmfLeastRecentInstant.plusSeconds((long)instantIdx*timeIntervalSeconds[0]);
     }
 
     // ---
@@ -944,7 +951,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
         throw new RuntimeException(mmi+"Group: "+scLocGrpNNNNIdStr+" not found in input file -> "+s104DCF8FilePath);
       }
 
-      final String [] checkStartDate= {""};
+      //final String [] checkStartDate= {""};
+      String [] checkStartDate= {""};
 
       SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID,
 					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkStartDate));
@@ -953,7 +961,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	throw new RuntimeException(mmi+"Must have checkStartDate[0] being the same as dateTimeOfFirstRecord[0] here!!");
       }
 
-      final String [] checkLastDate= {""};
+      //final String [] checkLastDate= {""};
+      String [] checkLastDate= {""};
 
       SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID,
 					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkLastDate));
