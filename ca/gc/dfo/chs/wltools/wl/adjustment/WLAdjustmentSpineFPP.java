@@ -88,12 +88,18 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  private boolean doAdjust= true;
+    
   // --- TODO: Define the iwlsApiBaseUrl String with an --iwlsApiBaseUrl option passed to the main script. 
   private final String iwlsApiBaseUrl= "https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations";
     
   private Map<String,WLSCReachIntrpUnit> scReachIntrpUnits= null;
 
-  private Map<TideGaugeConfig, MeasurementCustomBundle> wloMCBundles= null;
+    //private Map<TideGaugeConfig, MeasurementCustomBundle> wloMCBundles= null;
+
+  private List<MeasurementCustomBundle> mcbsFromS104DCF8= null;
+
+  private Map<TideGaugeConfig,Double> tgsResiduals= null;
 
   // --- To store the non-ajusted WL predictions OR non-adjusted FMF data at the ship channel point locations that are
   //     in-between the tide gauges locations being processed (INPUT ONLY) 
@@ -227,9 +233,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     // --- Now get a List of MeasurementCustomBundle objects from the S104 DCF8 input HDF5 file
     //     that contains the full model WL forecast (FMF) for all the ship channel points locations. 
-    List<MeasurementCustomBundle> mcbsFromS104DCF8= WLToolsIO.getMCBsFromS104DCF8File(inputFileDldLocalDest);
+    this.mcbsFromS104DCF8= WLToolsIO.getMCBsFromS104DCF8File(inputFileDldLocalDest);
 
-    final long fmfTimeIntrvSeconds= mcbsFromS104DCF8.get(0).getDataTimeIntervallSeconds();
+    final long fmfTimeIntrvSeconds= this.mcbsFromS104DCF8.get(0).getDataTimeIntervallSeconds();
 
     slog.info(mmi+"fmfTimeIntrvSeconds="+fmfTimeIntrvSeconds);
     //slog.info(mmi+"debug exit 0");
@@ -238,10 +244,10 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     // --- 
     final Instant whatTimeIsItNow= Instant.now();
 
-    final Instant fmfLeastRecentInstant= mcbsFromS104DCF8.get(0).getLeastRecentInstantCopy();
+    final Instant fmfLeastRecentInstant= this.mcbsFromS104DCF8.get(0).getLeastRecentInstantCopy();
     slog.info(mmi+"fmfLeastRecentInstant="+fmfLeastRecentInstant.toString());
 
-    final Instant fmfMostRecentInstant= mcbsFromS104DCF8.get(0).getMostRecentInstantCopy();
+    final Instant fmfMostRecentInstant= this.mcbsFromS104DCF8.get(0).getMostRecentInstantCopy();
     slog.info(mmi+"fmfMostRecentInstant="+fmfMostRecentInstant.toString());
 
     // --- Now check if we have at least sufficient days of data in the future for the S104 DCF8 input file.
@@ -279,12 +285,23 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     final JsonArray iwlsStationsInfo= WLToolsIO
       .getJsonArrayFromAPIRequest(this.iwlsApiBaseUrl+"?chs-region-code=QUE");
 
+    try {
+      iwlsStationsInfo.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+   
+    if (iwlsStationsInfo.size() == 0) {
+      throw new RuntimeException(mmi+"iwlsStationsInfo.size() cannot be 0 here !!");
+    }
+    
     //slog.info(mmi+"iwlsStationsInfo.getJsonObject(2).getString(code)="+iwlsStationsInfo.getJsonObject(2).getString("code"));
     //System.out.flush();
     
     // ---
     //Map<TideGaugeConfig, String> tgsData= new HashMap<TideGaugeConfig,String>();
-    this.wloMCBundles= new HashMap<TideGaugeConfig, MeasurementCustomBundle>();
+    //this.wloMCBundles= new HashMap<TideGaugeConfig, MeasurementCustomBundle>();
+    Map<TideGaugeConfig, MeasurementCustomBundle> wloMCBundles= new HashMap<TideGaugeConfig, MeasurementCustomBundle>();
 
     //// --- 
     //final Instant whatTimeIsItNow= Instant.now();
@@ -306,7 +323,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     // --- Build the String for the IWLS API request in terms of time frame
     final String timePastFutrFrameReqStr=
-       "data?time-series-code=wlo&from="+timeOffsetInPastReqStr+"&to="+timeOffsetInFutrReqStr;
+      "data?time-series-code=wlo&from="+timeOffsetInPastReqStr+"&to="+timeOffsetInFutrReqStr;
     
     // slog.info(mmi+"debug exit 0");
     // System.exit(0);
@@ -392,8 +409,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	//     not enough valid WLO data or no data at all for this TG
 	if ( checkMcb != null ) {
 	    
-	  this.wloMCBundles.put(tgCfg, checkMcb);
-          slog.info(mmi+"Got "+this.wloMCBundles.get(tgCfg).size()+" valid WLO data for TG -> "+tgNumStrCode);
+	  wloMCBundles.put(tgCfg, checkMcb);
+	  
+          slog.info(mmi+"Got "+wloMCBundles.get(tgCfg).size()+" valid WLO data for TG -> "+tgNumStrCode);
 	  
 	} else {
 	  slog.warn(mmi+"WARNING!!: Not enough valid WLO data or no data at all for this TG now-> "+tgNumStrCode);
@@ -407,7 +425,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       } // --- End if-else block
     } // --- outer for loop block
 
-    Set<TideGaugeConfig> tgsWithValidWLOData= this.wloMCBundles.keySet();
+    Set<TideGaugeConfig> tgsWithValidWLOData= wloMCBundles.keySet();
 
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data before checking time sync. with FMF data");
     //System.out.flush();
@@ -430,12 +448,14 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
        
 	//slog.info(mmi+"Checking WLO data time sync with the FMF data for tide gauge -> "+ tgCfg.getIdentity());
 
-      final Instant tgWLOMostRecentInstant= this.wloMCBundles.get(tgCfg).getMostRecentInstantCopy();
+      final Instant tgWLOMostRecentInstant= wloMCBundles.get(tgCfg).getMostRecentInstantCopy();
 
       if (tgWLOMostRecentInstant.isBefore(fmfLeastRecentInstant)) {
-	slog.warn(mmi+"WARNING: most recent WLO data timestamp is in the past compared to FMF data for tide gauge -> "+tgCfg.getIdentity()+", rejecting it for the adjustments!");
+	  
+	slog.warn(mmi+"WARNING: most recent WLO data timestamp is in the past compared to FMF data for tide gauge -> "+
+		  tgCfg.getIdentity()+", rejecting it for the adjustments!");
 
-	this.wloMCBundles.remove(tgCfg);
+	wloMCBundles.remove(tgCfg);
       }
 
       tgsLeastRecentValidWLOInstant= (tgWLOMostRecentInstant
@@ -443,7 +463,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     }
 
     // --- Update the tgsWithValidWLOData Set in case one TG was removed
-    tgsWithValidWLOData= this.wloMCBundles.keySet();
+    tgsWithValidWLOData= wloMCBundles.keySet();
 
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data after checking time sync. with FMF data");
 
@@ -457,7 +477,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     //System.exit(0);
     
     // --- Build a Map<TideGaugeConfig,Double> for the (WLO-FMF) residuals.
-    Map<TideGaugeConfig,Double> tgsResiduals= new HashMap<TideGaugeConfig,Double>(this.locations.size());
+    //Map<TideGaugeConfig,Double> tgsResiduals= new HashMap<TideGaugeConfig,Double>(this.locations.size());
+    this.tgsResiduals= new HashMap<TideGaugeConfig,Double>(this.locations.size());
     
     // --- Set the residuals at the TGs locations. The residual
     //     Double object is set to null if the WLO data is not
@@ -492,7 +513,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	//     the tgsLeastRecentValidWLOInstant does not exists
 	//     for the WLO data of this tide gauge. Use the
 	//     fmfTimeIntrvSeconds time threshold here.
-	final MeasurementCustom wloMCCheck= this.wloMCBundles.get(tgCfg)
+	final MeasurementCustom wloMCCheck= wloMCBundles.get(tgCfg)
 	  .getNearestTSMCWLDataNeighbor(tgsLeastRecentValidWLOInstant, fmfTimeIntrvSeconds);
 
         if (wloMCCheck == null) {
@@ -505,7 +526,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  final double tgWLOAtInstant= wloMCCheck.getValue();
 	  //  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
 
-          final MeasurementCustom fmfMCCheck= mcbsFromS104DCF8
+          final MeasurementCustom fmfMCCheck= this.mcbsFromS104DCF8
 	    .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant);
 
 	  try {
@@ -517,11 +538,11 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  final double tgFMFAtInstant= fmfMCCheck.getValue();
 	  //  .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
 	  
-	  tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
+	  this.tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
 	
           slog.info(mmi+"tgWLOAtInstant="+tgWLOAtInstant);
 	  slog.info(mmi+"tgFMFAtInstant="+tgFMFAtInstant);
-	  slog.info(mmi+"residual="+tgsResiduals.get(tgCfg)+" at TG -> "+tgCfg.getIdentity());
+	  slog.info(mmi+"(WLO - FMF) residual="+this.tgsResiduals.get(tgCfg)+" at TG -> "+tgCfg.getIdentity());
 	  //System.out.flush();
 
 	  //slog.info(mmi+"debug exit 0");
@@ -530,66 +551,102 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	
       } else {
 	slog.warn(mmi+"WARNING: No valid WLO to use for residual at TG -> "+tgCfg.getIdentity());
-	tgsResiduals.put(tgCfg, null);
+	this.tgsResiduals.put(tgCfg, null);
       }	
     }
 
     // --- Set the residuals of the upstreammost TG at 0.0
     //     in case it is not available
-    if (tgsResiduals.get(this.locations.get(0)) == null ) {
+    if (this.tgsResiduals.get(this.locations.get(0)) == null ) {
 
       slog.warn(mmi+"WARNING: No valid WLO to use for residual at upstreammost TG -> "+
 		this.locations.get(0).getIdentity()+", just setting it at 0.0");
       
-      tgsResiduals.put(this.locations.get(0), 0.0);
+      this.tgsResiduals.put(this.locations.get(0), 0.0);
     }
     
-    // --- Set the residuals of the downtreammost TG at 0.0
+    // --- Set the residuals of the downstreammost TG at 0.0
     //     in case it is not available
-    if (tgsResiduals.get(this.locations.get(this.locations.size()-1)) == null ) {
+    if (this.tgsResiduals.get(this.locations.get(this.locations.size()-1)) == null ) {
 	
       slog.warn(mmi+"WARNING: No valid WLO to use for residual at downstreammost TG -> "+
 		this.locations.get(this.locations.size()-1).getIdentity()+", just setting it at 0.0");
 	
-      tgsResiduals.put(this.locations.get(this.locations.size()-1), 0.0);
+      this.tgsResiduals.put(this.locations.get(this.locations.size()-1), 0.0);
     }
 
     // --- Now check if we do not have two adjacent TGs without (WLO-FMF) residuals to use.
     //     DO not do any adjustment if it is the case and simply update the output file
     //     with the FMF WL values of the S104 DCF8 file and the related uncertainties.
-    boolean doAdjust= true;
+    //     We also need to remove the TGs where there is no residual to use for the
+    //     Spine FPP adjustments.
+    //boolean doAdjust= true;
+    this.doAdjust= true;
+
+    Map<TideGaugeConfig,TideGaugeConfig> upstreamDownstreamTGPairs= new HashMap<TideGaugeConfig,TideGaugeConfig>();
     
     for (int tgLocIdx= 1; tgLocIdx < this.locations.size(); tgLocIdx++) {
 
-      final TideGaugeConfig tgCfg= this.locations.get(tgLocIdx);
-
+      final TideGaugeConfig dnstreamTGCfg= this.locations.get(tgLocIdx);
       final TideGaugeConfig upstreamTGCfg= this.locations.get(tgLocIdx-1);
 
-      if ( (tgsResiduals.get(tgCfg) == null) && (tgsResiduals.get(upstreamTGCfg) == null) ) {
+      // --- Set doAdjust to false if two neighbor TGs have no (WLO-FMF) residuals to use
+      //     and break the loop. No Spine FPP adjustment will be done when this happens.
+      if ( (this.tgsResiduals.get(dnstreamTGCfg) == null) && (this.tgsResiduals.get(upstreamTGCfg) == null) ) {
 
-	slog.warn(mmi+"WARNING: No valid WLO data to use at TGs ->"+
-		    tgCfg.getIdentity()+" and "+upstreamTGCfg.getIdentity()+" !!");
+	slog.warn(mmi+"WARNING: No valid residual to use at TGs neighbors -> "+
+		 dnstreamTGCfg .getIdentity()+" and -> "+upstreamTGCfg.getIdentity()+", No Spine FPP adjustment will be done here!!");
 	
-	doAdjust= false;  
+	this.doAdjust= false;  
 	break;
+      }
+
+      // --- Replace the dnstreamTGCfg by its nearest downstream TG neighbor
+      if (this.tgsResiduals.get(dnstreamTGCfg) == null) {
+	  
+	slog.warn(mmi+"WARNING: Removing TG -> "+dnstreamTGCfg.getIdentity()+
+		  " from the Spine FPP adjustments and replacing it with its nearest downstream neighbor-> "+this.locations.get(tgLocIdx+1).getIdentity());
+	
+        upstreamDownstreamTGPairs.put(upstreamTGCfg,this.locations.get(tgLocIdx+1));
+		
+      } else {
+	  
+        // --- We have valid residuals to use for both upstreamTGCfg and dnstreamTGCfg here.
+        upstreamDownstreamTGPairs.put(upstreamTGCfg,dnstreamTGCfg);
+      }
+
+      // --- simply continue with the next TG in case the upstreamTGCfg has
+      //     no valid residual to use, this case was handled by the previous
+      //     loop iteration
+      if (this.tgsResiduals.get(upstreamTGCfg) == null) {
+	continue;
       }
     }
 
-    if (!doAdjust) {
-
-      slog.warn(mmi+"WARNING: Cannot do the Spine FPP adjustment, the FMF data as read from the HDF5 file will be used in the output file");
-
-    } else {
-
-      slog.info(mmi+"Now doing the Spine FPP adjustment");
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
+    // // --- Do (or not do) the Spine FPP adjustments
+    // if (!this.doAdjust) {
+    //   slog.warn(mmi+"WARNING: Cannot do the Spine FPP adjustment, the FMF data as read from the HDF5 file will be used in the output file");
+    // } else {
 	
-      // --- TODO: Now build the Map of WLSCReachIntrpUnit objects that will be used for the
-      //     Spine FPP WL adjustment type.
- 
-      slog.info(mmi+"debug exit 0");
-      System.exit(0);
-    
-    }
+    if (this.doAdjust) {
+	
+      slog.info(mmi+"Now setting up the Map<String,WLSCReachIntrpUnit> for doing the Spine FPP adjustments");
+
+      for (final TideGaugeConfig upstreamTGCfg: upstreamDownstreamTGPairs.keySet()) {
+
+	final TideGaugeConfig dnstreamTGCfg= upstreamDownstreamTGPairs.get(upstreamTGCfg);
+	  
+	slog.info(mmi+"TG residual interp pair: upstreamTGCfg -> "+
+		  upstreamTGCfg.getIdentity()+ " with dnstreamTGCfg -> "+dnstreamTGCfg.getIdentity());
+	  
+      }
+      
+      //slog.info(mmi+"debug exit 0");
+      //System.exit(0);
+      
+    } // --- if else block
 
     // --- TODO: Write the output file according to the required format.
     
