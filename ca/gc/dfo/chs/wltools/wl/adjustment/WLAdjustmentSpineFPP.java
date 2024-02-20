@@ -485,33 +485,49 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
         slog.info(mmi+"tgNearestScLocIndex="+tgNearestScLocIndex);
 	    
-	slog.info(mmi+"Got valid WLO for TG -> "+tgCfg.getIdentity());
+	slog.info(mmi+"Got some valid WLO for TG -> "+tgCfg.getIdentity());
 	//System.out.flush();
 
-	final MeasurementCustom mcCheck= this.wloMCBundles
-	  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant);
+	// --- Use the getNearestTSMCWLDataNeighbor here in case
+	//     the tgsLeastRecentValidWLOInstant does not exists
+	//     for the WLO data of this tide gauge. Use the
+	//     fmfTimeIntrvSeconds time threshold here.
+	final MeasurementCustom wloMCCheck= this.wloMCBundles.get(tgCfg)
+	  .getNearestTSMCWLDataNeighbor(tgsLeastRecentValidWLOInstant, fmfTimeIntrvSeconds);
 
-        if (mcCheck == null) {
-	    //slog.warn(mmi+"WARNING: no WLO data at Instant ->"+tgsLeastRecentValidWLOInstant.toString()+" for TG ->"+tgCfg.getIdentity());
-	    throw new RuntimeException(mmi+"no WLO data at Instant ->"+tgsLeastRecentValidWLOInstant.toString()+" for TG ->"+tgCfg.getIdentity()); 
+        if (wloMCCheck == null) {
+
+	  slog.warn(mmi+"WARNING: no WLO data at Instant ->"+tgsLeastRecentValidWLOInstant.toString()+" for TG ->"+tgCfg.getIdentity());	  
+	  tgsResiduals.put(tgCfg, null);
+	  
+	} else { 
+	
+	  final double tgWLOAtInstant= wloMCCheck.getValue();
+	  //  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
+
+          final MeasurementCustom fmfMCCheck= mcbsFromS104DCF8
+	    .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant);
+
+	  try {
+	    fmfMCCheck.getValue();
+	  } catch (NullPointerException npe) {
+	    throw new RuntimeException(mmi+npe+"fmfMCCheck cannot be null here !!");
+	  }
+	  
+	  final double tgFMFAtInstant= fmfMCCheck.getValue();
+	  //  .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
+	  
+	  tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
+	
+          slog.info(mmi+"tgWLOAtInstant="+tgWLOAtInstant);
+	  slog.info(mmi+"tgFMFAtInstant="+tgFMFAtInstant);
+	  slog.info(mmi+"residual="+tgsResiduals.get(tgCfg)+" at TG -> "+tgCfg.getIdentity());
+	  //System.out.flush();
+
+	  //slog.info(mmi+"debug exit 0");
+          //System.exit(0);
 	}
 	
-	final double tgWLOAtInstant= mcCheck.getValue();
-	//  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
-
-	final double tgFMFAtInstant= mcbsFromS104DCF8
-	  .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
-	  
-	tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
-	
-        slog.info(mmi+"tgWLOAtInstant="+tgWLOAtInstant);
-	slog.info(mmi+"tgFMFAtInstant="+tgFMFAtInstant);
-	slog.info(mmi+"residual="+tgsResiduals.get(tgCfg)+" at TG -> "+tgCfg.getIdentity());
-	//System.out.flush();
-
-	//slog.info(mmi+"debug exit 0");
-        //System.exit(0);
-			 
       } else {
 	slog.warn(mmi+"WARNING: No valid WLO to use for residual at TG -> "+tgCfg.getIdentity());
 	tgsResiduals.put(tgCfg, null);
@@ -537,43 +553,45 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	
       tgsResiduals.put(this.locations.get(this.locations.size()-1), 0.0);
     }
+
+    // --- Now check if we do not have two adjacent TGs without (WLO-FMF) residuals to use.
+    //     DO not do any adjustment if it is the case and simply update the output file
+    //     with the FMF WL values of the S104 DCF8 file and the related uncertainties.
+    boolean doAdjust= true;
     
-    // --- TODO: Now build the Map of WLSCReachIntrpUnit objects that will be used for the
-    //     Spine FPP WL adjustment type.
+    for (int tgLocIdx= 1; tgLocIdx < this.locations.size(); tgLocIdx++) {
+
+      final TideGaugeConfig tgCfg= this.locations.get(tgLocIdx);
+
+      final TideGaugeConfig upstreamTGCfg= this.locations.get(tgLocIdx-1);
+
+      if ( (tgsResiduals.get(tgCfg) == null) && (tgsResiduals.get(upstreamTGCfg) == null) ) {
+
+	slog.warn(mmi+"WARNING: No valid WLO data to use at TGs ->"+
+		    tgCfg.getIdentity()+" and "+upstreamTGCfg.getIdentity()+" !!");
+	
+	doAdjust= false;  
+	break;
+      }
+    }
+
+    if (!doAdjust) {
+
+      slog.warn(mmi+"WARNING: Cannot do the Spine FPP adjustment, the FMF data as read from the HDF5 file will be used in the output file");
+
+    } else {
+
+      slog.info(mmi+"Now doing the Spine FPP adjustment");
+	
+      // --- TODO: Now build the Map of WLSCReachIntrpUnit objects that will be used for the
+      //     Spine FPP WL adjustment type.
  
-    slog.info(mmi+"debug exit 0");
-    System.exit(0);
+      slog.info(mmi+"debug exit 0");
+      System.exit(0);
     
-    // // --- Now get the WLO data from the IWLS for all the tide gauge locations.
-    // URLConnection uc= null;
-    // //final String es=
-    // // "https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations/5cebf1e23d0f4a073c4bc0f6/data?time-series-code=wlo&from="+ec1+"&to="+ec2
-    // //for (int tgIter= 0; tgIter < this.locations.size(); tgIter++) {  	
-    // //}
-    // final String es=
-    // 	"https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations/5cebf1e23d0f4a073c4bc0f6/data?time-series-code=wlo&from=2024-02-06T06%3A00%3A00Z&to=2024-02-08T11%3A00%3A00Z";
-    // try {
-    //   uc= new URL(es).openConnection();
-    // } catch (IOException ioe) {
-    //   ioe.printStackTrace();	
-    //   throw new RuntimeException(mmi+ioe+"\nProblem with openConnection()");
-    // }
-    // // --- no neee for a ":" char here after the accept
-    // //uc.setRequestProperty("accept ", "*/*");
-    // InputStream ist= null;
-    // 	//InputStreamReader inputStreamReader= null;
-    // try {
-    //   ist= uc.getInputStream();
-    // 	//inputStreamReader= new InputStreamReader(uc.getInputStream());
-    // } catch (IOException ioe) {
-    //   ioe.printStackTrace();    	
-    //   throw new RuntimeException(mmi+ioe+"\nProblem with new uc.getInputStream()");
-    // }
-    // //final Map<String, Object> config = new HashMap<>();
-    // final JsonReader jsr= Json.createReaderFactory(null).createReader(ist);
-    // final JsonArray stnWLOJsArray= jsr.readArray();
-    // //final JsonObject tjo= stnWLOJsArray.getJsonObject(0);
-    // //slog.info(mmi+"tjo value="+tjo.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue());
+    }
+
+    // --- TODO: Write the output file according to the required format.
     
     slog.info(mmi+"end");
     
