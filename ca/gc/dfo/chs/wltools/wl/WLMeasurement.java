@@ -398,7 +398,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
        final double newWLValue= (wlMcPrev.getValue() + wlMcHere.getValue() + wlMcNext.getValue())/3.0;
 
-       newWLMcList.add( new MeasurementCustom(wlMcHere.getEventDate(), newWLValue, wlMcHere.getUncertainty()) );
+       // --- Use a copy of the wlMcHere.getEventDate() Instant object here, slower but safer.
+       newWLMcList.add( new MeasurementCustom(wlMcHere.getEventDate().plusSeconds(0L), newWLValue, wlMcHere.getUncertainty()) );
 
        //  setValue((wlMcPrev.getValue() + wlMcHere.getValue() + wlMcNext.getValue())/3.0);
 

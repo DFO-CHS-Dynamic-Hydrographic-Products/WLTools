@@ -86,7 +86,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
   private Instant whatTimeIsItNow= null;
     
   // --- TODO: Define the iwlsApiBaseUrl String with an --iwlsApiBaseUrl option passed to the main script. 
-  private final String iwlsApiBaseUrl= "https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations";
+  //private final String iwlsApiBaseUrl= "https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations";
+  private final String iwlsApiBaseUrl="https://api-iwls.dfo-mpo.gc.ca/api/v1/stations";
     
   private Map<String,WLSCReachIntrpUnit> scReachIntrpUnits= null;
 
@@ -395,15 +396,15 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	//	  iwlsJSTGWLOData.getJsonObject(0).getJsonNumber("value").doubleValue());
 
 	slog.info(mmi+"bef. getMCBFromIWLSJsonArray()");
-	//System.out.flush();
+	System.out.flush();
 
 	// --- Get the MeasurementCustomBundle object of the valid WLO data
 	//     for this TG but only for timestamps that are consistent with the fmfTimeIntrvSeconds
 	final MeasurementCustomBundle checkMcb= WLToolsIO
-	  .getMCBFromIWLSJsonArray(iwlsJSTGWLOData, fmfTimeIntrvSeconds, tgCfg.getZcVsVertDatum(), true);
+	    .getMCBFromIWLSJsonArray(iwlsJSTGWLOData, fmfTimeIntrvSeconds, tgCfg.getZcVsVertDatum(), true); // true);
 
 	slog.info(mmi+"aft. getMCBFromIWLSJsonArray()");
-	//System.out.flush();
+	System.out.flush();
 
 	// --- Add the MeasurementCustomBundle object of the valid WLO data
 	//     for this TG. If checkMcb == null this means that there is either
@@ -418,18 +419,22 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  slog.warn(mmi+"WARNING!!: Not enough valid WLO data or no data at all for this TG now-> "+tgNumStrCode);
 	}
 
-	//System.out.flush();
-	
+	System.out.flush();
+
+	//if (tgNumStrCode.equals("03335")) {
 	//slog.info(mmi+"debug exit 0");
         //System.exit(0);
+	//}
+
+	slog.info(mmi+"Done with getting WLO for TG -> "+tgNumStrCode);
 	
       } // --- End if-else block
     } // --- outer for loop block
 
-    Set<TideGaugeConfig> tgsWithValidWLOData= wloMCBundles.keySet();
+    //Set<TideGaugeConfig> tgsWithValidWLOData= wloMCBundles.keySet();
 
-    slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data before checking time sync. with FMF data");
-    //System.out.flush();
+    slog.info(mmi+"Got "+ wloMCBundles.keySet().size()+" TGs with valid WLO data before checking time sync. with FMF data");
+    System.out.flush();
 
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
@@ -444,32 +449,45 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     //     synchronize the (WLO-FMF) residuals for their spatial interp. between the tide gauges.
 
     Instant tgsLeastRecentValidWLOInstant= Instant.ofEpochSecond((long)Integer.MAX_VALUE);
+
+    Set<TideGaugeConfig> tgsWithValidWLOData= new HashSet<TideGaugeConfig>();
     
-    for (final TideGaugeConfig tgCfg: tgsWithValidWLOData) {
+    for (final TideGaugeConfig tgCfg: wloMCBundles.keySet()) {
        
-	//slog.info(mmi+"Checking WLO data time sync with the FMF data for tide gauge -> "+ tgCfg.getIdentity());
+      slog.info(mmi+"Checking WLO data time sync with the FMF data for tide gauge -> "+ tgCfg.getIdentity());
 
       final Instant tgWLOMostRecentInstant= wloMCBundles.get(tgCfg).getMostRecentInstantCopy();
+
+      slog.info(mmi+"tgWLOMostRecentInstant="+tgWLOMostRecentInstant.toString());
+      //fmfLeastRecentInstant
 
       if (tgWLOMostRecentInstant.isBefore(fmfLeastRecentInstant)) {
 	  
 	slog.warn(mmi+"WARNING: most recent WLO data timestamp is in the past compared to FMF data for tide gauge -> "+
 		  tgCfg.getIdentity()+", rejecting it for the adjustments!");
 
-	wloMCBundles.remove(tgCfg);
+	//wloMCBundles.remove(tgCfg);
+	//tgsWithValidWLOData.remove(tgCfg);
+	
+	continue;
       }
 
       tgsLeastRecentValidWLOInstant= (tgWLOMostRecentInstant
 	.isBefore(tgsLeastRecentValidWLOInstant) ) ? tgWLOMostRecentInstant : tgsLeastRecentValidWLOInstant;
+
+      tgsWithValidWLOData.add(tgCfg);
     }
 
     // --- Update the tgsWithValidWLOData Set in case one TG was removed
-    tgsWithValidWLOData= wloMCBundles.keySet();
-
+    //tgsWithValidWLOData= wloMCBundles.keySet();
+    
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data after checking time sync. with FMF data");
 
     slog.info(mmi+"tgsLeastRecentValidWLOInstant="+tgsLeastRecentValidWLOInstant.toString());
-    //System.out.flush();
+    System.out.flush();
+
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);
 
     //for (final TideGaugeConfig tgc: tgsWithValidWLOData) {
     //	slog.info(mmi+"tgc id="+tgc.getIdentity());

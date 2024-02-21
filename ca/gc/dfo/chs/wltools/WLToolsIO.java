@@ -1124,7 +1124,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
 	 final Instant itemInstant= Instant.parse(jsoItem.getString(IWLToolsIO.INSTANT_JSON_KEY));
 
-	 //slog.info(mmi+"itemValue="+itemValue);
+	 //slog.info(mmi+"itemValue="+itemValue); 
 	 //slog.info(mmi+"itemInstant="+itemInstant.toString());
          //slog.info(mmi+"debug exit 0");
          //System.exit(0);
@@ -1139,6 +1139,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"tmpWLDataList size="+tmpWLDataList.size());
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
+    System.out.flush();
 
     MeasurementCustomBundle mcbRet= null;
 
@@ -1149,13 +1150,15 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //     MeasurementCustomBundle to return with the filtered tmpWLDataList
       if (applyHFOscRemoval) {
 	  
-        mcbRet= new MeasurementCustomBundle(WLMeasurement
+	mcbRet= new MeasurementCustomBundle(WLMeasurement
           .removeHFWLOscillations(IWLAdjustment.MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS,tmpWLDataList));
 	
       } else {
 	 mcbRet= new MeasurementCustomBundle(tmpWLDataList);
       }
     }
+    
+    System.out.flush();
     
     return mcbRet;
     
