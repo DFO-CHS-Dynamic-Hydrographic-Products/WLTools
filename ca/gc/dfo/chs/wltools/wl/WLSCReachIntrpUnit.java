@@ -270,18 +270,18 @@ final public class WLSCReachIntrpUnit implements IWL {
       final String scLocTCFile= shipChannelPointLocsTCInputDir + File.separator +
 	scLocFNameSpecPrefix + INonStationaryIO.LOCATION_TIDAL_CONSTS_FNAME_SUFFIX + IWLToolsIO.JSON_FEXT;	
 
-      slog.info(mmi+"scLocTCFile="+scLocTCFile);
+      //slog.info(mmi+"scLocTCFile="+scLocTCFile);
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
-      System.out.flush();
+      //System.out.flush();
       
       final HBCoords scLocHBCoords= HBCoords.getFromCHSJSONTCFile(scLocTCFile); //this.getHBCoordsFromNSTCJsonFile(scLocTCFile);
 
       final double scLocHBLon= scLocHBCoords.getLongitude();
       final double scLocHBLat= scLocHBCoords.getLatitude();
 
-      final double distanceFromMidPoint= Trigonometry.
-	getDistanceInRadians(scLocHBLon, scLocHBLat, tgsNearestsLocsCenterLon, tgsNearestsLocsCenterLat);
+      final double distanceFromMidPoint= Trigonometry
+	.getDistanceInRadians(scLocHBLon, scLocHBLat, tgsNearestsLocsCenterLon, tgsNearestsLocsCenterLat);
 
       //slog.info(mmi+"distanceFromMidPoint="+distanceFromMidPoint+", tgsNearestsLocsHalfDistRad="+tgsNearestsLocsHalfDistRad);
 
@@ -296,8 +296,8 @@ final public class WLSCReachIntrpUnit implements IWL {
       final double distanceFromRef= Trigonometry.
 	getDistanceInRadians(scLocHBLon, scLocHBLat, tgNearestSCLocLonRef, tgNearestSCLocLatRef);
 
-      slog.info(mmi+"distanceFromRef="+distanceFromRef);
-      System.out.flush();
+      //slog.info(mmi+"distanceFromRef="+distanceFromRef);
+      //System.out.flush();
       
       // --- Store this distanceFromRef for later usage.
       this.scLocsDistances.put(scLocFNameSpecPrefix, distanceFromRef);
