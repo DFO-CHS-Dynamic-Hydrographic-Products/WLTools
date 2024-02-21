@@ -857,7 +857,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //     seems to randomly crash the java exec.
     //final int [] nbScLocs= {0};
     //Integer [] nbScLocs= {0};
-    Integer [] nbScLocs= new Integer [] {new Integer(0) }; //{0};
+    Integer [] nbScLocs= new Integer [] {0}; //{ Integer.valueOf(0) }; //{0};
 
     SProduct.setTransientAttrFromGroup(ISProductIO.NB_STATIONS_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbScLocs));
@@ -867,7 +867,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     //final int [] nbInstants= {0};
     //Integer [] nbInstants= {0};
-    Integer [] nbInstants= new Integer [] {new Integer(0) }; // {0};
+    Integer [] nbInstants= new Integer [] {0};//{ Integer.valueOf(0) }; // {0};
 
     SProduct.setTransientAttrFromGroup(ISProductIO.NB_TIMESTAMPS_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbInstants));
@@ -910,7 +910,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     //final int [] timeIntervalSeconds=
     //Integer [] timeIntervalSeconds=
-    Integer [] timeIntervalSeconds= new Integer [] { new Integer(0) };	
+    Integer [] timeIntervalSeconds= new Integer [] {0}; //{ Integer.valueOf(0) };	
     
     SProduct.setTransientAttrFromGroup(ISProductIO.TIME_INTRV_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(timeIntervalSeconds));
@@ -1066,25 +1066,39 @@ abstract public class WLToolsIO implements IWLToolsIO {
     URLConnection uc= null;
     //HttpURLConnection uc= null;
 
+    slog.info(mmi+"start");
+    
     try {
       uc= new URL(apiRequestStr).openConnection();
 	//uc= new HttpURLConnection(new URL(apiRequestStr))
     } catch (IOException ioe) {
-      ioe.printStackTrace();	
+	//ioe.printStackTrace();	
       throw new RuntimeException(mmi+ioe+"\nProblem with openConnection() with apiRequestStr -> "+apiRequestStr);
     }
-
+    
+    slog.info(mmi+"Connection opened for apiRequestStr -> "+apiRequestStr);
+    System.out.flush();
+    
     InputStream ist= null;
 
     try {
       ist= uc.getInputStream();
     } catch (IOException ioe) {
-      ioe.printStackTrace();    	
+	//ioe.printStackTrace();    	
       throw new RuntimeException(mmi+ioe+"\nProblem with new uc.getInputStream() with apiRequestStr -> "+apiRequestStr);
     }
 
     //final JsonReader jsr= Json.createReaderFactory(null).createReader(ist);
     //return jsr.readArray();
+
+    //try { 
+    //  uc.finalize();
+    //} catch (IOException ioe) {
+    //  throw new RuntimeException(mmi+ioe+"\nProblem with uc.finalize() !!");
+    //}
+
+    slog.info(mmi+"end");
+    System.out.flush();
 
     return Json.createReaderFactory(null).createReader(ist).readArray();
     
@@ -1109,9 +1123,12 @@ abstract public class WLToolsIO implements IWLToolsIO {
     if (timeIntrvSeconds <= 1L) {
       throw new RuntimeException(mmi+"Invalid timeIntrvSeconds -> "+timeIntrvSeconds+", it must be at least 1 second !!");
     }
+
+    slog.info(mmi+"start");
 	
     List<MeasurementCustom> tmpWLDataList= new ArrayList<MeasurementCustom>(iwlsJsonArray.size());
 
+    // --- 
     for (int itemIter= 0; itemIter < iwlsJsonArray.size(); itemIter++) {
 
        final JsonObject jsoItem= iwlsJsonArray.getJsonObject(itemIter);
@@ -1149,15 +1166,21 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //     Apply the removeHFWLOscillations method to the WLO data and create the
       //     MeasurementCustomBundle to return with the filtered tmpWLDataList
       if (applyHFOscRemoval) {
+
+	slog.info(mmi+"Applying HF oscillations removal");
 	  
 	mcbRet= new MeasurementCustomBundle(WLMeasurement
           .removeHFWLOscillations(IWLAdjustment.MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS,tmpWLDataList));
 	
       } else {
+
+	 slog.info(mmi+"Not applying HF oscillations removal"); 
+	  
 	 mcbRet= new MeasurementCustomBundle(tmpWLDataList);
       }
     }
-    
+
+    slog.info(mmi+"end");
     System.out.flush();
     
     return mcbRet;

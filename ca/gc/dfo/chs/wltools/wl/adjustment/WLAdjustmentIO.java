@@ -1,7 +1,6 @@
 package ca.gc.dfo.chs.wltools.wl.adjustment;
 
 //---
-//import java.sql;
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.ArrayList;
-//import java.util.stream.Collectors;
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
 // ---
-//import javax.sql;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
@@ -898,7 +896,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
 
-    final SortedSet<Long> timeDepResidualsStatsMapSSet= new TreeSet<Long>(timeDepResidualsStatsMap.keySet());
+    final SortedSet<Long> timeDepResidualsStatsMapSSet= Collections
+      .synchronizedSortedSet(new TreeSet<Long>(timeDepResidualsStatsMap.keySet()));
 
     for (final Long longIter: timeDepResidualsStatsMapSSet) { //timeDepResidualsStatsMap.keySet()) {
 

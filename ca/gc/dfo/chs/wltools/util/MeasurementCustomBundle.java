@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.time.Instant;
 import java.util.TreeSet;
 import java.util.SortedSet;
+import java.util.Collections;
 
 //---
 import org.slf4j.Logger;
@@ -73,8 +74,11 @@ final public class MeasurementCustomBundle {
 	//this.mcData.put(mcIter.getEventDate(), mcIter);
       }
 
-      //this.instantsKeySet= this.mcData.keySet();
-      this.instantsKeySet= new TreeSet<Instant>(this.mcData.keySet());
+      // --- Use a (Thread safe) TreeSet<Instant> here in order
+      //     to be sure to have the Instant objects in increasing order
+      //     in this.instantsKeySet
+      this.instantsKeySet= Collections
+	.synchronizedSortedSet(new TreeSet<Instant>(this.mcData.keySet()));
 
       if (mcDataList.size() >= 2) {
       
@@ -164,13 +168,11 @@ final public class MeasurementCustomBundle {
       throw new RuntimeException(mmi+npe);
     }
 
-    //TreeSet ret= null;
-    //if (this.instantsKeySet != null) {
-    //  ret= new TreeSet(this.instantsKeySet);
-    //}
-    //return (SortedSet<Instant>)ret;
-
-    return (this.instantsKeySet != null) ? new TreeSet<Instant>(this.instantsKeySet) : null ; //mcData.keySet();
+    // --- Copy of this.instantsKeySet. The Collections.synchronizedSortedSet
+    //     might be not necessary since this.instantsKeySet is itself thread safe
+    //     but better to use it anyways.
+    return (this.instantsKeySet != null) ?
+	    Collections.synchronizedSortedSet(new TreeSet<Instant>(this.instantsKeySet)) : null ; //mcData.keySet();
   }
 
   // ---

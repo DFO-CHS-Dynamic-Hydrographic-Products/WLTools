@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.SortedSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.NavigableSet;
 import org.slf4j.LoggerFactory;
 
@@ -31,13 +32,11 @@ import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-//import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.numbercrunching.Statistics;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
-//import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO.InputDataType;
 
 /**
  * Comments please!
@@ -601,10 +600,14 @@ abstract public class WLAdjustmentFMF
 
     // --- Get the sorted set of the valid Long keys of the timeDepResidualsStats
     //     to possibly use it in case some time dependent residual stats are missung
-    final SortedSet<Long> validLonIdxKeySet= new TreeSet<Long>(timeDepResidualsStats.keySet());
+    final SortedSet<Long> validLonIdxKeySet= Collections
+      .synchronizedSortedSet(new TreeSet<Long>(timeDepResidualsStats.keySet()));
 
-    // --- Need to use a NavigableSet here to be able to use its specific tailSet() method later
-    NavigableSet<Instant> actuFMFInstantsSet= new TreeSet<Instant>(actualFMFMcb.getInstantsKeySetCopy());   
+    //final SortedSet<Long> actuFMFInstantsSortedSet= Collections
+    //  .synchronizedSortedSet(new TreeSet<Instant>(actualFMFMcb.getInstantsKeySetCopy()));
+    
+    // --- Need to use a NavigableSet here to be able to use its specific tailSet(E, boolean) method later
+    NavigableSet<Instant> actuFMFInstantsSet= new TreeSet<Instant>(actualFMFMcb.getInstantsKeySetCopy());
 
     // --- Loop on all the Instant objects of the actuFMFInstantsSet
     for (final Instant actualFMFInstant: actuFMFInstantsSet) {

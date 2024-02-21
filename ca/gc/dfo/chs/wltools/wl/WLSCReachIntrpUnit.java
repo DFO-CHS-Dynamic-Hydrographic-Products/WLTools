@@ -103,6 +103,7 @@ final public class WLSCReachIntrpUnit implements IWL {
     
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
+    System.out.flush();
 
     this.lowerSideScLocTGId= tg0Cfg.getIdentity();
     this.upperSideScLocTGId= tg1Cfg.getIdentity();
@@ -120,6 +121,8 @@ final public class WLSCReachIntrpUnit implements IWL {
       slog.info(mmi+"Setting the config of tide gauge -> "+this.upperSideScLocTGId);	    
       tg1Cfg.setConfig(mainJsonTGInfoMapObj.getJsonObject(this.upperSideScLocTGId));
     }
+
+    System.out.flush();
 	
     // --- Now get the corresponding nearest ship channel points locations for those two TGs
     //     from their json config:
@@ -133,7 +136,8 @@ final public class WLSCReachIntrpUnit implements IWL {
     slog.info(mmi+"tg1NearestSCLocId="+tg1NearestSCLocId);		     
 
     slog.info(mmi+"shipChannelPointLocsTCInputDir="+shipChannelPointLocsTCInputDir);
-
+    System.out.flush();
+    
     // --- Build the paths to find the tidal consts. files of the two ship channel point locations
     //     that are the nearests to the two TGs considered.
     final String tg0NearestSCLocTCFile= shipChannelPointLocsTCInputDir + //File.separator +
@@ -144,6 +148,7 @@ final public class WLSCReachIntrpUnit implements IWL {
 
     slog.info(mmi+"tg0NearestSCLocTCFile="+tg0NearestSCLocTCFile);
     slog.info(mmi+"tg1NearestSCLocTCFile="+tg1NearestSCLocTCFile);
+    System.out.flush();
 		     
     // --- Get the HBCoords objects from the tidal consts. files of the two ship channel point locations
     //final HBCoords tg0NearestSCLocHBCoords= this.getHBCoordsFromNSTCJsonFile(tg0NearestSCLocTCFile);
@@ -179,6 +184,7 @@ final public class WLSCReachIntrpUnit implements IWL {
 
     slog.info(mmi+"tgsNearestsLocsCenterLon="+tgsNearestsLocsCenterLon);
     slog.info(mmi+"tgsNearestsLocsCenterLat="+tgsNearestsLocsCenterLat);
+    System.out.flush();
 
     // --- Now get the HBCoords of all the ship channel points locations that are in-between
     //     the two ship channel points locations that are the nearests to the two TGs considered.
@@ -203,6 +209,7 @@ final public class WLSCReachIntrpUnit implements IWL {
    
     slog.info(mmi+"this.tg0NearestSCLocIndex="+this.tg0NearestSCLocIndex);
     slog.info(mmi+"this.tg1NearestSCLocIndex="+this.tg1NearestSCLocIndex);
+    System.out.flush();
 
     // --- Need to have a HBCoords object reference for the
     //     spatial linear interpolation of FMF residuals.
@@ -241,7 +248,8 @@ final public class WLSCReachIntrpUnit implements IWL {
     
     slog.info(mmi+"this.lowerSideScLocTGId="+this.lowerSideScLocTGId);
     slog.info(mmi+"this.upperSideScLocTGId="+this.upperSideScLocTGId);
-    
+    System.out.flush();
+
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
     
@@ -304,7 +312,8 @@ final public class WLSCReachIntrpUnit implements IWL {
       IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(this.scLoopEndIndex+1);  
 		     		     
     slog.info(mmi+"end");
-    
+
+    System.out.flush();
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
   }

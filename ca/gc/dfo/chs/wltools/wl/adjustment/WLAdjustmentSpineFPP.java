@@ -272,6 +272,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     slog.info(mmi+"Now getting the last WLO data for the TGs from the IWLS API");
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
+    System.out.flush();
     
     // --- TODO: Now check if we have at least 15 days of data in the future for the S104 DCF8 input file.
     //     If not we stop the exec.
@@ -281,6 +282,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     //     their ids (string) 
     final JsonArray iwlsStationsInfo= WLToolsIO
       .getJsonArrayFromAPIRequest(this.iwlsApiBaseUrl+"?chs-region-code=QUE");
+
+    slog.info(mmi+"Done with populating the JsonArray with the IWLS API request results");
+    System.out.flush();
 
     try {
       iwlsStationsInfo.size();
@@ -321,7 +325,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     slog.info(mmi+"timeOffsetInPastReqStr="+timeOffsetInPastReqStr);
     slog.info(mmi+"timeOffsetInFutrReqStr="+timeOffsetInFutrReqStr);
-    //System.out.flush();
+    System.out.flush();
 
     // --- Build the String for the IWLS API request in terms of time frame
     final String timePastFutrFrameReqStr=
@@ -459,7 +463,6 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       final Instant tgWLOMostRecentInstant= wloMCBundles.get(tgCfg).getMostRecentInstantCopy();
 
       slog.info(mmi+"tgWLOMostRecentInstant="+tgWLOMostRecentInstant.toString());
-      //fmfLeastRecentInstant
 
       if (tgWLOMostRecentInstant.isBefore(fmfLeastRecentInstant)) {
 	  
@@ -486,12 +489,6 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     slog.info(mmi+"tgsLeastRecentValidWLOInstant="+tgsLeastRecentValidWLOInstant.toString());
     System.out.flush();
 
-    slog.info(mmi+"debug exit 0");
-    System.exit(0);
-
-    //for (final TideGaugeConfig tgc: tgsWithValidWLOData) {
-    //	slog.info(mmi+"tgc id="+tgc.getIdentity());
-    //}
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
     
