@@ -11,25 +11,19 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
-//import java.util.Iterator;
 import java.nio.file.Path;
-//import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.io.InputStream;
 import java.util.SortedSet;
 import java.util.ArrayList;
-//import java.util.ListIterator;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.NavigableSet;
-//import java.nio.file.PathMatcher;
 import java.net.URLConnection;
 import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
 import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
-//import java.io.UnsupportedEncodingException;
-//import java.nio.file.DirectoryIteratorException;
 
 // ---
 import org.slf4j.Logger;
@@ -66,7 +60,6 @@ import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.wl.WLSCReachIntrpUnit;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-//import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
@@ -89,6 +82,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
   private boolean doAdjust= true;
+
+  private Instant whatTimeIsItNow= null;
     
   // --- TODO: Define the iwlsApiBaseUrl String with an --iwlsApiBaseUrl option passed to the main script. 
   private final String iwlsApiBaseUrl= "https://api.test.iwls.azure.cloud.dfo-mpo.gc.ca/api/v1/stations";
@@ -242,7 +237,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     ///System.exit(0);
 
     // --- 
-    final Instant whatTimeIsItNow= Instant.now();
+    //final Instant whatTimeIsItNow= Instant.now();
+    this.whatTimeIsItNow= Instant.now();
 
     final Instant fmfLeastRecentInstant= this.mcbsFromS104DCF8.get(0).getLeastRecentInstantCopy();
     slog.info(mmi+"fmfLeastRecentInstant="+fmfLeastRecentInstant.toString());
@@ -252,7 +248,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     // --- Now check if we have at least sufficient days of data in the future for the S104 DCF8 input file.
     //     (If not we stop the exec??)
-    final long timeDiffSeconds= fmfMostRecentInstant.getEpochSecond() - whatTimeIsItNow.getEpochSecond();
+    final long timeDiffSeconds= fmfMostRecentInstant.getEpochSecond() - this.whatTimeIsItNow.getEpochSecond();
 
     final long fmfNbDaysInFutr= timeDiffSeconds/SECONDS_PER_DAY;
     slog.info(mmi+"fmfNbDaysInFutr="+fmfNbDaysInFutr);
@@ -307,9 +303,14 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     //final Instant whatTimeIsItNow= Instant.now();
 
     // --- Subtract SHORT_TERM_FORECAST_TS_OFFSET_SECONDS from now
-    //     (Normally 6 hours in seconds in the past)
-    final Instant timeOffsetInPast= whatTimeIsItNow.minusSeconds(SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
-    final Instant timeOffsetInFutr= whatTimeIsItNow.plusSeconds(MIN_FULL_FORECAST_DURATION_SECONDS);
+    //     (Normally 6 hours in seconds in the past) for the time offset
+    //     in the past we want to have.
+    final Instant timeOffsetInPast= this.whatTimeIsItNow.minusSeconds(SHORT_TERM_FORECAST_TS_OFFSET_SECONDS);
+
+    // --- Add MIN_FULL_FORECAST_DURATION_SECONDS from now
+    //     (Normally at least 48 hours in seconds in the future) for the time offset
+    //     in the future we want to have.
+    final Instant timeOffsetInFutr= this.whatTimeIsItNow.plusSeconds(MIN_FULL_FORECAST_DURATION_SECONDS);
 
     final String timeOffsetInPastStr= timeOffsetInPast.toString();
     final String timeOffsetInFutrStr= timeOffsetInFutr.toString();
@@ -587,8 +588,11 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     
     for (int tgLocIdx= 1; tgLocIdx < this.locations.size(); tgLocIdx++) {
 
-      final TideGaugeConfig dnstreamTGCfg= this.locations.get(tgLocIdx);
-      final TideGaugeConfig upstreamTGCfg= this.locations.get(tgLocIdx-1);
+      TideGaugeConfig dnstreamTGCfg= this.locations.get(tgLocIdx);
+      TideGaugeConfig upstreamTGCfg= this.locations.get(tgLocIdx-1);
+
+      slog.info(mmi+"Checking TGs pair: upstreamTGCfg="+
+		upstreamTGCfg.getIdentity()+" and dnstreamTGCfg="+dnstreamTGCfg.getIdentity());
 
       // --- Set doAdjust to false if two neighbor TGs have no (WLO-FMF) residuals to use
       //     and break the loop. No Spine FPP adjustment will be done when this happens.
@@ -601,26 +605,40 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	break;
       }
 
+      // --- Simply continue with the next TG in case the upstreamTGCfg has
+      //     no valid residual to use, this case was handled by the previous
+      //     loop iteration
+      if (this.tgsResiduals.get(upstreamTGCfg) == null) {
+	slog.warn(mmi+"WARNING: this.tgsResiduals.get(upstreamTGCfg) == null, skipping this TG -> "+upstreamTGCfg.getIdentity()+" as an upstream TG");
+	continue;
+      }
+      
       // --- Replace the dnstreamTGCfg by its nearest downstream TG neighbor
       if (this.tgsResiduals.get(dnstreamTGCfg) == null) {
 	  
 	slog.warn(mmi+"WARNING: Removing TG -> "+dnstreamTGCfg.getIdentity()+
 		  " from the Spine FPP adjustments and replacing it with its nearest downstream neighbor-> "+this.locations.get(tgLocIdx+1).getIdentity());
-	
-        upstreamDownstreamTGPairs.put(upstreamTGCfg,this.locations.get(tgLocIdx+1));
-		
-      } else {
-	  
-        // --- We have valid residuals to use for both upstreamTGCfg and dnstreamTGCfg here.
-        upstreamDownstreamTGPairs.put(upstreamTGCfg,dnstreamTGCfg);
-      }
 
-      // --- simply continue with the next TG in case the upstreamTGCfg has
-      //     no valid residual to use, this case was handled by the previous
-      //     loop iteration
-      if (this.tgsResiduals.get(upstreamTGCfg) == null) {
-	continue;
-      }
+	dnstreamTGCfg= this.locations.get(tgLocIdx+1);
+        //upstreamDownstreamTGPairs.put(upstreamTGCfg,this.locations.get(tgLocIdx+1));
+	//continue;	
+      } //else {
+	//  
+        //// --- We have valid residuals to use for both upstreamTGCfg and dnstreamTGCfg here.
+        //upstreamDownstreamTGPairs.put(upstreamTGCfg,dnstreamTGCfg);
+        //}
+
+      upstreamDownstreamTGPairs.put(upstreamTGCfg,dnstreamTGCfg);
+
+      slog.info(mmi+"Valid TGs pair to use: upstreamTGCfg="+
+		upstreamTGCfg.getIdentity()+" and dnstreamTGCfg="+dnstreamTGCfg.getIdentity());
+
+      //// --- simply continue with the next TG in case the upstreamTGCfg has
+      ////     no valid residual to use, this case was handled by the previous
+      ////     loop iteration
+      //if (this.tgsResiduals.get(upstreamTGCfg) == null) {
+      // continue;
+      //}
     }
 
     //slog.info(mmi+"debug exit 0");
@@ -629,18 +647,34 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     // if (!this.doAdjust) {
     //   slog.warn(mmi+"WARNING: Cannot do the Spine FPP adjustment, the FMF data as read from the HDF5 file will be used in the output file");
     // } else {
+
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
 	
     if (this.doAdjust) {
 	
       slog.info(mmi+"Now setting up the Map<String,WLSCReachIntrpUnit> for doing the Spine FPP adjustments");
 
+      this.scReachIntrpUnits= new HashMap<String,WLSCReachIntrpUnit>();
+      
       for (final TideGaugeConfig upstreamTGCfg: upstreamDownstreamTGPairs.keySet()) {
 
 	final TideGaugeConfig dnstreamTGCfg= upstreamDownstreamTGPairs.get(upstreamTGCfg);
 	  
 	slog.info(mmi+"TG residual interp pair: upstreamTGCfg -> "+
 		  upstreamTGCfg.getIdentity()+ " with dnstreamTGCfg -> "+dnstreamTGCfg.getIdentity());
-	  
+
+	final String upsDnsTGsPair= upstreamTGCfg.getIdentity() +
+	  IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR + dnstreamTGCfg.getIdentity();
+
+        slog.info(mmi+"Instantiating the WLSCReachIntrpUnit for the TGs pair -> "+upsDnsTGsPair);
+	
+	this.scReachIntrpUnits.put(upsDnsTGsPair,
+	 			   new WLSCReachIntrpUnit(this.shipChannelPointLocsTCInputDir, this.mainJsonTGInfoMapObj, upstreamTGCfg, dnstreamTGCfg));
+
+	//slog.info(mmi+"debug exit 0");
+        //System.exit(0);
+	
       }
       
       //slog.info(mmi+"debug exit 0");

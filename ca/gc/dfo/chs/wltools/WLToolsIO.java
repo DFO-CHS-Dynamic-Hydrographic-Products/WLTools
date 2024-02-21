@@ -848,32 +848,36 @@ abstract public class WLToolsIO implements IWLToolsIO {
     // --- Get the number of ship channel point locations
     //     from the ISProductIO.NB_STATIONS_ID attribute.
     
-    // --- Need to use a local array of int here and not
-    //     pass a new int [] {<an int variable>} directly
-    //     to  HDFql.variableTransientRegister
+    // --- NOTE: Need to use a local unary array of Integer
+    //     and it seems that we really need to use
+    //     the "new" operator here instead of just
+    //     using a local declaration which seems
+    //     to cause something like a memory leak in
+    //     the JNI part of the HDFql lib and which
+    //     seems to randomly crash the java exec.
     //final int [] nbScLocs= {0};
     //Integer [] nbScLocs= {0};
-    Integer [] nbScLocs= new Integer [] {0};
+    Integer [] nbScLocs= new Integer [] {new Integer(0) }; //{0};
 
     SProduct.setTransientAttrFromGroup(ISProductIO.NB_STATIONS_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbScLocs));
 
     slog.info(mmi+"nbScLocs[0]="+nbScLocs[0]);
-    //System.out.flush();
+    System.out.flush();
     
     //final int [] nbInstants= {0};
     //Integer [] nbInstants= {0};
-    Integer [] nbInstants= new Integer [] {0};
+    Integer [] nbInstants= new Integer [] {new Integer(0) }; // {0};
 
     SProduct.setTransientAttrFromGroup(ISProductIO.NB_TIMESTAMPS_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbInstants));
 
     slog.info(mmi+"nbInstants[0]="+nbInstants[0]);
-    //System.out.flush();
+    System.out.flush();
 
     //final String [] dateTimeOfFirstRecord= {""};
     //String [] dateTimeOfFirstRecord= {""};
-    String [] dateTimeOfFirstRecord= new String [] {""};
+    String [] dateTimeOfFirstRecord= new String [] { new String() };
     
     SProduct.setTransientAttrFromGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfFirstRecord));
@@ -896,24 +900,23 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     //final String [] dateTimeOfLastRecord= {""};
     //String [] dateTimeOfLastRecord= {""};
-    String [] dateTimeOfLastRecord= new String [] {""};
+    String [] dateTimeOfLastRecord= new String [] { new String() };
     
     SProduct.setTransientAttrFromGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfLastRecord));    
 
     slog.info(mmi+"dateTimeOfLastRecord[0]="+dateTimeOfLastRecord[0]);
-    //System.out.flush();
+    System.out.flush();
 
     //final int [] timeIntervalSeconds=
     //Integer [] timeIntervalSeconds=
-    Integer [] timeIntervalSeconds= new Integer []	
-	{ (int)IWLAdjustment.MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS };
+    Integer [] timeIntervalSeconds= new Integer [] { new Integer(0) };	
     
     SProduct.setTransientAttrFromGroup(ISProductIO.TIME_INTRV_ID,
 				       s104FcstDataGrpId, HDFql.variableTransientRegister(timeIntervalSeconds));
 
     slog.info(mmi+"timeIntervalSeconds[0]="+timeIntervalSeconds[0]);
-    //System.out.flush();
+    System.out.flush();
     
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
@@ -947,7 +950,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     }
 
     slog.info(mmi+"Reading the full model forecast data for all the ship channel point locations from the HDF5 file, could take ~10 secs");
-    //System.out.flush();
+    System.out.flush();
     
     // --- Loop on all the ship channel point locations (int indices here)
     for (int scLoc= 0; scLoc < nbScLocs[0]; scLoc++) {
@@ -966,7 +969,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       //final String [] checkStartDate= {""};
       //String [] checkStartDate= {""};
-      String [] checkStartDate= new String [] {""};
+      String [] checkStartDate= new String [] { new String() };
 
       SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID,
 					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkStartDate));
@@ -977,7 +980,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       //final String [] checkLastDate= {""};
       //String [] checkLastDate= {""};
-      String [] checkLastDate= new String [] {""};
+      String [] checkLastDate= new String [] { new String() };
 
       SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID,
 					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkLastDate));
@@ -1049,7 +1052,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     //slog.info(mmi+"debug System.exit(0)");
     //System.exit(0);
-    //System.out.flush();
+    System.out.flush();
 
     return mcbsFromS104DCF8;
   }	
