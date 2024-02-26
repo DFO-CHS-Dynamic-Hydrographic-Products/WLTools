@@ -1196,7 +1196,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     if (outputDataFormat.equals(Format.LEGACY_ASCII.name())) {
 	
-      IWLPSLegacyIO.writeFiles(whatTimeIsItNow, mcbForSpine);
+      IWLPSLegacyIO.writeFiles(whatTimeIsItNow, mcbForSpine, outputDirectory);
       
     } else {
       throw new RuntimeException(mmi+"Invalid SpineAPI input format -> "+outputDataFormat);
