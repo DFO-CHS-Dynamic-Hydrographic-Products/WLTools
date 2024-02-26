@@ -125,7 +125,7 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
       // --- Need to set the daysOffsetInFuture to 3o days here.
       daysOffsetInFuture= 30;
 
-      StringBuilder spineFormatedUncertainties= new StringBuilder();
+      spineASCIIFormatedUncertainties= new StringBuilder();
 	
     } else if (whatTimeIsItNowMinutes < 30) {
 
