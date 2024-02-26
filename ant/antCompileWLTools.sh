@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#alias javac="javac -Xlint:unchecked"
+
 # --- Modify according to the code location context.
 javaCodeBaseMainDir=../
 javaClassesMainDestDir=${javaCodeBaseMainDir}/lib
@@ -47,4 +49,3 @@ ln -sf WLTools.class WLTools
 # --- Set the executable flag of the WLTools.class file
 #     for ECCC maestro world
 chmod +x WLTools.class
-

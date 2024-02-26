@@ -17,15 +17,9 @@ import java.nio.file.Paths;
 import java.util.SortedSet;
 import java.util.ArrayList;
 import java.nio.file.Files;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.NavigableSet;
-//import java.util.stream.Stream;
 import java.nio.file.DirectoryStream;
-//import java.nio.file.PathMatcher;
-//import java.nio.file.FileSystems;
-
-//import java.awt.geom.Point2D; //.Double;
-//import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +41,12 @@ import java.io.FileNotFoundException;
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
-import ca.gc.dfo.chs.wltools.wl.fms.FMS;
+//import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
-import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
+//import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
-import ca.gc.dfo.chs.wltools.wl.fms.FMSFactory;
+//import ca.gc.dfo.chs.wltools.wl.fms.FMSFactory;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
@@ -687,9 +681,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //     Instant having two different WL values), Need to convert the wlPredMCB.getInstantsKeySetCopy()
     //     SortedSet to a temp. TreeSet object with which we can use its tailSet method with the
     //     false arg. to begin the NavigableSet at the Instant that follows the
-    //     mostRecentAdjFMFInstant object.
+    //     mostRecentAdjFMFInstant object. 
+    //final NavigableSet<Instant> predMcbInstantsTailSet= Collections
+    //	.synchronizedSortedSet(new TreeSet<Instant>( wlPredMCB.getInstantsKeySetCopy() ).tailSet(mostRecentAdjFMFInstant,false));
+
     final NavigableSet<Instant> predMcbInstantsTailSet=
-      new TreeSet(wlPredMCB.getInstantsKeySetCopy()).tailSet(mostRecentAdjFMFInstant,false);
+	new TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).tailSet(mostRecentAdjFMFInstant,false);
 
     // --- This way of defining the predMcbInstantsTailSet was causing
     //     that we ended-up with duplicate Instant having two different WL values)

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.time.Instant;
 import java.util.TreeSet;
 import java.util.SortedSet;
+import java.util.Collections;
 
 //---
 import org.slf4j.Logger;
@@ -163,7 +164,8 @@ final public class MeasurementCustom {
 
     Map<Long, MeasurementCustom> timeDepMCStats= new HashMap<Long, MeasurementCustom>();
 
-    final SortedSet<Long> timeDepDoubleAccListMapSSet= new TreeSet<Long>(timeDepDoubleAccListMap.keySet());
+    final SortedSet<Long> timeDepDoubleAccListMapSSet= Collections
+      .synchronizedSortedSet(new TreeSet<Long>(timeDepDoubleAccListMap.keySet()));
 
     for (final Long longObjIdx: timeDepDoubleAccListMapSSet) {
 

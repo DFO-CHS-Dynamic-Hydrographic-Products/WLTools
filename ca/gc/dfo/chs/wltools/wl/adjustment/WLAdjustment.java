@@ -26,7 +26,7 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentType;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpineIPP;
-//import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpineFPP;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpineFPP;
 
 /**
  * Comments please!
@@ -73,6 +73,10 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
 
     final String adjType= argsMap.get("--adjType");
 
+    // slog.info(mmi+"adjType="+adjType);
+    // slog.info(mmi+"Debug System.exit(0)");
+    // System.exit(0);
+
     if (!IWLAdjustment.allowedTypes.contains(adjType)) {
       throw new RuntimeException(mmi+"Invalid WL adjustment type -> "+adjType+
                                  " ! Must be one of -> "+IWLAdjustment.allowedTypes.toString());
@@ -93,19 +97,10 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
     //                             Type.MODEL_NEAREST_NEIGHBOR.name()+" is not yet ready to be used !!");
     //}
 
-    if (adjType.equals(Type.SpineFPP.name())) {
-      throw new RuntimeException(mmi+"The WL adjustment type "+
-                                 Type.SpineFPP.name()+" is not yet ready to be used !!");
-    }
-
-    //slog.info(mmi+"Will use WL location adjustment type "+locationAdjType);
-    //if (!argsMapKeySet.contains("--locationIdInfo")) {
-    //  throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
-    //}
-    //final String locationIdInfo= argsMap.get("--locationIdInfo");
-
     slog.info(mmi+"Will use WL adjustment type "+adjType);
-
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+    
     //slog.info(mmi+"Will use input data type -> "+
     //          inputDataType+" with input data format -> "+inputDataFormat);
 
@@ -134,6 +129,21 @@ final public class WLAdjustment implements IWLAdjustment { // extends WLAdjustme
       slog.info(mmi+"Done with Spine WL adjustment initial pre-processing type setup");
     }
 
+    if (adjType.equals(IWLAdjustment.Type.SpineFPP.name())) {
+
+      slog.info(mmi+"Doing Spine WL adjustment final pre-processing (FPP) type setup");
+
+      //this.adjType=IWLAdjustment.Type.WDS;
+      //final String wdsLocationIdInfoFile=
+      //  WLToolsIO.getMainCfgDir() + "/"+ locationIdInfo;
+      //slog.info(mmi+"wdsLocationIdInfoFile="+wdsLocationIdInfoFile);
+
+      this.adjInstance= new WLAdjustmentSpineFPP(argsMap); //wdsLocationIdInfoFile);
+
+      slog.info(mmi+"Done with Spine WL adjustment final pre-processing type setup");  
+      
+    }
+    
     //slog.info(mmi+"Test dist. rad="+Trigonometry.getDistanceInRadians(-73.552528,45.5035,-73.5425,45.528667));
 
     slog.info(mmi+"end");

@@ -8,11 +8,13 @@ import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.ArrayList;
 
+// ---
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
@@ -24,6 +26,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.StandardCopyOption;
 
 // ---
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.HttpURLConnection;
+
+// ---
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
@@ -32,11 +39,16 @@ import javax.json.JsonWriter;
 import javax.json.JsonArrayBuilder;
 
 // --- chs WLTools package
+import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
+import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.IWLPSLegacyIO;
+import ca.gc.dfo.chs.wltools.wl.IWLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
+import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
@@ -553,7 +565,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     // --- Use only one thread for HDFql operations. It avoids a possible cluttering-up of the cores 
     //     because HDFql try to use all the core available by default which is not a good idea most of
     //     the time.
-    HDFql.execute("SET THREAD 1");
+    //HDFql.execute("SET THREAD 1");
     
     // --- Now do the conversion to S104 DCF8 format (one file for all the ship channel points locations).
     //     first open the unique S104 DCF8 HDF5 output file in append mode (default when it is already existing);
@@ -697,7 +709,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID, scLocGrpNNNNIdStr,
 				       HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
 
-      // --- Update the time intervall of the timestamps HDF5 file attribute
+      // --- Update the time interval of the timestamps HDF5 file attribute
       //     for this ship channel location (Same value as for the S104 feature forecast GROUP)
       SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, scLocGrpNNNNIdStr,
   				       HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
@@ -763,12 +775,14 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       //slog.info(mmi+"s104Dcf8CmpdTypeArray now filled-up");
 
-      // --- Register tmpValuesArr in the HDFql world.
-      //final int registerNb= HDFql.variableTransientRegister(tmpValuesArr);
+      // --- Register tmpValuesArr for the HDFql lib, need to do it
+      //     for each INSERT command (i.e. for each ship channel point location) 
+      //     TODO check if we have a performance gain by using the HDFql.variableRegister
+      //     method just once outside of the loop on the ship channel point locations.
       final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
 
       if (registerNb < 0) {
-	throw new RuntimeException(mmi+"Problem with HDFql.variableRegister(variableTransientRegisters104Dcf8CmpdTypeArray), registerNb  ->"+registerNb);
+	throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), registerNb  ->"+registerNb);
       }
 
       // --- Put the (values,uncertainty) compound type items in the dataset.
@@ -789,5 +803,408 @@ abstract public class WLToolsIO implements IWLToolsIO {
     }      
     
     slog.info(mmi+"end");
+    
+  } // --- method ippCHSJsonToS104DCF8 
+
+  // ---
+  //public final static Map<String,MeasurementCustomBundle> getMCBFromS104DCF8File() {
+  public final static List<MeasurementCustomBundle> getMCBsFromS104DCF8File(final String s104DCF8FilePath) {
+
+    final String mmi= "getMCBFromS104DCF8File: ";
+
+    try {
+      s104DCF8FilePath.hashCode();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe+" s104DCF8FilePath cannot be null here !!");
+    }
+
+    if (!checkForFileExistence(s104DCF8FilePath)) {
+      throw new RuntimeException(mmi+"s104DCF8FilePath -> "+s104DCF8FilePath+" not found !!");
+    }
+    
+    slog.info(mmi+"start");
+
+    //// --- Tell the HDFql lib to use just one thread here.
+    HDFql.execute("SET THREAD 1");
+    //System.out.flush();
+    
+    //if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+    //  throw new RuntimeException(mmi+"Problem with HDFql command \"SET THREAD 1\", hdfqlCmdStatus="+hdfqlCmdStatus);
+    //}
+
+    int hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+s104DCF8FilePath);
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "
+				 +s104DCF8FilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
+    }
+
+    // --- Get the S104 feature code String
+    final String s104FeatureId= ISProductIO.FEATURE_IDS.get(ISProductIO.FeatId.S104);
+
+    // --- Build the S104 forecast feature code HDF5 GROUP id. 
+    final String s104FcstDataGrpId= ISProductIO.GRP_SEP_ID +
+      s104FeatureId + ISProductIO.GRP_SEP_ID + s104FeatureId + ISProductIO.FCST_ID;
+
+    // --- Get the number of ship channel point locations
+    //     from the ISProductIO.NB_STATIONS_ID attribute.
+    
+    // --- NOTE: Need to use a local unary array of Integer
+    //     and it seems that we really need to use
+    //     the "new" operator here instead of just
+    //     using a local declaration which seems
+    //     to cause something like a memory leak in
+    //     the JNI part of the HDFql lib and which
+    //     seems to randomly crash the java exec.
+    //final int [] nbScLocs= {0};
+    //Integer [] nbScLocs= {0};
+    Integer [] nbScLocs= new Integer [] {0}; //{ Integer.valueOf(0) }; //{0};
+
+    SProduct.setTransientAttrFromGroup(ISProductIO.NB_STATIONS_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbScLocs));
+
+    slog.info(mmi+"nbScLocs[0]="+nbScLocs[0]);
+    System.out.flush();
+    
+    //final int [] nbInstants= {0};
+    //Integer [] nbInstants= {0};
+    Integer [] nbInstants= new Integer [] {0};//{ Integer.valueOf(0) }; // {0};
+
+    SProduct.setTransientAttrFromGroup(ISProductIO.NB_TIMESTAMPS_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbInstants));
+
+    slog.info(mmi+"nbInstants[0]="+nbInstants[0]);
+    System.out.flush();
+
+    //final String [] dateTimeOfFirstRecord= {""};
+    //String [] dateTimeOfFirstRecord= {""};
+    String [] dateTimeOfFirstRecord= new String [] { new String() };
+    
+    SProduct.setTransientAttrFromGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfFirstRecord));
+
+    slog.info(mmi+"dateTimeOfFirstRecord[0]="+dateTimeOfFirstRecord[0]);
+    //System.out.flush();
+    
+    final String fmfLeastRecentInstantStr= dateTimeOfFirstRecord[0].substring(0,4)   + ISO8601_YYYYMMDD_SEP_CHAR +
+	                                   dateTimeOfFirstRecord[0].substring(4,6)   + ISO8601_YYYYMMDD_SEP_CHAR +
+	                                   dateTimeOfFirstRecord[0].substring(6,8)   + ISO8601_DATETIME_SEP_CHAR +
+	                                   dateTimeOfFirstRecord[0].substring(9,11)  + INPUT_DATA_FMT_SPLIT_CHAR +
+	                                   dateTimeOfFirstRecord[0].substring(11,13) + INPUT_DATA_FMT_SPLIT_CHAR + "00Z";
+    
+    slog.info(mmi+"fmfLeastRecentInstantStr="+fmfLeastRecentInstantStr);
+    System.out.flush();
+    
+    final Instant fmfLeastRecentInstant= Instant.parse(fmfLeastRecentInstantStr);
+
+    //slog.info(mmi+"fmfLeastRecentInstant.toString()="+fmfLeastRecentInstant.toString());
+
+    //final String [] dateTimeOfLastRecord= {""};
+    //String [] dateTimeOfLastRecord= {""};
+    String [] dateTimeOfLastRecord= new String [] { new String() };
+    
+    SProduct.setTransientAttrFromGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfLastRecord));    
+
+    slog.info(mmi+"dateTimeOfLastRecord[0]="+dateTimeOfLastRecord[0]);
+    System.out.flush();
+
+    //final int [] timeIntervalSeconds=
+    //Integer [] timeIntervalSeconds=
+    Integer [] timeIntervalSeconds= new Integer [] {0}; //{ Integer.valueOf(0) };	
+    
+    SProduct.setTransientAttrFromGroup(ISProductIO.TIME_INTRV_ID,
+				       s104FcstDataGrpId, HDFql.variableTransientRegister(timeIntervalSeconds));
+
+    slog.info(mmi+"timeIntervalSeconds[0]="+timeIntervalSeconds[0]);
+    System.out.flush();
+    
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
+    
+    // --- Create the ArrayList of the MeasurementCustomBundle objects
+    //     (one for each ship channel point location)
+    List<MeasurementCustomBundle> mcbsFromS104DCF8=
+      new ArrayList<MeasurementCustomBundle>(nbScLocs[0]);
+
+    // --- Use an array of Instant objects to define them just once.
+    //final Instant [] fmfInstants= new Instant[nbInstants[0]];
+    Instant [] fmfInstants= new Instant[nbInstants[0]];
+    
+    // --- Allocate the array of S104DCF8CompoundType objects.
+    final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= new S104DCF8CompoundType[nbInstants[0]];
+    
+    // --- Instantiate all S104DCF8CompoundType objects in the s104Dcf8CmpdTypeArray
+    for (int instantIdx= 0; instantIdx < nbInstants[0]; instantIdx++) {
+	
+      s104Dcf8CmpdTypeArray[instantIdx]= new S104DCF8CompoundType();
+      
+      fmfInstants[instantIdx]= fmfLeastRecentInstant.plusSeconds((long)instantIdx*timeIntervalSeconds[0]);
+    }
+
+    // ---
+    //final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
+    final int s104Dcf8CmpdTypeArrRegisterNb= HDFql.variableRegister(s104Dcf8CmpdTypeArray);
+    
+    if (s104Dcf8CmpdTypeArrRegisterNb < 0) {
+      throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), s104Dcf8CmpdTypeArrRegisterNb ->"+s104Dcf8CmpdTypeArrRegisterNb);
+    }
+
+    slog.info(mmi+"Reading the full model forecast data for all the ship channel point locations from the HDF5 file, could take ~10 secs");
+    System.out.flush();
+    
+    // --- Loop on all the ship channel point locations (int indices here)
+    for (int scLoc= 0; scLoc < nbScLocs[0]; scLoc++) {
+
+      // --- Define the name of the HDF5 GROUP for this specific ship channel point location.
+      final String scLocGrpNNNNIdStr= s104FcstDataGrpId +
+	ISProductIO.GRP_SEP_ID + ISProductIO.GRP_PRFX + String.format("%04d", scLoc + 1);
+
+      //slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
+
+      hdfqlCmdStatus= HDFql.execute("USE GROUP "+scLocGrpNNNNIdStr);
+
+      if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+        throw new RuntimeException(mmi+"Group: "+scLocGrpNNNNIdStr+" not found in input file -> "+s104DCF8FilePath);
+      }
+
+      //final String [] checkStartDate= {""};
+      //String [] checkStartDate= {""};
+      String [] checkStartDate= new String [] { new String() };
+
+      SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID,
+					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkStartDate));
+
+      if (!checkStartDate[0].equals(dateTimeOfFirstRecord[0])) {
+	throw new RuntimeException(mmi+"Must have checkStartDate[0] being the same as dateTimeOfFirstRecord[0] here!!");
+      }
+
+      //final String [] checkLastDate= {""};
+      //String [] checkLastDate= {""};
+      String [] checkLastDate= new String [] { new String() };
+
+      SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID,
+					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkLastDate));
+
+      if (!checkLastDate[0].equals(dateTimeOfLastRecord[0])) {
+	throw new RuntimeException(mmi+"Must have checkLastDate[0] being the same as dateTimeOfLastRecord[0] here!!");
+      }      
+
+      final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
+
+      hdfqlCmdStatus= HDFql.execute("SELECT FROM DATASET \""+valuesDSetIdInGrp+"\" INTO MEMORY " + s104Dcf8CmpdTypeArrRegisterNb);
+
+      if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+        throw new RuntimeException(mmi+"Problem with HDFql cmd \"SELECT FROM DATASET \""+
+				   valuesDSetIdInGrp+"\" INTO MEMORY, hdfqlCmdStatus="+ hdfqlCmdStatus );
+      }
+
+      //slog.info(mmi+"scLocGrpNNNNIdStr="+scLocGrpNNNNIdStr);
+      //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getWaterLevelHeight()="+s104Dcf8CmpdTypeArray[0].getWaterLevelHeight());
+      //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getUncertainty()="+s104Dcf8CmpdTypeArray[0].getUncertainty()+"\n");
+      //slog.info(mmi+"s104Dcf8CmpdTypeArray[0].getWaterLevelTrend()="+s104Dcf8CmpdTypeArray[0].getWaterLevelTrend());
+
+      // --- NOTE: Performance is way better if we re-create the tmpScLocMCList ArrayList object here
+      //           instead of creating it just once outside the outer loop on the ship channel point locations
+      List<MeasurementCustom> tmpScLocMCList= new ArrayList<MeasurementCustom>(nbInstants[0]); 
+      
+      //--- Now populate the tmpScLocMCList ArrayList with the content of the
+      //    s104Dcf8CmpdTypeArray for this ship channel point location for all
+      //    the timestamps.
+      for (int instantIdx= 0; instantIdx < nbInstants[0]; instantIdx++) {
+
+	final S104DCF8CompoundType s104CmpTypeAtInstant= s104Dcf8CmpdTypeArray[instantIdx];
+
+	// --- Using a copy of the Instant objects for the eventDate attribute of the
+	//     new MeasurementCustom object.
+	final MeasurementCustom mcAtInstant= new MeasurementCustom( fmfInstants[instantIdx].plusSeconds(0L),
+								    Double.valueOf(s104CmpTypeAtInstant.getWaterLevelHeight()),
+								    Double.valueOf(s104CmpTypeAtInstant.getUncertainty()) ) ;
+
+	// --- No need to use the instantIdx itself here but
+	//     there is no significant performance degradation
+	//     compared to the simple add() without an index.
+	tmpScLocMCList.add(instantIdx, mcAtInstant);
+	//tmpScLocMCList.add(mcAtInstant);
+      }
+
+      // --- Finally create the MeasurementCustomBundle object for this ship channel point location
+      mcbsFromS104DCF8.add(new MeasurementCustomBundle(tmpScLocMCList));
+      
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);
+      //System.out.flush();
+      
+    } // --- Loop block on all the ship channel point locations 
+
+    hdfqlCmdStatus= HDFql.variableUnregister(s104Dcf8CmpdTypeArray);
+    
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql.unregisterVariable(registerNb)!!, hdfqlCmdStatus="+hdfqlCmdStatus);
+    }
+ 
+    hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+s104DCF8FilePath);
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql close file command \"CLOSE FILE \" for file -> "+s104DCF8FilePath+" !!");
+    }    
+    
+    slog.info(mmi+"end");
+    
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
+    System.out.flush();
+
+    return mcbsFromS104DCF8;
   }	
-}
+    
+  // --- TODO1: Use the HttpURLConnection class instead of the URLConnection class?
+  //     TODO2: Manage errors in a more fool-proof manner?     
+  public final static JsonArray getJsonArrayFromAPIRequest(final String apiRequestStr) {
+
+    final String mmi= "getJsonArrayFromAPIRequest: ";
+      
+    URLConnection uc= null;
+    //HttpURLConnection uc= null;
+
+    slog.info(mmi+"start");
+    
+    try {
+      uc= new URL(apiRequestStr).openConnection();
+	//uc= new HttpURLConnection(new URL(apiRequestStr))
+    } catch (IOException ioe) {
+	//ioe.printStackTrace();	
+      throw new RuntimeException(mmi+ioe+"\nProblem with openConnection() with apiRequestStr -> "+apiRequestStr);
+    }
+    
+    slog.info(mmi+"Connection opened for apiRequestStr -> "+apiRequestStr);
+    System.out.flush();
+    
+    InputStream ist= null;
+
+    try {
+      ist= uc.getInputStream();
+    } catch (IOException ioe) {
+	//ioe.printStackTrace();    	
+      throw new RuntimeException(mmi+ioe+"\nProblem with new uc.getInputStream() with apiRequestStr -> "+apiRequestStr);
+    }
+
+    //final JsonReader jsr= Json.createReaderFactory(null).createReader(ist);
+    //return jsr.readArray();
+
+    //try { 
+    //  uc.finalize();
+    //} catch (IOException ioe) {
+    //  throw new RuntimeException(mmi+ioe+"\nProblem with uc.finalize() !!");
+    //}
+
+    slog.info(mmi+"end");
+    System.out.flush();
+
+    return Json.createReaderFactory(null).createReader(ist).readArray();
+    
+  } // --- getJsonArrayFromAPIRequest method
+
+  // ---
+  public final static MeasurementCustomBundle getMCBFromIWLSJsonArray(final JsonArray iwlsJsonArray,
+		                                                      final long timeIntrvSeconds, final double datumConvValue, final boolean applyHFOscRemoval) {
+    final String mmi= "getMCBFromIWLSJsonArray: ";
+
+    try {
+      iwlsJsonArray.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe+" iwlsJsonArray cannot be null here !!");
+    }
+
+    if (iwlsJsonArray.size() == 0) {
+      throw new RuntimeException(mmi+"Cannot have iwlsJsonArray.size() == 0 here !!");
+    }
+
+    if (timeIntrvSeconds <= 1L) {
+      throw new RuntimeException(mmi+"Invalid timeIntrvSeconds -> "+timeIntrvSeconds+", it must be at least 1 second !!");
+    }
+
+    slog.info(mmi+"start");
+	
+    List<MeasurementCustom> tmpWLDataList= new ArrayList<MeasurementCustom>(iwlsJsonArray.size());
+
+    // --- 
+    for (int itemIter= 0; itemIter < iwlsJsonArray.size(); itemIter++) {
+
+       final JsonObject jsoItem= iwlsJsonArray.getJsonObject(itemIter);
+
+       final String checkQCFlag= jsoItem.getString(IWLToolsIO.IWLS_DB_QCFLAG_KEY);
+
+       if (checkQCFlag.equals(IWLToolsIO.IWLS_DB_QCFLAG_VALID)) {
+
+	 final double itemValue= jsoItem.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue();
+
+	 final Instant itemInstant= Instant.parse(jsoItem.getString(IWLToolsIO.INSTANT_JSON_KEY));
+
+	 //slog.info(mmi+"itemValue="+itemValue); 
+	 //slog.info(mmi+"itemInstant="+itemInstant.toString());
+         //slog.info(mmi+"debug exit 0");
+         //System.exit(0);
+
+	 // --- Only use data that has its Instant being an exact multiple of the timeIntrvSeconds
+	 if ((itemInstant.getEpochSecond() % timeIntrvSeconds) == 0) {
+	   tmpWLDataList.add( new MeasurementCustom(itemInstant, itemValue + datumConvValue, IWL.MINIMUM_UNCERTAINTY_METERS));
+	 }
+       }	
+    }
+
+    slog.info(mmi+"tmpWLDataList size="+tmpWLDataList.size());
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
+    System.out.flush();
+
+    MeasurementCustomBundle mcbRet= null;
+
+    if (tmpWLDataList.size() > IWLMeasurement.MIN_NUMBER_OF_WL_HFOSC_RMV) {
+
+      // --- We have at least IWLAdjustment.MIN_NUMBER_OF_OBS_SPINE_FPP valid WLO data
+      //     Apply the removeHFWLOscillations method to the WLO data and create the
+      //     MeasurementCustomBundle to return with the filtered tmpWLDataList
+      if (applyHFOscRemoval) {
+
+	slog.info(mmi+"Applying HF oscillations removal");
+	  
+	mcbRet= new MeasurementCustomBundle(WLMeasurement
+          .removeHFWLOscillations(IWLAdjustment.MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS,tmpWLDataList));
+	
+      } else {
+
+	 slog.info(mmi+"Not applying HF oscillations removal"); 
+	  
+	 mcbRet= new MeasurementCustomBundle(tmpWLDataList);
+      }
+    }
+
+    slog.info(mmi+"end");
+    System.out.flush();
+    
+    return mcbRet;
+    
+  } // --- method getMCBFromIWLSJsonArray
+
+  // ---
+  public static final void writeSpineAPIInputData(final Instant whatTimeIsItNow, final List<MeasurementCustomBundle> mcbForSpine)  {
+
+    final String mmi= "writeSpineInputFiles: ";
+
+    slog.info(mmi+"start: whatTimeIsItNow -> "+whatTimeIsItNow.toString());
+    
+    if (outputDataFormat.equals(Format.LEGACY_ASCII.name())) {
+	
+      IWLPSLegacyIO.writeFiles(whatTimeIsItNow, mcbForSpine, outputDirectory);
+      
+    } else {
+      throw new RuntimeException(mmi+"Invalid SpineAPI input format -> "+outputDataFormat);
+      
+    }  // --- if-else case block
+
+    slog.info(mmi+"end");
+     
+  } // --- Method writeSpineInputFiles
+	
+} // --- class

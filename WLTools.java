@@ -20,6 +20,7 @@ import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
+import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
@@ -29,9 +30,8 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
-import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
-
-import as.hdfql.HDFqlJNI;
+//import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
+//import as.hdfql.HDFqlJNI;
 
 /**
  * Comments please!
@@ -94,10 +94,15 @@ final public class WLTools extends WLToolsIO {
       if (!parts[0].startsWith("--")) {
 	throw new RuntimeException(mmi+"Incorrect option arg -> "+arg+" All option args must start with the \"--\" prefix !");
       }
+
+      mlog.debug(mmi+"parts[0]="+parts[0]+", parts[1]="+parts[1]);
       
       argsMap.put(parts[0], parts[1]);
     }
-
+    
+    //System.out.println(mmi+"Debug exit 0");
+    //System.exit(0);
+    
     // --- Check the --tool value 
     if (!argsMap.keySet().contains("--tool")) {
 
@@ -147,12 +152,21 @@ final public class WLTools extends WLToolsIO {
     //System.out.println(mmi+"Debug exit 0");
     //System.exit(0);
 
-    if (argsMap.keySet().contains("--outputDataFormat")) {
+    if (!tool.equals(IWLTools.Box.IPPAdjToS104DCF8)) {
+
+      if (!argsMap.keySet().contains("--outputDataFormat")) {
+        mlog.error(mmi+"--outputDataFormat option must be used for this tool -> "+tool);
+      }
+
       WLToolsIO.setOutputDataFormat(argsMap.get("--outputDataFormat"));
-      mlog.info(mmi+"WLToolsIO.getOutputDataFormat()="+WLToolsIO.getOutputDataFormat());
+
+      mlog.info(mmi+"WLToolsIO.getOutputDataFormat()="+WLToolsIO.getOutputDataFormat());	  
     }
 
-    //if (tool.equals("prediction")) {
+    //mlog.info(mmi+"debug System.exit 0");
+    //System.exit(0);
+
+    // ---
     if (tool.equals(IWLTools.Box.prediction.name())) {
 
       mlog.info(mmi+"Doing WL "+
@@ -160,8 +174,8 @@ final public class WLTools extends WLToolsIO {
 
       final WLStationPred wlStationPred= new WLStationPred(argsMap); //.parseArgsOptions(argsMap);
 
-      //System.out.println("WLTools main: debug System.exit(0)");
-        //System.exit(0);
+      //mlog.info((mmi+"debug System.exit(0)");
+      //System.exit(0);
 
       wlStationPred.getAllPredictions();
 

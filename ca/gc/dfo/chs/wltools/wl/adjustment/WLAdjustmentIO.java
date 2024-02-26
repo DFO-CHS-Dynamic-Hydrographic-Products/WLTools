@@ -1,7 +1,6 @@
 package ca.gc.dfo.chs.wltools.wl.adjustment;
 
 //---
-//import java.sql;
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.ArrayList;
-//import java.util.stream.Collectors;
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
 // ---
-//import javax.sql;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
@@ -41,15 +39,16 @@ import as.hdfql.HDFqlConstants;
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
-import ca.gc.dfo.chs.wltools.wl.fms.FMS;
+//import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
-import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
+//import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.IWLMeasurement;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
@@ -204,33 +203,34 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     this.argsMapKeySet= argsMap.keySet();
   }
 
-  // --- Returns the HBCoords read from a Non-Stationary tidal consts. json file.
-  final HBCoords getHBCoordsFromNSTCJsonFile(final String nsTCJsonFile) {
+  // --- It does the same thing as the  HBCoords.getFromCHSJSONTCFile() method
+  // // --- Returns the HBCoords read from a Non-Stationary tidal consts. json file.
+  // final HBCoords getHBCoordsFromNSTCJsonFile(final String nsTCJsonFile) {
 
-    final String mmi= "getHBCoordsFromNSTCJsonFile: ";
+  //   final String mmi= "getHBCoordsFromNSTCJsonFile: ";
 
-    FileInputStream jsonFileInputStream= null;
+  //   FileInputStream jsonFileInputStream= null;
 
-    try {
-      jsonFileInputStream= new FileInputStream(nsTCJsonFile);
+  //   try {
+  //     jsonFileInputStream= new FileInputStream(nsTCJsonFile);
 
-    } catch (FileNotFoundException e) {
-      //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
-      throw new RuntimeException(mmi+e);
-    }
+  //   } catch (FileNotFoundException e) {
+  //     //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
+  //     throw new RuntimeException(mmi+e);
+  //   }
 
-    // --- Get the main json object from the file
-    final JsonObject mainJsonTcDataInputObj=
-      Json.createReader(jsonFileInputStream).readObject();
+  //   // --- Get the main json object from the file
+  //   final JsonObject mainJsonTcDataInputObj=
+  //     Json.createReader(jsonFileInputStream).readObject();
 
-    // --- TODO: check if IWLLocation.INFO_JSON_DICT_KEY is a key
-    //     in the mainJsonTcDataInputObj
-    final JsonObject channelGridPointJsonObj=
-      mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
+  //   // --- TODO: check if IWLLocation.INFO_JSON_DICT_KEY is a key
+  //   //     in the mainJsonTcDataInputObj
+  //   final JsonObject channelGridPointJsonObj=
+  //     mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
   
-    return new HBCoords(channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
-			channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
-  }
+  //   return new HBCoords(channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
+  // 			channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
+  // }
 
   // ---
   final MeasurementCustomBundle getMcbWLOData() {
@@ -552,12 +552,23 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         //slog.info(mmi+"Debug System.exit(0)");
         //System.exit(0);
 
-        // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
-        //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
-        //     method to it before the assignation.
-        this.nearestObsData.put(this.location.getIdentity(),
-                                WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
 
+	if (tmpWLOMcList.size() >= IWLMeasurement.MIN_NUMBER_OF_WL_HFOSC_RMV) {
+	    
+          // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
+          //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
+          //     method to it before the assignation itself
+          this.nearestObsData.put(this.location.getIdentity(),
+                                   WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
+        } else {
+
+	  slog.warn(mmi+"WARNING!!: Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations method for TGat location -> "+this.location.getIdentity());
+
+	  // --- Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations
+	  //     method, just assign the tmpWLOMcList as is
+	  this.nearestObsData.put(this.location.getIdentity(), tmpWLOMcList);
+	}
+	
         slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
 
       } else {
@@ -885,7 +896,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
 
-    final SortedSet<Long> timeDepResidualsStatsMapSSet= new TreeSet<Long>(timeDepResidualsStatsMap.keySet());
+    final SortedSet<Long> timeDepResidualsStatsMapSSet= Collections
+      .synchronizedSortedSet(new TreeSet<Long>(timeDepResidualsStatsMap.keySet()));
 
     for (final Long longIter: timeDepResidualsStatsMapSSet) { //timeDepResidualsStatsMap.keySet()) {
 

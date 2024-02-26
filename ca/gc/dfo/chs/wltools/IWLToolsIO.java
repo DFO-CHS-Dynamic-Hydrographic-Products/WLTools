@@ -18,6 +18,7 @@ public interface IWLToolsIO {
   String OUTPUT_DATA_FMT_SPLIT_CHAR= "-";
 
   String ISO8601_DATETIME_SEP_CHAR= "T";
+  String ISO8601_HHMMSS_SEP_CHAR= INPUT_DATA_FMT_SPLIT_CHAR;
   String ISO8601_YYYYMMDD_SEP_CHAR= OUTPUT_DATA_FMT_SPLIT_CHAR;
 
   String ISO8601_UTC_EXT= "Z";
@@ -25,7 +26,8 @@ public interface IWLToolsIO {
   // ---
   enum Format {
     CHS_JSON,
-    DHP_S104_DCF8
+    DHP_S104_DCF8,
+    LEGACY_ASCII
     //CSV
   }
 
@@ -45,5 +47,14 @@ public interface IWLToolsIO {
 
   String SHIP_CHANNEL_POINTS_DEF_DIRNAME=  File.separator + "channelGridPointsInfoDef" + File.separator;
 
-  // ---
+  // --- IWLS specific:
+
+  String IWLS_DB_TG_STR_ID_KEY= "id";
+  String IWLS_DB_TG_NUM_STRID_KEY= "code";
+
+  String IWLS_DB_DTIME_END_STR= "%3A00%3A00Z";
+
+  String IWLS_DB_QCFLAG_KEY= "qcFlagCode";
+
+  String IWLS_DB_QCFLAG_VALID= "1";
 }

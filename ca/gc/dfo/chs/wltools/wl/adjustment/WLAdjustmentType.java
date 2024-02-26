@@ -84,7 +84,7 @@ abstract public class WLAdjustmentType
 
     final String mmi= "WLAdjustmentType main constructor: ";
 
-    slog.info(mmi+"start");
+    slog.info(mmi+"start, this.adjType="+this.adjType);
 
     if (!this.argsMapKeySet.contains("--locationIdInfo")) {
       throw new RuntimeException(mmi+"Must have the mandatory option: --locationIdInfo defined !!");
@@ -101,53 +101,85 @@ abstract public class WLAdjustmentType
     final String identityInfo=
       new File(this.locationIdInfo).getName().replace(IWLToolsIO.JSON_FEXT,"");
 
-    slog.info(mmi+"identity="+identityInfo);
+    slog.info(mmi+"identityInfo="+identityInfo);
 
     // --- Process the identity String depending on the adjustment type.
     //     TODO: Could be done in the specific dervived classes constructors?
     if (this.adjType == IWLAdjustment.Type.TideGauge) {
 
+      slog.info(mmi+"Using "+ IWLAdjustment.Type.TideGauge.name()+" adjustment type");
+	
       this.location= new TideGaugeConfig(identityInfo);
 
-    } else if (this.adjType == IWLAdjustment.Type.SpineIPP || this.adjType == IWLAdjustment.Type.SpineFPP) {
+    } else if (this.adjType == IWLAdjustment.Type.SpineIPP) {
 
-      // --- Get the ids of the two CHS tide gauges that define an interpolation range for the ship
-      //     channel point locations that are in-between those two TG locations. the identity
+      slog.info(mmi+"Using "+ IWLAdjustment.Type.SpineIPP.name()+" adjustment type");	
+	
+      // --- Get the ids of the two CHS tide gauges that define the spatial interpolation range for the ship
+      //     channel point locations that are in-between those two TG locations.
       final String [] spineInterpTGIdsInfo= identityInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
       if (spineInterpTGIdsInfo.length != 3) {
 	throw new RuntimeException(mmi+"spineInterpTGIdsInfo string array must have length of 3 here!");
       }
       
-      //--- TODO: DO not assume that we have only two TGs here.
-      this.locations= new ArrayList<TideGaugeConfig>(2); //<WLLocation>(2);
-      
-      //this.location= new WLLocation(identity);
+      // --- Only processing two tide gauges at a time for SpineIPP for now because
+      //     it runs under an ECCC maestro LOOP parallelization instance
+      this.locations= new ArrayList<TideGaugeConfig>(2);
+
+      // --- Allocate the two TideGaugeConfig objects for the two tide gauge locations 
       this.locations.add(0, new TideGaugeConfig(spineInterpTGIdsInfo[0]));
       this.locations.add(1, new TideGaugeConfig(spineInterpTGIdsInfo[1]));
 
       slog.info(mmi+"this.locations TG 0 id.="+this.locations.get(0).getIdentity());
       slog.info(mmi+"this.locations TG 1 id.="+this.locations.get(1).getIdentity());
 
+      // --- Get the flag that controls which tide gauge(s) results have to be
+      //     written for the outputs (Need to avoid writing the same results twice on disk)
       final String checkSpinePPWriteCtrlType= spineInterpTGIdsInfo[2];
 
-      if (!allowedSpinePPWriteCtrl.contains(checkSpinePPWriteCtrlType)) {
+      // --- Check if this flag is valid.
+      if (!this.allowedSpinePPWriteCtrl.contains(checkSpinePPWriteCtrlType)) {
 	throw new RuntimeException(mmi+"Invalid IWLAdjustment.SpinePPWriteCtrl type -> "+checkSpinePPWriteCtrlType);
       }
       
       // --- Set this.spinePPWriteCtrl enum value using the spineInterpTGIdsInfo[2] string
-      //     
       this.spinePPWriteCtrl= IWLAdjustment.SpinePPWriteCtrl.valueOf(spineInterpTGIdsInfo[2]);
 
       slog.info(mmi+"this.spinePPWriteCtrl="+this.spinePPWriteCtrl.name());
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
       
-      //throw new RuntimeException(mmi+"SpineIPP adjustment type not ready yet !!");
-      //} else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
-      //this.location= new WLLocation(identity);
-      //  throw new RuntimeException(mmi+"SpineFPP adjustment type not ready yet !!");
+    } else if (this.adjType == IWLAdjustment.Type.SpineFPP) {
 
+      slog.info(mmi+"Using "+ IWLAdjustment.Type.SpineFPP.name()+" adjustment type");
+
+      // --- Get all the ids of the CHS tide gauges that define the spatial interpolation range(s) for the ship
+      //     channel point locations that are in-between those TG locations.
+      final String [] spineInterpTGIdsInfo= identityInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+      if (spineInterpTGIdsInfo.length < 2) {
+	throw new RuntimeException(mmi+"spineInterpTGIdsInfo String array must have at least two items here!");
+      }
+
+      slog.info(mmi+"spineInterpTGIdsInfo.length="+spineInterpTGIdsInfo.length);
+
+      // --- Allocate all the TideGaugeConfig objects for all the tide gauge locations defined in
+      //     the spineInterpTGIdsInfo String array
+      this.locations= new ArrayList<TideGaugeConfig>(spineInterpTGIdsInfo.length);
+
+      // ---
+      for (int tgIter= 0; tgIter < spineInterpTGIdsInfo.length; tgIter++ ) {
+
+	slog.info(mmi+"Instantiating TideGaugeConfig object for tide gauge -> "+spineInterpTGIdsInfo[tgIter]);
+	  
+	this.locations.add(tgIter, new TideGaugeConfig(spineInterpTGIdsInfo[tgIter]));
+      }
+
+      //slog.info(mmi+"this.locations.size()="+this.locations.size());
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+      
     } else {
        throw new RuntimeException(mmi+"Invalid adjustment type "+this.adjType.name()+" !!");
     }

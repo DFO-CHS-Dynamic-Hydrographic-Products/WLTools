@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.time.Instant;
 import java.util.TreeSet;
 import java.util.SortedSet;
+import java.util.Collections;
 
 //---
 import org.slf4j.Logger;
@@ -38,10 +39,13 @@ final public class MeasurementCustomBundle {
   //private Set<Instant> instantsKeySet= null;
   private SortedSet<Instant> instantsKeySet= null;
 
+  private long dataTimeIntervallSeconds= -1;
+
   // ---
   public MeasurementCustomBundle() {
     this.mcData= null;
     this.instantsKeySet= null;
+    this.dataTimeIntervallSeconds= -1;
   }
 
   // ---
@@ -63,11 +67,30 @@ final public class MeasurementCustomBundle {
       this.mcData= new HashMap<Instant, MeasurementCustom>();
 
       for (final MeasurementCustom mcIter: mcDataList) {
-        this.mcData.put(mcIter.getEventDate(), mcIter);
+
+	// --- Use a copy for the Instant key instead of a reference.
+	//     Behavior should be the same.
+	this.mcData.put(mcIter.getEventDate().plusSeconds(0L), mcIter);
+	//this.mcData.put(mcIter.getEventDate(), mcIter);
       }
 
-      //this.instantsKeySet= this.mcData.keySet();
-      this.instantsKeySet= new TreeSet<Instant>(this.mcData.keySet());
+      // --- Use a (Thread safe) TreeSet<Instant> here in order
+      //     to be sure to have the Instant objects in increasing order
+      //     in this.instantsKeySet
+      this.instantsKeySet= Collections
+	.synchronizedSortedSet(new TreeSet<Instant>(this.mcData.keySet()));
+
+      if (mcDataList.size() >= 2) {
+      
+        // --- Note: this is useless for WLO data because the time incr. between sucessive data
+        //     can be non-constant in case WLO data are missing
+	this.dataTimeIntervallSeconds=
+	  mcDataList.get(1).getEventDate().getEpochSecond() - mcDataList.get(0).getEventDate().getEpochSecond();
+
+        if (dataTimeIntervallSeconds < 0) {
+	  throw new RuntimeException(mmi+"dataTimeIntervallSeconds cannot be < 0 here !");
+        }
+      }
 
     } else {
       slog.warn(mmi+"Empty mcDataList !! Nothing to do here !!");
@@ -135,6 +158,7 @@ final public class MeasurementCustomBundle {
 
   // --- Can return null!!
   public SortedSet<Instant> getInstantsKeySetCopy() {
+  //public TreeSet<Instant> getInstantsKeySetCopy() {
 
     final String mmi= "getInstantsKeySetCopy: ";
 
@@ -144,7 +168,16 @@ final public class MeasurementCustomBundle {
       throw new RuntimeException(mmi+npe);
     }
 
-    return (this.instantsKeySet != null) ? new TreeSet(this.instantsKeySet) : null ; //mcData.keySet();
+    // --- Copy of this.instantsKeySet. The Collections.synchronizedSortedSet
+    //     might be not necessary since this.instantsKeySet is itself thread safe
+    //     but better to use it anyways.
+    return (this.instantsKeySet != null) ?
+	    Collections.synchronizedSortedSet(new TreeSet<Instant>(this.instantsKeySet)) : null ; //mcData.keySet();
+  }
+
+  // ---
+  public long getDataTimeIntervallSeconds() {
+    return this.dataTimeIntervallSeconds;
   }
 
   // --- Can return null !!

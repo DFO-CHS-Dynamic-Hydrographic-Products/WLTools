@@ -341,13 +341,16 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
      try {
        wlMcList.size();
-
      } catch (NullPointerException npe) {
        throw new RuntimeException(mmi+npe);
      }
 
      final int nbWLIn= wlMcList.size();
 
+     if (nbWLIn < MIN_NUMBER_OF_WL_HFOSC_RMV) {
+        throw new RuntimeException(mmi+"Cannot have nbWLIn="+nbWLIn+" < MIN_NUMBER_OF_WL_HFOSC_RMV here !!");
+     }
+     
      // --- Simply use a three values moving average
      //     NOTE: time incr. intervall should be no more than 15mins (3mins is better)
      //     otherwise it could produce unrealistic results.
@@ -395,7 +398,8 @@ abstract public class WLMeasurement implements IWLMeasurement {
 
        final double newWLValue= (wlMcPrev.getValue() + wlMcHere.getValue() + wlMcNext.getValue())/3.0;
 
-       newWLMcList.add( new MeasurementCustom(wlMcHere.getEventDate(), newWLValue, wlMcHere.getUncertainty()) );
+       // --- Use a copy of the wlMcHere.getEventDate() Instant object here, slower but safer.
+       newWLMcList.add( new MeasurementCustom(wlMcHere.getEventDate().plusSeconds(0L), newWLValue, wlMcHere.getUncertainty()) );
 
        //  setValue((wlMcPrev.getValue() + wlMcHere.getValue() + wlMcNext.getValue())/3.0);
 

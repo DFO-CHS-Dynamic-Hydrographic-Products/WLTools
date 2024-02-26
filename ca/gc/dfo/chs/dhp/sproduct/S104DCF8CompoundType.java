@@ -23,6 +23,10 @@ final public class S104DCF8CompoundType implements ISProductIO {
   private float Uncertainty;
   private byte  WaterLevelTrend;
 
+  // private Float WaterLevelHeight;
+  // private Float Uncertainty;
+  // private Byte  WaterLevelTrend;
+
   // --- IMPORTANT: We absolutely need to define a default constructor
   //     here otherwise the HDFql native lib crashes without displaying
   //     a meaningful error message.
@@ -62,16 +66,19 @@ final public class S104DCF8CompoundType implements ISProductIO {
 
   // ---
   public float getWaterLevelHeight() {
+  //public Float getWaterLevelHeight() {  
     return this.WaterLevelHeight;
   }
 
-  // // ---
+  // ---
   public float getUncertainty() {
+  //public Float getUncertainty() {
     return this.Uncertainty;
   }  
 
-  // // ---
+  // ---
   public byte getWaterLevelTrend() {
+  //public Byte getWaterLevelTrend() {
     return this.WaterLevelTrend;
   }  
  

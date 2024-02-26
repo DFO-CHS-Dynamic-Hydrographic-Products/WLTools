@@ -1,0 +1,16 @@
+export CLASSPATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/bin:/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib:$CLASSPATH
+export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib/as/hdfql:$LD_LIBRARY_PATH
+
+time java -Xms4096m -Xmx8192m WLTools \
+--tool=adjustment \
+--adjType=SpineFPP \
+--tideGaugeLocationsDefFileName=spineStlCHSTGs.json \
+--tidalConstsInputInfo=NON_STATIONARY_JSON:tidal/nonStationary/StLawrence \
+--inputDataFormat=DHP_S104_DCF8 \
+--inputFileURLToGet=https://hpfx.collab.science.gc.ca/~sdfo500/data/chs/E-NAV/DHP/S-104/DCF8/HSTLT_WLPS_LOWSTL_S104DCF8.h5 \
+--localDownloadDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineFPP/input \
+--locationIdInfo=15520:15540:15660:15780:15930:15975:03365:03360:03353:03345:03335:03300:03280:03248:03110:03100:03057 \
+#WITH LANORAIE: --locationIdInfo=15520:15540:15660:15780:15860:15930:15975:03365:03360:03353:03345:03335:03300:03280:03248:03110:03100:03057 \
+#--inputFile=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineFPP/input/LOOP_HTSTLT_WLPS_IPP_OUTPUTS-DCF8_104_HSTLT_WLPS_LOWSTL_30D_U.h5 \
+--outputDataFormat=LEGACY_ASCII \
+--outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/SpineFPP/output
