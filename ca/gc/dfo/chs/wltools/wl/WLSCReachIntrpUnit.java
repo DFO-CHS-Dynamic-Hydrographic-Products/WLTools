@@ -68,7 +68,7 @@ final public class WLSCReachIntrpUnit implements IWL {
   public WLSCReachIntrpUnit(final String shipChannelPointLocsTCInputDir,
 			    final JsonObject mainJsonTGInfoMapObj, TideGaugeConfig tg0Cfg, TideGaugeConfig tg1Cfg) {
 
-    final String mmi= "WLSCReachIntrpUnit main constructor ";
+    final String mmi= "WLSCReachIntrpUnit main constructor: ";
 
     try {
       shipChannelPointLocsTCInputDir.hashCode();
