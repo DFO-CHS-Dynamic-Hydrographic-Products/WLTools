@@ -401,7 +401,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	// --- Get the MeasurementCustomBundle object of the valid WLO data
 	//     for this TG but only for timestamps that are consistent with the fmfTimeIntrvSeconds
 	final MeasurementCustomBundle checkMcb= WLToolsIO
-	    .getMCBFromIWLSJsonArray(iwlsJSTGWLOData, this.fmfTimeIntrvSeconds, tgCfg.getZcVsVertDatum(), true); // true);
+	  .getMCBFromIWLSJsonArray(iwlsJSTGWLOData, this.fmfTimeIntrvSeconds, tgCfg.getZcVsVertDatum(), true); // true);
 
 	slog.info(mmi+"aft. getMCBFromIWLSJsonArray()");
 	System.out.flush();
@@ -971,9 +971,10 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       mcbOutForSpine= this.mcbsFromS104DCF8;
     }
 
-    // --- TODO: call the method to write the needed Spine output file with the
-    //     wanted output format using the mcbOutForSpine List of MeasurementCustomBundle objects.
+    // --- Now write the needed Spine output file with the wanted output
+    //     format using the mcbOutForSpine List of MeasurementCustomBundle
     
+    WLToolsIO.writeSpineAPIInputData(this.whatTimeIsItNow, mcbOutForSpine);
       
     slog.info(mmi+"end");
     

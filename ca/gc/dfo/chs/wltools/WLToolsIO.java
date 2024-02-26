@@ -43,6 +43,7 @@ import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
+import ca.gc.dfo.chs.wltools.wl.IWLPSLegacyIO;
 import ca.gc.dfo.chs.wltools.wl.IWLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -1107,7 +1108,6 @@ abstract public class WLToolsIO implements IWLToolsIO {
   // ---
   public final static MeasurementCustomBundle getMCBFromIWLSJsonArray(final JsonArray iwlsJsonArray,
 		                                                      final long timeIntrvSeconds, final double datumConvValue, final boolean applyHFOscRemoval) {
-      
     final String mmi= "getMCBFromIWLSJsonArray: ";
 
     try {
@@ -1186,4 +1186,25 @@ abstract public class WLToolsIO implements IWLToolsIO {
     return mcbRet;
     
   } // --- method getMCBFromIWLSJsonArray
-}
+
+  // ---
+  public static final void writeSpineAPIInputData(final Instant whatTimeIsItNow, final List<MeasurementCustomBundle> mcbForSpine)  {
+
+    final String mmi= "writeSpineInputFiles: ";
+
+    slog.info(mmi+"start: whatTimeIsItNow -> "+whatTimeIsItNow.toString());
+    
+    if (outputDataFormat.equals(Format.LEGACY_ASCII.name())) {
+	
+      IWLPSLegacyIO.writeFiles(whatTimeIsItNow, mcbForSpine);
+      
+    } else {
+      throw new RuntimeException(mmi+"Invalid SpineAPI input format -> "+outputDataFormat);
+      
+    }  // --- if-else case block
+
+    slog.info(mmi+"end");
+     
+  } // --- Method writeSpineInputFiles
+	
+} // --- class
