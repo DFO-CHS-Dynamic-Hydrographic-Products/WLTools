@@ -695,7 +695,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       //     used in nested loops for the FMF WL adj.
       Map<Integer,List<MeasurementCustom>> mcOutForSpineMap= new HashMap<Integer,List<MeasurementCustom>>();
 
-      // --- Initialize it accordingly
+      // --- Initialize it accordingly using the ship channel point locations indices.
       for (Integer scLocIdx= 0; scLocIdx < this.mcbsFromS104DCF8.size(); scLocIdx++) {
 	mcOutForSpineMap.put(scLocIdx, new ArrayList<MeasurementCustom>( fmfInstantsInFuture.size() ) );
       }
@@ -936,21 +936,6 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  
 	} // --- for loop block fmfInstantFutr
 
-	// --- Now put the adj. results in the mcbOutForSpine ArrayList of MeasurementCustomBundle objects
-
-	//slog.info(mmi+"mcbOutForSpine size="+mcbOutForSpine.size());
-
-	// // --- Upstream ship channel point location
-	// mcbOutForSpine.add(upsTGScLocIdx, new MeasurementCustomBundle(scLocsAdjValuesMap.get(upsTGScLocIdx)));
-
-	// // --- Downstream ship channel point location
-	// mcbOutForSpine.add(dnsTGScLocIdx, new MeasurementCustomBundle(scLocsAdjValuesMap.get(dnsTGScLocIdx) ));
-
-	// // --- ship channel points location that are in-between the Upstream and Downstream ship channel point locations
-	// for (int scLocIterIdx= scLocSrtIdx; scLocIterIdx <= scLocEndIdx; scLocIterIdx++) {
-	//   mcbOutForSpine.add(scLocIterIdx, new MeasurementCustomBundle(scLocsAdjValuesMap.get(scLocIterIdx) ));
-	// }
-	
 	slog.info(mmi+"Done with TG residual interp pair: upstreamTGCfg -> "+
 		  upstreamTGCfg.getIdentity()+ " with dnstreamTGCfg -> "+dnstreamTGCfg.getIdentity());
 
@@ -959,14 +944,16 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	      
       } // --- for loop block upstreamTGCfg
 
+      // --- Populate the ArrayList of MeasurementCustomBundle which will be used
+      //     to write the results 
       mcbOutForSpine= new ArrayList<MeasurementCustomBundle>(this.mcbsFromS104DCF8.size());
 
+      // --- Loop on all the ship channel point locations indices again
       for (Integer scLocIdx= 0; scLocIdx< this.mcbsFromS104DCF8.size(); scLocIdx++ ) {
 	mcbOutForSpine.add(new MeasurementCustomBundle(mcOutForSpineMap.get(scLocIdx)));
       }
       
     } else {
-
       slog.warn(mmi+"WARNING: doAdjust == false !! simply use the non-ajusted FMF data for the Spine outputs.");
       mcbOutForSpine= this.mcbsFromS104DCF8;
     }
@@ -978,8 +965,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       
     slog.info(mmi+"end");
     
-    slog.info(mmi+"debug exit 0");
-    System.exit(0);     
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);     
 
     // --- return null here to signal to the main class that
     //     all the results have already been written in the

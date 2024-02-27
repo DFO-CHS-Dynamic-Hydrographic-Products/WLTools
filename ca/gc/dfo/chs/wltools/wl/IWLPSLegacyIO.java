@@ -4,14 +4,16 @@ package ca.gc.dfo.chs.wltools.wl;
 import java.io.File;
 import java.util.List;
 import java.lang.Math;
+//import java.io.Writer;
 import java.time.Instant;
 import java.util.HashMap;
-import java.io.FileWriter;
+//import java.io.FileWriter;
 import java.util.SortedSet;
 import java.util.ArrayList;
 import java.io.IOException;
-import java.io.BufferedWriter;
+//import java.io.BufferedWriter;
 import java.lang.StringBuilder;
+//import java.io.FileOutputStream;
 import java.time.temporal.ChronoUnit;
 
 // ---
@@ -19,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // ---
+import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IIWLPSLegacyIO;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
@@ -219,30 +222,37 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
     // --- Write the Spine ASCII formated values file.
     final File spineASCIIInputValuesFile= new File(outputDir + File.separator + spineAPIInputValuesFName);
 
-    try (BufferedWriter writer= new BufferedWriter(new FileWriter(spineASCIIInputValuesFile))) {
-      writer.append(spineASCIIFormatedWLValues);
-      
-    } catch (IOException ioe) {
-      throw new RuntimeException(mmi+ioe+"Problem writing in Spine API input values file ->"+spineASCIIInputValuesFile);
-    }
+    // --- Write WL values ASCII file without gzip compression.
+    //try (BufferedWriter writer= new BufferedWriter(new FileWriter(spineASCIIInputValuesFile))) {
+    //  writer.append(spineASCIIFormatedWLValues);  
+    //} catch (IOException ioe) {
+    //  throw new RuntimeException(mmi+ioe+"Problem writing in Spine API input values file ->"+spineASCIIInputValuesFile);
+    //}
 
-    // ---  Write the Spine ASCII formated uncertainties file.
+    //slog.info(mmi+"spineASCIIFormatedWLValues.length()="+spineASCIIFormatedWLValues.length());
+
+    // --- Write WL values ASCII file with gzip compression.
+    WLToolsIO.writeGZippedFileFromString(spineASCIIFormatedWLValues.toString(), spineASCIIInputValuesFile + ".gz");
+
+    // ---  Write the Spine ASCII formated uncertainties file if needed
     if (spineASCIIFormatedUncertainties != null) {
-
+	
       final File spineASCIIUncertaintiesFile= new File(outputDir + File.separator + UNCERTAINTIES_STATIC_FNAME);
 
-      try (BufferedWriter writer= new BufferedWriter(new FileWriter(spineASCIIUncertaintiesFile))) {
-        writer.append(spineASCIIFormatedUncertainties);
-      
-      } catch (IOException ioe) {
-        throw new RuntimeException(mmi+ioe+"Problem writing in Spine API input uncertainties file ->"+spineASCIIUncertaintiesFile);
-      }      
+      // --- Write WL uncertainties ASCII file with gzip compression.
+      WLToolsIO.writeGZippedFileFromString(spineASCIIFormatedUncertainties.toString(), spineASCIIUncertaintiesFile + ".gz");
+
+      //// --- Write WL uncertainties ASCII file without gzip compression.
+      //try (BufferedWriter writer= new BufferedWriter(new FileWriter(spineASCIIUncertaintiesFile))) {
+      //  writer.append(spineASCIIFormatedUncertainties);      
+      //} catch (IOException ioe) {
+      //  throw new RuntimeException(mmi+ioe+"Problem writing in Spine API input uncertainties file ->"+spineASCIIUncertaintiesFile);
+      //}      
       	
     } // --- end if block
 
-    
-    slog.info(mmi+"debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
     
     slog.info(mmi+"end");
     
