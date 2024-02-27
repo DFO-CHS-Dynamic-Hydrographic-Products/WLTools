@@ -7,15 +7,19 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.ArrayList;
+import java.util.zip.GZIPOutputStream;
 
 // ---
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// ---
 import java.io.File;
+import java.io.Writer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.FileNotFoundException;
 
 // ---
@@ -1206,5 +1210,45 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"end");
      
   } // --- Method writeSpineInputFiles
+
+  // ---
+  final public static void writeGZippedFileFromString(final String strToWrite, final String gzippedFileDest) {
+
+    final String mmi= "writeGZippedFileFromString: ";
+
+    slog.info(mmi+"start: gzippedFileDest -> "+gzippedFileDest);
+
+    try {
+      strToWrite.length();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"strToWrite cannot be null here !!");
+    }
+
+    try {
+      gzippedFileDest.length();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+"gzippedFileDest cannot be null here !!");
+    }
+
+    try (FileOutputStream fos= new FileOutputStream(gzippedFileDest)) {
+
+      final GZIPOutputStream gzos= new GZIPOutputStream(fos, strToWrite.length());	
 	
-} // --- class
+      final Writer gzosWriter= new OutputStreamWriter(gzos, java.nio.charset.StandardCharsets.US_ASCII);
+     
+      gzosWriter.write(strToWrite);
+
+      // --- Need to close (and it does an auto flush) the gzosWriter object here in order to
+      //     not loose bytes at the end of the String.
+      gzosWriter.close(); 
+	
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
+      throw new RuntimeException(mmi+"Problem writing strToWrite String in  gzipped file ->"+gzippedFileDest);
+    }
+
+    slog.info(mmi+"end");
+    
+  } // --- Method writeGZippedFileFromString
+	
+} // --- class WLToolsIO
