@@ -1127,7 +1127,7 @@ public class HDFql implements HDFqlConstants {
 
 			return SUCCESS;
 		}
-	
+
   public static int executeGetStatus() {
     return HDFqlJNI.executeGetStatus();
   }
@@ -1265,7 +1265,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Byte((byte) convertChar(pointer));
+                return Byte.valueOf( (byte) convertChar(pointer));
+		// Deprecated: return new java.lang.Byte((byte) convertChar(pointer));
 	}
 
   public static java.lang.Byte subcursorGetTinyint(HDFqlCursor cursor) {
@@ -1277,7 +1278,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Byte((byte) convertChar(pointer));
+                return Byte.valueOf( (byte) convertChar(pointer));
+		//return new java.lang.Byte((byte) convertChar(pointer));
 	}
 
   public static java.lang.Byte cursorGetUnsignedTinyint(HDFqlCursor cursor) {
@@ -1289,7 +1291,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Byte((byte) convertChar(pointer));
+                return Byte.valueOf( (byte) convertChar(pointer));
+		//return new java.lang.Byte((byte) convertChar(pointer));
 	}
 
   public static java.lang.Byte subcursorGetUnsignedTinyint(HDFqlCursor cursor) {
@@ -1301,7 +1304,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Byte((byte) convertChar(pointer));
+                return Byte.valueOf( (byte) convertChar(pointer));
+		//return new java.lang.Byte((byte) convertChar(pointer));
 	}
 
   public static java.lang.Short cursorGetSmallint(HDFqlCursor cursor) {
@@ -1313,7 +1317,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Short(convertShort(pointer));
+                return Short.valueOf( convertShort(pointer));
+		//return new java.lang.Short(convertShort(pointer));
 	}
 
   public static java.lang.Short subcursorGetSmallint(HDFqlCursor cursor) {
@@ -1325,7 +1330,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Short(convertShort(pointer));
+                return Short.valueOf( convertShort(pointer));
+		//return new java.lang.Short(convertShort(pointer));
 	}
 
   public static java.lang.Short cursorGetUnsignedSmallint(HDFqlCursor cursor) {
@@ -1337,7 +1343,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Short(convertShort(pointer));
+                return Short.valueOf( convertShort(pointer));
+		//return new java.lang.Short(convertShort(pointer));
 	}
 
   public static java.lang.Short subcursorGetUnsignedSmallint(HDFqlCursor cursor) {
@@ -1349,7 +1356,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Short(convertShort(pointer));
+                return Short.valueOf( convertShort(pointer));
+		//return new java.lang.Short(convertShort(pointer));
 	}
 
   public static java.lang.Integer cursorGetInt(HDFqlCursor cursor) {
@@ -1361,7 +1369,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Integer(convertInt(pointer));
+                return Integer.valueOf(convertInt(pointer));
+		//return new java.lang.Integer(convertInt(pointer));
 	}
 
   public static java.lang.Integer subcursorGetInt(HDFqlCursor cursor) {
@@ -1373,7 +1382,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Integer(convertInt(pointer));
+                return Integer.valueOf(convertInt(pointer));
+		//return new java.lang.Integer(convertInt(pointer));
 	}
 
   public static java.lang.Integer cursorGetUnsignedInt(HDFqlCursor cursor) {
@@ -1385,7 +1395,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Integer(convertInt(pointer));
+                return Integer.valueOf(convertInt(pointer));
+		//return new java.lang.Integer(convertInt(pointer));
 	}
 
   public static java.lang.Integer subcursorGetUnsignedInt(HDFqlCursor cursor) {
@@ -1397,7 +1408,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Integer(convertInt(pointer));
+                return Integer.valueOf(convertInt(pointer));
+		//return new java.lang.Integer(convertInt(pointer));
 	}
 
   public static java.lang.Long cursorGetBigint(HDFqlCursor cursor) {
@@ -1409,7 +1421,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Long(convertLong(pointer));
+                return Long.valueOf(convertLong(pointer));
+		//return new java.lang.Long(convertLong(pointer));
 	}
 
   public static java.lang.Long subcursorGetBigint(HDFqlCursor cursor) {
@@ -1421,7 +1434,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Long(convertLong(pointer));
+                return Long.valueOf(convertLong(pointer));
+		//return new java.lang.Long(convertLong(pointer));
 	}
 
   public static java.lang.Long cursorGetUnsignedBigint(HDFqlCursor cursor) {
@@ -1433,7 +1447,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Long(convertLong(pointer));
+                return Long.valueOf(convertLong(pointer));
+		//return new java.lang.Long(convertLong(pointer));
 	}
 
   public static java.lang.Long subcursorGetUnsignedBigint(HDFqlCursor cursor) {
@@ -1445,7 +1460,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Long(convertLong(pointer));
+                return Long.valueOf(convertLong(pointer));
+		//return new java.lang.Long(convertLong(pointer));
 	}
 
   public static java.lang.Float cursorGetFloat(HDFqlCursor cursor) {
@@ -1457,7 +1473,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Float(convertFloat(pointer));
+                return Float.valueOf(convertFloat(pointer));
+		//return new java.lang.Float(convertFloat(pointer));
 	}
 
   public static java.lang.Float subcursorGetFloat(HDFqlCursor cursor) {
@@ -1469,7 +1486,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Float(convertFloat(pointer));
+                return Float.valueOf(convertFloat(pointer));
+		//return new java.lang.Float(convertFloat(pointer));
 	}
 
   public static java.lang.Double cursorGetDouble(HDFqlCursor cursor) {
@@ -1481,7 +1499,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Double(convertDouble(pointer));
+                return Double.valueOf(convertDouble(pointer));
+		//return new java.lang.Double(convertDouble(pointer));
 	}
 
   public static java.lang.Double subcursorGetDouble(HDFqlCursor cursor) {
@@ -1493,7 +1512,8 @@ public class HDFql implements HDFqlConstants {
 			return null;
 		}
 
-		return new java.lang.Double(convertDouble(pointer));
+                return Double.valueOf(convertDouble(pointer));
+		//return new java.lang.Double(convertDouble(pointer));
 	}
 
   public static String cursorGetChar(HDFqlCursor cursor) {

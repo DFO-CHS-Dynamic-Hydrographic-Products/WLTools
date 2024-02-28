@@ -8,7 +8,7 @@
 
 package as.hdfql;
 
-public class HDFqlCursor {
+public class HDFqlCursor implements AutoCloseable {
   private transient long swigCPtr;
   protected transient boolean swigCMemOwn;
 
@@ -21,7 +21,13 @@ public class HDFqlCursor {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 
-  protected void finalize() {
+  // --- finalize method usage is deprecated
+  //protected void finalize() {
+  //  delete();
+  //}
+
+  @Override
+  public void close() {
     delete();
   }
 
