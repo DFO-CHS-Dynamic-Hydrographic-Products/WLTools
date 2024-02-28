@@ -370,6 +370,15 @@ abstract public class WLAdjustmentFMF
     // ---
     while(wloTimeFrameOverlap) {
 
+       // --- Unlikely but could happen. In any case we "should" have at least one H2D2 ASCII
+       //     input file to use at this point.
+       if (!WLToolsIO.checkForFileExistence(prevFMFASCIIDataFilePathIter)) {
+          
+        slog.warn(mmi+"WARNING: H2D2 FMF input file -> "+prevFMFASCIIDataFilePathIter+
+                  " skipping it and need to stop the getNewTimeDepResidualsStats calculation here !!");
+        break;  
+      }
+	
       slog.info(mmi+"Processing FMF input file -> "+prevFMFASCIIDataFilePathIter);
 
       // --- Read the previous H2D2 full model forecast data
