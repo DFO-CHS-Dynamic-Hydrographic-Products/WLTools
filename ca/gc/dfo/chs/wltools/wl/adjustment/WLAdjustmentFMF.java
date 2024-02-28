@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.SortedSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.NavigableSet;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +31,13 @@ import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+//import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.numbercrunching.Statistics;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
+//import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO.InputDataType;
 
 /**
  * Comments please!
@@ -370,13 +371,22 @@ abstract public class WLAdjustmentFMF
     // ---
     while(wloTimeFrameOverlap) {
 
-      slog.info(mmi+"Processing FMF input file -> "+prevFMFASCIIDataFilePathIter);
+       // --- Unlikely but could happen. In any case we have at least one input file to use
+       //     at this point.
+       if (!WLToolsIO.checkForFileExistence(prevFMFASCIIDataFilePathIter)) {
+	  
+	slog.warn(mmi+"WARNING: H2D2 FMF input file -> "+prevFMFASCIIDataFilePathIter+
+		  " skipping it and need to stop the getNewTimeDepResidualsStats calculation here !!");
+        break; 	
+      }
+
+      slog.info(mmi+"Processing H2D2 FMF input file -> "+prevFMFASCIIDataFilePathIter);
 
       // --- Read the previous H2D2 full model forecast data
       prevFMFASCIIDataFilePathIter= this.getH2D2ASCIIWLFProbesData(prevFMFASCIIDataFilePathIter,
                                                                    uniqueTGMapObj, mainJsonMapObj,
                                                                    IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);
-
+    	
       // --- Store the FMF data in a local MeasurementCustomBundle object:
       final MeasurementCustomBundle mcbPrevFMF= new
         MeasurementCustomBundle( this.nearestModelData.get(prevFMFIdxIter).get(wlLocationIdentity));
@@ -600,14 +610,10 @@ abstract public class WLAdjustmentFMF
 
     // --- Get the sorted set of the valid Long keys of the timeDepResidualsStats
     //     to possibly use it in case some time dependent residual stats are missung
-    final SortedSet<Long> validLonIdxKeySet= Collections
-      .synchronizedSortedSet(new TreeSet<Long>(timeDepResidualsStats.keySet()));
+    final SortedSet<Long> validLonIdxKeySet= new TreeSet<Long>(timeDepResidualsStats.keySet());
 
-    //final SortedSet<Long> actuFMFInstantsSortedSet= Collections
-    //  .synchronizedSortedSet(new TreeSet<Instant>(actualFMFMcb.getInstantsKeySetCopy()));
-    
-    // --- Need to use a NavigableSet here to be able to use its specific tailSet(E, boolean) method later
-    NavigableSet<Instant> actuFMFInstantsSet= new TreeSet<Instant>(actualFMFMcb.getInstantsKeySetCopy());
+    // --- Need to use a NavigableSet here to be able to use its specific tailSet() method later
+    NavigableSet<Instant> actuFMFInstantsSet= new TreeSet(actualFMFMcb.getInstantsKeySetCopy());   
 
     // --- Loop on all the Instant objects of the actuFMFInstantsSet
     for (final Instant actualFMFInstant: actuFMFInstantsSet) {
