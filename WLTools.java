@@ -5,14 +5,11 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
 import java.util.TimeZone;
-//import java.util.Calendar;
 import java.net.URISyntaxException;
-//import java.util.GregorianCalendar;
 
 // ---
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 // ---
 import ca.gc.dfo.chs.wltools.IWLTools;
@@ -30,9 +27,6 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
-//import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
-//import as.hdfql.HDFqlJNI;
-
 /**
  * Comments please!
  */
@@ -46,11 +40,7 @@ final public class WLTools extends WLToolsIO {
     //System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "error");
     //System.setProperty(org.slf4j.impl.SimpleLogger.defaultLogLevel,"ERROR");
 
-    //System.loadLibrary("HDFql");
-
     final String mmi= "WLTools main: ";
-
-    //final HDFqlJNI hdfqlJNI= new HDFqlJNI();
 
     final Logger mlog= LoggerFactory.getLogger(mmi);
 
@@ -69,11 +59,6 @@ final public class WLTools extends WLToolsIO {
     }
 
     mlog.info(mmi+"binDir="+binDir);
-
-    // --- TODO: add an option arg. to define the mainCfgDir
-    WLToolsIO.setMainCfgDir(binDir+ "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
-
-    mlog.info(mmi+"mainCfgDir= "+WLToolsIO.getMainCfgDir());
 
     // --- Now get the --<option name>=<option value> from the args
     HashMap<String, String> argsMap= new HashMap<String,String>();
@@ -96,14 +81,33 @@ final public class WLTools extends WLToolsIO {
       }
 
       mlog.debug(mmi+"parts[0]="+parts[0]+", parts[1]="+parts[1]);
-      
+
       argsMap.put(parts[0], parts[1]);
     }
-    
+
+    // ---
+    if (argsMap.containsKey("--mainCfgDirectory")) {
+
+      WLToolsIO.setMainCfgDir(argsMap.get("--mainCfgDirectory"));
+
+    } else {
+
+      mlog.info(mmi+"Trying to define the path to the main config directory using the path of the main program -> "+binDir);
+
+      WLToolsIO.setMainCfgDir(binDir+ "/../"+IWLToolsIO.PKG_CFG_MAIN_DIR);
+    }
+
+    // ---  Check if the main config directory exists before going further.
+    if (!WLToolsIO.checkForFileExistence(WLToolsIO.getMainCfgDir())) {
+      throw new RuntimeException(mmi+"main config directory -> "+WLToolsIO.getMainCfgDir()+" not found !!");
+    }
+
+    mlog.info(mmi+"mainCfgDir="+WLToolsIO.getMainCfgDir());
+
     //System.out.println(mmi+"Debug exit 0");
     //System.exit(0);
-    
-    // --- Check the --tool value 
+
+    // --- Check the mandatory --tool option
     if (!argsMap.keySet().contains("--tool")) {
 
       throw new RuntimeException(mmi+"Must have one of the --tool="+
