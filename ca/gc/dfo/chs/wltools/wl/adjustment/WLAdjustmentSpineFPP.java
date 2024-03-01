@@ -665,6 +665,25 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     List<MeasurementCustomBundle> mcbOutForSpine= null;
     
     slog.info(mmi+"start");
+    
+    // --- Get the Instants that are in the future compared to the last
+    //     valid WLO Instant used in the main constructor for this class.
+    final SortedSet<Instant> fmfInstantsInFuture= this.mcbsFromS104DCF8
+      .get(0).getInstantsKeySetCopy().tailSet(this.fmfBegAdjustInstant);
+
+    // --- Allocate the temp Map<Integer,List<MeasurementCustom>> that will be
+    //     used in nested loops for the FMF WL adj. processing for all the ship
+    //     channel point locations.
+    Map<Integer,List<MeasurementCustom>> mcOutForSpineMap= new HashMap<Integer,List<MeasurementCustom>>();
+
+    // --- Initialize it accordingly using the ship channel point locations indices.
+    for (Integer scLocIdx= 0; scLocIdx < this.mcbsFromS104DCF8.size(); scLocIdx++) {
+      mcOutForSpineMap.put(scLocIdx, new ArrayList<MeasurementCustom>( fmfInstantsInFuture.size() ) );
+    }
+
+    // --- Create the ArrayList of MeasurementCustomBundle objects which will be used
+    //     to write the results in the required file format. 
+    mcbOutForSpine= new ArrayList<MeasurementCustomBundle>(this.mcbsFromS104DCF8.size());
 
     // --- It is unlikely that the this.doAdjust would be false
     //     but not impossible.
@@ -682,29 +701,28 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	throw new RuntimeException(mmi+"this.upstreamDownstreamTGPairs cannot be empty here !!"); 
       }
 
-      //mcbOutForSpine= new ArrayList<MeasurementCustomBundle>(this.mcbsFromS104DCF8.size());
-	 
-      //this.scReachIntrpUnits= new HashMap<String,WLSCReachIntrpUnit>();
-
-      // --- Get the Instants that are in the future compared to the last
-      //     valid WLO Instant used in the main constructor for this class.
-      final SortedSet<Instant> fmfInstantsInFuture= this.mcbsFromS104DCF8
-	.get(0).getInstantsKeySetCopy().tailSet(this.fmfBegAdjustInstant);
-
-      // --- Allocate the temp Map<Integer,List<MeasurementCustom>> that will be
-      //     used in nested loops for the FMF WL adj.
-      Map<Integer,List<MeasurementCustom>> mcOutForSpineMap= new HashMap<Integer,List<MeasurementCustom>>();
-
-      // --- Initialize it accordingly using the ship channel point locations indices.
-      for (Integer scLocIdx= 0; scLocIdx < this.mcbsFromS104DCF8.size(); scLocIdx++) {
-	mcOutForSpineMap.put(scLocIdx, new ArrayList<MeasurementCustom>( fmfInstantsInFuture.size() ) );
-      }
+      // --- Need to use a Map object to keep track of the processing already done for
+      //     the upstream and downstream tide gauges in terms of WL FPP adjustments
+      //     to avoid duplicating the same result at the same Instant timestamp in the
+      //     local mcOutForSpineMap object
+      Map<TideGaugeConfig,List<Instant>> tgsInstantsCtrlMap= new HashMap<TideGaugeConfig,List<Instant>>();
       
-      // --- Loop on the tide gauges spatial interp. pairs. 
+      // --- Loop on the tide gauges spatial interp. pairs for doing the FPP adjustment type
+      //     for all the ship channel point locations.
       for (final TideGaugeConfig upstreamTGCfg: this.upstreamDownstreamTGPairs.keySet()) {
-      
+
+	if (!tgsInstantsCtrlMap.containsKey(upstreamTGCfg)) {
+	  tgsInstantsCtrlMap.put(upstreamTGCfg, new ArrayList<Instant>());
+	}
+
+	// --- Get the TideGaugeConfig object of the downstream TG that is paired
+	//     with the upstream tide gauge which is used as a key in the upstreamDownstreamTGPairs Map
 	final TideGaugeConfig dnstreamTGCfg= upstreamDownstreamTGPairs.get(upstreamTGCfg);
-      	  
+
+        if (!tgsInstantsCtrlMap.containsKey(dnstreamTGCfg)) {
+	  tgsInstantsCtrlMap.put(dnstreamTGCfg, new ArrayList<Instant>());
+	}
+	
 	slog.info(mmi+"TG residual interp pair: upstreamTGCfg -> "+
 		  upstreamTGCfg.getIdentity()+ " with dnstreamTGCfg -> "+dnstreamTGCfg.getIdentity());
       
@@ -804,9 +822,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	// --- Loop on the FMF Instant of the future (compared to the last valid WLO used for the residuals) 
 	for (final Instant fmfInstantFutr: fmfInstantsInFuture) {
 
-	  //slog.info(mmi+"fmfInstantFutr="+fmfInstantFutr.toString());
-
-	  //timeOffsetFromLastResidual += this.fmfTimeIntrvSeconds;
+	    //slog.info(mmi+"fmfInstantFutr="+fmfInstantFutr.toString());
 
 	  // --- FMF MeasurementCustom of ship channel point location that
 	  //     is the nearest to the upstream TG location at this fmfInstantFutr Instant
@@ -854,33 +870,49 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
 	  // slog.info(mmi+"timeOffsetFromLastResidual="+timeOffsetFromLastResidual);
 
-	  // slog.info(mmi+"upsTGResTimeDecayingFactor="+upsTGResTimeDecayingFactor);
-          // slog.info(mmi+"upsTGScLocNonAdjValue="+upsTGScLocNonAdjValue);
-	  // slog.info(mmi+"upsTGScLocAdjOffet="+upsTGScLocAdjOffet);
-	  // slog.info(mmi+"upsTGScLocAdjValue="+upsTGScLocAdjValue);
+	  //slog.info(mmi+"upsTGResTimeDecayingFactor="+upsTGResTimeDecayingFactor);
+          //slog.info(mmi+"upsTGScLocNonAdjValue="+upsTGScLocNonAdjValue);
+	  //slog.info(mmi+"upsTGScLocAdjOffet="+upsTGScLocAdjOffet);
+	  //slog.info(mmi+"upsTGScLocAdjValue="+upsTGScLocAdjValue);
 
-	  // slog.info(mmi+"dnsTGResTimeDecayingFactor="+dnsTGResTimeDecayingFactor);
-	  // slog.info(mmi+"dnsTGScLocNonAdjValue="+dnsTGScLocNonAdjValue);
-	  // slog.info(mmi+"dnsTGScLocAdjOffet="+dnsTGScLocAdjOffet);
-	  // slog.info(mmi+"dnsTGScLocAdjValue="+dnsTGScLocAdjValue);
+	  //slog.info(mmi+"dnsTGResTimeDecayingFactor="+dnsTGResTimeDecayingFactor);
+	  //slog.info(mmi+"dnsTGScLocNonAdjValue="+dnsTGScLocNonAdjValue);
+	  //slog.info(mmi+"dnsTGScLocAdjOffet="+dnsTGScLocAdjOffet);
+	  //slog.info(mmi+"dnsTGScLocAdjValue="+dnsTGScLocAdjValue);
+	  //slog.info(mmi+"debug exit 0");
+	  //System.exit(0);
+
+	  //slog.info(mmi+"tgsInstantsCtrlMap.get(upstreamTGCfg).size()="+tgsInstantsCtrlMap.get(upstreamTGCfg).size());
+	  
+          // --- Avoid duplicating the adj. WL value for the same Instant
+	  //     for the tide gauges point locations at the ends of this ship
+	  //     channel section (reach) if fmfInstantFutr already exists in
+	  //     the tgsInstantsCtrlMap
+          if (!tgsInstantsCtrlMap.get(upstreamTGCfg).contains(fmfInstantFutr)) {
+	  
+	    // --- Take the uncertainties as thet are from the FMF 4 times/day runs for now
+            mcOutForSpineMap.get(upsTGScLocIdx)
+	      .add(new MeasurementCustom(fmfInstantFutr.plusSeconds(0L), upsTGScLocAdjValue, upsMcAtInstantFutr.getUncertainty()));
+
+	    tgsInstantsCtrlMap.get(upstreamTGCfg).add(fmfInstantFutr.plusSeconds(0L));
+	  }
+
+	  if (!tgsInstantsCtrlMap.get(dnstreamTGCfg).contains(fmfInstantFutr)) {    
+	      
+	    mcOutForSpineMap.get(dnsTGScLocIdx)
+	      .add(new MeasurementCustom(fmfInstantFutr.plusSeconds(0L), dnsTGScLocAdjValue, dnsMcAtInstantFutr.getUncertainty()));
+
+	    tgsInstantsCtrlMap.get(dnstreamTGCfg).add(fmfInstantFutr.plusSeconds(0L));
+	  }
+
 	  //slog.info(mmi+"debug exit 0");
           //System.exit(0);
-
-	  // --- Take the uncertainties as thet are from the FMF 4 times/day runs for now
-          mcOutForSpineMap.get(upsTGScLocIdx)
-	    .add(new MeasurementCustom(fmfInstantFutr.plusSeconds(0L), upsTGScLocAdjValue, upsMcAtInstantFutr.getUncertainty()));
-       
-	  mcOutForSpineMap.get(dnsTGScLocIdx)
-	    .add(new MeasurementCustom(fmfInstantFutr.plusSeconds(0L), dnsTGScLocAdjValue, dnsMcAtInstantFutr.getUncertainty()));
-
-	  // slog.info(mmi+"debug exit 0");
-          // System.exit(0);
 
 	  // --- Avoid doing this same subtraction for all the ship channel point locations
 	  //     for the Instant being processed. It is this difference in the time-decaying
 	  //     WL adj, offset that is spatially interpolated on the ship channel points
 	  //     location to adjust their WL accordingly
-          final double upsAdjValMinusDnsAdjVal= upsTGScLocAdjOffet - dnsTGScLocAdjOffet;
+	  final double dnsAdjValMinusUpsAdjVal= dnsTGScLocAdjOffet - upsTGScLocAdjOffet;
 
 	  // --- Loop on the ship channel point locations that are in-between the
 	  //     two neighbor tide gauges (upstream -> downstream).
@@ -912,10 +944,11 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	    final double nonAdjFMFSCWLVal= scLocMcAtInstantFutr.getValue();
 
 	    // --- Apply the spatial interpolation of the time decaying upstream and downstream
-	    //     WL adjustment offsets values.
-	    final double adjFMFSCWLVal= nonAdjFMFSCWLVal + upsTGScLocAdjOffet + interpFactor * upsAdjValMinusDnsAdjVal;
-
-            // ---
+	    //     WL adjustment offsets values using the short-cutted calculation to speed-up the exec.
+	    final double adjFMFSCWLVal= nonAdjFMFSCWLVal + upsTGScLocAdjOffet + interpFactor * dnsAdjValMinusUpsAdjVal;
+	    
+            // --- Put the adjFMFSCWLVal with its uncertainty in the mcOutForSpineMap for this
+	    //     ship channel point location.
 	    mcOutForSpineMap.get(scLocIterIdx)
 	      .add(new MeasurementCustom(fmfInstantFutr.plusSeconds(0L), adjFMFSCWLVal, scLocMcAtInstantFutr.getUncertainty()));
 	    
@@ -925,9 +958,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	    //slog.info(mmi+"debug exit 0");
             //System.exit(0);
 	    
-	    
 	  } // --- for loop block scLocIter
 
+	  // --- incr the timeOffsetFromLastResidual for the next iteration on time. 
 	  timeOffsetFromLastResidual += this.fmfTimeIntrvSeconds;
 	  
 	  //slog.info(mmi+"End for fmfInstantFutr="+fmfInstantFutr.toString());
@@ -944,18 +977,31 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	      
       } // --- for loop block upstreamTGCfg
 
-      // --- Populate the ArrayList of MeasurementCustomBundle which will be used
-      //     to write the results 
-      mcbOutForSpine= new ArrayList<MeasurementCustomBundle>(this.mcbsFromS104DCF8.size());
-
       // --- Loop on all the ship channel point locations indices again
-      for (Integer scLocIdx= 0; scLocIdx< this.mcbsFromS104DCF8.size(); scLocIdx++ ) {
-	mcbOutForSpine.add(new MeasurementCustomBundle(mcOutForSpineMap.get(scLocIdx)));
+      for (Integer scLocIterIdx= 0; scLocIterIdx< this.mcbsFromS104DCF8.size(); scLocIterIdx++ ) {
+	mcbOutForSpine.add(new MeasurementCustomBundle(mcOutForSpineMap.get(scLocIterIdx)));
       }
       
     } else {
+	
       slog.warn(mmi+"WARNING: doAdjust == false !! simply use the non-ajusted FMF data for the Spine outputs.");
-      mcbOutForSpine= this.mcbsFromS104DCF8;
+
+      // ---
+      for (Integer scLocIterIdx= 0; scLocIterIdx< this.mcbsFromS104DCF8.size(); scLocIterIdx++ ) {
+
+	//slog.info(mmi+"scLocIterIdx="+scLocIterIdx);
+	  
+	// --- IMPORTANT: Need to only use the Instant objects of the future here.
+        for (final Instant fmfInstantFutr: fmfInstantsInFuture) {
+	    
+	  mcOutForSpineMap.get(scLocIterIdx)
+	    .add(this.mcbsFromS104DCF8.get(scLocIterIdx).getAtThisInstant(fmfInstantFutr));
+	}
+	
+	mcbOutForSpine.add(new MeasurementCustomBundle(mcOutForSpineMap.get(scLocIterIdx)));
+      }
+      
+      //mcbOutForSpine= this.mcbsFromS104DCF8;
     }
 
     // --- Now write the needed Spine output file with the wanted output
