@@ -1243,7 +1243,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       gzosWriter.close(); 
 	
     } catch (IOException ioe) {
-      ioe.printStackTrace();
+      //ioe.printStackTrace();
       throw new RuntimeException(mmi+"Problem writing strToWrite String in  gzipped file ->"+gzippedFileDest);
     }
 
