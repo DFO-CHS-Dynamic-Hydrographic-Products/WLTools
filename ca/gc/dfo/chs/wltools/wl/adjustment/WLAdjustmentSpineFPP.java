@@ -171,6 +171,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       throw new RuntimeException(mmi+
 	"Must have the --inputFileURLToGet=<Complete https URL of the S104 DCF8 file that has to be downloaded> defined in the argsMap !!");
     }
+    
+    // --- 
+    this.whatTimeIsItNow= Instant.now();  
 
     final String inputFileURLToGet= argsMap.get("--inputFileURLToGet");
 
@@ -235,7 +238,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     // --- 
     //final Instant whatTimeIsItNow= Instant.now();
-    this.whatTimeIsItNow= Instant.now();
+    //this.whatTimeIsItNow= Instant.now();
 
     final Instant fmfLeastRecentInstant= this.mcbsFromS104DCF8.get(0).getLeastRecentInstantCopy();
     slog.info(mmi+"fmfLeastRecentInstant="+fmfLeastRecentInstant.toString());
