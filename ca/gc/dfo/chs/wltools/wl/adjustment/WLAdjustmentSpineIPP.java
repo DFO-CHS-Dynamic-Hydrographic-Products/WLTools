@@ -197,7 +197,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     //     that is the nearest to the lower side (in terms of ship channel locations indices)
     //     tide gauge.
     final String fmfAdjAtLowerSideTGFile= WLToolsIO.
-      getSCLocFilePath(adjFMFAtTGSInputDataDirFilesList, this.scReachIntrpUnit.getLowerSideScLocTGId());
+      getSCLocFilePath(adjFMFAtTGSInputDataDirFilesList, this.scReachIntrpUnit.getLowerSideScLocTGId()+IWLToolsIO.JSON_FEXT);
 
     slog.info(mmi+"fmfAdjAtLowerSideTGFile="+fmfAdjAtLowerSideTGFile);
 
@@ -210,7 +210,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     //     that is the nearest to the upper side (in terms of ship channel locations indices)
     //     tide gauge.
     final String fmfAdjAtUpperSideTGFile= WLToolsIO.
-      getSCLocFilePath(adjFMFAtTGSInputDataDirFilesList,this.scReachIntrpUnit.getUpperSideScLocTGId());
+      getSCLocFilePath(adjFMFAtTGSInputDataDirFilesList,this.scReachIntrpUnit.getUpperSideScLocTGId()+IWLToolsIO.JSON_FEXT);
 
     slog.info(mmi+"fmfAdjAtUpperSideTGFile="+fmfAdjAtUpperSideTGFile);
 
