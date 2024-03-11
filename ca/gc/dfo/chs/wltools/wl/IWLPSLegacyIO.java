@@ -182,15 +182,19 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
     Instant instantForIWLS= Instant.parse(dateTimeForIWLSStr);
     slog.info(mmi+"instantForIWLS.toString()="+instantForIWLS.toString());
 
-    // --- Add mcbTimeIntrvSeconds to be sure to be in the future after
+    // --- Checking where the 1st Instant of the mcbForSpineAPI is
+    //     compared to instantForIWLS
     final Instant checkMcbInstant0= mcbForSpineAPI.get(0).getInstantsKeySetCopy().first();
     
     slog.info(mmi+"checkMcbInstant0.toString()="+checkMcbInstant0.toString());
 
-    final double checkTimeDiff= checkMcbInstant0.getEpochSecond() - instantForIWLS.getEpochSecond();
+    final long checkTimeDiffSeconds= checkMcbInstant0.getEpochSecond() - instantForIWLS.getEpochSecond();
 
-    if (Math.abs(checkTimeDiff) >= IWLAdjustment.MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS) {
-      throw new RuntimeException(mmi+"Cannot have Math.abs(checkTimeDiff) >= IWLAdjustment.MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS at this point !!");
+    final long maxTimeDiffSeconds= IWLAdjustment
+      .MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS + mcbTimeIntrvSeconds;
+
+    if (Math.abs(checkTimeDiffSeconds) >= maxTimeDiffSeconds) {
+      throw new RuntimeException(mmi+"Cannot have Math.abs(checkTimeDiff) >= maxTimeDiffSeconds -> "+maxTimeDiffSeconds+" at this point !!");
     }
     
     if (checkMcbInstant0.isAfter(instantForIWLS)) {
