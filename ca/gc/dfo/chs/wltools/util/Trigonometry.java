@@ -56,14 +56,14 @@ final public class Trigonometry implements ITrigonometry {
    */
   public static double getZero2PISandwich(final double angle, final boolean convertCycles2Radians) {
 
-    return (convertCycles2Radians ? getZero2PiSandwich(CYCLES_2_RADIANS * angle) : getZero2PiSandwich(angle));
+    return (convertCycles2Radians ? getZero2PIRadiansSandwich(CYCLES_2_RADIANS * angle) : getZero2PIRadiansSandwich(angle));
   }
 
   /**
-   * @param radians: Could be positive or negative and its absolute value could be greater than 2PI
+   * @param radians: Could be positive or negative radians and its absolute value could be greater than 2PI
    * @return The equivalent of the radians argument defined between 0 and 2PI.
    */
-  public static double getZero2PiSandwich(final double radians) {
+  public static double getZero2PIRadiansSandwich(final double radians) {
 
     double newRad = radians;
     final double fabsRad = Math.abs(radians);
