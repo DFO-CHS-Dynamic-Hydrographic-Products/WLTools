@@ -175,7 +175,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
         slog.error(mmi+"Cannot open output file: " + fpath);
 
-        e.printStackTrace();
+        //e.printStackTrace();
         throw new RuntimeException(mmi+e);
       }
 
@@ -188,7 +188,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
       } catch (IOException e) {
 
-        e.printStackTrace();
+        //e.printStackTrace();
         slog.error(mmi+"Cannot write header in " + fpath);
         throw new RuntimeException(mmi+e);
       }
@@ -239,7 +239,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
           } catch (IOException e) {
 
             slog.error(mmi+"Cannot write data line in output file type: " + type);
-            e.printStackTrace();
+            //e.printStackTrace();
             throw new RuntimeException(mmi+e);
           }
 
@@ -264,7 +264,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       } catch (IOException e) {
 
         slog.error(mmi+"Cannot close output file for WL type: " + type.toString());
-        e.printStackTrace();
+        //e.printStackTrace();
         throw new RuntimeException(mmi+e);
       }
     }
@@ -288,7 +288,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       } catch (IOException e) {
 
         slog.error(mmi+"Cannot open output file: " + fpath);
-        e.printStackTrace();
+        //e.printStackTrace();
         throw new RuntimeException(e);
       }
 
@@ -303,7 +303,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
 
         slog.info(mmi+"Cannot write header in " + fpath);
 
-        e.printStackTrace();
+        //e.printStackTrace();
         throw new RuntimeException(e);
       }
 
@@ -330,7 +330,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
         } catch (IOException e) {
 
           slog.error(mmi+"Cannot write data line in output file: " + fpath);
-          e.printStackTrace();
+          //e.printStackTrace();
           throw new RuntimeException(mmi+e);
         }
       }
@@ -341,7 +341,7 @@ public abstract class ASCIIFileIO implements IASCIIFileIO {
       } catch (IOException e) {
 
         slog.error(mmi+"Cannot close file " + fpath);
-        e.printStackTrace();
+        //e.printStackTrace();
         throw new RuntimeException(e);
       }
 
