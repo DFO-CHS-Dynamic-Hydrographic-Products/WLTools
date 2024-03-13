@@ -150,23 +150,22 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     slog.info(mmi+"inputDataDir="+inputDataDir.toString());
 
+    List<Path> inputDataDirFilesList= new ArrayList<Path>();
+
     // --- List all the relevant files in inputDir using a DirectoryStream<Path> object     
-    DirectoryStream<Path> inputDataDirFilesDS= null;
-    
-    try {
-      inputDataDirFilesDS= Files.
-	newDirectoryStream(inputDataDir, relevantFilesRegExpr);
-      
+    //DirectoryStream<Path> inputDataDirFilesDS= null;
+
+    try ( final DirectoryStream<Path> inputDataDirFilesDS= Files
+           .newDirectoryStream(inputDataDir, relevantFilesRegExpr) ) {
+
+      // --- Now put all the relevant files in the inputDataDirFilesList 
+      //     object to be returned
+      for (final Path inputFilePath: inputDataDirFilesDS) {
+        inputDataDirFilesList.add(inputFilePath);
+      }
+
     } catch (IOException ioex) {
       throw new RuntimeException(mmi+ioex);
-    }
-
-    // --- Now put all the relevant files in a List<Path>
-    //     object to be returned
-    List<Path> inputDataDirFilesList= new ArrayList<Path>();    
-
-    for (final Path inputFilePath: inputDataDirFilesDS) {
-      inputDataDirFilesList.add(inputFilePath);
     }
 
     if (inputDataDirFilesList.size() == 0) {
