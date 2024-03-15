@@ -436,8 +436,15 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     //Set<TideGaugeConfig> tgsWithValidWLOData= wloMCBundles.keySet();
 
+    //// --- Debug: Remove when done.
+    //wloMCBundles.clear();
+
     slog.info(mmi+"Got "+ wloMCBundles.keySet().size()+" TGs with valid WLO data before checking time sync. with FMF data");
     System.out.flush();
+
+    if (wloMCBundles.keySet().size() == 0) {
+      slog.warn(mmi+"wloMCBundles.keySet().size() == 0 !! No TGs with valid WLO data !!");
+    }
 
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
@@ -451,10 +458,18 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     //     objects. Also determine the least recent valid Instant of the WLO data to use it to
     //     synchronize the (WLO-FMF) residuals for their spatial interp. between the tide gauges.
 
-    Instant tgsLeastRecentValidWLOInstant= Instant.ofEpochSecond((long)Integer.MAX_VALUE);
+    // --- Define an Instant in the future of astronomic proportion.
+    //final Instant astronomicFuturInstant= Instant.ofEpochSecond(Instant.MAX.getEpochSecond()-3600L);
+
+    // --- Copy this astronomicFuturInstant in tgsLeastRecentValidWLOInstant to use it as a check.
+    //Instant tgsLeastRecentValidWLOInstant= astronomicFuturInstant.plusSeconds(0L);
+    Instant tgsLeastRecentValidWLOInstant= Instant.ofEpochSecond(Instant.MAX.getEpochSecond()-3600L);
 
     Set<TideGaugeConfig> tgsWithValidWLOData= new HashSet<TideGaugeConfig>();
-    
+
+    // --- Loop on the tide gauges that have valid WLO data.
+    //    (Note that it it very unlikely that we can have 0 tide gauges with valid data
+    //     but it is not impossible)
     for (final TideGaugeConfig tgCfg: wloMCBundles.keySet()) {
        
       slog.info(mmi+"Checking WLO data time sync with the FMF data for tide gauge -> "+ tgCfg.getIdentity());
@@ -485,12 +500,26 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     
     slog.info(mmi+"Got "+tgsWithValidWLOData.size()+" TGs with valid WLO data after checking time sync. with FMF data");
 
-    // --- Define the Instant at which we will begin the adjustments of the FMF
-    //     (i.e. it is the 1st Instant after the leastRecentValidWLOInstant of all
-    //     the existing valid WLO Instants for all the tide gauges used).
-    this.fmfBegAdjustInstant= tgsLeastRecentValidWLOInstant.plusSeconds(fmfTimeIntrvSeconds);
+    //if (tgsLeastRecentValidWLOInstant.equals())
+
+    if (tgsWithValidWLOData.size() != 0)  {
+
+      slog.info(mmi+"tgsLeastRecentValidWLOInstant="+tgsLeastRecentValidWLOInstant.toString());
     
-    slog.info(mmi+"tgsLeastRecentValidWLOInstant="+tgsLeastRecentValidWLOInstant.toString());
+      // --- Define the Instant at which we will begin the adjustments of the FMF
+      //     (i.e. it is the 1st Instant after the leastRecentValidWLOInstant of all
+      //     the existing valid WLO Instants for all the tide gauges used).
+      this.fmfBegAdjustInstant= tgsLeastRecentValidWLOInstant.plusSeconds(fmfTimeIntrvSeconds);
+
+    } else {
+
+      slog.warn(mmi+"tgsWithValidWLOData.size() == 0 !!, need to use the actual time to define this.fmfBegAdjustInstant Instant !!");
+
+      // --- Get the next FMF Instant that is just after this.whatTimeIsItNow Instant.
+      this.fmfBegAdjustInstant= this.mcbsFromS104DCF8
+	.get(0).getInstantsKeySetCopy().tailSet(this.whatTimeIsItNow).first();
+    }
+    
     slog.info(mmi+"this.fmfBegAdjustInstant="+this.fmfBegAdjustInstant.toString());
     System.out.flush();
 
@@ -652,7 +681,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	
     // --- TODO: Write the output file according to the required format.
     
-    slog.info(mmi+"end");
+    slog.info(mmi+"end, this.doAdjust="+this.doAdjust);
     
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
@@ -674,6 +703,12 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     final SortedSet<Instant> fmfInstantsInFuture= this.mcbsFromS104DCF8
       .get(0).getInstantsKeySetCopy().tailSet(this.fmfBegAdjustInstant);
 
+    slog.info(mmi+"this.fmfBegAdjustInstant="+this.fmfBegAdjustInstant.toString());
+    slog.info(mmi+"fmfInstantsInFuture.first()="+fmfInstantsInFuture.first());
+
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
+    
     // --- Allocate the temp Map<Integer,List<MeasurementCustom>> that will be
     //     used in nested loops for the FMF WL adj. processing for all the ship
     //     channel point locations.
