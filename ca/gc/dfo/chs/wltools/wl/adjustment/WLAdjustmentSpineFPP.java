@@ -620,7 +620,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       if ( (this.tgsResiduals.get(dnstreamTGCfg) == null) && (this.tgsResiduals.get(upstreamTGCfg) == null) ) {
 
 	slog.warn(mmi+"WARNING: No valid residual to use at TGs neighbors -> "+
-		 dnstreamTGCfg .getIdentity()+" and -> "+upstreamTGCfg.getIdentity()+", No Spine FPP adjustment will be done here!!");
+		 dnstreamTGCfg .getIdentity()+" and -> "+upstreamTGCfg.getIdentity()+", No Spine FPP adjustment will be done for this run!!");
 	
 	this.doAdjust= false;  
 	break;
