@@ -128,6 +128,8 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       this.log.error("ForemanAstroInfos set: ConstituentsStaticData.ok() == false !");
       throw new RuntimeException("ForemanAstroInfos set");
     }
+
+    this.log.info("ForemanAstroInfos set: start");
     
     //--- Get the main constituents static data objects references subset:
     this.mcStaticDataSubset = ConstituentFactory
@@ -174,8 +176,10 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
     //          objects MUST
     //          all be located after all the main tidal constituents objects in this.infos array:
     for (final ConstituentFactory constituentFactory : this.mcStaticDataSubset) {
-      
-      this.log.debug("ForemanAstroInfos set: Processing main const. : " + constituentFactory.getName());
+
+      final String mcName= constituentFactory.getName();
+	
+      this.log.debug("ForemanAstroInfos set: Processing main const. : " + mcName);
       
       //--- NOTE: MUST cast constituentFactory object to a MainConstituentStatic here
       //          Also assign the newly created MainConstituent object in tmpMcInfos for usage by the shallow water
@@ -185,7 +189,15 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
          tmpMcInfos[tcit++]= new
             MainConstituent((MainConstituentStatic) constituentFactory).update(latPosRadians, this.sunMoonEphemerides);
 
-      tmpMcCheckList.add(constituentFactory.getName());
+      // --- Very unlikely that a main const. would be duplicated in the analysis results input file but we never know.
+      if (!tmpMcCheckList.contains(mcName)) {
+        tmpMcCheckList.add(mcName);
+	
+      } else {
+	  
+         throw new RuntimeException("Found a duplicated main const -> "+mcName+" in the analysis results input file! ");
+	  //this.log.warn("ForemanAstroInfos set: Found a duplicated main const in the analysis results input file!");
+      }
       
       //this.log.debug("main const.:"+constituentFactory.getName()+" updated");
     }
@@ -203,14 +215,14 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       List<ForemanConstituentAstro> missingMCFList = new ArrayList<ForemanConstituentAstro>();
 
       //--- Loop on all the shallow water consts. that need to be used in order to
-      //    check it their related main const(s) are present in the analysis results.
+      //    check it their related main const(s) are present in the analysis results file.
       for (final ConstituentFactory swConstituentFactory: this.swcStaticDataSubset) {
 
 	List<String> missingMcNames= new ArrayList<String>();
 
-	//--- Need to do an ugly cast the swConstituentFactory as a ShallowWaterConstituentStatic
+	//--- Need to do an ugly cast for the swConstituentFactory as a ShallowWaterConstituentStatic
 	//    to be able to use its getMainConstituentsNamesList() method.
-	//    TODO: implement somethig cleaner than that.
+	//    TODO: implement something cleaner than that.
 	final List<String> checkMcNamesList=
            ((ShallowWaterConstituentStatic)swConstituentFactory).getMainConstituentsNamesList();
 
@@ -218,21 +230,31 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
 	     
 	  if (!tmpMcCheckList.contains(checkMcName)) {
 
-	    this.log.warn("ForemanAstroInfos set: Missing Main const -> "+checkMcName+
+	    this.log.info("ForemanAstroInfos set: Missing Main const -> "+checkMcName+
 			  " in the analysis results file for its derived shallow wat. const. -> "+swConstituentFactory.getName()+
 			  ", getting the main const. static parameters even if the main const itself will not be used directly for the prediction");
-	    
-	    missingMcNames.add(checkMcName);
+
+	    //--- NOTE: Some shallow water consts. can have one or more main const that are the same so avoid duplicating them
+	    //          in the missingMcNames List
+	    if (!missingMcNames.contains(checkMcName)) {
+
+	      this.log.info("ForemanAstroInfos set: Adding the main const -> "+checkMcName+" in the missing main consts list");	    
+	      missingMcNames.add(checkMcName);
+	    }
 	  }
 	}
 
 	if (missingMcNames.size() > 0 ) {
+
+	  this.log.info("ForemanAstroInfos set: missingMcNames.size() > 0 we have some Missing Main const(s)"+
+			"in the analysis results file, need to define the related main const(s). static parmeters");
 	    
 	  final List<ConstituentFactory> missingMcStaticList = ConstituentFactory
 	      .getSubsetList( (String[])missingMcNames.toArray(), TC_NAMES, ConstituentsStaticData.mcStaticData);
 
 	  for (final ConstituentFactory missingMcStatic: missingMcStaticList) {
 	      
+	     this.log.info("ForemanAstroInfos set: Adding the missing main const -> "+missingMcStatic.getName()+" static parameters for the prediction"); 
 	     missingMCFList.add( new MainConstituent((MainConstituentStatic) missingMcStatic).update(latPosRadians, this.sunMoonEphemerides) );
 	  }
 	}
@@ -257,6 +279,9 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
 
 	//--- re-define the tmpMcInfos ForemanConstituentAstro array with the newTmpMcInfos ForemanConstituentAstro array
 	tmpMcInfos= newTmpMcInfos; //(ConstituentFactory[]) tmpMCFList.toArray();
+	
+      } else {
+	this.log.info("ForemanAstroInfos set: There is no missing main const(s) in the analysis results file");
       }
 
       //--- Now set the shallow water constituent(s) parameters for the tidal prediction  	  
@@ -282,7 +307,7 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
 //            ((ConstituentFactory)ica).display();
 //        }
     
-    this.log.debug("ForemanAstroInfos set: end");
+    this.log.info("ForemanAstroInfos set: end");
     
     return this;
   }
