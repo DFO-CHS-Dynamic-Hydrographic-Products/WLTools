@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 //import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.ArrayList;
 
 //import java.util.Map;
 //import javax.validation.constraints.Min;
@@ -74,15 +76,19 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       throw new RuntimeException(e);
     }
     
-    this.log.debug("ForemanAstro constructor: Start !");
+    this.log.info("ForemanAstro constructor: Start !");
     
     if (!ConstituentsStaticData.ok()) {
       
       this.log.debug("ForemanAstroInfos constructor : ConstituentsStaticData.ok() == false. need to do the static " +
           "data setup.");
+      
       ConstituentsStaticData.set();
     }
-    
+
+    //--- Need to convert the Map<String> to a String []
+    //    TODO: Remove all usage of String [] objects (very error prone)
+    //          and use HashMap objects instead.
     final String[] constsNamesArr = new String[constNames.size()];
     
     int it = 0;
@@ -95,7 +101,7 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
     
     this.set(this.latitudeRad, constsNamesArr);
     
-    this.log.debug("ForemanAstro constr. : Done !");
+    this.log.info("ForemanAstro constr. : end !");
   }
   
   /**
@@ -126,10 +132,12 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       this.log.error("ForemanAstroInfos set: ConstituentsStaticData.ok() == false !");
       throw new RuntimeException("ForemanAstroInfos set");
     }
-    
+
+    this.log.info("ForemanAstroInfos set: start");
+	
     //--- Get the main constituents static data objects references subset:
-    this.mcStaticDataSubset = ConstituentFactory.getSubsetList(constsNamesArray, TC_NAMES,
-        ConstituentsStaticData.mcStaticData);
+    this.mcStaticDataSubset = ConstituentFactory
+      .getSubsetList(constsNamesArray, TC_NAMES, ConstituentsStaticData.mcStaticData);
     
     final int nbMainConsts = this.mcStaticDataSubset.size();
     
@@ -140,17 +148,17 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       throw new RuntimeException("ForemanAstroInfos set");
     }
     
-    this.log.debug("ForemanAstroInfos set: We have " + nbMainConsts + " main tidal constituents to " +
-        "process.");
+    this.log.info("ForemanAstroInfos set: We have "+
+		   nbMainConsts +" main tidal constituents to process.");
     
     //--- Get the shallow water constituents static data objects references subset:
-    this.swcStaticDataSubset= ConstituentFactory.getSubsetList(constsNamesArray,
-                                                               TC_NAMES, ConstituentsStaticData.swcStaticData);
+    this.swcStaticDataSubset= ConstituentFactory
+      .getSubsetList(constsNamesArray,TC_NAMES, ConstituentsStaticData.swcStaticData);
     
     final int nbSWConsts = this.swcStaticDataSubset.size();
     
     if (nbSWConsts > 0) {
-      this.log.debug("ForemanAstroInfos set: And we also have " + nbSWConsts + " shallow water " +
+      this.log.info("ForemanAstroInfos set: And we also have " + nbSWConsts + " shallow water " +
           "tidal constituents to process.");
     }
     
@@ -158,7 +166,11 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
     this.infos = new ForemanConstituentAstro[nbMainConsts + nbSWConsts];
     
     //--- Temp. local array for main constituents astro infos. only.
-    final IConstituentAstro[] tmpMcInfos = new ForemanConstituentAstro[nbMainConsts];
+    //    TODO: Use a Map<ForemanConstituentAstro> instead of an array of ForemanConstituentAstro objects
+    //          for the tmpMcInfos local object.
+    IConstituentAstro[] tmpMcInfos = new ForemanConstituentAstro[nbMainConsts];
+
+    List<String> tmpMcCheckList= new ArrayList<String>();
     
     int tcit = 0;
     
@@ -168,8 +180,10 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
     //          objects MUST
     //          all be located after all the main tidal constituents objects in this.infos array:
     for (final ConstituentFactory constituentFactory : this.mcStaticDataSubset) {
-      
-      this.log.debug("ForemanAstroInfos set: Processing main const. : " + constituentFactory.getName());
+
+      final String mcName= constituentFactory.getName();
+	
+      this.log.info("ForemanAstroInfos set: Processing main const. : " + mcName);
       
       //--- NOTE: MUST cast constituentFactory object to a MainConstituentStatic here
       //          Also assign the newly created MainConstituent object in tmpMcInfos for usage by the shallow water
@@ -178,17 +192,120 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       this.infos[tcit]=
          tmpMcInfos[tcit++]= new
             MainConstituent((MainConstituentStatic) constituentFactory).update(latPosRadians, this.sunMoonEphemerides);
+
+      // --- Very unlikely that a main const. would be duplicated in the analysis results input file but we never know.
+      if (!tmpMcCheckList.contains(mcName)) {
+        tmpMcCheckList.add(mcName);
+	
+      } else {
+	  
+         throw new RuntimeException("Found a duplicated main const -> "+mcName+" in the analysis results input file! ");
+	  //this.log.warn("ForemanAstroInfos set: Found a duplicated main const in the analysis results input file!");
+      }
       
       //this.log.debug("main const.:"+constituentFactory.getName()+" updated");
     }
+
+    this.log.debug("aft mc: tcit="+tcit);
+    this.log.debug("aft mc: this.infos="+this.infos.length);
+    this.log.debug("aft mc: tmpMcInfos.len="+tmpMcInfos.length);
     
     if (nbSWConsts > 0) {
       
-      this.log.debug("ForemanAstroInfos set: Processing shallow-water tidal constituent(s)");
+      this.log.info("ForemanAstroInfos set: Processing shallow-water tidal constituent(s)");
+
+      //--- NOTE: It is possible to have some shallow water constituents in some analysis results files without having all their
+      //          related main constituents (from which the shallow water consts. are derived) being present in the same analysis
+      //          results file. We need to add those main constituents ForemanConstituentAstro objects in the tmpMcInfos array
+      //          in order to have all we need to be able to use the orphaned shallow water constituents (otherwise the code crashes).
+      //          Note that those main constituents will not be directlu used for the tidal predictions because we do not have their
+      //          amplitudes nor their Greenwich phases lags in the analysis results file.
+      List<String> missingMcNames= new ArrayList<String>();
       
-      for (final ConstituentFactory constituentFactory : this.swcStaticDataSubset) {
+      //--- Loop on all the shallow water consts. that need to be used in order to
+      //    check it their related main const(s) are present in the analysis results file.
+      for (final ConstituentFactory swConstituentFactory: this.swcStaticDataSubset) {
+
+	  //List<String> missingMcNames= new ArrayList<String>();
+
+	//--- Need to do an ugly cast for the swConstituentFactory as a ShallowWaterConstituentStatic
+	//    to be able to use its getMainConstituentsNamesList() method.
+	//    TODO: implement something cleaner than that.
+	final List<String> checkMcNamesList=
+           ((ShallowWaterConstituentStatic)swConstituentFactory).getMainConstituentsNamesList();
+
+	for (final String checkMcName: checkMcNamesList) {
+	     
+	  if (!tmpMcCheckList.contains(checkMcName)) {
+
+	    this.log.info("ForemanAstroInfos set: Missing Main const -> "+checkMcName+
+			  " in the analysis results file for its derived shallow wat. const. -> "+swConstituentFactory.getName()+
+			  ", will get this main const. static parameters even if the main const itself will not be used directly for the prediction");
+
+	    //--- NOTE: Some shallow water consts. can have one or more main const that are the same so avoid duplicating them
+	    //          in the missingMcNames List
+	    if (!missingMcNames.contains(checkMcName)) {
+
+	      this.log.info("ForemanAstroInfos set: Adding the main const -> "+checkMcName+" in the missing main consts list");	    
+	      missingMcNames.add(checkMcName);
+	    }
+	  }
+	}
+      }
+
+      //--- Deal with missing main const(s) here.
+      if (missingMcNames.size() > 0 ) {
+
+	this.log.info("ForemanAstroInfos set: missingMcNames.size() > 0 we have "+missingMcNames.size()+
+		      " missing main const(s) in the analysis results file, need to use their related static parameters");
+	    
+	final List<ConstituentFactory> missingMcStaticList = ConstituentFactory
+	    .getSubsetList( missingMcNames.toArray(new String[missingMcNames.size()]), TC_NAMES, ConstituentsStaticData.mcStaticData);
+ 
+        List<ForemanConstituentAstro> missingMCFList = new ArrayList<ForemanConstituentAstro>();       
+	
+	for (final ConstituentFactory missingMcStatic: missingMcStaticList) {
+	      
+	  this.log.info("ForemanAstroInfos set: Adding the missing main const -> "+missingMcStatic.getName()+" static parameters for the prediction"); 
+	  missingMCFList.add( new MainConstituent((MainConstituentStatic) missingMcStatic).update(latPosRadians, this.sunMoonEphemerides) );
+	}
+
+	this.log.info(" missingMCFList.size()="+ missingMCFList.size());
+
+	IConstituentAstro[] newTmpMcInfos= new ForemanConstituentAstro[tmpMcInfos.length + missingMCFList.size()];
+
+	this.log.info("newTmpMcInfos len="+newTmpMcInfos.length);
+
+	//--- copy the main consts. ForemanConstituentAstro objects of the tmpMcInfos array in the newTmpMcInfos
+	for (int fca = 0; fca < tmpMcInfos.length; fca++) {
+	  newTmpMcInfos[fca]= tmpMcInfos[fca];
+	}
+
+	//--- copy the missing main consts. ForemanConstituentAstro objects of the missingMCFList in the newTmpMcInfos
+	//for (int fca = tmpMcInfos.length; fca < newTmpMcInfos.length; fca++) {
+	for (int mfca = 0; mfca < missingMCFList.size(); mfca++) {
+	  this.log.info("missing mfca idx for missingMCFList="+mfca);
+	  this.log.info("missing mfca idx for newTmpMcInfos="+(tmpMcInfos.length+mfca));
+	  newTmpMcInfos[tmpMcInfos.length+mfca]= missingMCFList.get(mfca);
+	}
+
+	//--- re-define the tmpMcInfos ForemanConstituentAstro array with the newTmpMcInfos ForemanConstituentAstro array
+	tmpMcInfos= newTmpMcInfos; //(ConstituentFactory[]) tmpMCFList.toArray();
+	
+      } else {
+	this.log.info("ForemanAstroInfos set: There is no missing main const(s) in the analysis results file");
+      }
+
+      this.log.debug("bef swc: tcit="+tcit);
+      this.log.debug("this.infos="+this.infos.length);
+      this.log.debug("tmpMcInfos.len="+tmpMcInfos.length);
+      //this.log.info("ForemanAstroInfos set: exit 0");
+      //System.exit(0);
+      
+      //--- Now set the shallow water constituent(s) parameters for the tidal prediction  	  
+      for (final ConstituentFactory swConstituentFactory : this.swcStaticDataSubset) {
         
-        this.log.debug("ForemanAstroInfos set: Processing shallow-water tidal const. :" + constituentFactory.getName());
+        this.log.info("ForemanAstroInfos set: Processing shallow-water tidal const. -> " + swConstituentFactory.getName());
         
         //--- NOTE: MUST cast cfit object to a ShallowWaterConstituentStatic here
         //         (Beware that a cast to a ShallowWaterConstituent compile ok but will probably cause a crash at run
@@ -196,19 +313,22 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
         //          and also use the ForemanConstituentAstro update method to get a ready to use new
         //          ShallowWaterConstituent object.
         this.infos[tcit++] = new
-           ShallowWaterConstituent((ShallowWaterConstituentStatic) constituentFactory,
+           ShallowWaterConstituent((ShallowWaterConstituentStatic) swConstituentFactory,
                (ConstituentFactory[]) tmpMcInfos).update(latPosRadians, this.sunMoonEphemerides);
       }
     }
+
+    this.log.debug("AFT SWC: tcit="+tcit);
+    this.log.debug("AFT SWC: this.infos len="+this.infos.length);
+    //this.log.info("ForemanAstroInfos set: exit 0");
+    //System.exit(0);
     
     //--- Apply the ForemanConstituentAstro.applyZero2PISandwich method to all the new ForemanConstituentAstro objects.
     ForemanConstituentAstro.applyZero2PISandwich((ForemanConstituentAstro[]) this.infos);
-
-//        for(final IConstituentAstro ica: this.infos) {
-//            ((ConstituentFactory)ica).display();
-//        }
     
-    this.log.debug("ForemanAstroInfos set: end");
+    this.log.info("ForemanAstroInfos set: end");
+    //this.log.info("ForemanAstroInfos set: exit 0");
+    //System.exit(0);
     
     return this;
   }
