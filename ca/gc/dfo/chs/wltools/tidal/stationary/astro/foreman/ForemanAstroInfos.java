@@ -76,15 +76,19 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       throw new RuntimeException(e);
     }
     
-    this.log.debug("ForemanAstro constructor: Start !");
+    this.log.info("ForemanAstro constructor: Start !");
     
     if (!ConstituentsStaticData.ok()) {
       
       this.log.debug("ForemanAstroInfos constructor : ConstituentsStaticData.ok() == false. need to do the static " +
           "data setup.");
+      
       ConstituentsStaticData.set();
     }
-    
+
+    //--- Need to convert the Map<String> to a String []
+    //    TODO: Remove all usage of String [] objects (very error prone)
+    //          and use HashMap objects instead.
     final String[] constsNamesArr = new String[constNames.size()];
     
     int it = 0;
@@ -97,7 +101,7 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
     
     this.set(this.latitudeRad, constsNamesArr);
     
-    this.log.debug("ForemanAstro constr. : Done !");
+    this.log.info("ForemanAstro constr. : end !");
   }
   
   /**
@@ -130,10 +134,10 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
     }
 
     this.log.info("ForemanAstroInfos set: start");
-    
+	
     //--- Get the main constituents static data objects references subset:
     this.mcStaticDataSubset = ConstituentFactory
-       .getSubsetList(constsNamesArray, TC_NAMES, ConstituentsStaticData.mcStaticData);
+      .getSubsetList(constsNamesArray, TC_NAMES, ConstituentsStaticData.mcStaticData);
     
     final int nbMainConsts = this.mcStaticDataSubset.size();
     
@@ -144,8 +148,8 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       throw new RuntimeException("ForemanAstroInfos set");
     }
     
-    this.log.debug("ForemanAstroInfos set: We have " + nbMainConsts + " main tidal constituents to " +
-        "process.");
+    this.log.info("ForemanAstroInfos set: We have "+
+		   nbMainConsts +" main tidal constituents to process.");
     
     //--- Get the shallow water constituents static data objects references subset:
     this.swcStaticDataSubset= ConstituentFactory
@@ -154,7 +158,7 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
     final int nbSWConsts = this.swcStaticDataSubset.size();
     
     if (nbSWConsts > 0) {
-      this.log.debug("ForemanAstroInfos set: And we also have " + nbSWConsts + " shallow water " +
+      this.log.info("ForemanAstroInfos set: And we also have " + nbSWConsts + " shallow water " +
           "tidal constituents to process.");
     }
     
@@ -178,13 +182,8 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
     for (final ConstituentFactory constituentFactory : this.mcStaticDataSubset) {
 
       final String mcName= constituentFactory.getName();
-
-      //if (mcName.equals("K2")) continue;
 	
-      this.log.debug("ForemanAstroInfos set: Processing main const. : " + mcName);
-
-      //if (mcName.equals("K2")) continue;
-      //if (mcName.equals("O1")) continue;
+      this.log.info("ForemanAstroInfos set: Processing main const. : " + mcName);
       
       //--- NOTE: MUST cast constituentFactory object to a MainConstituentStatic here
       //          Also assign the newly created MainConstituent object in tmpMcInfos for usage by the shallow water
@@ -207,18 +206,20 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       //this.log.debug("main const.:"+constituentFactory.getName()+" updated");
     }
 
-    this.log.info("aft mc: tcit="+tcit);
+    this.log.debug("aft mc: tcit="+tcit);
+    this.log.debug("aft mc: this.infos="+this.infos.length);
+    this.log.debug("aft mc: tmpMcInfos.len="+tmpMcInfos.length);
     
     if (nbSWConsts > 0) {
       
-      this.log.debug("ForemanAstroInfos set: Processing shallow-water tidal constituent(s)");
+      this.log.info("ForemanAstroInfos set: Processing shallow-water tidal constituent(s)");
 
       //--- NOTE: It is possible to have some shallow water constituents in some analysis results files without having all their
-      //          related main constituents being present in the same analysis results file. We need to add those main
-      //          constituents ForemanConstituentAstro objects in the tmpMcInfos array in order to have all we
-      //          need for the orphaned shallow water constituents (otherwise the code crashes. Note that those main
-      //          constituents will not be directlu used for the tidal predictions because we do not have their amplitudes nor
-      //          their Greenwich phases lags in the analysis results file.
+      //          related main constituents (from which the shallow water consts. are derived) being present in the same analysis
+      //          results file. We need to add those main constituents ForemanConstituentAstro objects in the tmpMcInfos array
+      //          in order to have all we need to be able to use the orphaned shallow water constituents (otherwise the code crashes).
+      //          Note that those main constituents will not be directlu used for the tidal predictions because we do not have their
+      //          amplitudes nor their Greenwich phases lags in the analysis results file.
       List<String> missingMcNames= new ArrayList<String>();
       
       //--- Loop on all the shallow water consts. that need to be used in order to
@@ -259,7 +260,7 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
 		      " missing main const(s) in the analysis results file, need to use their related static parameters");
 	    
 	final List<ConstituentFactory> missingMcStaticList = ConstituentFactory
-	      .getSubsetList( missingMcNames.toArray(new String[0]), TC_NAMES, ConstituentsStaticData.mcStaticData);
+	    .getSubsetList( missingMcNames.toArray(new String[missingMcNames.size()]), TC_NAMES, ConstituentsStaticData.mcStaticData);
  
         List<ForemanConstituentAstro> missingMCFList = new ArrayList<ForemanConstituentAstro>();       
 	
@@ -269,16 +270,23 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
 	  missingMCFList.add( new MainConstituent((MainConstituentStatic) missingMcStatic).update(latPosRadians, this.sunMoonEphemerides) );
 	}
 
+	this.log.info(" missingMCFList.size()="+ missingMCFList.size());
+
 	IConstituentAstro[] newTmpMcInfos= new ForemanConstituentAstro[tmpMcInfos.length + missingMCFList.size()];
 
+	this.log.info("newTmpMcInfos len="+newTmpMcInfos.length);
+
 	//--- copy the main consts. ForemanConstituentAstro objects of the tmpMcInfos array in the newTmpMcInfos
-	for (int fca= 0; fca < tmpMcInfos.length; fca++) {
+	for (int fca = 0; fca < tmpMcInfos.length; fca++) {
 	  newTmpMcInfos[fca]= tmpMcInfos[fca];
 	}
 
 	//--- copy the missing main consts. ForemanConstituentAstro objects of the missingMCFList in the newTmpMcInfos
-	for (int fca= 0; fca < missingMCFList.size(); fca++) {
-	  newTmpMcInfos[fca]= missingMCFList.get(fca);
+	//for (int fca = tmpMcInfos.length; fca < newTmpMcInfos.length; fca++) {
+	for (int mfca = 0; mfca < missingMCFList.size(); mfca++) {
+	  this.log.info("missing mfca idx for missingMCFList="+mfca);
+	  this.log.info("missing mfca idx for newTmpMcInfos="+(tmpMcInfos.length+mfca));
+	  newTmpMcInfos[tmpMcInfos.length+mfca]= missingMCFList.get(mfca);
 	}
 
 	//--- re-define the tmpMcInfos ForemanConstituentAstro array with the newTmpMcInfos ForemanConstituentAstro array
@@ -288,7 +296,9 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
 	this.log.info("ForemanAstroInfos set: There is no missing main const(s) in the analysis results file");
       }
 
-      this.log.info("bef swc: tcit="+tcit);
+      this.log.debug("bef swc: tcit="+tcit);
+      this.log.debug("this.infos="+this.infos.length);
+      this.log.debug("tmpMcInfos.len="+tmpMcInfos.length);
       //this.log.info("ForemanAstroInfos set: exit 0");
       //System.exit(0);
       
@@ -308,20 +318,17 @@ final public class ForemanAstroInfos extends ForemanAstroInfosFactory implements
       }
     }
 
-    this.log.info("AFT SWC: tcit="+tcit);
+    this.log.debug("AFT SWC: tcit="+tcit);
+    this.log.debug("AFT SWC: this.infos len="+this.infos.length);
     //this.log.info("ForemanAstroInfos set: exit 0");
     //System.exit(0);
     
     //--- Apply the ForemanConstituentAstro.applyZero2PISandwich method to all the new ForemanConstituentAstro objects.
     ForemanConstituentAstro.applyZero2PISandwich((ForemanConstituentAstro[]) this.infos);
-
-//        for(final IConstituentAstro ica: this.infos) {
-//            ((ConstituentFactory)ica).display();
-//        }
     
     this.log.info("ForemanAstroInfos set: end");
-    this.log.info("ForemanAstroInfos set: exit 0");
-    System.exit(0);
+    //this.log.info("ForemanAstroInfos set: exit 0");
+    //System.exit(0);
     
     return this;
   }

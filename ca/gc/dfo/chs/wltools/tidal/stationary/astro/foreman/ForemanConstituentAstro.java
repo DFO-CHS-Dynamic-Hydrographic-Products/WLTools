@@ -32,11 +32,14 @@ import org.slf4j.LoggerFactory;
  */
 abstract public class ForemanConstituentAstro
    extends ConstituentFactory implements IForemanConstituentAstro, IConstituentAstro {
-  
+
+  private final static String whoAmI= "ForemanConstituentAstro: ";
+    
   /**
    * log utility.
    */
   private final Logger log = LoggerFactory.getLogger(this.getClass());
+  private final static Logger slog= LoggerFactory.getLogger(whoAmI);
   
   //--- fNodalModAdj : DIMENSIONLESS
   //
@@ -119,14 +122,24 @@ abstract public class ForemanConstituentAstro
    */
   protected final static ForemanConstituentAstro[]
     applyZero2PISandwich(/*@NotNull @Size(min = 1)*/ final ForemanConstituentAstro[] foremanConstituentAstroArray) {
-    
+
+    final String mmi= "applyZero2PISandwich: ";
+      
     //--- The Trigonometry.getZero2PISandwich method must always be applied after the individual FrmnConstituent
     // update method calls.
     //    TODO: Implement parallelization for this loop on ForemanConstituentAstro objects:
     for (final ForemanConstituentAstro fc : foremanConstituentAstroArray) {
+
+      try {
+	fc.hashCode();
+      } catch (NullPointerException npe) {
+	slog.error(mmi+" fc cannot be null at this point !" + npe);
+      }
+     
       fc.astroArgument = Trigonometry.getZero2PISandwich(fc.astroArgument, true);
+      //slog.info(" applyZero2PISandwich: aft trigo getZero2PISandwich fc.name="+fc.getName()+", cnt="+cnt);
+
     }
-    
     return foremanConstituentAstroArray;
   }
   
