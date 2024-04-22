@@ -113,6 +113,7 @@ final public class NonStationary1DTidalPredFactory
                                stageInputDataFile,stageInputDataFileFormat);
 
   }
+
   /**
    * @param timeStampSeconds : A time-stamp in seconds since the epoch where we want a single tidal prediction.
    * @return The newly computed single tidal prediction in double precision.
@@ -144,6 +145,8 @@ final public class NonStationary1DTidalPredFactory
      double tidalPredValue= super.
        computeTidalPrediction(timeStampSeconds) +
           stageCoefficientMap.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue();
+
+     double tpdvCheck= tidalPredValue;
 
      //slog.info("computeTidalPrediction: aft. getting stationary tidalPredValue="+tidalPredValue);
 
@@ -178,17 +181,31 @@ final public class NonStationary1DTidalPredFactory
         final double stageInputDataValue=
           stageInputData.getValueForCoeff(stageCoeffId); //.getDataUnitValue();
 
-        //slog.info("computeTidalPrediction: aft. getting stageInputDataValue="+stageInputDataValue);
+        slog.info("stageCoefficientValue="+stageCoefficientValue);
+        slog.info("hoTidalValue="+hoTidalValue);
+        slog.info("stageCoeffId="+stageCoeffId);
+        slog.info("computeTidalPrediction: aft. getting stageInputDataValue="+stageInputDataValue);
 
         // ---- Apply the non-stationary calculation with the related stage value part and the
         //      the hoTidalValue for this higher order.
         tidalPredValue += (stageCoefficientValue + hoTidalValue) * stageInputDataValue ; /// stageInputDataValue;
+
+        double corrFact= 0.9825222085630431;
+
+        if (stageCoeffId.equals("CS2")) { corrFact= 0.9653498903196; }
+
+        tpdvCheck += (stageCoefficientValue + hoTidalValue) * corrFact*stageInputDataValue;
      }
 
-     //slog.info("computeTidalPrediction: end");
+     slog.info("computeTidalPrediction: end");
+     slog.info("tidalPredValue="+tidalPredValue);
+     slog.info("tpdvCheck="+tpdvCheck);
+     //slog.info("computeTidalPrediction debug exit 0");
+     //System.exit(0);
 
      // ---
-     return tidalPredValue;
+     //return tidalPredValue;
+     return tpdvCheck;
   }
 
   /**
