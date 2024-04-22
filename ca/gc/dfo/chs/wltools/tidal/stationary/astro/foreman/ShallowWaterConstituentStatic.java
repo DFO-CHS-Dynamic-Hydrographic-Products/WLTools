@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 //import javax.validation.constraints.NotNull;
 //import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.ArrayList;
 
 //import javax.validation.constraints.Min;
 //---
@@ -111,6 +112,20 @@ final public class ShallowWaterConstituentStatic extends ConstituentFactory impl
     
     return ", " + this.getClass() + ", " + super.toString() + ", " + dataStr;
   }
+
+  //--- Return a List of the names of the main constituents from which this
+  //    shallow water constiuents derives.
+  final public List<String> getMainConstituentsNamesList() {
+
+    List<String> mcNamesList= new ArrayList<String>();
+
+    for (final ShallowWaterConstituentDerivation shallowWaterConstituentDerivation : this.data) {
+	
+      mcNamesList.add( shallowWaterConstituentDerivation.mainConstituentStatic.getName()) ;
+    }
+
+    return mcNamesList;
+  }
   
   /**
    * @param constituentFactoryArrray : An array of ConstituentFactory objects(references to the MainConstituent(s)
@@ -133,6 +148,13 @@ final public class ShallowWaterConstituentStatic extends ConstituentFactory impl
       
       shallowWaterConstituentDerivation.mainConstituent=
           (MainConstituent) ConstituentFactory.get(mainConstName,constituentFactoryArrray);
+
+      try {
+	shallowWaterConstituentDerivation.mainConstituent.hashCode();
+      } catch (NullPointerException npe) {
+	throw new RuntimeException("setMainConstituentsReferences: shallowWaterConstituentDerivation.mainConstituent cannot be null at this point! mainConstName="+
+				   mainConstName+", shallow const. this.name=" + this.name);
+      }
     }
     
     this.log.debug("setMainConstituentsReferences: this.toString()=" + this.toString());
