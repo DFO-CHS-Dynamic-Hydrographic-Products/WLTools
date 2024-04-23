@@ -190,13 +190,14 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
 
     final long checkTimeDiffSeconds= checkMcbInstant0.getEpochSecond() - instantForIWLS.getEpochSecond();
 
-    final long maxTimeDiffSeconds= IWLAdjustment
-      .MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS + mcbTimeIntrvSeconds;
+    //final long maxTimeDiffSeconds= IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS + mcbTimeIntrvSeconds;
+    final long maxTimeDiffSeconds= IWLAdjustment.MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS + mcbTimeIntrvSeconds;
 
     if (Math.abs(checkTimeDiffSeconds) >= maxTimeDiffSeconds) {
-      throw new RuntimeException(mmi+"Cannot have Math.abs(checkTimeDiff) >= maxTimeDiffSeconds -> "+maxTimeDiffSeconds+" at this point !!");
+      slog.warn(mmi+"Math.abs(checkTimeDiffSeconds) -> "+Math.abs(checkTimeDiffSeconds)+" >= maxTimeDiffSeconds -> "+maxTimeDiffSeconds+" !!, check WLO data !!");
+      //throw new RuntimeException(mmi+"Cannot have Math.abs(checkTimeDiff) >= maxTimeDiffSeconds -> "+maxTimeDiffSeconds+" at this point !!");
     }
-    
+
     if (checkMcbInstant0.isAfter(instantForIWLS)) {
       slog.warn(mmi+"checkMcbInstant0 is after instantForIWLS, use it for instantForIWLS to be sure to have the right number of time stamps in the future");
       instantForIWLS= checkMcbInstant0;
