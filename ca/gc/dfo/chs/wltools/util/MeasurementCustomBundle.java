@@ -233,4 +233,48 @@ final public class MeasurementCustomBundle {
      return (maxTSDiff <= maxTimeDiffSeconds) ? retMCObj : null;
   }
 
+  // --
+  static final public MeasurementCustom getSimpleStats(final MeasurementCustomBundle mcb, final SortedSet<Instant> instantsToUse) {
+
+    final String mmi= "getSimpleStats: ";
+      
+    try {
+      mcb.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    final double mcbSize= (double) mcb.size();
+
+    //slog.info(mmi+"mcbSize="+mcbSize);
+
+    if (mcbSize < 2.0 ) {
+      throw new RuntimeException(mmi+"MeasurementCustomBundle mcbSize must be at least 2!"); 	
+    }
+
+    double nbMc= 0.0;
+    double mcValuesAvgAcc= 0.0;
+    double mcValuesSquAcc= 0.0;
+
+    final SortedSet<Instant> instantsForIter= (instantsToUse != null ) ? instantsToUse : mcb.getInstantsKeySetCopy();
+
+    for (final Instant mcInstant: instantsForIter) {
+
+      final double mcValue= mcb.getAtThisInstant(mcInstant).getValue();
+        
+      mcValuesAvgAcc += mcValue;
+      mcValuesSquAcc += mcValue*mcValue;
+
+      nbMc += 1.0;
+    }
+
+    slog.info(mmi+"nbMc="+nbMc);
+
+    final double mcValuesArithAvg= mcValuesAvgAcc/nbMc;
+    
+    final double mcValuesStdDev= Math.sqrt(mcValuesSquAcc/nbMc - mcValuesArithAvg*mcValuesArithAvg);
+
+    return new MeasurementCustom(null, mcValuesArithAvg, mcValuesStdDev);
+  }
+
 } // --- class scope block

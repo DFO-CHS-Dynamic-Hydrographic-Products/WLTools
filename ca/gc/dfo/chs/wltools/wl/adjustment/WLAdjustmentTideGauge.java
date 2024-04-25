@@ -638,13 +638,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     
     // --- Now merge (adjust) the NSTide prediction with the last adjusted FMF WL value. 
 
-    slog.info(mmi+"Now merge the 40 days NSTide prediction data(OR the 40 days climatologic H2D2-SLFE results for tide gauge ->"+this.location.getIdentity());
+    slog.info(mmi+"Now merge the 40 days NSTide prediction data(OR the 40 days climatologic OHPS-SLFE results for tide gauge ->"+this.location.getIdentity());
 
     //final Instant leastRecentAdjFMFInstant= adjFMFMcbInstantsSet.first();
     //final Instant mostRecentAdjFMFInstant= adjFMFMcbInstantsSet.last();
 
-    //slog.info(mmi+"leastRecentAdjFMFInstant="+leastRecentAdjFMFInstant.toString());
-    //slog.info(mmi+"mostRecentAdjFMFInstant="+mostRecentAdjFMFInstant.toString());
+    slog.info(mmi+"leastRecentAdjFMFInstant="+leastRecentAdjFMFInstant.toString());
+    slog.info(mmi+"mostRecentAdjFMFInstant="+mostRecentAdjFMFInstant.toString());
  
     final MeasurementCustom lastAdjFMFWLMc= 
       adjFMFMcb.getAtThisInstant(mostRecentAdjFMFInstant);
@@ -655,9 +655,30 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     slog.info(mmi+"lastAdjFMFWLValue="+lastAdjFMFWLValue);
     slog.info(mmi+"lastAdjFMFWLUncertainty="+lastAdjFMFWLUncertainty);
 
+    final MeasurementCustom adjFMFMcbStatsMc= MeasurementCustomBundle.getSimpleStats(adjFMFMcb,null);
+
     // --- Wrap the WL prediction data in a MeasurementCustomBundle object
     //     to ensure to have time synchronization with the FMF WL adj. data
     final MeasurementCustomBundle wlPredMCB= new MeasurementCustomBundle(this.locationPredData);
+
+    final NavigableSet<Instant> instantsForPredStats= new
+	TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).subSet(leastRecentAdjFMFInstant, true, mostRecentAdjFMFInstant, true);
+    //final SortedSet<Instant> instantsForPredStats= new
+     //	TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).tailSet(mostRecentAdjFMFInstant).headSet(leastRecentAdjFMFInstant);
+
+    final MeasurementCustom predStatsMc= MeasurementCustomBundle.getSimpleStats(wlPredMCB, instantsForPredStats);
+    
+    slog.info(mmi+"adjFMFMcbStatsMc avg.="+adjFMFMcbStatsMc.getValue());
+    slog.info(mmi+"adjFMFMcbStatsMc std dev="+adjFMFMcbStatsMc.getUncertainty());
+    
+    slog.info(mmi+"predStatsMc avg.="+predStatsMc.getValue());
+    slog.info(mmi+"predStatsMc std dev="+predStatsMc.getUncertainty());
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
+
+    //// --- Wrap the WL prediction data in a MeasurementCustomBundle object
+    ////     to ensure to have time synchronization with the FMF WL adj. data
+    //final MeasurementCustomBundle wlPredMCB= new MeasurementCustomBundle(this.locationPredData);
 
     final MeasurementCustom wlPredMcForDiff= wlPredMCB.getAtThisInstant(mostRecentAdjFMFInstant);
 
