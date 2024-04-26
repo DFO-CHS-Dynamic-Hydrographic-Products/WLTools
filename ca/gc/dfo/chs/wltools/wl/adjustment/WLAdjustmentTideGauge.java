@@ -41,12 +41,9 @@ import java.io.FileNotFoundException;
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
-//import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
-//import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
-//import ca.gc.dfo.chs.wltools.wl.fms.FMSFactory;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
@@ -56,6 +53,7 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
+import ca.gc.dfo.chs.wltools.numbercrunching.INumberCrunching;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 
 /**
@@ -655,24 +653,99 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     slog.info(mmi+"lastAdjFMFWLValue="+lastAdjFMFWLValue);
     slog.info(mmi+"lastAdjFMFWLUncertainty="+lastAdjFMFWLUncertainty);
 
+    slog.info(mmi+"Get simple stats for the adjFMF data");
     final MeasurementCustom adjFMFMcbStatsMc= MeasurementCustomBundle.getSimpleStats(adjFMFMcb,null);
 
+    if (adjFMFMcbStatsMc.getUncertainty() < INumberCrunching.STD_DEV_MIN_VALUE) {
+      throw new RuntimeException(mmi+"Std dev value too small for the adjFMF data !");
+    }
+    
     // --- Wrap the WL prediction data in a MeasurementCustomBundle object
     //     to ensure to have time synchronization with the FMF WL adj. data
     final MeasurementCustomBundle wlPredMCB= new MeasurementCustomBundle(this.locationPredData);
 
     final NavigableSet<Instant> instantsForPredStats= new
 	TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).subSet(leastRecentAdjFMFInstant, true, mostRecentAdjFMFInstant, true);
-    //final SortedSet<Instant> instantsForPredStats= new
-     //	TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).tailSet(mostRecentAdjFMFInstant).headSet(leastRecentAdjFMFInstant);
 
+    slog.info(mmi+"Get simple stats for the WL pred. data");
     final MeasurementCustom predStatsMc= MeasurementCustomBundle.getSimpleStats(wlPredMCB, instantsForPredStats);
+
+    if (predStatsMc.getUncertainty() < INumberCrunching.STD_DEV_MIN_VALUE) {
+      throw new RuntimeException(mmi+"Std dev value too small for the WL pred. data!");
+    }
     
     slog.info(mmi+"adjFMFMcbStatsMc avg.="+adjFMFMcbStatsMc.getValue());
     slog.info(mmi+"adjFMFMcbStatsMc std dev="+adjFMFMcbStatsMc.getUncertainty());
     
     slog.info(mmi+"predStatsMc avg.="+predStatsMc.getValue());
     slog.info(mmi+"predStatsMc std dev="+predStatsMc.getUncertainty());
+
+    final double wlPredsAvg= predStatsMc.getValue();
+
+    final double avgsDiff= adjFMFMcbStatsMc.getValue() - wlPredsAvg;
+    final double amplitudesAdjFact= adjFMFMcbStatsMc.getUncertainty()/predStatsMc.getUncertainty();
+
+    slog.info(mmi+"avgsDiff="+avgsDiff);
+    slog.info(mmi+"amplitudesAdjFact="+amplitudesAdjFact);   
+
+    // slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
+    
+    // --- Get the Instants objects to use for the WL pred. adjustments. We need to
+    //     begin at the leastRecentAdjFMFInstant to ensure to be some time in the past
+    //     before the mostRecentAdjFMFInstant.
+    final NavigableSet<Instant> predMcbInstantsToAdj=
+	new TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).tailSet(leastRecentAdjFMFInstant, true);
+
+    // --- long term decaying time factor for adjusting-merging WL values
+    final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
+
+    // ----
+    for (final Instant wlPredAdjInst: predMcbInstantsToAdj) {
+
+      final MeasurementCustom wlPredMc= wlPredMCB.getAtThisInstant(wlPredAdjInst);
+      
+      final double nonAdjWLPredValue= wlPredMc.getValue();
+
+      double adjWLPredValue= nonAdjWLPredValue;
+
+      if (nonAdjWLPredValue > wlPredsAvg) {
+
+	// --- Adjust the WL pred value according the averages difference and the amplitude adjustment factor
+	// OKAY for decrease:
+	// adjWLPredValue = nonAdjWLPredValue + (avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
+
+	//adjWLPredValue = nonAdjWLPredValue + (avgsDiff + (nonAdjWLPredValue-wlPredsAvg)*(amplitudesAdjFact - 1.0));
+	adjWLPredValue = nonAdjWLPredValue + (avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*(1.0 - amplitudesAdjFact));
+
+	slog.info(mmi+"(nonAdjWLPredValue > wlPredsAvg): nonAdjWLPredValue="+nonAdjWLPredValue);
+	slog.info(mmi+"(nonAdjWLPredValue > wlPredsAvg): adjWLPredValue="+adjWLPredValue);
+	//slog.info(mmi+"(nonAdjWLPredValue-wlPredsAvg)*(1.0 - amplitudesAdjFact)="+(nonAdjWLPredValue-wlPredsAvg)*(1.0 - amplitudesAdjFact));
+        //slog.info(mmi+"Debug exit 0");
+        //System.exit(0);	
+
+      } else {
+
+	  //adjWLPredValue = avgsDiff + nonAdjWLPredValue + nonAdjWLPredValue*amplitudesAdjFact;
+	  //adjWLPredValue = avgsDiff + nonAdjWLPredValue*amplitudesAdjFact;
+	  //adjWLPredValue = avgsDiff + nonAdjWLPredValue + (wlPredsAvg-nonAdjWLPredValue)*amplitudesAdjFact;
+
+	//adjWLPredValue = nonAdjWLPredValue + (avgsDiff + (wlPredsAvg-nonAdjWLPredValue)*amplitudesAdjFact);
+
+	adjWLPredValue = nonAdjWLPredValue + (avgsDiff + (wlPredsAvg-nonAdjWLPredValue)*(1.0 - amplitudesAdjFact));
+	  
+	slog.info(mmi+"(nonAdjWLPredValue < wlPredsAvg): nonAdjWLPredValue="+nonAdjWLPredValue);
+	slog.info(mmi+"(nonAdjWLPredValue < wlPredsAvg): adjWLPredValue="+adjWLPredValue);
+	//slog.info(mmi+"(wlPredsAvg-nonAdjWLPredValue)*(1.0 - amplitudesAdjFact)="+(wlPredsAvg-nonAdjWLPredValue)*(1.0 - amplitudesAdjFact));
+        slog.info(mmi+"Debug exit 0");
+        System.exit(0);	
+      }
+
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
+	
+    }
+    
     slog.info(mmi+"Debug exit 0");
     System.exit(0);
 
@@ -714,11 +787,11 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //final SortedSet<Instant> predMcbInstantsTailSet= 
     //  wlPredMCB.getInstantsKeySetCopy().tailSet(mostRecentAdjFMFInstant);
 
-    // --- long term decaying time factor for adjusting-merging WL values
-    final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
+    //// --- long term decaying time factor for adjusting-merging WL values
+    //final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
 
     // --- long term decaying time factor for adjusting-merging WL values uncertainties
-    //     It is the longTermFMFOffsetSecondsInvWLV divided by 5 so it decay 5 times
+    //     It is the longTermFMFOffsetSecondsInvWLV divided by 5 so it decays 5 times
     //     more slowly than for the WL values themselves.
     final double longTermFMFOffsetSecondsInvWLU= 0.2 * longTermFMFOffsetSecondsInvWLV;
 

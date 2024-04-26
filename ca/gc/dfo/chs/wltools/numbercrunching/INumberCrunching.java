@@ -9,7 +9,9 @@ package ca.gc.dfo.chs.wltools.numbercrunching;
  * Interface for NumberCrunching utilities.
  */
 public interface INumberCrunching {
-  
+ 
+  double STD_DEV_MIN_VALUE= 1e-5;
+ 
   //--- int constants
   int UNDEFINED = -1;
   
