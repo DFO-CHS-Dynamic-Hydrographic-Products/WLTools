@@ -683,8 +683,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final double wlPredsAvg= predStatsMc.getValue();
 
     final double avgsDiff= adjFMFMcbStatsMc.getValue() - wlPredsAvg;
-    final double amplitudesAdjFact= adjFMFMcbStatsMc.getUncertainty()/predStatsMc.getUncertainty();
-
+    //final double amplitudesAdjFact= adjFMFMcbStatsMc.getUncertainty()/predStatsMc.getUncertainty();
+    final double amplitudesAdjFact= 1.0 - adjFMFMcbStatsMc.getUncertainty()/predStatsMc.getUncertainty();
+    
     slog.info(mmi+"avgsDiff="+avgsDiff);
     slog.info(mmi+"amplitudesAdjFact="+amplitudesAdjFact);   
 
@@ -698,56 +699,66 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 	new TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).tailSet(leastRecentAdjFMFInstant, true);
 
     // --- long term decaying time factor for adjusting-merging WL values
-    final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
+    //final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
 
-    // ----
+    final double leastRecentFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
+
+    final long mostRecentMergeSecondsRef= mostRecentAdjFMFInstant.getEpochSecond();
+    
+    // ---
     for (final Instant wlPredAdjInst: predMcbInstantsToAdj) {
 
       final MeasurementCustom wlPredMc= wlPredMCB.getAtThisInstant(wlPredAdjInst);
       
       final double nonAdjWLPredValue= wlPredMc.getValue();
 
-      double adjWLPredValue= nonAdjWLPredValue;
+      double timeDecayingFactWLV= 1.0;
 
-      if (nonAdjWLPredValue > wlPredsAvg) {
-
-	// --- Adjust the WL pred value according the averages difference and the amplitude adjustment factor
-	// OKAY for decrease:
-	// adjWLPredValue = nonAdjWLPredValue + (avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
-
-	//adjWLPredValue = nonAdjWLPredValue + (avgsDiff + (nonAdjWLPredValue-wlPredsAvg)*(amplitudesAdjFact - 1.0));
-	adjWLPredValue = nonAdjWLPredValue + (avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*(1.0 - amplitudesAdjFact));
-
-	slog.info(mmi+"(nonAdjWLPredValue > wlPredsAvg): nonAdjWLPredValue="+nonAdjWLPredValue);
-	slog.info(mmi+"(nonAdjWLPredValue > wlPredsAvg): adjWLPredValue="+adjWLPredValue);
-	//slog.info(mmi+"(nonAdjWLPredValue-wlPredsAvg)*(1.0 - amplitudesAdjFact)="+(nonAdjWLPredValue-wlPredsAvg)*(1.0 - amplitudesAdjFact));
-        //slog.info(mmi+"Debug exit 0");
-        //System.exit(0);	
-
-      } else {
-
-	  //adjWLPredValue = avgsDiff + nonAdjWLPredValue + nonAdjWLPredValue*amplitudesAdjFact;
-	  //adjWLPredValue = avgsDiff + nonAdjWLPredValue*amplitudesAdjFact;
-	  //adjWLPredValue = avgsDiff + nonAdjWLPredValue + (wlPredsAvg-nonAdjWLPredValue)*amplitudesAdjFact;
-
-	//adjWLPredValue = nonAdjWLPredValue + (avgsDiff + (wlPredsAvg-nonAdjWLPredValue)*amplitudesAdjFact);
-
-	adjWLPredValue = nonAdjWLPredValue + (avgsDiff + (wlPredsAvg-nonAdjWLPredValue)*(1.0 - amplitudesAdjFact));
-	  
-	slog.info(mmi+"(nonAdjWLPredValue < wlPredsAvg): nonAdjWLPredValue="+nonAdjWLPredValue);
-	slog.info(mmi+"(nonAdjWLPredValue < wlPredsAvg): adjWLPredValue="+adjWLPredValue);
-	//slog.info(mmi+"(wlPredsAvg-nonAdjWLPredValue)*(1.0 - amplitudesAdjFact)="+(wlPredsAvg-nonAdjWLPredValue)*(1.0 - amplitudesAdjFact));
-        slog.info(mmi+"Debug exit 0");
-        System.exit(0);	
+      // --- Begin to decrease the timeDecayingFactWLV only after the mostRecentAdjFMFInstant timestamp
+      if (wlPredAdjInst.isAfter(mostRecentAdjFMFInstant)) {
+      
+        final double leastRecentOffsetSeconds=
+	  (double)(wlPredAdjInst.getEpochSecond() - mostRecentMergeSecondsRef); 
+      	
+        //final double leastRecentTimeDecayingFactWLV=
+        timeDecayingFactWLV= Math.exp(-leastRecentOffsetSeconds * leastRecentFMFOffsetSecondsInvWLV);
       }
+
+      //slog.info(mmi+"timeDecayingFactWLV="+timeDecayingFactWLV);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
+      
+      //// --- One shot calculation for the WL pred. data adjustments.
+      final double adjWLPredValue= nonAdjWLPredValue + timeDecayingFactWLV*(avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
+      
+      //double adjWLPredValue= nonAdjWLPredValue;
+      //final amplitudesAdjFact
+      // if (nonAdjWLPredValue > wlPredsAvg) {
+      // 	// --- Adjust the WL pred value according the averages difference and the amplitude adjustment factor
+      // 	adjWLPredValue = nonAdjWLPredValue + (avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
+      // 	slog.info(mmi+"(nonAdjWLPredValue > wlPredsAvg): nonAdjWLPredValue="+nonAdjWLPredValue);
+      // 	slog.info(mmi+"(nonAdjWLPredValue > wlPredsAvg): adjWLPredValue="+adjWLPredValue);
+      // 	//slog.info(mmi+"(nonAdjWLPredValue-wlPredsAvg)*(1.0 - amplitudesAdjFact)="+(nonAdjWLPredValue-wlPredsAvg)*(1.0 - amplitudesAdjFact));
+      //   //slog.info(mmi+"Debug exit 0");
+      //   //System.exit(0);	
+      // } else {
+      // 	adjWLPredValue = nonAdjWLPredValue + (avgsDiff + (wlPredsAvg-nonAdjWLPredValue)*amplitudesAdjFact);
+      // 	slog.info(mmi+"(nonAdjWLPredValue < wlPredsAvg): nonAdjWLPredValue="+nonAdjWLPredValue);
+      // 	slog.info(mmi+"(nonAdjWLPredValue < wlPredsAvg): adjWLPredValue="+adjWLPredValue);
+      // 	//slog.info(mmi+"(wlPredsAvg-nonAdjWLPredValue)*(1.0 - amplitudesAdjFact)="+(wlPredsAvg-nonAdjWLPredValue)*(1.0 - amplitudesAdjFact));
+      //   //slog.info(mmi+"Debug exit 0");
+      //   //System.exit(0);	
+      // }
+
+      wlPredMc.setValue(adjWLPredValue);
 
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
 	
     }
     
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     //// --- Wrap the WL prediction data in a MeasurementCustomBundle object
     ////     to ensure to have time synchronization with the FMF WL adj. data
@@ -766,8 +777,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final double lastFMFVsPredDiff= lastAdjFMFWLValue - wlPredMcForDiff.getValue();
 
     slog.info(mmi+"lastFMFVsPredDiff="+lastFMFVsPredDiff);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
-    final long longTermMergeSecondsRef= mostRecentAdjFMFInstant.getEpochSecond();
+    //final long mostRecentMergeSecondsRef= mostRecentAdjFMFInstant.getEpochSecond();
 
     // --- Get copies of all the Instant object of the WL prediction data starting
     //     at the Instant object of the adj. FMF WL data that is the 1st after the
@@ -787,8 +800,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //final SortedSet<Instant> predMcbInstantsTailSet= 
     //  wlPredMCB.getInstantsKeySetCopy().tailSet(mostRecentAdjFMFInstant);
 
-    //// --- long term decaying time factor for adjusting-merging WL values
-    //final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
+    // --- long term decaying time factor for adjusting-merging WL values
+    final double longTermFMFOffsetSecondsInvWLV= 1.0/IWLAdjustment.LONG_TERM_FORECAST_TS_OFFSET_SECONDS;
 
     // --- long term decaying time factor for adjusting-merging WL values uncertainties
     //     It is the longTermFMFOffsetSecondsInvWLV divided by 5 so it decays 5 times
@@ -807,7 +820,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //slog.info(mmi+"longTermInstant="+longTermInstant.toString());
 	
       final double longTermOffsetSeconds=
-	(double)(longTermInstant.getEpochSecond() - longTermMergeSecondsRef); 
+	(double)(longTermInstant.getEpochSecond() - mostRecentMergeSecondsRef); 
       	
       final double longTermTimeDecayingFactWLV=
         Math.exp(-longTermOffsetSeconds * longTermFMFOffsetSecondsInvWLV);
