@@ -611,6 +611,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
           //	   at the fmfAdjInstant in the this.locationAdjustedData List.
           fmfAdjMc.setValue(fmfAdjMc.getValue() + shortTermTimeDecayingAdj);
 
+          // --- Convert 1 sigma errors std. dev to 2 sigma
+          fmfAdjMc.setUncertainty(IWL.TWO_SIGMA_STDDEV_FACT * fmfAdjMc.getUncertainty());
+
           //slog.info(mmi+"fmfAdjMc.getValue() aft. merge="+fmfAdjMc.getValue());
 
           // if (shortTermTimeOffsetSeconds > 900) {
