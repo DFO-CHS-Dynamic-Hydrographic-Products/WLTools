@@ -40,6 +40,8 @@ public interface IWL {
   double MINIMUM_UNCERTAINTY_METERS= 0.005; // --- Half-centimeter
   double MAXIMUM_UNCERTAINTY_METERS= 1.5;
 
+  double TWO_SIGMA_STDDEV_FACT= 1.3982; // --- 95.44/68.26
+
   double PREDICTIONS_ERROR_ESTIMATE_METERS = 0.5;
 
   /**
