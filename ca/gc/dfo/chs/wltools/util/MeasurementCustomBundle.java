@@ -233,4 +233,70 @@ final public class MeasurementCustomBundle {
      return (maxTSDiff <= maxTimeDiffSeconds) ? retMCObj : null;
   }
 
+  // --
+  static final public MeasurementCustom getSimpleStats(final MeasurementCustomBundle mcb, final SortedSet<Instant> instantsToUse) {
+
+    final String mmi= "getSimpleStats: ";
+      
+    try {
+      mcb.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe);
+    }
+
+    final double mcbSize= (double) mcb.size();
+
+    //slog.info(mmi+"mcbSize="+mcbSize);
+
+    if (mcbSize < 2.0 ) {
+      throw new RuntimeException(mmi+"MeasurementCustomBundle mcbSize must be at least 2!"); 	
+    }
+
+    double nbMc= 0.0;
+    double mcValuesAvgAcc= 0.0;
+    double mcValuesSquAcc= 0.0;
+
+    final SortedSet<Instant> instantsForIter= (instantsToUse != null ) ? instantsToUse : mcb.getInstantsKeySetCopy();
+
+    double min= 7777777.7;
+    double max= -min;
+    
+    // ---
+    for (final Instant mcInstant: instantsForIter) {
+
+      try {
+	mcb.getAtThisInstant(mcInstant);
+      } catch (NullPointerException npe) {
+	throw new RuntimeException(mmi+"mcInstant key not found in mcb!");
+      }
+
+      final double mcValue= mcb.getAtThisInstant(mcInstant).getValue();
+        
+      mcValuesAvgAcc += mcValue;
+      mcValuesSquAcc += mcValue*mcValue;
+
+      nbMc += 1.0;
+
+      min= (mcValue < min) ? mcValue: min;
+      max= (mcValue > max) ? mcValue: max;
+    }
+
+    slog.info(mmi+"nbMc="+nbMc);
+    slog.info(mmi+"min="+min);
+    slog.info(mmi+"max="+max);
+
+    final double mcValuesArithAvg= mcValuesAvgAcc/nbMc;
+
+    // --- Almost impossible! but we never know!
+    if (mcValuesArithAvg*mcValuesArithAvg > mcValuesSquAcc/nbMc) {
+      throw new RuntimeException(mmi+"cannot have mcValuesArithAvg*mcValuesArithAvg > mcValuesSquAcc/nbMc for the std dev calculation!");
+    }
+    
+    final double mcValuesStdDev= Math.sqrt(mcValuesSquAcc/nbMc - mcValuesArithAvg*mcValuesArithAvg);
+
+    //if ( < Double.MIN_VALUE)
+
+    return new MeasurementCustom(null, mcValuesArithAvg, mcValuesStdDev);
+  }
+
 } // --- class scope block
