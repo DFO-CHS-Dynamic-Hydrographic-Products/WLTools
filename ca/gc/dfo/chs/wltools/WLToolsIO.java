@@ -1040,11 +1040,12 @@ abstract public class WLToolsIO implements IWLToolsIO {
       
     } // --- Loop block on all the ship channel point locations 
 
-    hdfqlCmdStatus= HDFql.variableUnregister(s104Dcf8CmpdTypeArray);
-    
-    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql.unregisterVariable(registerNb)!!, hdfqlCmdStatus="+hdfqlCmdStatus);
-    }
+    HDFql.variableUnregister(s104Dcf8CmpdTypeArrRegisterNb);
+
+    //hdfqlCmdStatus= HDFql.variableUnregister(s104Dcf8CmpdTypeArray);
+    //if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+    //  throw new RuntimeException(mmi+"Problem with HDFql.unregisterVariable(registerNb)!!, hdfqlCmdStatus="+hdfqlCmdStatus);
+    //}
  
     hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+s104DCF8FilePath);
 
