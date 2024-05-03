@@ -828,7 +828,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"start");
 
     //// --- Tell the HDFql lib to use just one thread here.
-    HDFql.execute("SET THREAD 1");
+    //HDFql.execute("SET THREAD 1");
     //System.out.flush();
     
     //if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
@@ -946,9 +946,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     }
 
     // ---
-    //final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
     final int s104Dcf8CmpdTypeArrRegisterNb= HDFql.variableRegister(s104Dcf8CmpdTypeArray);
-    
+
     if (s104Dcf8CmpdTypeArrRegisterNb < 0) {
       throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), s104Dcf8CmpdTypeArrRegisterNb ->"+s104Dcf8CmpdTypeArrRegisterNb);
     }
@@ -995,6 +994,11 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
       final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
 
+      //final int s104Dcf8CmpdTypeArrRegisterNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
+      //if (s104Dcf8CmpdTypeArrRegisterNb < 0) {
+      //  throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), s104Dcf8CmpdTypeArrRegisterNb ->"+s104Dcf8CmpdTypeArrRegisterNb);
+      //}
+
       hdfqlCmdStatus= HDFql.execute("SELECT FROM DATASET \""+valuesDSetIdInGrp+"\" INTO MEMORY " + s104Dcf8CmpdTypeArrRegisterNb);
 
       if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
@@ -1040,8 +1044,10 @@ abstract public class WLToolsIO implements IWLToolsIO {
       
     } // --- Loop block on all the ship channel point locations 
 
+    // --- Avoid JNI calls SEGFAULTs with HDFql.variableUnregister(Object obj)
     HDFql.variableUnregister(s104Dcf8CmpdTypeArrRegisterNb);
 
+    // --- HDFql.variableUnregister(Object obj) seems to be buggy and would cause intermittent SEGFAULTs
     //hdfqlCmdStatus= HDFql.variableUnregister(s104Dcf8CmpdTypeArray);
     //if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
     //  throw new RuntimeException(mmi+"Problem with HDFql.unregisterVariable(registerNb)!!, hdfqlCmdStatus="+hdfqlCmdStatus);
