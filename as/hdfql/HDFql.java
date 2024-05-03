@@ -31,7 +31,13 @@ public class HDFql implements HDFqlConstants {
 
 		static
 		{
-			Runtime.getRuntime().addShutdownHook(new Thread(()->variableUnregisterAll()));
+                        //--- It seems that this shutdown hook is causing some elusive SIGSEGV problems that can be undetected
+                        //    for some time and are showing up randomly in the exec runs. Moreover, those problems do no happen
+                        //    if we use a large amount (>~8Gb) of RAM for the exec runs but are showing up when the RAM used 
+                        //    is small (<4.5Gb). It could possibly be related to some attempt(s) to free memory that has already
+                        //    been freed.
+			//Runtime.getRuntime().addShutdownHook(new Thread(()->variableUnregisterAll()));
+
 			setEnvironment();
 		}
 

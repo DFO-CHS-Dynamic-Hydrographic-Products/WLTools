@@ -1027,7 +1027,6 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	final MeasurementCustom mcAtInstant= new MeasurementCustom( fmfInstants[instantIdx].plusSeconds(0L),
 								    Double.valueOf(s104CmpTypeAtInstant.getWaterLevelHeight()),
 								    Double.valueOf(s104CmpTypeAtInstant.getUncertainty()) ) ;
-
 	// --- No need to use the instantIdx itself here but
 	//     there is no significant performance degradation
 	//     compared to the simple add() without an index.
