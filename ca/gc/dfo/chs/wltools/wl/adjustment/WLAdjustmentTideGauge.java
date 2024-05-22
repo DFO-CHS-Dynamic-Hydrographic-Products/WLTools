@@ -657,7 +657,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     slog.info(mmi+"lastAdjFMFWLUncertainty="+lastAdjFMFWLUncertainty);
 
     slog.info(mmi+"Get simple stats for the adjFMF data");
-    final MeasurementCustom adjFMFMcbStatsMc= MeasurementCustomBundle.getSimpleStats(adjFMFMcb,null);
+    final MeasurementCustom adjFMFMcbStatsMc= MeasurementCustomBundle.getSimpleStats(adjFMFMcb, null, false);
 
     if (adjFMFMcbStatsMc.getUncertainty() < INumberCrunching.STD_DEV_MIN_VALUE) {
       throw new RuntimeException(mmi+"Std dev value too small for the adjFMF data !");
@@ -671,7 +671,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 	TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).subSet(leastRecentAdjFMFInstant, true, mostRecentAdjFMFInstant, true);
 
     slog.info(mmi+"Get simple stats for the WL pred. data");
-    final MeasurementCustom predStatsMc= MeasurementCustomBundle.getSimpleStats(wlPredMCB, instantsForPredStats);
+    final MeasurementCustom predStatsMc= MeasurementCustomBundle.getSimpleStats(wlPredMCB, instantsForPredStats, false);
 
     if (predStatsMc.getUncertainty() < INumberCrunching.STD_DEV_MIN_VALUE) {
       throw new RuntimeException(mmi+"Std dev value too small for the WL pred. data!");

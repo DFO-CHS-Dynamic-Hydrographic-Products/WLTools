@@ -233,8 +233,10 @@ final public class MeasurementCustomBundle {
      return (maxTSDiff <= maxTimeDiffSeconds) ? retMCObj : null;
   }
 
-  // --
-  static final public MeasurementCustom getSimpleStats(final MeasurementCustomBundle mcb, final SortedSet<Instant> instantsToUse) {
+  // --- NOTE: if obsData is true then we just skip missing data but we need to raise an
+  //           exception if the data in the MeasurementCustomBundle object is not obs. data.
+  static final public MeasurementCustom
+     getSimpleStats(final MeasurementCustomBundle mcb, final SortedSet<Instant> instantsToUse, final boolean obsData) {
 
     final String mmi= "getSimpleStats: ";
       
@@ -264,13 +266,21 @@ final public class MeasurementCustomBundle {
     // ---
     for (final Instant mcInstant: instantsForIter) {
 
-      try {
-	mcb.getAtThisInstant(mcInstant);
-      } catch (NullPointerException npe) {
-	throw new RuntimeException(mmi+"mcInstant key not found in mcb!");
+      MeasurementCustom mcLocal= mcb.getAtThisInstant(mcInstant);
+
+      if (mcLocal == null) {
+
+        if (!obsData) {
+	  throw new RuntimeException(mmi+"mcInstant key -> "+mcInstant.toString()+" not found in mcb!");
+	  
+        } else {
+	  slog.warn(mmi+"mcInstant key -> "+mcInstant.toString()+" not found in mcb!");
+	  continue;
+	}
       }
 
-      final double mcValue= mcb.getAtThisInstant(mcInstant).getValue();
+      final double mcValue= mcLocal.getValue();
+      //final double mcValue= mcb.getAtThisInstant(mcInstant).getValue();
         
       mcValuesAvgAcc += mcValue;
       mcValuesSquAcc += mcValue*mcValue;
