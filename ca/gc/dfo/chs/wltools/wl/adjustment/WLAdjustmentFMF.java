@@ -577,7 +577,12 @@ abstract public class WLAdjustmentFMF
 	slog.info(mmi+"wloStatsMc.getUncertainty()="+wloStatsMc.getUncertainty());
 	//slog.info(mmi+"wloStatsMc="+wloStatsMc.toString());
 
-	//final MeasurementCustomBundle nowcastsMcb=
+	final MeasurementCustomBundle nowcastMcb= new MeasurementCustomBundle(this.nearestModelNowcastData.get(wlLocationIdentity));
+
+	final MeasurementCustom nowcastStatsMc= MeasurementCustomBundle.getSimpleStats(nowcastMcb, m2WrapAroundWLODataInPast, false);
+
+	slog.info(mmi+"nowcastStatsMc.getValue()="+nowcastStatsMc.getValue());
+	slog.info(mmi+"nowcastStatsMc.getUncertainty()="+nowcastStatsMc.getUncertainty());
 	
       } else {
          slog.info(mmi+"Not enough WLO data -> "+m2WrapAroundWLODataInPast.size()+
