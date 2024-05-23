@@ -577,12 +577,16 @@ abstract public class WLAdjustmentFMF
 	slog.info(mmi+"wloStatsMc.getUncertainty()="+wloStatsMc.getUncertainty());
 	//slog.info(mmi+"wloStatsMc="+wloStatsMc.toString());
 
-	slog.info(mmi+"this.nearestModelNowcastData.get(wlLocationIdentity).size()="+this.nearestModelNowcastData.get(wlLocationIdentity).size());
-        slog.info(mmi+"Debug exit 0");
-        System.exit(0);  	
+	slog.info(mmi+"this.nearestModelNowcastData.get(wlLocationIdentity).size()="+this.nearestModelNowcastData.get(wlLocationIdentity).size());	
 
 	final MeasurementCustomBundle nowcastMcb= new MeasurementCustomBundle(this.nearestModelNowcastData.get(wlLocationIdentity));
 
+	slog.info(mmi+"nowcastMcb.getMostRecentInstantCopy()="+nowcastMcb.getMostRecentInstantCopy().toString());
+	slog.info(mmi+"nowcastMcb.getLeastRecentInstantCopy()="+nowcastMcb.getLeastRecentInstantCopy().toString());
+	
+        slog.info(mmi+"Debug exit 0");
+        System.exit(0);  
+	
 	final MeasurementCustom nowcastStatsMc= MeasurementCustomBundle.getSimpleStats(nowcastMcb, m2WrapAroundWLODataInPast, false);
 
 	slog.info(mmi+"nowcastStatsMc.getValue()="+nowcastStatsMc.getValue());
