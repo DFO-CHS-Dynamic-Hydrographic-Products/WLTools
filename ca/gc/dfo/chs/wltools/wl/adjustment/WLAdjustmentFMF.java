@@ -573,7 +573,11 @@ abstract public class WLAdjustmentFMF
 
 	final MeasurementCustom wloStatsMc= MeasurementCustomBundle.getSimpleStats(this.mcbWLO, m2WrapAroundWLODataInPast, true);
 
-	slog.info(mmi+"wloStatsMc="+wloStatsMc.toString());
+	slog.info(mmi+"wloStatsMc.getValue()="+wloStatsMc.getValue());
+	slog.info(mmi+"wloStatsMc.getUncertainty()="+wloStatsMc.getUncertainty());
+	//slog.info(mmi+"wloStatsMc="+wloStatsMc.toString());
+
+	//final MeasurementCustomBundle nowcastsMcb=
 	
       } else {
          slog.info(mmi+"Not enough WLO data -> "+m2WrapAroundWLODataInPast.size()+
