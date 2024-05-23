@@ -550,8 +550,9 @@ abstract public class WLAdjustmentFMF
       // --- Now check if we have enough WLO data in the near past (-25h: M2 wrap-around cycle) to use to do the amplitude & avg. adjustment.
       //final long m2WrapAroundDurationSeconds= ITidal.M2_WRAP_AROUND_CYCLE_HOURS * SECONDS_PER_HOUR;
 
+      // --- Add one hour to ITidal.M2_WRAP_AROUND_CYCLE_HOURS for safety
       final Instant m2WrapAroundInstantInPast= this.mostRecentWLOInstant.
-	minusSeconds( ITidal.M2_WRAP_AROUND_CYCLE_HOURS * SECONDS_PER_HOUR);
+	minusSeconds( (ITidal.M2_WRAP_AROUND_CYCLE_HOURS + 1L)* SECONDS_PER_HOUR);
 
       slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
       slog.info(mmi+"m2WrapAroundInstantInPast="+m2WrapAroundInstantInPast.toString());
@@ -559,7 +560,25 @@ abstract public class WLAdjustmentFMF
       final SortedSet<Instant> m2WrapAroundWLODataInPast=
 	new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).tailSet(m2WrapAroundInstantInPast);
 
+      // --- Assuming here that the WLO data has been decimated using the same time intervall
+      //     in seconds as for the FMF data.
+      final long minNbOfWLO= ITidal.M2_WRAP_AROUND_CYCLE_HOURS*SECONDS_PER_HOUR/this.fmfDataTimeIntervalSeconds;
+
+      slog.info(mmi+"minNbOfWLO="+minNbOfWLO);
       slog.info(mmi+"m2WrapAroundWLODataInPast.size()="+m2WrapAroundWLODataInPast.size());
+
+      if (m2WrapAroundWLODataInPast.size() >= minNbOfWLO) {
+	  
+	slog.info(mmi+"Will use stats from the WLO data to the adjust FMF amplitude & avg. data");
+
+	final MeasurementCustom wloStatsMc= MeasurementCustomBundle.getSimpleStats(this.mcbWLO, m2WrapAroundWLODataInPast, true);
+
+	slog.info(mmi+"wloStatsMc="+wloStatsMc.toString());
+	
+      } else {
+         slog.info(mmi+"Not enough WLO data -> "+m2WrapAroundWLODataInPast.size()+
+		   " in the near past to  use stats from the WLO data to adjust FMF amplitude & avg. data");
+      }
        
       slog.info(mmi+"Debug exit 0");
       System.exit(0);  
