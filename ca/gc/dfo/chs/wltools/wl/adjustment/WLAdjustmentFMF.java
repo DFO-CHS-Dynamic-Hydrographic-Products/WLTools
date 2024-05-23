@@ -555,6 +555,12 @@ abstract public class WLAdjustmentFMF
 
       slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
       slog.info(mmi+"m2WrapAroundInstantInPast="+m2WrapAroundInstantInPast.toString());
+
+      final SortedSet<Instant> m2WrapAroundWLODataInPast=
+	new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).tailSet(m2WrapAroundInstantInPast);
+
+      slog.info(mmi+"m2WrapAroundWLODataInPast.size()="+m2WrapAroundWLODataInPast.size());
+       
       slog.info(mmi+"Debug exit 0");
       System.exit(0);  
       
