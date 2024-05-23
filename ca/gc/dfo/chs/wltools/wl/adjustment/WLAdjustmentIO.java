@@ -330,7 +330,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     // --- TODO: Use a Set<String> object instead of a Map<String, HBCoords> object
     //     because the HBCoords object is useless for this method.
 
-    final String mmi= "getH2D2ASCIIWLProbeData: ";
+    final String mmi= "getH2D2ASCIIWLProbesData: ";
 
     if (nbHoursInPastArg < 0) {
       throw new RuntimeException(mmi+"ERROR: nbHoursInPastArg must be >= 0 !!");
@@ -538,8 +538,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     slog.info(mmi+"Will return previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     return previousFMFASCIIDataFilePath;
   }

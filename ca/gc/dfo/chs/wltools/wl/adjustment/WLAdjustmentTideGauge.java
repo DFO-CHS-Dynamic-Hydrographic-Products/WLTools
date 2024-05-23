@@ -417,8 +417,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
 
         // --- Define the nb. hours in past to use depending on this.forecastAdjType:
-        //    0 means that it will be automagically be determined according to the FMF
-        //    data duration after its lead time
+        //     0 means that it will be automagically be determined according to the FMF
+        //     data duration after its lead time
         final long nbHoursInPastArg=
           (this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
 
