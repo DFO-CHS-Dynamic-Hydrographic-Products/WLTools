@@ -149,7 +149,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
   // --- Specific Map to store the nowcast (a.k.a. analysis) data at the
   //     the ship channel locations that are the nearest to the tide gauges.
-  protected Map<String, List<MeasurementCustom>> nearestModelNowcastData= null;
+  protected Map<String, List<MeasurementCustom>> nearestModelNowcastData= new Map<String, List<MeasurementCustom>>();
     
   //protected FMS fmsObj= null;
   //protected FMSInput fmsInputObj= null;
@@ -373,10 +373,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       slog.info(mmi+"CHS TG:"+chsTGId+", ECCC TG Id:"+ecccTGId+
                " H2D2 data line index is="+tgDataColumnIndices.get(chsTGId));
 
-      // --- Create the Map entry for this CHS TG.
+      // --- Create the Map entry for this CHS TG. in the nearestModelData (FMF data per-se)
       //this.nearestModelData.get(fmfType.ordinal()).
       this.nearestModelData.get(fmfTypeIndex).
         put(chsTGId, new ArrayList<MeasurementCustom>() );
+
+      // --- Create the Map entry for this CHS TG. in the nearestModelNowcastData (nowcast data only)
+      this.nearestModelNowcastData.put(chsTGId, new ArrayList<MeasurementCustom>());    
     }
 
     //slog.info(mmi+"Debug System.exit(0)");
@@ -443,15 +446,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
        final Instant timeStampInstant= Instant.
          ofEpochSecond(Long.parseLong(inputDataLineSplit[timeStampColumnIndex]));
 
-       // --- Discard analysis-nowcast WL data (i.e. for timestamps smaller than zerothHourInstant)
-       if (timeStampInstant.compareTo(zeroThHourInstant) < 0 ) {
-          
-         //slog.info(mmi+"Skipping nowcast data at timestamp: "+timeStampInstant.toString());
-         //slog.info(mmi+"Debug System.exit(0)");
-         //System.exit(0);
-
-         continue;
-       }
+       // // --- Discard analysis-nowcast WL data (i.e. for timestamps smaller than zerothHourInstant)
+       // if (timeStampInstant.compareTo(zeroThHourInstant) < 0 ) {
+       //   //slog.info(mmi+"Skipping nowcast data at timestamp: "+timeStampInstant.toString());
+       //   //slog.info(mmi+"Debug System.exit(0)");
+       //   //System.exit(0);
+       //   continue;
+       // }
 
        // ---
        for (final String chsTGId: nearestsTGCoordsIds) {
@@ -462,8 +463,22 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
          //slog.info(mmi+"timeStampSeconds="+timeStampSeconds+", tgWLValue="+tgWLValue);
          //--- Store the H2D2 WLF value for this CHS TG for this timestamp.
          //this.nearestModelData.get(fmfType.ordinal()).get(chsTGId).
-         this.nearestModelData.get(fmfTypeIndex).get(chsTGId).
-           add( new MeasurementCustom(timeStampInstant, tgWLFValue, IWL.MAXIMUM_UNCERTAINTY_METERS) );
+
+	 final MeasurementCustom mcTmp= new MeasurementCustom(timeStampInstant, tgWLFValue, IWL.MAXIMUM_UNCERTAINTY_METERS);
+
+	 // BEFORE modif. related to nowcast data usage:
+	 //  if (timeStampInstant.compareTo(zeroThHourInstant) < 0 ) {
+	 if (timeStampInstant.compareTo(zeroThHourInstant) <= 0 ) {
+
+	   // --- in the nowcast data part.
+	   this.nearestModelNowcastData.get(chsTGId).add(mcTmp);
+	   
+	 } else {
+	     
+	   // --- in the FMF time part.
+	   this.nearestModelData.get(fmfTypeIndex).get(chsTGId).add(mcTmp);
+           //   add( new MeasurementCustom(timeStampInstant, tgWLFValue, IWL.MAXIMUM_UNCERTAINTY_METERS) );
+	 }
        }
 
        //slog.info(mmi+"Debug System.exit(0)");
@@ -471,7 +486,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     }
 
     // --- Get the the List<MeasurementCustom> objec of the 1st TG
-    //    to extract its timestamp info
+    //     to extract its timestamp info
     final List<MeasurementCustom> tg0McList= this.
       nearestModelData.get(fmfTypeIndex).get(nearestsTGCoordsIds.toArray()[0]);
       //nearestModelData.get(fmfType.ordinal()).get(nearestsTGCoordsIds.toArray()[0]);
