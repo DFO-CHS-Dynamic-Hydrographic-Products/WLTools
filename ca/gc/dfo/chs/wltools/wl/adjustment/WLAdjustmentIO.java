@@ -149,7 +149,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
   // --- Specific Map to store the nowcast (a.k.a. analysis) data at the
   //     the ship channel locations that are the nearest to the tide gauges.
-  protected Map<String, List<MeasurementCustom>> nearestModelNowcastData= new Map<String, List<MeasurementCustom>>();
+  protected Map<String, List<MeasurementCustom>> nearestModelNowcastData= new HashMap<String, List<MeasurementCustom>>();
     
   //protected FMS fmsObj= null;
   //protected FMSInput fmsInputObj= null;
@@ -538,8 +538,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     slog.info(mmi+"Will return previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     return previousFMFASCIIDataFilePath;
   }
