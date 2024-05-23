@@ -633,7 +633,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       
     } else  {
 
-	slog.warn(mmi+"No valid WLO data for tide gauge -> "+this.location.getIdentity()+" !!");
+       slog.warn(mmi+"No valid WLO data for tide gauge -> "+this.location.getIdentity()+" !!");
 	
     } // --- if (this.haveWLOData)
     
@@ -731,7 +731,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
       
-      //// --- One shot calculation for the WL pred. data adjustments.
+      //// --- One shot calculation for the WL pred. data adjustments for anplitude and avg..
       final double adjWLPredValue= nonAdjWLPredValue + timeDecayingFactWLV*(avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
       
       //double adjWLPredValue= nonAdjWLPredValue;
@@ -759,9 +759,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //System.exit(0);
 	
     }
-    
-    //slog.info(mmi+"Debug exit 0");
-    //System.exit(0);
+
+    slog.info(mmi+"After amp. + avg, adj"); 
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     //// --- Wrap the WL prediction data in a MeasurementCustomBundle object
     ////     to ensure to have time synchronization with the FMF WL adj. data

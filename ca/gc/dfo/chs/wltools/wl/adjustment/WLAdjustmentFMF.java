@@ -24,6 +24,7 @@ import javax.json.JsonReader;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
@@ -545,6 +546,18 @@ abstract public class WLAdjustmentFMF
       
       timeDepResidualsStats= this.getNewTimeDepResidualsStats(prevFMFASCIIDataFilePath,
 							      uniqueTGMapObj, mainJsonMapObj);
+
+      // --- Now check if we have enough WLO data in the near past (-25h: M2 wrap-around cycle) to use to do the amplitude & avg. adjustment.
+      //final long m2WrapAroundDurationSeconds= ITidal.M2_WRAP_AROUND_CYCLE_HOURS * SECONDS_PER_HOUR;
+
+      final Instant m2WrapAroundInstantInPast= this.mostRecentWLOInstant.
+	minusSeconds( ITidal.M2_WRAP_AROUND_CYCLE_HOURS * SECONDS_PER_HOUR);
+
+      slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
+      slog.info(mmi+"m2WrapAroundInstantInPast="+m2WrapAroundInstantInPast.toString());
+      slog.info(mmi+"Debug exit 0");
+      System.exit(0);  
+      
     } else if ( prevTimeDepResidualsStats != null) {
 
       slog.warn(mmi+"this.haveWLOData != true: Need to use the previous time dependant residuals stats");
@@ -793,8 +806,8 @@ abstract public class WLAdjustmentFMF
                                       timeDepResidualsStats, tgResidualsStatsIODirectory);
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
     
