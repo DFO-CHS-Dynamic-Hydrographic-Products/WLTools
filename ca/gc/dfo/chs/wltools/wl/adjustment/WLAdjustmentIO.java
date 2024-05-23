@@ -146,6 +146,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   //protected long obsDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
   protected long prdDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
   protected long fmfDataTimeIntervalSeconds= IWLStationPred.TIME_NOT_DEFINED;
+
+  // --- Specific Map to store the nowcast (a.k.a. analysis) data at the
+  //     the ship channel locations that are the nearest to the tide gauges.
+  protected Map<String, List<MeasurementCustom>> nearestModelNowcastData= null;
     
   //protected FMS fmsObj= null;
   //protected FMSInput fmsInputObj= null;
