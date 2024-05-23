@@ -289,6 +289,9 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
     // --- Write WL values ASCII file with gzip compression.
     WLToolsIO.writeGZippedFileFromString(spineASCIIFormatedWLValues.toString(), spineASCIIInputValuesFile + ".gz");
 
+    // --- remove the production of the ASCII file for the uncertainty data for now. 
+    spineASCIIFormatedUncertainties= null;
+
     // ---  Write the Spine ASCII formated uncertainties file if needed
     if (spineASCIIFormatedUncertainties != null) {
 	
