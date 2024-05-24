@@ -616,8 +616,8 @@ abstract public class WLAdjustmentFMF
 		   " in the near past to  use stats from the WLO data to adjust FMF amplitude & avg. data");
       }
        
-      slog.info(mmi+"Debug exit 0");
-      System.exit(0);  
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);  
       
     } else if ( prevTimeDepResidualsStats != null) {
 
@@ -855,8 +855,8 @@ abstract public class WLAdjustmentFMF
       this.locationAdjustedData.add(new MeasurementCustom( actualFMFInstant,
 							   adjustedFMFWLValue, timeDepResidualMc.getUncertainty() ));
       
-      //slog.info(mmi+"Debug exit 0");
-      //System.exit(0);
+      slog.info(mmi+"Debug exit 0");
+      System.exit(0);
       
     } // --- for (final Instant actualFMFInstant: actuFMFInstantsSet) loop block
 
