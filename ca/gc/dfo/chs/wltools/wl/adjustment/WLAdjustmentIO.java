@@ -379,7 +379,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         put(chsTGId, new ArrayList<MeasurementCustom>() );
 
       // --- Create the Map entry for this CHS TG. in the nearestModelNowcastData (nowcast data only)
-      this.nearestModelNowcastData.put(chsTGId, new ArrayList<MeasurementCustom>());    
+      //     but ony if the chsTGId key does not already exists.
+      if (!this.nearestModelNowcastData.containsKey(chsTGId)) {
+	this.nearestModelNowcastData.put(chsTGId, new ArrayList<MeasurementCustom>());
+      }
     }
 
     //slog.info(mmi+"Debug System.exit(0)");

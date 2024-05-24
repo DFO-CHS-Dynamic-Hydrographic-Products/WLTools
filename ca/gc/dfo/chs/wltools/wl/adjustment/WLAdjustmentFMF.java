@@ -584,8 +584,8 @@ abstract public class WLAdjustmentFMF
 	slog.info(mmi+"nowcastMcb.getMostRecentInstantCopy()="+nowcastMcb.getMostRecentInstantCopy().toString());
 	slog.info(mmi+"nowcastMcb.getLeastRecentInstantCopy()="+nowcastMcb.getLeastRecentInstantCopy().toString());
 	
-        slog.info(mmi+"Debug exit 0");
-        System.exit(0);  
+        //slog.info(mmi+"Debug exit 0");
+        //System.exit(0);  
 	
 	final MeasurementCustom nowcastStatsMc= MeasurementCustomBundle.getSimpleStats(nowcastMcb, m2WrapAroundWLODataInPast, false);
 
