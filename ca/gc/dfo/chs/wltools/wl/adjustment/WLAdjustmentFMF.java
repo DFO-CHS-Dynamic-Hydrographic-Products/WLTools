@@ -558,21 +558,25 @@ abstract public class WLAdjustmentFMF
       
       slog.info(mmi+"mostRecentNowcastDataInstant="+mostRecentNowcastDataInstant.toString());
       //slog.info(mmi+"nowcastMcb.getLeastRecentInstantCopy()="+nowcastMcb.getLeastRecentInstantCopy().toString());
+
+      // --- ~75 hours
+      final long nbHoursInPastForStats= 3L*ITidal.M2_WRAP_AROUND_CYCLE_HOURS;
       
-      // --- Add one hour to ITidal.M2_WRAP_AROUND_CYCLE_HOURS for safety
+      // --- Add one hour to 2*ITidal.M2_WRAP_AROUND_CYCLE_HOURS for safety
       final Instant m2WrapAroundInstantInPast= mostRecentNowcastDataInstant. //this.mostRecentWLOInstant.
-	minusSeconds( (ITidal.M2_WRAP_AROUND_CYCLE_HOURS + 1L)* SECONDS_PER_HOUR);
+	minusSeconds( (nbHoursInPastForStats + 1L)* SECONDS_PER_HOUR);
 
       //slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
       slog.info(mmi+"m2WrapAroundInstantInPast="+m2WrapAroundInstantInPast.toString());
 
-      //final SortedSet<Instant> m2WrapAroundWLODataInPast=
+      // --- Get the subset of Instant objects that are between the m2WrapAroundInstantInPast and the
+      //     mostRecentNowcastDataInstant (inclusive) for the WLO data
       final NavigableSet<Instant> m2WrapAroundWLODataInPast=
 	  new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).subSet(m2WrapAroundInstantInPast, true, mostRecentNowcastDataInstant, true);
 
       // --- Assuming here that the WLO data has been decimated using the same time intervall
       //     in seconds as for the FMF data.
-      final long minNbOfWLO= (ITidal.M2_WRAP_AROUND_CYCLE_HOURS*SECONDS_PER_HOUR)/this.fmfDataTimeIntervalSeconds;
+      final long minNbOfWLO= (nbHoursInPastForStats*SECONDS_PER_HOUR)/this.fmfDataTimeIntervalSeconds;
 
       slog.info(mmi+"minNbOfWLO="+minNbOfWLO);
       slog.info(mmi+"m2WrapAroundWLODataInPast.size()="+m2WrapAroundWLODataInPast.size());
@@ -599,6 +603,8 @@ abstract public class WLAdjustmentFMF
 
 	slog.info(mmi+"nowcastStatsMc avg.="+nowcastStatsMc.getValue());
 	slog.info(mmi+"nowcastStatsMc std. dev="+nowcastStatsMc.getUncertainty());
+
+	
 	
       } else {
          slog.info(mmi+"Not enough WLO data -> "+m2WrapAroundWLODataInPast.size()+
