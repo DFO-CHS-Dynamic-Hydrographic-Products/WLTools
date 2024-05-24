@@ -538,7 +538,12 @@ abstract public class WLAdjustmentFMF
     //  --- Define the local timeDepResidualsStats Map object that will be used
     //	    for the FMF WL data adjustment (null at this point as default)
     Map<Long, MeasurementCustom> timeDepResidualsStats= null;
-   
+
+    boolean doAmpAvgAdj= false;
+    double  nowcastDataAvg= 0.0;
+    double  wloNowcastAvgDiff= 0.0;
+    double  wloNowcastAmpAdjFactor= 1.0;
+    
     // --- Produce the new time dependant residuals stats if we have WLO data.
     if (this.haveWLOData) {
 
@@ -571,8 +576,8 @@ abstract public class WLAdjustmentFMF
 
       // --- Get the subset of Instant objects that are between the m2WrapAroundInstantInPast and the
       //     mostRecentNowcastDataInstant (inclusive) for the WLO data
-      final NavigableSet<Instant> m2WrapAroundWLODataInPast=
-	  new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).subSet(m2WrapAroundInstantInPast, true, mostRecentNowcastDataInstant, true);
+      final NavigableSet<Instant> m2WrapAroundWLODataInPast= new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).
+	 subSet(m2WrapAroundInstantInPast, true, mostRecentNowcastDataInstant, true);
 
       // --- Assuming here that the WLO data has been decimated using the same time intervall
       //     in seconds as for the FMF data.
@@ -581,7 +586,10 @@ abstract public class WLAdjustmentFMF
       slog.info(mmi+"minNbOfWLO="+minNbOfWLO);
       slog.info(mmi+"m2WrapAroundWLODataInPast.size()="+m2WrapAroundWLODataInPast.size());
 
+      // --- Need to have a min. nb. of obs to do the amp. & avg. adjustment of the FMF here
       if (m2WrapAroundWLODataInPast.size() >= minNbOfWLO) {
+
+	doAmpAvgAdj= true;  
 	  
 	slog.info(mmi+"Will use stats from the WLO data to the adjust FMF amplitude & avg. data");
 
@@ -589,22 +597,19 @@ abstract public class WLAdjustmentFMF
 
 	slog.info(mmi+"wloStatsMc avg.="+wloStatsMc.getValue());
 	slog.info(mmi+"wloStatsMc std. dev. ="+wloStatsMc.getUncertainty());
-	//slog.info(mmi+"wloStatsMc="+wloStatsMc.toString());
 
-	//slog.info(mmi+"this.nearestModelNowcastData.get(wlLocationIdentity).size()="+this.nearestModelNowcastData.get(wlLocationIdentity).size());	
-	//final MeasurementCustomBundle nowcastMcb= new MeasurementCustomBundle(this.nearestModelNowcastData.get(wlLocationIdentity));
-	//slog.info(mmi+"nowcastMcb.getMostRecentInstantCopy()="+nowcastMcb.getMostRecentInstantCopy().toString());
-	//slog.info(mmi+"nowcastMcb.getLeastRecentInstantCopy()="+nowcastMcb.getLeastRecentInstantCopy().toString());
-	//slog.info(mmi+"nowcastMcb.size()="+nowcastMcb.size());
-        //slog.info(mmi+"Debug exit 0");
-        //System.exit(0);  
-	
 	final MeasurementCustom nowcastStatsMc= MeasurementCustomBundle.getSimpleStats(nowcastMcb, m2WrapAroundWLODataInPast, false);
 
+        nowcastDataAvg= nowcastStatsMc.getValue();
+	
 	slog.info(mmi+"nowcastStatsMc avg.="+nowcastStatsMc.getValue());
 	slog.info(mmi+"nowcastStatsMc std. dev="+nowcastStatsMc.getUncertainty());
 
-	
+	wloNowcastAvgDiff= wloStatsMc.getValue() - nowcastDataAvg;
+	wloNowcastAmpAdjFactor= 1.0 - wloStatsMc.getUncertainty()/nowcastStatsMc.getUncertainty();
+
+	slog.info(mmi+"wloNowcastAvgDiff="+wloNowcastAvgDiff);
+	slog.info(mmi+"wloNowcastAmpAdjFactor="+wloNowcastAmpAdjFactor);
 	
       } else {
          slog.info(mmi+"Not enough WLO data -> "+m2WrapAroundWLODataInPast.size()+
@@ -827,12 +832,24 @@ abstract public class WLAdjustmentFMF
       //     time dependent residual for this time offset.
       //actuFMFMc.setUncertainty(timeDepResidualMc.getUncertainty());
 
-      final double adjustedFMFWLValue= actuFMFMc.getValue() + timeDepResidualMc.getValue();
+      //nonAdjWLPredValue + timeDecayingFactWLV*(avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
+      double fmfAdjtmp= actuFMFMc.getValue();
+
+      // --- Amp. & avg, adj,
+      if (doAmpAvgAdj) {
+        fmfAdjtmp= fmfAdjtmp + wloNowcastAvgDiff - (fmfAdjtmp - nowcastDataAvg)*wloNowcastAmpAdjFactor;
+      }
+
+      final double adjustedFMFWLValue= fmfAdjtmp + timeDepResidualMc.getValue();
+  
+      // OLD final double adjustedFMFWLValue= actuFMFMc.getValue() + timeDepResidualMc.getValue();
+      
       //final double adjustedFMFWLUncertainty= timeDepResidualMc.getUncertainty();
 
-      //slog.info(mmi+"actuFMFMc value bef adj.="+actuFMFMc.getValue());
-      //slog.info(mmi+"timeDepResidualAvg="+timeDepResidualMc.getValue());
-      //slog.info(mmi+"adjustedFMFWLValue="+adjustedFMFWLValue);
+      slog.info(mmi+"actuFMFMc value bef adj.="+actuFMFMc.getValue());
+      slog.info(mmi+"timeDepResidualAvg="+timeDepResidualMc.getValue());
+      slog.info(mmi+"fmfAdjtmp="+fmfAdjtmp);
+      slog.info(mmi+"adjustedFMFWLValue="+adjustedFMFWLValue);
       //slog.info(mmi+"timeDepResidual uncertainty="+timeDepResidualMc.getUncertainty());
       
       this.locationAdjustedData.add(new MeasurementCustom( actualFMFInstant,
@@ -862,8 +879,8 @@ abstract public class WLAdjustmentFMF
                                       timeDepResidualsStats, tgResidualsStatsIODirectory);
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug exit 0");
-    //System.exit(0);
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     return this;
     
