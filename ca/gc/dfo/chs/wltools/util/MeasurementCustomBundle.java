@@ -254,7 +254,8 @@ final public class MeasurementCustomBundle {
       throw new RuntimeException(mmi+"MeasurementCustomBundle mcbSize must be at least 2!"); 	
     }
 
-    double nbMc= 0.0;
+    //double nbMc= 0.0;
+    int nbMc= 0;
     double mcValuesAvgAcc= 0.0;
     double mcValuesSquAcc= 0.0;
 
@@ -285,24 +286,32 @@ final public class MeasurementCustomBundle {
       mcValuesAvgAcc += mcValue;
       mcValuesSquAcc += mcValue*mcValue;
 
-      nbMc += 1.0;
+      nbMc += 1;
 
       min= (mcValue < min) ? mcValue: min;
       max= (mcValue > max) ? mcValue: max;
+    }
+
+    // --- Avoid division by zero
+    if (nbMc < 1) {
+      throw new RuntimeException(mmi+" cannot have nbMc < 1 here !!");
     }
 
     slog.info(mmi+"nbMc="+nbMc);
     slog.info(mmi+"min="+min);
     slog.info(mmi+"max="+max);
 
-    final double mcValuesArithAvg= mcValuesAvgAcc/nbMc;
+    final double nbMcDble= (double)nbMc;
+    
+    final double mcValuesArithAvg= mcValuesAvgAcc/nbMcDble;
 
     // --- Almost impossible! but we never know!
-    if (mcValuesArithAvg*mcValuesArithAvg > mcValuesSquAcc/nbMc) {
+    if (mcValuesArithAvg*mcValuesArithAvg > mcValuesSquAcc/nbMcDble) {
+	
       throw new RuntimeException(mmi+"cannot have mcValuesArithAvg*mcValuesArithAvg > mcValuesSquAcc/nbMc for the std dev calculation!");
     }
     
-    final double mcValuesStdDev= Math.sqrt(mcValuesSquAcc/nbMc - mcValuesArithAvg*mcValuesArithAvg);
+    final double mcValuesStdDev= Math.sqrt(mcValuesSquAcc/nbMcDble - mcValuesArithAvg*mcValuesArithAvg);
 
     //if ( < Double.MIN_VALUE)
 
