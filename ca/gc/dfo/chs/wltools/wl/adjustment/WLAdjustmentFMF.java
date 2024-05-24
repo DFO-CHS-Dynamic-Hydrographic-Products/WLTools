@@ -550,19 +550,29 @@ abstract public class WLAdjustmentFMF
       // --- Now check if we have enough WLO data in the near past (-25h: M2 wrap-around cycle) to use to do the amplitude & avg. adjustment.
       //final long m2WrapAroundDurationSeconds= ITidal.M2_WRAP_AROUND_CYCLE_HOURS * SECONDS_PER_HOUR;
 
+      // --- Process the nowcast data.
+      slog.info(mmi+"this.nearestModelNowcastData.get(wlLocationIdentity).size()="+this.nearestModelNowcastData.get(wlLocationIdentity).size());	
+      final MeasurementCustomBundle nowcastMcb= new MeasurementCustomBundle(this.nearestModelNowcastData.get(wlLocationIdentity));
+
+      final Instant mostRecentNowcastDataInstant= nowcastMcb.getMostRecentInstantCopy();
+      
+      slog.info(mmi+"mostRecentNowcastDataInstant="+mostRecentNowcastDataInstant.toString());
+      //slog.info(mmi+"nowcastMcb.getLeastRecentInstantCopy()="+nowcastMcb.getLeastRecentInstantCopy().toString());
+      
       // --- Add one hour to ITidal.M2_WRAP_AROUND_CYCLE_HOURS for safety
-      final Instant m2WrapAroundInstantInPast= this.mostRecentWLOInstant.
+      final Instant m2WrapAroundInstantInPast= mostRecentNowcastDataInstant. //this.mostRecentWLOInstant.
 	minusSeconds( (ITidal.M2_WRAP_AROUND_CYCLE_HOURS + 1L)* SECONDS_PER_HOUR);
 
-      slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
+      //slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
       slog.info(mmi+"m2WrapAroundInstantInPast="+m2WrapAroundInstantInPast.toString());
 
-      final SortedSet<Instant> m2WrapAroundWLODataInPast=
-	new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).tailSet(m2WrapAroundInstantInPast);
+      //final SortedSet<Instant> m2WrapAroundWLODataInPast=
+      final NavigableSet<Instant> m2WrapAroundWLODataInPast=
+	  new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).subSet(m2WrapAroundInstantInPast, true, mostRecentNowcastDataInstant, true);
 
       // --- Assuming here that the WLO data has been decimated using the same time intervall
       //     in seconds as for the FMF data.
-      final long minNbOfWLO= ITidal.M2_WRAP_AROUND_CYCLE_HOURS*SECONDS_PER_HOUR/this.fmfDataTimeIntervalSeconds;
+      final long minNbOfWLO= (ITidal.M2_WRAP_AROUND_CYCLE_HOURS*SECONDS_PER_HOUR)/this.fmfDataTimeIntervalSeconds;
 
       slog.info(mmi+"minNbOfWLO="+minNbOfWLO);
       slog.info(mmi+"m2WrapAroundWLODataInPast.size()="+m2WrapAroundWLODataInPast.size());
@@ -573,24 +583,22 @@ abstract public class WLAdjustmentFMF
 
 	final MeasurementCustom wloStatsMc= MeasurementCustomBundle.getSimpleStats(this.mcbWLO, m2WrapAroundWLODataInPast, true);
 
-	slog.info(mmi+"wloStatsMc.getValue()="+wloStatsMc.getValue());
-	slog.info(mmi+"wloStatsMc.getUncertainty()="+wloStatsMc.getUncertainty());
+	slog.info(mmi+"wloStatsMc avg.="+wloStatsMc.getValue());
+	slog.info(mmi+"wloStatsMc std. dev. ="+wloStatsMc.getUncertainty());
 	//slog.info(mmi+"wloStatsMc="+wloStatsMc.toString());
 
-	slog.info(mmi+"this.nearestModelNowcastData.get(wlLocationIdentity).size()="+this.nearestModelNowcastData.get(wlLocationIdentity).size());	
-
-	final MeasurementCustomBundle nowcastMcb= new MeasurementCustomBundle(this.nearestModelNowcastData.get(wlLocationIdentity));
-
-	slog.info(mmi+"nowcastMcb.getMostRecentInstantCopy()="+nowcastMcb.getMostRecentInstantCopy().toString());
-	slog.info(mmi+"nowcastMcb.getLeastRecentInstantCopy()="+nowcastMcb.getLeastRecentInstantCopy().toString());
-	
+	//slog.info(mmi+"this.nearestModelNowcastData.get(wlLocationIdentity).size()="+this.nearestModelNowcastData.get(wlLocationIdentity).size());	
+	//final MeasurementCustomBundle nowcastMcb= new MeasurementCustomBundle(this.nearestModelNowcastData.get(wlLocationIdentity));
+	//slog.info(mmi+"nowcastMcb.getMostRecentInstantCopy()="+nowcastMcb.getMostRecentInstantCopy().toString());
+	//slog.info(mmi+"nowcastMcb.getLeastRecentInstantCopy()="+nowcastMcb.getLeastRecentInstantCopy().toString());
+	//slog.info(mmi+"nowcastMcb.size()="+nowcastMcb.size());
         //slog.info(mmi+"Debug exit 0");
         //System.exit(0);  
 	
 	final MeasurementCustom nowcastStatsMc= MeasurementCustomBundle.getSimpleStats(nowcastMcb, m2WrapAroundWLODataInPast, false);
 
-	slog.info(mmi+"nowcastStatsMc.getValue()="+nowcastStatsMc.getValue());
-	slog.info(mmi+"nowcastStatsMc.getUncertainty()="+nowcastStatsMc.getUncertainty());
+	slog.info(mmi+"nowcastStatsMc avg.="+nowcastStatsMc.getValue());
+	slog.info(mmi+"nowcastStatsMc std. dev="+nowcastStatsMc.getUncertainty());
 	
       } else {
          slog.info(mmi+"Not enough WLO data -> "+m2WrapAroundWLODataInPast.size()+
