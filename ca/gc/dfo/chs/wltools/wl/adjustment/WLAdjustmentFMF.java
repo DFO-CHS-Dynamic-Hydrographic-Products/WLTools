@@ -516,8 +516,8 @@ abstract public class WLAdjustmentFMF
     final int wlLocationIdentityIntValue= Integer.parseInt(wlLocationIdentity.substring(1));
 
     slog.info(mmi+"wlLocationIdentityIntValue="+wlLocationIdentityIntValue);
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0); 
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0); 
     
     // --- Read the previous time dependent residuals stats that is stored
     //     on disk first: We could need to use it in case:
@@ -640,6 +640,11 @@ abstract public class WLAdjustmentFMF
       // --- Need to allocate timeDepResidualsStats here for cold starts.
       timeDepResidualsStats= new HashMap<Long, MeasurementCustom>();
     }
+
+    // --- NOTE: the amp. + avg. adjust using WLO data is applied only for TGs that are downstream of 03365
+    doAmpAvgAdj= (wlLocationIdentityIntValue <= FIRST_TG_WITH_WLO_AMP_AVG_ADJUST) ? true : false;
+
+    slog.info(mmi+"doAmpAvgAdj="+doAmpAvgAdj);
 
     // --- Need to be sure to have at least a MeasurementCustom object initialized with zero values
     //     at the time offset 0L in the timeDepResidualsStats Map for cold starts OR if it is
@@ -844,9 +849,8 @@ abstract public class WLAdjustmentFMF
       //double fmfAdjtmp= actuFMFMc.getValue();
       double adjustedFMFWLValue= actuFMFMc.getValue();
 
-      // --- Amp. & avg, adj, (NOTE: no time decay factor application here.)
-      //     NOTE: it is applied only for TGs that are downstream of 03365
-      if (doAmpAvgAdj && (wlLocationIdentityIntValue <= FIRST_TG_WITH_WLO_AMP_AVG_ADJUST)) {
+      // --- Amp. & avg, adj, done using WLO data (NOTE: no time decay factor application here.)
+      if (doAmpAvgAdj) {
         adjustedFMFWLValue += wloNowcastAvgDiff - (adjustedFMFWLValue - nowcastDataAvg)*wloNowcastAmpAdjFactor;
 	
       } else {
