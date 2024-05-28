@@ -870,9 +870,8 @@ abstract public class WLAdjustmentFMF
       
       this.locationAdjustedData.add(new MeasurementCustom( actualFMFInstant,
 							   adjustedFMFWLValue, timeDepResidualMc.getUncertainty() ));
-      
-      slog.info(mmi+"Debug exit 0");
-      System.exit(0);
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);
       
     } // --- for (final Instant actualFMFInstant: actuFMFInstantsSet) loop block
 
