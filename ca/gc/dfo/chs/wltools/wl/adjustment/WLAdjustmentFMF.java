@@ -862,10 +862,10 @@ abstract public class WLAdjustmentFMF
       // OLD final double adjustedFMFWLValue= actuFMFMc.getValue() + timeDepResidualMc.getValue();
       //final double adjustedFMFWLUncertainty= timeDepResidualMc.getUncertainty();
 
-      slog.info(mmi+"actuFMFMc value bef adj.="+actuFMFMc.getValue());
-      slog.info(mmi+"timeDepResidualAvg="+timeDepResidualMc.getValue());
+      //slog.info(mmi+"actuFMFMc value bef adj.="+actuFMFMc.getValue());
+      //slog.info(mmi+"timeDepResidualAvg="+timeDepResidualMc.getValue());
       //slog.info(mmi+"fmfAdjtmp="+fmfAdjtmp);
-      slog.info(mmi+"adjustedFMFWLValue="+adjustedFMFWLValue);
+      //slog.info(mmi+"adjustedFMFWLValue="+adjustedFMFWLValue);
       //slog.info(mmi+"timeDepResidual uncertainty="+timeDepResidualMc.getUncertainty());
       
       this.locationAdjustedData.add(new MeasurementCustom( actualFMFInstant,
@@ -894,8 +894,8 @@ abstract public class WLAdjustmentFMF
                                       timeDepResidualsStats, tgResidualsStatsIODirectory);
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     return this;
     
