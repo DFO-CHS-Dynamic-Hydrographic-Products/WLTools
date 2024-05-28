@@ -761,8 +761,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     }
 
     slog.info(mmi+"After amp. + avg, adj"); 
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     //// --- Wrap the WL prediction data in a MeasurementCustomBundle object
     ////     to ensure to have time synchronization with the FMF WL adj. data
