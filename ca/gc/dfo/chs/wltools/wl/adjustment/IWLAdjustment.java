@@ -11,6 +11,10 @@ import ca.gc.dfo.chs.wltools.util.ITimeMachine;
  */
 public interface IWLAdjustment extends ITimeMachine {
 
+  // --- The adjust. of the FMF for amplitude and average done using WLO data
+  //     is done only for TGs downstream of 03365
+  int FIRST_TG_WITH_WLO_AMP_AVG_ADJUST= 3360;
+
   // --- nb. of days in the future for the FMF data to have to ensure
   //     that we at least have 30 days for the interpolations.
   //     A warning is raised in the log if the nb. of days in the future

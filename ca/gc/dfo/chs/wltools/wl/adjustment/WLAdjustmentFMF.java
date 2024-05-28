@@ -511,6 +511,14 @@ abstract public class WLAdjustmentFMF
 
     slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
 
+    // --- Get rid of the useless (for what we want to do) 1st char of wlLocationIdentity
+    //     and get its integer value.
+    final int wlLocationIdentityIntValue= Integer.parseInt(wlLocationIdentity.substring(1));
+
+    slog.info(mmi+"wlLocationIdentityIntValue="+wlLocationIdentityIntValue);
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0); 
+    
     // --- Read the previous time dependent residuals stats that is stored
     //     on disk first: We could need to use it in case:
     //  
@@ -833,22 +841,26 @@ abstract public class WLAdjustmentFMF
       //actuFMFMc.setUncertainty(timeDepResidualMc.getUncertainty());
 
       //nonAdjWLPredValue + timeDecayingFactWLV*(avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
-      double fmfAdjtmp= actuFMFMc.getValue();
+      //double fmfAdjtmp= actuFMFMc.getValue();
+      double adjustedFMFWLValue= actuFMFMc.getValue();
 
-      // --- Amp. & avg, adj,
-      if (doAmpAvgAdj) {
-        fmfAdjtmp= fmfAdjtmp + wloNowcastAvgDiff - (fmfAdjtmp - nowcastDataAvg)*wloNowcastAmpAdjFactor;
+      // --- Amp. & avg, adj, (NOTE: no time decay factor application here.)
+      //     NOTE: it is applied only for TGs that are downstream of 03365
+      if (doAmpAvgAdj && (wlLocationIdentityIntValue <= FIRST_TG_WITH_WLO_AMP_AVG_ADJUST)) {
+        adjustedFMFWLValue += wloNowcastAvgDiff - (adjustedFMFWLValue - nowcastDataAvg)*wloNowcastAmpAdjFactor;
+	
+      } else {
+	// --- no Amp. & avg, adjust. but use the time dependant FMF errors stats here.
+        adjustedFMFWLValue += timeDepResidualMc.getValue();
       }
 
-      final double adjustedFMFWLValue= fmfAdjtmp + timeDepResidualMc.getValue();
-  
+      //final double adjustedFMFWLValue= fmfAdjtmp + timeDepResidualMc.getValue();
       // OLD final double adjustedFMFWLValue= actuFMFMc.getValue() + timeDepResidualMc.getValue();
-      
       //final double adjustedFMFWLUncertainty= timeDepResidualMc.getUncertainty();
 
       slog.info(mmi+"actuFMFMc value bef adj.="+actuFMFMc.getValue());
       slog.info(mmi+"timeDepResidualAvg="+timeDepResidualMc.getValue());
-      slog.info(mmi+"fmfAdjtmp="+fmfAdjtmp);
+      //slog.info(mmi+"fmfAdjtmp="+fmfAdjtmp);
       slog.info(mmi+"adjustedFMFWLValue="+adjustedFMFWLValue);
       //slog.info(mmi+"timeDepResidual uncertainty="+timeDepResidualMc.getUncertainty());
       
