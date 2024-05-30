@@ -376,7 +376,7 @@ abstract public class WLAdjustmentFMF
        if (!WLToolsIO.checkForFileExistence(prevFMFASCIIDataFilePathIter)) {
           
         slog.warn(mmi+"WARNING: H2D2 FMF input file -> "+prevFMFASCIIDataFilePathIter+
-                  " skipping it and need to stop the getNewTimeDepResidualsStats calculation here !!");
+                  " not found !! skipping it and need to stop the getNewTimeDepResidualsStats calculation here !!");
         break;  
       }
 	
