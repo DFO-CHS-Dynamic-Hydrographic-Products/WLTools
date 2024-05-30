@@ -597,15 +597,21 @@ abstract public class WLAdjustmentFMF
       // --- Need to have a min. nb. of obs to do the amp. & avg. adjustment of the FMF here
       if (m2WrapAroundWLODataInPast.size() >= minNbOfWLO) {
 
-	doAmpAvgAdj= true;  
+	  //doAmpAvgAdj= true;  
 	  
 	slog.info(mmi+"Will use stats from the WLO data to the adjust FMF amplitude & avg. data");
 
+	// --- Wa can have some missing WLO data so tell the MeasurementCustomBundle.getSimpleStats method
+	//    to simply skip the missing WLO (the number of missing WLO data should obviously be small compared
+	//    to m2WrapAroundWLODataInPast.size()
 	final MeasurementCustom wloStatsMc= MeasurementCustomBundle.getSimpleStats(this.mcbWLO, m2WrapAroundWLODataInPast, true);
 
 	slog.info(mmi+"wloStatsMc avg.="+wloStatsMc.getValue());
 	slog.info(mmi+"wloStatsMc std. dev. ="+wloStatsMc.getUncertainty());
 
+	// --- Here we need to check if we have all the nawcast data needed hence the false arg. to MeasurementCustomBundle.getSimpleStats
+	//     and it must crash if some nowcast data is missing.
+	//     NOTE: Maybe it would be doable to catch the error and simply do not do any amp. + avg. adjust. if it is the case??
 	final MeasurementCustom nowcastStatsMc= MeasurementCustomBundle.getSimpleStats(nowcastMcb, m2WrapAroundWLODataInPast, false);
 
         nowcastDataAvg= nowcastStatsMc.getValue();
@@ -618,6 +624,8 @@ abstract public class WLAdjustmentFMF
 
 	slog.info(mmi+"wloNowcastAvgDiff="+wloNowcastAvgDiff);
 	slog.info(mmi+"wloNowcastAmpAdjFactor="+wloNowcastAmpAdjFactor);
+
+        doAmpAvgAdj= true; 
 	
       } else {
          slog.info(mmi+"Not enough WLO data -> "+m2WrapAroundWLODataInPast.size()+
