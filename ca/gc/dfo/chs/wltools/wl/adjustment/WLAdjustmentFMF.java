@@ -24,6 +24,7 @@ import javax.json.JsonReader;
 
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
+import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
@@ -375,7 +376,7 @@ abstract public class WLAdjustmentFMF
        if (!WLToolsIO.checkForFileExistence(prevFMFASCIIDataFilePathIter)) {
           
         slog.warn(mmi+"WARNING: H2D2 FMF input file -> "+prevFMFASCIIDataFilePathIter+
-                  " skipping it and need to stop the getNewTimeDepResidualsStats calculation here !!");
+                  " not found !! skipping it and need to stop the getNewTimeDepResidualsStats calculation here !!");
         break;  
       }
 	
@@ -510,6 +511,14 @@ abstract public class WLAdjustmentFMF
 
     slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
 
+    // --- Get rid of the useless (for what we want to do) 1st char of wlLocationIdentity
+    //     and get its integer value.
+    final int wlLocationIdentityIntValue= Integer.parseInt(wlLocationIdentity.substring(1));
+
+    slog.info(mmi+"wlLocationIdentityIntValue="+wlLocationIdentityIntValue);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0); 
+    
     // --- Read the previous time dependent residuals stats that is stored
     //     on disk first: We could need to use it in case:
     //  
@@ -537,7 +546,12 @@ abstract public class WLAdjustmentFMF
     //  --- Define the local timeDepResidualsStats Map object that will be used
     //	    for the FMF WL data adjustment (null at this point as default)
     Map<Long, MeasurementCustom> timeDepResidualsStats= null;
-   
+
+    boolean doAmpAvgAdj= false;
+    double  nowcastDataAvg= 0.0;
+    double  wloNowcastAvgDiff= 0.0;
+    double  wloNowcastAmpAdjFactor= 1.0;
+    
     // --- Produce the new time dependant residuals stats if we have WLO data.
     if (this.haveWLOData) {
 
@@ -545,6 +559,82 @@ abstract public class WLAdjustmentFMF
       
       timeDepResidualsStats= this.getNewTimeDepResidualsStats(prevFMFASCIIDataFilePath,
 							      uniqueTGMapObj, mainJsonMapObj);
+
+      // --- Now check if we have enough WLO data in the near past (-25h: M2 wrap-around cycle) to use to do the amplitude & avg. adjustment.
+      //final long m2WrapAroundDurationSeconds= ITidal.M2_WRAP_AROUND_CYCLE_HOURS * SECONDS_PER_HOUR;
+
+      // --- Process the nowcast data.
+      slog.info(mmi+"this.nearestModelNowcastData.get(wlLocationIdentity).size()="+this.nearestModelNowcastData.get(wlLocationIdentity).size());	
+      final MeasurementCustomBundle nowcastMcb= new MeasurementCustomBundle(this.nearestModelNowcastData.get(wlLocationIdentity));
+
+      final Instant mostRecentNowcastDataInstant= nowcastMcb.getMostRecentInstantCopy();
+      
+      slog.info(mmi+"mostRecentNowcastDataInstant="+mostRecentNowcastDataInstant.toString());
+      //slog.info(mmi+"nowcastMcb.getLeastRecentInstantCopy()="+nowcastMcb.getLeastRecentInstantCopy().toString());
+
+      // --- ~75 hours
+      final long nbHoursInPastForStats= 3L*ITidal.M2_WRAP_AROUND_CYCLE_HOURS;
+      
+      // --- Add one hour to 2*ITidal.M2_WRAP_AROUND_CYCLE_HOURS for safety
+      final Instant m2WrapAroundInstantInPast= mostRecentNowcastDataInstant. //this.mostRecentWLOInstant.
+	minusSeconds( (nbHoursInPastForStats + 1L)* SECONDS_PER_HOUR);
+
+      //slog.info(mmi+"this.mostRecentWLOInstant="+this.mostRecentWLOInstant.toString());
+      slog.info(mmi+"m2WrapAroundInstantInPast="+m2WrapAroundInstantInPast.toString());
+
+      // --- Get the subset of Instant objects that are between the m2WrapAroundInstantInPast and the
+      //     mostRecentNowcastDataInstant (inclusive) for the WLO data
+      final NavigableSet<Instant> m2WrapAroundWLODataInPast= new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).
+	 subSet(m2WrapAroundInstantInPast, true, mostRecentNowcastDataInstant, true);
+
+      // --- Assuming here that the WLO data has been decimated using the same time intervall
+      //     in seconds as for the FMF data.
+      final long minNbOfWLO= (nbHoursInPastForStats*SECONDS_PER_HOUR)/this.fmfDataTimeIntervalSeconds;
+
+      slog.info(mmi+"minNbOfWLO="+minNbOfWLO);
+      slog.info(mmi+"m2WrapAroundWLODataInPast.size()="+m2WrapAroundWLODataInPast.size());
+
+      // --- Need to have a min. nb. of obs to do the amp. & avg. adjustment of the FMF here
+      if (m2WrapAroundWLODataInPast.size() >= minNbOfWLO) {
+
+	  //doAmpAvgAdj= true;  
+	  
+	slog.info(mmi+"Will use stats from the WLO data to the adjust FMF amplitude & avg. data");
+
+	// --- Wa can have some missing WLO data so tell the MeasurementCustomBundle.getSimpleStats method
+	//    to simply skip the missing WLO (the number of missing WLO data should obviously be small compared
+	//    to m2WrapAroundWLODataInPast.size()
+	final MeasurementCustom wloStatsMc= MeasurementCustomBundle.getSimpleStats(this.mcbWLO, m2WrapAroundWLODataInPast, true);
+
+	slog.info(mmi+"wloStatsMc avg.="+wloStatsMc.getValue());
+	slog.info(mmi+"wloStatsMc std. dev. ="+wloStatsMc.getUncertainty());
+
+	// --- Here we need to check if we have all the nawcast data needed hence the false arg. to MeasurementCustomBundle.getSimpleStats
+	//     and it must crash if some nowcast data is missing.
+	//     NOTE: Maybe it would be doable to catch the error and simply do not do any amp. + avg. adjust. if it is the case??
+	final MeasurementCustom nowcastStatsMc= MeasurementCustomBundle.getSimpleStats(nowcastMcb, m2WrapAroundWLODataInPast, false);
+
+        nowcastDataAvg= nowcastStatsMc.getValue();
+	
+	slog.info(mmi+"nowcastStatsMc avg.="+nowcastStatsMc.getValue());
+	slog.info(mmi+"nowcastStatsMc std. dev="+nowcastStatsMc.getUncertainty());
+
+	wloNowcastAvgDiff= wloStatsMc.getValue() - nowcastDataAvg;
+	wloNowcastAmpAdjFactor= 1.0 - wloStatsMc.getUncertainty()/nowcastStatsMc.getUncertainty();
+
+	slog.info(mmi+"wloNowcastAvgDiff="+wloNowcastAvgDiff);
+	slog.info(mmi+"wloNowcastAmpAdjFactor="+wloNowcastAmpAdjFactor);
+
+        doAmpAvgAdj= true; 
+	
+      } else {
+         slog.info(mmi+"Not enough WLO data -> "+m2WrapAroundWLODataInPast.size()+
+		   " in the near past to  use stats from the WLO data to adjust FMF amplitude & avg. data");
+      }
+       
+      //slog.info(mmi+"Debug exit 0");
+      //System.exit(0);  
+      
     } else if ( prevTimeDepResidualsStats != null) {
 
       slog.warn(mmi+"this.haveWLOData != true: Need to use the previous time dependant residuals stats");
@@ -558,6 +648,11 @@ abstract public class WLAdjustmentFMF
       // --- Need to allocate timeDepResidualsStats here for cold starts.
       timeDepResidualsStats= new HashMap<Long, MeasurementCustom>();
     }
+
+    // --- NOTE: the amp. + avg. adjust using WLO data is applied only for TGs that are downstream of 03365
+    doAmpAvgAdj= (wlLocationIdentityIntValue <= FIRST_TG_WITH_WLO_AMP_AVG_ADJUST) ? true : false;
+
+    slog.info(mmi+"doAmpAvgAdj="+doAmpAvgAdj);
 
     // --- Need to be sure to have at least a MeasurementCustom object initialized with zero values
     //     at the time offset 0L in the timeDepResidualsStats Map for cold starts OR if it is
@@ -758,17 +853,31 @@ abstract public class WLAdjustmentFMF
       //     time dependent residual for this time offset.
       //actuFMFMc.setUncertainty(timeDepResidualMc.getUncertainty());
 
-      final double adjustedFMFWLValue= actuFMFMc.getValue() + timeDepResidualMc.getValue();
+      //nonAdjWLPredValue + timeDecayingFactWLV*(avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
+      //double fmfAdjtmp= actuFMFMc.getValue();
+      double adjustedFMFWLValue= actuFMFMc.getValue();
+
+      // --- Amp. & avg, adj, done using WLO data (NOTE: no time decay factor application here.)
+      if (doAmpAvgAdj) {
+        adjustedFMFWLValue += wloNowcastAvgDiff - (adjustedFMFWLValue - nowcastDataAvg)*wloNowcastAmpAdjFactor;
+	
+      } else {
+	// --- no Amp. & avg, adjust. but use the time dependant FMF errors stats here.
+        adjustedFMFWLValue += timeDepResidualMc.getValue();
+      }
+
+      //final double adjustedFMFWLValue= fmfAdjtmp + timeDepResidualMc.getValue();
+      // OLD final double adjustedFMFWLValue= actuFMFMc.getValue() + timeDepResidualMc.getValue();
       //final double adjustedFMFWLUncertainty= timeDepResidualMc.getUncertainty();
 
       //slog.info(mmi+"actuFMFMc value bef adj.="+actuFMFMc.getValue());
       //slog.info(mmi+"timeDepResidualAvg="+timeDepResidualMc.getValue());
+      //slog.info(mmi+"fmfAdjtmp="+fmfAdjtmp);
       //slog.info(mmi+"adjustedFMFWLValue="+adjustedFMFWLValue);
       //slog.info(mmi+"timeDepResidual uncertainty="+timeDepResidualMc.getUncertainty());
       
       this.locationAdjustedData.add(new MeasurementCustom( actualFMFInstant,
 							   adjustedFMFWLValue, timeDepResidualMc.getUncertainty() ));
-      
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
       

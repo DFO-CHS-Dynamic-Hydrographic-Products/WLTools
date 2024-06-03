@@ -12,6 +12,8 @@ import ca.gc.dfo.chs.wltools.util.ITimeMachine;
  * Interface for tidal data constants.
  */
 public interface ITidal extends ITimeMachine {
+
+  long M2_WRAP_AROUND_CYCLE_HOURS= 25L;
   
   /**
    * M. Foreman's method implies that the astronomic informations could only be updated for

@@ -417,8 +417,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
 
         // --- Define the nb. hours in past to use depending on this.forecastAdjType:
-        //    0 means that it will be automagically be determined according to the FMF
-        //    data duration after its lead time
+        //     0 means that it will be automagically be determined according to the FMF
+        //     data duration after its lead time
         final long nbHoursInPastArg=
           (this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
 
@@ -633,7 +633,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       
     } else  {
 
-	slog.warn(mmi+"No valid WLO data for tide gauge -> "+this.location.getIdentity()+" !!");
+       slog.warn(mmi+"No valid WLO data for tide gauge -> "+this.location.getIdentity()+" !!");
 	
     } // --- if (this.haveWLOData)
     
@@ -657,7 +657,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     slog.info(mmi+"lastAdjFMFWLUncertainty="+lastAdjFMFWLUncertainty);
 
     slog.info(mmi+"Get simple stats for the adjFMF data");
-    final MeasurementCustom adjFMFMcbStatsMc= MeasurementCustomBundle.getSimpleStats(adjFMFMcb,null);
+    final MeasurementCustom adjFMFMcbStatsMc= MeasurementCustomBundle.getSimpleStats(adjFMFMcb, null, false);
 
     if (adjFMFMcbStatsMc.getUncertainty() < INumberCrunching.STD_DEV_MIN_VALUE) {
       throw new RuntimeException(mmi+"Std dev value too small for the adjFMF data !");
@@ -671,7 +671,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 	TreeSet<Instant>(wlPredMCB.getInstantsKeySetCopy()).subSet(leastRecentAdjFMFInstant, true, mostRecentAdjFMFInstant, true);
 
     slog.info(mmi+"Get simple stats for the WL pred. data");
-    final MeasurementCustom predStatsMc= MeasurementCustomBundle.getSimpleStats(wlPredMCB, instantsForPredStats);
+    final MeasurementCustom predStatsMc= MeasurementCustomBundle.getSimpleStats(wlPredMCB, instantsForPredStats, false);
 
     if (predStatsMc.getUncertainty() < INumberCrunching.STD_DEV_MIN_VALUE) {
       throw new RuntimeException(mmi+"Std dev value too small for the WL pred. data!");
@@ -731,7 +731,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //slog.info(mmi+"Debug exit 0");
       //System.exit(0);
       
-      //// --- One shot calculation for the WL pred. data adjustments.
+      //// --- One shot calculation for the WL pred. data adjustments for anplitude and avg..
       final double adjWLPredValue= nonAdjWLPredValue + timeDecayingFactWLV*(avgsDiff - (nonAdjWLPredValue-wlPredsAvg)*amplitudesAdjFact);
       
       //double adjWLPredValue= nonAdjWLPredValue;
@@ -759,7 +759,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //System.exit(0);
 	
     }
-    
+
+    slog.info(mmi+"After amp. + avg, adj"); 
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 

@@ -233,8 +233,10 @@ final public class MeasurementCustomBundle {
      return (maxTSDiff <= maxTimeDiffSeconds) ? retMCObj : null;
   }
 
-  // --
-  static final public MeasurementCustom getSimpleStats(final MeasurementCustomBundle mcb, final SortedSet<Instant> instantsToUse) {
+  // --- NOTE: if obsData is true then we just skip missing data but we need to raise an
+  //           exception if the data in the MeasurementCustomBundle object is not obs. data.
+  static final public MeasurementCustom
+     getSimpleStats(final MeasurementCustomBundle mcb, final SortedSet<Instant> instantsToUse, final boolean obsData) {
 
     final String mmi= "getSimpleStats: ";
       
@@ -252,7 +254,8 @@ final public class MeasurementCustomBundle {
       throw new RuntimeException(mmi+"MeasurementCustomBundle mcbSize must be at least 2!"); 	
     }
 
-    double nbMc= 0.0;
+    //double nbMc= 0.0;
+    int nbMc= 0;
     double mcValuesAvgAcc= 0.0;
     double mcValuesSquAcc= 0.0;
 
@@ -264,35 +267,51 @@ final public class MeasurementCustomBundle {
     // ---
     for (final Instant mcInstant: instantsForIter) {
 
-      try {
-	mcb.getAtThisInstant(mcInstant);
-      } catch (NullPointerException npe) {
-	throw new RuntimeException(mmi+"mcInstant key not found in mcb!");
+      MeasurementCustom mcLocal= mcb.getAtThisInstant(mcInstant);
+
+      if (mcLocal == null) {
+
+        if (!obsData) {
+	  throw new RuntimeException(mmi+"mcInstant key -> "+mcInstant.toString()+" not found in mcb!");
+	  
+        } else {
+	  slog.warn(mmi+"mcInstant key -> "+mcInstant.toString()+" not found in mcb!");
+	  continue;
+	}
       }
 
-      final double mcValue= mcb.getAtThisInstant(mcInstant).getValue();
+      final double mcValue= mcLocal.getValue();
+      //final double mcValue= mcb.getAtThisInstant(mcInstant).getValue();
         
       mcValuesAvgAcc += mcValue;
       mcValuesSquAcc += mcValue*mcValue;
 
-      nbMc += 1.0;
+      nbMc += 1;
 
       min= (mcValue < min) ? mcValue: min;
       max= (mcValue > max) ? mcValue: max;
+    }
+
+    // --- Avoid division by zero
+    if (nbMc < 1) {
+      throw new RuntimeException(mmi+" cannot have nbMc < 1 here !!");
     }
 
     slog.info(mmi+"nbMc="+nbMc);
     slog.info(mmi+"min="+min);
     slog.info(mmi+"max="+max);
 
-    final double mcValuesArithAvg= mcValuesAvgAcc/nbMc;
+    final double nbMcDble= (double)nbMc;
+    
+    final double mcValuesArithAvg= mcValuesAvgAcc/nbMcDble;
 
     // --- Almost impossible! but we never know!
-    if (mcValuesArithAvg*mcValuesArithAvg > mcValuesSquAcc/nbMc) {
+    if (mcValuesArithAvg*mcValuesArithAvg > mcValuesSquAcc/nbMcDble) {
+	
       throw new RuntimeException(mmi+"cannot have mcValuesArithAvg*mcValuesArithAvg > mcValuesSquAcc/nbMc for the std dev calculation!");
     }
     
-    final double mcValuesStdDev= Math.sqrt(mcValuesSquAcc/nbMc - mcValuesArithAvg*mcValuesArithAvg);
+    final double mcValuesStdDev= Math.sqrt(mcValuesSquAcc/nbMcDble - mcValuesArithAvg*mcValuesArithAvg);
 
     //if ( < Double.MIN_VALUE)
 
