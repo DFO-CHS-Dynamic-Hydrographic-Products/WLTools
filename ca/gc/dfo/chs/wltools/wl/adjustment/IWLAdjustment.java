@@ -41,6 +41,8 @@ public interface IWLAdjustment extends ITimeMachine {
   //     the full model forecast data
   long MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS= 900;
 
+  long MAX_WLO_NEAREST_TIME_DATA_INTERVAL_SECONDS= 900;
+
   long MIN_FULL_FORECAST_DURATION_HOURS= 48;
 
   long MIN_FULL_FORECAST_DURATION_SECONDS=

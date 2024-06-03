@@ -455,15 +455,19 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     //     a given tide gauge is before the least recent model forecast data timestamp
     //     then this WLO data for this tide gauge is useless for the Spine FPP WL adjustments
     //     and we remove this tide gauge from this.wloMCBundles Map of MeasurementCustomBundle
-    //     objects. Also determine the least recent valid Instant of the WLO data to use it to
-    //     synchronize the (WLO-FMF) residuals for their spatial interp. between the tide gauges.
+    //     objects. Also determine the most recent valid Instant of the WLO data to use it as the
+    //     nearest time threshold limit for the FMF data adjustments  
 
     // --- Define an Instant in the future of astronomic proportion.
     //final Instant astronomicFuturInstant= Instant.ofEpochSecond(Instant.MAX.getEpochSecond()-3600L);
 
     // --- Copy this astronomicFuturInstant in tgsLeastRecentValidWLOInstant to use it as a check.
     //Instant tgsLeastRecentValidWLOInstant= astronomicFuturInstant.plusSeconds(0L);
-    Instant tgsLeastRecentValidWLOInstant= Instant.ofEpochSecond(Instant.MAX.getEpochSecond()-3600L);
+    //Instant tgsLeastRecentValidWLOInstant= Instant.ofEpochSecond(Instant.MAX.getEpochSecond()-3600L);
+
+    // --- Define an Instant at the UNIX zero time reference to use to determine the most recent
+    //     valid Instant of the WLO data
+    Instant tgsMostRecentValidWLOInstant= Instant.ofEpochSecond(0L);
 
     Set<TideGaugeConfig> tgsWithValidWLOData= new HashSet<TideGaugeConfig>();
 
@@ -489,8 +493,11 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	continue;
       }
 
-      tgsLeastRecentValidWLOInstant= (tgWLOMostRecentInstant
-	.isBefore(tgsLeastRecentValidWLOInstant) ) ? tgWLOMostRecentInstant : tgsLeastRecentValidWLOInstant;
+	//tgsLeastRecentValidWLOInstant= (tgWLOMostRecentInstant
+	//.isBefore(tgsLeastRecentValidWLOInstant) ) ? tgWLOMostRecentInstant : tgsLeastRecentValidWLOInstant;
+
+      tgsMostRecentValidWLOInstant= (tgWLOMostRecentInstant
+	.isAfter(tgsMostRecentValidWLOInstant) ) ? tgWLOMostRecentInstant : tgsMostRecentValidWLOInstant;
 
       tgsWithValidWLOData.add(tgCfg);
     }
@@ -504,12 +511,19 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     if (tgsWithValidWLOData.size() != 0)  {
 
-      slog.info(mmi+"tgsLeastRecentValidWLOInstant="+tgsLeastRecentValidWLOInstant.toString());
-    
+	//slog.info(mmi+"tgsLeastRecentValidWLOInstant="+tgsLeastRecentValidWLOInstant.toString());
+      slog.info(mmi+"tgsMostRecentValidWLOInstant="+tgsMostRecentValidWLOInstant.toString());
+
+      // --- previous code
       // --- Define the Instant at which we will begin the adjustments of the FMF
       //     (i.e. it is the 1st Instant after the leastRecentValidWLOInstant of all
       //     the existing valid WLO Instants for all the tide gauges used).
-      this.fmfBegAdjustInstant= tgsLeastRecentValidWLOInstant.plusSeconds(fmfTimeIntrvSeconds);
+      //this.fmfBegAdjustInstant= tgsLeastRecentValidWLOInstant.plusSeconds(fmfTimeIntrvSeconds);
+
+      // --- Define the Instant at which we will begin the adjustments of the FMF
+      //     (i.e. it is the 1st Instant after the tgsMostRecentValidWLOInstant of all
+      //     the existing valid WLO Instants for all the tide gauges used).
+      this.fmfBegAdjustInstant= tgsMostRecentValidWLOInstant.plusSeconds(fmfTimeIntrvSeconds);     
 
     } else {
 
@@ -560,15 +574,22 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	//System.out.flush();
 
 	// --- Use the getNearestTSMCWLDataNeighbor here in case
-	//     the tgsLeastRecentValidWLOInstant does not exists
+	//     the tgsMostRecentValidWLOInstant does not exists
 	//     for the WLO data of this tide gauge. Use the
-	//     fmfTimeIntrvSeconds time threshold here.
+	//     MAX_WLO_NEAREST_TIME_DATA_INTERVAL_SECONDS time threshold here.
 	final MeasurementCustom wloMCCheck= wloMCBundles.get(tgCfg)
-	  .getNearestTSMCWLDataNeighbor(tgsLeastRecentValidWLOInstant, this.fmfTimeIntrvSeconds);
-
+	  .getNearestTSMCWLDataNeighbor(tgsMostRecentValidWLOInstant, MAX_WLO_NEAREST_TIME_DATA_INTERVAL_SECONDS);
+	// --- Previous code;
+	//.getNearestTSMCWLDataNeighbor(tgsLeastRecentValidWLOInstant,this.fmfTimeIntrvSeconds);
+	  
+	// --- No WLO data that is at least MAX_WLO_NEAREST_TIME_DATA_INTERVAL_SECONDS in the past compared to
+	//     the tgsMostRecentValidWLOInstant, remove this tide gauge from the spatial interpolation procedure
+	//     and consider it as another simple grid point
         if (wloMCCheck == null) {
 
-	  slog.warn(mmi+"WARNING: no WLO data at Instant ->"+tgsLeastRecentValidWLOInstant.toString()+" for TG ->"+tgCfg.getIdentity());	  
+	  slog.warn(mmi+"WARNING: no WLO data at Instant ->"+tgsMostRecentValidWLOInstant.toString()+
+		    " for TG -> "+tgCfg.getIdentity()+" which will not be used for the spatio-temporal interpolation of the residuals");
+	  
 	  tgsResiduals.put(tgCfg, null);
 	  
 	} else { 
@@ -577,7 +598,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  //  .get(tgCfg).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
 
           final MeasurementCustom fmfMCCheck= this.mcbsFromS104DCF8
-	    .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant);
+	    .get(tgNearestScLocIndex).getAtThisInstant(tgsMostRecentValidWLOInstant);
+	  //.get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant);
 
 	  try {
 	    fmfMCCheck.getValue();
@@ -604,6 +626,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	this.tgsResiduals.put(tgCfg, null);
       }	
     }
+
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
 
     // --- Set the residuals of the upstreammost TG at 0.0
     //     in case it is not available
