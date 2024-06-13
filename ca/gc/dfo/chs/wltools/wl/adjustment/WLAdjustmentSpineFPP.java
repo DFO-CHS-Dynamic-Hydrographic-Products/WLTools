@@ -571,8 +571,16 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     // --- Build a Map<TideGaugeConfig,Double> for the (WLO-FMF) residuals.
     //Map<TideGaugeConfig,Double> tgsResiduals= new HashMap<TideGaugeConfig,Double>(this.locations.size());
     this.tgsResiduals= new HashMap<TideGaugeConfig,Double>(this.locations.size());
-
     //this.tgsResiduals= new HashMap<TideGaugeConfig,MeasurementCustomBundle>(this.locations.size());
+    //this.tgsResiduals= new HashMap<TideGaugeConfig,Map<Instant,Double>> (this.locations.size());
+
+    final SortedSet<Instant> fmfInstantsInPast= this.mcbsFromS104DCF8
+      .get(0).getInstantsKeySetCopy().subSet(this.fmfBegAdjustInstantPast,this.fmfBegAdjustInstantFutr);
+
+    slog.info(mmi+"fmfInstantsInPast.first="+fmfInstantsInPast.first().toString());
+    slog.info(mmi+"fmfInstantsInPast.last="+fmfInstantsInPast.last().toString());
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);  
     
     // --- Set the residuals at the TGs locations. The residual
     //     Double object is set to null if the WLO data is not
@@ -603,6 +611,10 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	slog.info(mmi+"Got some valid WLO for TG -> "+tgCfg.getIdentity());
 	//System.out.flush();
 
+	//this.tgsResiduals.put(tgCfg, new HashMap<Instant,Double>());
+
+        //for (final Instant
+	
 	// --- Use the getNearestTSMCWLDataNeighbor here in case
 	//     the tgsMostRecentValidWLOInstant does not exists
 	//     for the WLO data of this tide gauge. Use the
@@ -641,6 +653,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  //  .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
 	  
 	  this.tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
+	  //this.tgsResiduals.get(tgCfg).put(tgWLOAtInstant-tgFMFAtInstant);
 	
           slog.info(mmi+"tgWLOAtInstant="+tgWLOAtInstant);
 	  slog.info(mmi+"tgFMFAtInstant="+tgFMFAtInstant);
@@ -657,8 +670,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       }	
     }
 
-    //slog.info(mmi+"debug exit 0");
-    //System.exit(0);
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);
 
     // --- Set the residuals of the upstreammost TG at 0.0
     //     in case it is not available
