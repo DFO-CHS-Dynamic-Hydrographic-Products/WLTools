@@ -85,7 +85,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
   private Instant whatTimeIsItNow= null;
 
-  private Instant fmfBegAdjustInstant= null;
+  private Instant fmfBegAdjustInstantPast= null;
+
+  private Instant fmfBegAdjustInstantFutr= null;
 
   private long fmfTimeIntrvSeconds= -1L;
     
@@ -173,7 +175,28 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     }
     
     // --- 
-    this.whatTimeIsItNow= Instant.now();  
+    this.whatTimeIsItNow= Instant.now();
+
+    final String whatTimeIsItNowStr= whatTimeIsItNow.toString();
+
+    slog.info(mmi+"whatTimeIsItNowStr="+(whatTimeIsItNowStr));
+
+    final String whatTimeIsItNowStrHH= whatTimeIsItNowStr.substring(0,14)+"00:00Z";
+
+    slog.info(mmi+"whatTimeIsItNowStrHH="+whatTimeIsItNowStrHH);
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);   
+    
+    // --- Get the Instant object that represents the actual hh hour at hh:00:00
+    //     in order to have the Spine API working properly (i.e. for its timestamps
+    //     offsets used for old-school array indexing). We will use it to do FMF WL
+    //     adjustments in the past until we reach the Instant that was determined
+    //     in the future.
+    this.fmfBegAdjustInstantPast= Instant.parse(whatTimeIsItNowStrHH);
+
+    //slog.info(mmi+"this.fmfBegAdjustInstantPast="+this.fmfBegAdjustInstantPast.toString());
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);    
 
     final String inputFileURLToGet= argsMap.get("--inputFileURLToGet");
 
@@ -520,21 +543,26 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       //     the existing valid WLO Instants for all the tide gauges used).
       //this.fmfBegAdjustInstant= tgsLeastRecentValidWLOInstant.plusSeconds(fmfTimeIntrvSeconds);
 
-      // --- Define the Instant at which we will begin the adjustments of the FMF
+      // --- NEW CODE
+      // --- Define the Instant in the future at which we will begin the adjustments of the FMF
       //     (i.e. it is the 1st Instant after the tgsMostRecentValidWLOInstant of all
       //     the existing valid WLO Instants for all the tide gauges used).
-      this.fmfBegAdjustInstant= tgsMostRecentValidWLOInstant.plusSeconds(fmfTimeIntrvSeconds);     
+      this.fmfBegAdjustInstantFutr= tgsMostRecentValidWLOInstant.plusSeconds(fmfTimeIntrvSeconds);     
 
     } else {
 
-      slog.warn(mmi+"tgsWithValidWLOData.size() == 0 !!, need to use the actual time to define this.fmfBegAdjustInstant Instant !!");
+      // --- NOTE: This is highly unlikely to happen but in this case it is obvious that no adjustement of the
+      //     FMF data will be done and this case is handled later in the code when we check if we have two
+      //     neighbor TGs that do not have any valid WLO data.
+      slog.warn(mmi+"tgsWithValidWLOData.size() == 0 !!, need to use the actual time to define this.fmfBegAdjustInstantFutr Instant !!");
 
-      // --- Get the next FMF Instant that is just after this.whatTimeIsItNow Instant.
-      this.fmfBegAdjustInstant= this.mcbsFromS104DCF8
-	.get(0).getInstantsKeySetCopy().tailSet(this.whatTimeIsItNow).first();
+      // --- Get the FMF Instant that is either this.whatTimeIsItNow itself (very unlikely) or
+      //     just after this.whatTimeIsItNow Instant.
+      this.fmfBegAdjustInstantFutr= this.mcbsFromS104DCF8.get(0)
+	.getInstantsKeySetCopy().tailSet(this.whatTimeIsItNow).first(); //.plusSeconds(fmfTimeIntrvSeconds);
     }
     
-    slog.info(mmi+"this.fmfBegAdjustInstant="+this.fmfBegAdjustInstant.toString());
+    slog.info(mmi+"this.fmfBegAdjustInstantFutr="+this.fmfBegAdjustInstantFutr.toString());
     System.out.flush();
 
     //slog.info(mmi+"debug exit 0");
@@ -543,6 +571,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     // --- Build a Map<TideGaugeConfig,Double> for the (WLO-FMF) residuals.
     //Map<TideGaugeConfig,Double> tgsResiduals= new HashMap<TideGaugeConfig,Double>(this.locations.size());
     this.tgsResiduals= new HashMap<TideGaugeConfig,Double>(this.locations.size());
+
+    //this.tgsResiduals= new HashMap<TideGaugeConfig,MeasurementCustomBundle>(this.locations.size());
     
     // --- Set the residuals at the TGs locations. The residual
     //     Double object is set to null if the WLO data is not
@@ -671,6 +701,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
       // --- Set doAdjust to false if two neighbor TGs have no (WLO-FMF) residuals to use
       //     and break the loop. No Spine FPP adjustment will be done when this happens.
+      //     NOTE: This handles the cast where no WLO data is available for all TGs.
       if ( (this.tgsResiduals.get(dnstreamTGCfg) == null) && (this.tgsResiduals.get(upstreamTGCfg) == null) ) {
 
 	slog.warn(mmi+"WARNING: No valid residual to use at TGs neighbors -> "+
@@ -688,12 +719,15 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	continue;
       }
       
-      // --- Replace the dnstreamTGCfg by its nearest downstream TG neighbor
+      // --- Replace the dnstreamTGCfg by its nearest downstream TG neighbor            
       if (this.tgsResiduals.get(dnstreamTGCfg) == null) {
 	  
 	slog.warn(mmi+"WARNING: Removing TG -> "+dnstreamTGCfg.getIdentity()+
 		  " from the Spine FPP adjustments and replacing it with its nearest downstream neighbor-> "+this.locations.get(tgLocIdx+1).getIdentity());
 
+        // --- NOTE: The downstream most TG residual located at this.locations.get(tgLocIdx)
+        //           is never null in this.tgsResiduals so we never get there for this last TG
+	//           and this get should always works. 
 	dnstreamTGCfg= this.locations.get(tgLocIdx+1);	
       } 
 
@@ -726,9 +760,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     // --- Get the Instants that are in the future compared to the last
     //     valid WLO Instant used in the main constructor for this class.
     final SortedSet<Instant> fmfInstantsInFuture= this.mcbsFromS104DCF8
-      .get(0).getInstantsKeySetCopy().tailSet(this.fmfBegAdjustInstant);
+      .get(0).getInstantsKeySetCopy().tailSet(this.fmfBegAdjustInstantFutr);
 
-    slog.info(mmi+"this.fmfBegAdjustInstant="+this.fmfBegAdjustInstant.toString());
+    slog.info(mmi+"this.fmfBegAdjustInstantFutr="+this.fmfBegAdjustInstantFutr.toString());
     slog.info(mmi+"fmfInstantsInFuture.first()="+fmfInstantsInFuture.first());
 
     //slog.info(mmi+"debug exit 0");
@@ -861,6 +895,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	// slog.info(mmi+"dnsScLocIdStr="+dnsScLocIdStr);
 	// slog.info(mmi+"debug exit 0");
         // System.exit(0);
+
+	// --- Do the adjustments in the past
 
 	// --- Get the time decaying factor for the residual at the upstream TG
 	final double upsShortTermFMFTSOffsetSecInv=
