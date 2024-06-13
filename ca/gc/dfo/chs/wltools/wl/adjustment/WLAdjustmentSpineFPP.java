@@ -103,8 +103,11 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
   private List<MeasurementCustomBundle> mcbsFromS104DCF8= null;
 
-  private Map<TideGaugeConfig,Double> tgsResiduals= null;
+  //private Map<TideGaugeConfig,Double> tgsResiduals= null;
+  private Map<TideGaugeConfig,Map<Instant,Double>> tgsResiduals= null;
 
+  private Map<TideGaugeConfig,Double> tgsResidualsAvgs= null;
+    
   private Map<TideGaugeConfig,TideGaugeConfig> upstreamDownstreamTGPairs= null;
     
   /**
@@ -583,7 +586,9 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     slog.info(mmi+"this.fmfInstantsInPast.first="+this.fmfInstantsInPast.first().toString());
     slog.info(mmi+"this.fmfInstantsInPast.last="+this.fmfInstantsInPast.last().toString());
     //slog.info(mmi+"debug exit 0");
-    //System.exit(0);  
+    //System.exit(0);
+
+    this.tgsResidualsAvgs= new HashMap<TideGaugeConfig,Double>(this.locations.size());
     
     // --- Set the residuals at the TGs locations. The residual
     //     Double object is set to null if the WLO data is not
@@ -598,7 +603,10 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       //slog.info(mmi+"tgNearestScLocIndex="+tgNearestScLocIndex);
       //slog.info(mmi+"debug exit 0");
       //System.out.flush();
-      //System.exit(0);   
+      //System.exit(0);
+
+      //this.tgsResiduals.put(tgCfg, null);
+      this.tgsResidualsAvgs.put(tgCfg, 0.0);
 
       // --- Could possibly have somt TG without WLO data.
       if (tgsWithValidWLOData.contains(tgCfg)) {
@@ -616,6 +624,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	//System.out.flush();
 
 	this.tgsResiduals.put(tgCfg, new HashMap<Instant,Double>());
+
+	this.tgsResidualsAvgs.put(tgCfg, 0.0);
 
 	// --- Loop on the Instant objects in this.fmfInstantsInPast
         for (final Instant instantInPast: this.fmfInstantsInPast) {
@@ -655,20 +665,34 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  
 	    final double tgFMFAtInstant= fmfMCCheck.getValue();
 	    //  .get(tgNearestScLocIndex).getAtThisInstant(tgsLeastRecentValidWLOInstant).getValue();
+
+	    final double fmfResidual= tgWLOAtInstant-tgFMFAtInstant;
 	  
 	    //this.tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
-	    this.tgsResiduals.get(tgCfg).put(instantInPast,tgWLOAtInstant-tgFMFAtInstant);
+	    this.tgsResiduals.get(tgCfg).put(instantInPast,fmfResidual);
 	
             slog.info(mmi+"tgWLOAtInstant="+tgWLOAtInstant);
 	    slog.info(mmi+"tgFMFAtInstant="+tgFMFAtInstant);
-	    slog.info(mmi+"(WLO - FMF) residual="+this.tgsResiduals.get(tgCfg)+" at TG -> "+tgCfg.getIdentity()" at Instant -> "+instantInPast.toString());
+	    slog.info(mmi+"(WLO - FMF) residual="+this.tgsResiduals.get(tgCfg).get(instantInPast)+" at TG -> "+tgCfg.getIdentity()" at Instant -> "+instantInPast.toString());
 	    System.out.flush();
+
+	    this.tgsResidualsAvgs.put(tgCfg, this.tgsResidualsAvgs.get(tgCfg) += fmfResidual);
 
 	    slog.info(mmi+"debug exit 0");
             System.exit(0);
 	    
 	  } // --- inner if-else block
-	} // --- 
+	} // ---  Loop on the Instant objects in this.fmfInstantsInPast
+
+        if (this.tgsResiduals.get(tgCfg).size()==0) {
+	  throw new RuntimeException(mmi+"this.tgsResiduals.get(tgCfg).size() cannot be 0 here !!");  
+	}
+
+	this.tgsResidualsAvgs.put(tgCfg, this.tgsResidualsAvgs.get(tgCfg)/this.tgsResiduals.get(tgCfg).size());
+
+	slog.info(mmi+"this.tgsResidualsAvgs="+this.tgsResidualsAvgs.get(tgCfg)+" for tg -> "+tgCfg.getIdentity());
+	slog.info(mmi+"debug exit 0");
+        System.exit(0);	
 	
       } else {
 	slog.warn(mmi+"WARNING: No valid WLO to use for residual at TG -> "+tgCfg.getIdentity());
@@ -770,8 +794,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     // --- TODO: Write the output file according to the required format.    
     slog.info(mmi+"end, this.doAdjust="+this.doAdjust);
     
-    //slog.info(mmi+"debug exit 0");
-    //System.exit(0);
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);
   }
 
   // --- 
@@ -784,17 +808,28 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     List<MeasurementCustomBundle> mcbOutForSpine= null;
     
     slog.info(mmi+"start");
+
+    //final Instant fmfBegAdjustInstantPast= this.fmfInstantsInPast.first();
     
     // --- Get the Instants that are in the future compared to the last
     //     valid WLO Instant used in the main constructor for this class.
-    final SortedSet<Instant> fmfInstantsInFuture= this.mcbsFromS104DCF8
-      .get(0).getInstantsKeySetCopy().tailSet(this.fmfBegAdjustInstantFutr);
+    //final SortedSet<Instant> fmfInstantsInFuture= this.mcbsFromS104DCF8
+    //  .get(0).getInstantsKeySetCopy().tailSet(this.fmfBegAdjustInstantFutr);
+    //slog.info(mmi+"this.fmfBegAdjustInstantFutr="+this.fmfBegAdjustInstantFutr.toString());
+    //slog.info(mmi+"fmfInstantsInFuture.first()="+fmfInstantsInFuture.first());
 
+    // --- Now need to use the Instant objects to include the time elapsed since the last hour at 00 mins and 00 seconds
+    //     in order to get the timestamps offsets being compatible with the old-school array indexing used by the actual Spine API.
+    final SortedSet<Instant> fmfInstantsPastAndFuture= this.mcbsFromS104DCF8
+      .get(0).getInstantsKeySetCopy().tailSet(this.fmfInstantsInPast.first());
+
+    slog.info(mmi+"this.fmfInstantsInPast.first()="+this.fmfInstantsInPast.first());
+    slog.info(mmi+"this.fmfInstantsInPast.last()="+this.fmfInstantsInPast.last());
     slog.info(mmi+"this.fmfBegAdjustInstantFutr="+this.fmfBegAdjustInstantFutr.toString());
-    slog.info(mmi+"fmfInstantsInFuture.first()="+fmfInstantsInFuture.first());
-
-    //slog.info(mmi+"debug exit 0");
-    //System.exit(0);
+    slog.info(mmi+"fmfInstantsPastAndFuture.first()="+fmfInstantsPastAndFuture.first());
+    slog.info(mmi+"fmfInstantsPastAndFuture.last()="+fmfInstantsPastAndFuture.last());
+    slog.info(mmi+"debug exit 0");
+    System.exit(0);
     
     // --- Allocate the temp Map<Integer,List<MeasurementCustom>> that will be
     //     used in nested loops for the FMF WL adj. processing for all the ship
@@ -954,24 +989,35 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	//}
 	
 	// --- Loop on the FMF Instant of the future (compared to the last valid WLO used for the residuals) 
-	for (final Instant fmfInstantFutr: fmfInstantsInFuture) {
+	//for (final Instant fmfInstantFutr: fmfInstantsInFuture) {
+	for (final Instant fmfInstantIter: fmfInstantsPastAndFuture) {
 
 	    //slog.info(mmi+"fmfInstantFutr="+fmfInstantFutr.toString());
 
 	  // --- FMF MeasurementCustom of ship channel point location that
 	  //     is the nearest to the upstream TG location at this fmfInstantFutr Instant
-	  final MeasurementCustom upsMcAtInstantFutr= this
-	    .mcbsFromS104DCF8.get(upsTGScLocIdx).getAtThisInstant(fmfInstantFutr);
+	  //final MeasurementCustom upsMcAtInstantFutr= this
+	  //  .mcbsFromS104DCF8.get(upsTGScLocIdx).getAtThisInstant(fmfInstantFutr);
 
+	  final MeasurementCustom upsMcAtInstant= this
+	    .mcbsFromS104DCF8.get(upsTGScLocIdx).getAtThisInstant(fmfInstantIter);
+	  
 	  // --- non-adj. FMF WL value of ship channel point location that
 	  //     is the nearest to the upstream TG location at this fmfInstantFutr Instant
-          final double upsTGScLocNonAdjValue= upsMcAtInstantFutr.getValue();
+          //final double upsTGScLocNonAdjValue= upsMcAtInstantFutr.getValue();
+	  final double upsTGScLocNonAdjValue= upsMcAtInstantIter.getValue();
 
-	  // --- Time decaying factor for the upstream side (a function
-	  //     of the residual value at the upstream TG)
-	  final double upsTGResTimeDecayingFactor= Math
-	    .exp(-timeOffsetFromLastResidual * upsShortTermFMFTSOffsetSecInv);
+	  double upsTGResTimeDecayingFactor= 1.0;
+	  double dnsTGResTimeDecayingFactor= 1.0;
 
+	  if (fmfInstantIter.isAfter(this.fmfInstantsInPast.last())) {
+	    // --- Time decaying factor for the upstream side (a function
+	    //     of the residual value at the upstream TG)
+	    //final double upsTGResTimeDecayingFactor= Math
+	    upsTGResTimeDecayingFactor= Math
+	      .exp(-timeOffsetFromLastResidual * upsShortTermFMFTSOffsetSecInv);
+	  }
+	  
 	  // --- FMF WL offset to add to the upsTGScLocNonAdjValue to adjust it
 	  //     in function of the upsTGResidual value and its related Time decaying facto
 	  final double upsTGScLocAdjOffet= upsTGResidual * upsTGResTimeDecayingFactor;
@@ -980,20 +1026,25 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  //     is the nearest to the upstream TG location at this fmfInstantFutr Instant
 	  final double upsTGScLocAdjValue= upsTGScLocNonAdjValue + upsTGScLocAdjOffet; //upsTGResidual * upsTGResTimeDecayingFactor;
 
+	  if (fmfInstantIter.isAfter(this.fmfInstantsInPast.last())) { 
 	  // --- FMF MeasurementCustom of ship channel point location that
 	  //     is the nearest to the downstream TG location at this fmfInstantFutr Instant	  
           final MeasurementCustom dnsMcAtInstantFutr= this
 	    .mcbsFromS104DCF8.get(dnsTGScLocIdx).getAtThisInstant(fmfInstantFutr);
-
+	      
 	  // --- non-adj. FMF WL value of ship channel point location that
 	  //     is the nearest to the downstream TG location at this fmfInstantFutr Instant
           final double dnsTGScLocNonAdjValue= dnsMcAtInstantFutr.getValue();
 
-	  // --- Time decaying factor for the downstream side (a function
-	  //     of the residual value at the downstream TG)
-	  final double dnsTGResTimeDecayingFactor= Math
-	    .exp(-timeOffsetFromLastResidual * dnsShortTermFMFTSOffsetSecInv);
-
+          if (fmfInstantIter.isAfter(this.fmfInstantsInPast.last())) {
+	  
+	    // --- Time decaying factor for the downstream side (a function
+	    //     of the residual value at the downstream TG)
+	    //final double dnsTGResTimeDecayingFactor= Math
+	    dnsTGResTimeDecayingFactor= Math
+	      .exp(-timeOffsetFromLastResidual * dnsShortTermFMFTSOffsetSecInv);
+	  }
+	  
 	  // --- FMF WL offset to add to the dnsTGScLocNonAdjValue to adjust it
 	  //     in function of the dnsTGResidual value and its related Time decaying facto
           final double dnsTGScLocAdjOffet= dnsTGResidual * dnsTGResTimeDecayingFactor;
