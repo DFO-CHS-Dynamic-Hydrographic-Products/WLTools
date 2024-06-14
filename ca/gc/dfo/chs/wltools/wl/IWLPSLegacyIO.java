@@ -187,6 +187,8 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
     final Instant checkMcbInstant0= mcbForSpineAPI.get(0).getInstantsKeySetCopy().first();
     
     slog.info(mmi+"checkMcbInstant0.toString()="+checkMcbInstant0.toString());
+    slog.info(mmi+"debug exit 0");
+    System.exit(0); 
 
     final long checkTimeDiffSeconds= checkMcbInstant0.getEpochSecond() - instantForIWLS.getEpochSecond();
 

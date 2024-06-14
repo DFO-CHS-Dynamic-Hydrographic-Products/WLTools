@@ -1013,7 +1013,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	//for (final Instant fmfInstantFutr: fmfInstantsInFuture) {
 	for (final Instant fmfInstantIter: fmfInstantsPastAndFuture) { 
 	    
-	  slog.info(mmi+"fmfInstantIter="+fmfInstantIter.toString());
+	  //slog.info(mmi+"fmfInstantIter="+fmfInstantIter.toString());
 	    
 	  double upsTGResTimeDecayingFactor= 1.0;
 	  double dnsTGResTimeDecayingFactor= 1.0;
@@ -1044,10 +1044,10 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	    dnsTGResidual= this.tgsResiduals.get(dnstreamTGCfg).get(fmfInstantIter);
           }
 
-	  slog.info(mmi+"upsTGResidual="+upsTGResidual);
-	  slog.info(mmi+"dnsTGResidual="+dnsTGResidual);
-	  slog.info(mmi+"debug exit 0");
-	  System.exit(0);	  
+	  //slog.info(mmi+"upsTGResidual="+upsTGResidual);
+	  //slog.info(mmi+"dnsTGResidual="+dnsTGResidual);
+	  //slog.info(mmi+"debug exit 0");
+	  //System.exit(0);	  
 
 	  final MeasurementCustom upsMcFMFAtInstantIter= this
 	    .mcbsFromS104DCF8.get(upsTGScLocIdx).getAtThisInstant(fmfInstantIter);
@@ -1081,8 +1081,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	  //     is the nearest to the downstream TG location at this fmfInstantFutr Instant
           final double dnsTGScLocAdjValue= dnsTGScLocNonAdjValue + dnsTGScLocAdjOffet; //dnsTGResidual * dnsTGResTimeDecayingFactor;
 
-	  // slog.info(mmi+"timeOffsetFromLastResidual="+timeOffsetFromLastResidual);
-
+	  //slog.info(mmi+"timeOffsetFromLastResidual="+timeOffsetFromLastResidual);
 	  //slog.info(mmi+"upsTGResTimeDecayingFactor="+upsTGResTimeDecayingFactor);
           //slog.info(mmi+"upsTGScLocNonAdjValue="+upsTGScLocNonAdjValue);
 	  //slog.info(mmi+"upsTGScLocAdjOffet="+upsTGScLocAdjOffet);
@@ -1137,13 +1136,13 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	      scReachIntrpUnit.getScLocFNameCommonPrefix() +
 	        IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR + Integer.toString(scLocIterIdx);	
 
-            slog.debug(mmi+"scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
+            //slog.info(mmi+"scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
 
 	    // --- Get the great circle distance (in radians) of this in-between ship channel point location
 	    //     from the ship channel point location that is the nearest to the upstream TG location,
 	    final double scLocDistRadFromUpsTG= scReachIntrpUnit.getDistanceForScLoc(scLocFNameSpecSubStr);
 
-	    slog.debug(mmi+"scLocDistRadFromUpsTG="+scLocDistRadFromUpsTG);
+	    //slog.info(mmi+"scLocDistRadFromUpsTG="+scLocDistRadFromUpsTG);
 
 	    final double interpFactor= tgsNearestsLocsDistRadInv * scLocDistRadFromUpsTG;
 	    
@@ -1165,19 +1164,22 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	    mcOutForSpineMap.get(scLocIterIdx)
 	      .add(new MeasurementCustom(fmfInstantIter.plusSeconds(0L), adjFMFSCWLVal, scLocMcAtInstantIter.getUncertainty()));
 	    
-	    slog.debug(mmi+"nonAdjFMFSCWLVal="+nonAdjFMFSCWLVal);
-	    slog.debug(mmi+"adjFMFSCWLVal="+adjFMFSCWLVal);
-	    slog.debug(mmi+"End for scLocIterIdx="+scLocIterIdx);
-	    //slog.info(mmi+"debug exit 0");
+	    //slog.info(mmi+"nonAdjFMFSCWLVal="+nonAdjFMFSCWLVal);
+	    //slog.info(mmi+"adjFMFSCWLVal="+adjFMFSCWLVal);
+	    //slog.info(mmi+"End for scLocIterIdx="+scLocIterIdx);
+	    //slog.info(mmi+"SNAFU1 debug exit 0");
             //System.exit(0);
 	    
 	  } // --- for loop block scLocIter
 
-	  // --- incr the timeOffsetFromLastResidual for the next iteration on time. 
-	  timeOffsetFromLastResidual += this.fmfTimeIntrvSeconds;
+	  // --- incr the timeOffsetFromLastResidual for the next iteration on time
+	  //     but only if the fmfInstantIter is in the future
+	  if (fmfInstantIter.isAfter(this.fmfInstantsInPast.last())) { 
+	    timeOffsetFromLastResidual += this.fmfTimeIntrvSeconds;
+	  }
 	  
-	  //slog.info(mmi+"End for fmfInstantFutr="+fmfInstantFutr.toString());
-	  //slog.info(mmi+"debug exit 0");
+	  //slog.info(mmi+"End for fmfInstantIter="+fmfInstantIter.toString());
+	  //slog.info(mmi+"SNAFU2 debug exit 0");
           //System.exit(0);
 	  
 	} // --- for loop block fmfInstantFutr
@@ -1216,6 +1218,10 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       
       //mcbOutForSpine= this.mcbsFromS104DCF8;
     }
+
+    slog.info(mmi+"Writing the results using the legacy ASCII format");
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);   
 
     // --- Now write the needed Spine output file with the wanted output
     //     format using the mcbOutForSpine List of MeasurementCustomBundle
