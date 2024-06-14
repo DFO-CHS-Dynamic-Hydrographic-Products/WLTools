@@ -159,10 +159,9 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
     // --- Build the ISO8601 date-time string to define the Instant object
     //     for the Spine API data upload.
     //     NOTE: nowStrISO8601Split[0] -> "YYYY-MM-DDThh"
-    final String dateTimeForIWLSStr= nowStrISO8601Split[0] +
-      ISO8601_HHMMSS_SEP_CHAR + minutesForSpineApiStr + ISO8601_HHMMSS_SEP_CHAR + "00Z";
-
-    slog.info(mmi+"dateTimeForIWLSStr="+dateTimeForIWLSStr);
+    //final String dateTimeForIWLSStr= nowStrISO8601Split[0] +
+    //  ISO8601_HHMMSS_SEP_CHAR + minutesForSpineApiStr + ISO8601_HHMMSS_SEP_CHAR + "00Z";
+    //slog.info(mmi+"dateTimeForIWLSStr="+dateTimeForIWLSStr);
 
     //Instant instantForIWLS= Instant.parse(dateTimeForIWLSStr);
     //slog.info(mmi+"instantForIWLS.toString()="+instantForIWLS.toString());
@@ -170,44 +169,44 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
     //// --- Assuming here that all the MeasurementCustomBundle objects of mcbForSpineAPI
     ////     have the same Instant objects values.
     //final Instant mcbLeastRecentInstant= mcbForSpineAPI.get(0).getLeastRecentInstantCopy();
-    //slog.info(mmi+"mcbLeastRecentInstant="+mcbLeastRecentInstant.toString())
-    ;
-    //// --- Get the time intervall in seconds of the adj. FMF WL data.
-    ////     (which we assume that it is the same for all the MeasurementCustomBundle objects of mcbForSpineAPI
+    //slog.info(mmi+"mcbLeastRecentInstant="+mcbLeastRecentInstant.toString());
+    
+    // --- Get the time intervall in seconds of the adj. FMF WL data.
+    //     (which we assume that it is the same for all the MeasurementCustomBundle objects of mcbForSpineAPI
     final long mcbTimeIntrvSeconds= mcbForSpineAPI.get(0).getDataTimeIntervallSeconds();
     slog.info(mmi+"mcbTimeIntrvSeconds="+mcbTimeIntrvSeconds);
 
     slog.info(mmi+"daysOffsetInFuture="+daysOffsetInFuture);
 
-    Instant instantForIWLS= Instant.parse(dateTimeForIWLSStr);
+    // --- Now using the 1st Instant of the MeasurementCustomBundle objects for the
+    //     instantForIWLS
+    Instant instantForIWLS= mcbForSpineAPI.get(0).getInstantsKeySetCopy().first();
+
+    // --- Previous way to define instantForIWLS
+    //Instant instantForIWLS= Instant.parse(dateTimeForIWLSStr);
     slog.info(mmi+"instantForIWLS.toString()="+instantForIWLS.toString());
 
     // --- Checking where the 1st Instant of the mcbForSpineAPI is
     //     compared to instantForIWLS
-    final Instant checkMcbInstant0= mcbForSpineAPI.get(0).getInstantsKeySetCopy().first();
-    
-    slog.info(mmi+"checkMcbInstant0.toString()="+checkMcbInstant0.toString());
-    slog.info(mmi+"debug exit 0");
-    System.exit(0); 
+    //final Instant checkMcbInstant0= mcbForSpineAPI.get(0).getInstantsKeySetCopy().first();
+    //slog.info(mmi+"checkMcbInstant0.toString()="+checkMcbInstant0.toString());
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0); 
 
-    final long checkTimeDiffSeconds= checkMcbInstant0.getEpochSecond() - instantForIWLS.getEpochSecond();
-
-    //final long maxTimeDiffSeconds= IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS + mcbTimeIntrvSeconds;
-    final long maxTimeDiffSeconds= IWLAdjustment.MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS + mcbTimeIntrvSeconds;
-
-    if (Math.abs(checkTimeDiffSeconds) >= maxTimeDiffSeconds) {
-      slog.warn(mmi+"Math.abs(checkTimeDiffSeconds) -> "+Math.abs(checkTimeDiffSeconds)+" >= maxTimeDiffSeconds -> "+maxTimeDiffSeconds+" !!, check WLO data !!");
-      //throw new RuntimeException(mmi+"Cannot have Math.abs(checkTimeDiff) >= maxTimeDiffSeconds -> "+maxTimeDiffSeconds+" at this point !!");
-    }
-
-    if (checkMcbInstant0.isAfter(instantForIWLS)) {
-      slog.warn(mmi+"checkMcbInstant0 is after instantForIWLS, use it for instantForIWLS to be sure to have the right number of time stamps in the future");
-      instantForIWLS= checkMcbInstant0;
-     
-    } else {
-      slog.info(mmi+"checkMcbInstant0 is equal OR before instantForIWLS just add mcbTimeIntrvSeconds="+mcbTimeIntrvSeconds+" to it");	    
-      instantForIWLS= instantForIWLS.plusSeconds(mcbTimeIntrvSeconds);	  
-    }
+    // final long checkTimeDiffSeconds= checkMcbInstant0.getEpochSecond() - instantForIWLS.getEpochSecond();
+    // //final long maxTimeDiffSeconds= IWLAdjustment.SHORT_TERM_FORECAST_TS_OFFSET_SECONDS + mcbTimeIntrvSeconds;
+    // final long maxTimeDiffSeconds= IWLAdjustment.MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS + mcbTimeIntrvSeconds;
+    // if (Math.abs(checkTimeDiffSeconds) >= maxTimeDiffSeconds) {
+    //   slog.warn(mmi+"Math.abs(checkTimeDiffSeconds) -> "+Math.abs(checkTimeDiffSeconds)+" >= maxTimeDiffSeconds -> "+maxTimeDiffSeconds+" !!, check WLO data !!");
+    //   //throw new RuntimeException(mmi+"Cannot have Math.abs(checkTimeDiff) >= maxTimeDiffSeconds -> "+maxTimeDiffSeconds+" at this point !!");
+    // }
+    // if (checkMcbInstant0.isAfter(instantForIWLS)) {
+    //   slog.warn(mmi+"checkMcbInstant0 is after instantForIWLS, use it for instantForIWLS to be sure to have the right number of time stamps in the future");
+    //   instantForIWLS= checkMcbInstant0;
+    // } else {
+    //   slog.info(mmi+"checkMcbInstant0 is equal OR before instantForIWLS just add mcbTimeIntrvSeconds="+mcbTimeIntrvSeconds+" to it");	    
+    //   instantForIWLS= instantForIWLS.plusSeconds(mcbTimeIntrvSeconds);	  
+    // }
 
     // --- Define the last Instant in the future that is used to define the Instant objects range
     //     for the Spine API depending on the daysOffsetInFuture value.
@@ -219,7 +218,7 @@ public final class IWLPSLegacyIO implements IIWLPSLegacyIO {
 
     // --- NOTE: instantsRangeLimitInFuture Instant is not included in the wantedInstantsRange
     final SortedSet<Instant> wantedInstantsRange= mcbForSpineAPI.get(0)
-	.getInstantsKeySetCopy().subSet(instantForIWLS, instantsRangeLimitInFuture); 
+      .getInstantsKeySetCopy().subSet(instantForIWLS, instantsRangeLimitInFuture); 
     //.getInstantsKeySetCopy().subSet(mcbLeastRecentInstant, instantsRangeLimitInFuture);
 
      // --- Define the last Instant in the future that is used to define the Instant objects range

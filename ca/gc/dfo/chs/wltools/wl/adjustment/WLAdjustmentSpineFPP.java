@@ -1036,6 +1036,12 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	    //     of the last residual value at the dnstream TG)	    
 	    dnsTGResTimeDecayingFactor= Math
 	      .exp(-timeOffsetFromLastResidual * dnsShortTermFMFTSOffsetSecInv);	    
+
+ 	    //slog.info(mmi+"timeOffsetFromLastResidual="+timeOffsetFromLastResidual);
+	    //slog.info(mmi+"upsTGResTimeDecayingFactor="+upsTGResTimeDecayingFactor);
+	    //slog.info(mmi+"dnsTGResTimeDecayingFactor="+dnsTGResTimeDecayingFactor);
+	    //slog.info(mmi+"debug exit 0");
+	    //System.exit(0);           
 	    
 	  } else {
 
