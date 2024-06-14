@@ -476,15 +476,6 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
     //slog.info(mmi+"debug exit 0");
     //System.exit(0);
-    
-    // --- Now check if the most recent WLO data timestamp is more recent than the
-    //     least recent model forecast data timestamp for all the tide gauges that
-    //     have valid WLO data. If the most recent time stamp of the WLO data of
-    //     a given tide gauge is before the least recent model forecast data timestamp
-    //     then this WLO data for this tide gauge is useless for the Spine FPP WL adjustments
-    //     and we remove this tide gauge from this.wloMCBundles Map of MeasurementCustomBundle
-    //     objects. Also determine the most recent valid Instant of the WLO data to use it as the
-    //     nearest time threshold limit for the FMF data adjustments  
 
     // --- Define an Instant in the future of astronomic proportion.
     //final Instant astronomicFuturInstant= Instant.ofEpochSecond(Instant.MAX.getEpochSecond()-3600L);
@@ -672,49 +663,63 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 	    //this.tgsResiduals.put(tgCfg,tgWLOAtInstant-tgFMFAtInstant);
 	    this.tgsResiduals.get(tgCfg).put(instantInPast,fmfResidual);
 	
-            slog.info(mmi+"tgWLOAtInstant="+tgWLOAtInstant);
-	    slog.info(mmi+"tgFMFAtInstant="+tgFMFAtInstant);
-	    
-	    slog.info(mmi+"(WLO - FMF) residual="+this.tgsResiduals.get(tgCfg).get(instantInPast)+
-		          " at TG -> "+tgCfg.getIdentity()+" at Instant -> "+instantInPast.toString());
-	    System.out.flush();
+            //slog.info(mmi+"tgWLOAtInstant="+tgWLOAtInstant);
+	    //slog.info(mmi+"tgFMFAtInstant="+tgFMFAtInstant);
+	    //slog.info(mmi+"(WLO - FMF) residual="+this.tgsResiduals.get(tgCfg).get(instantInPast)+
+	    //          " at TG -> "+tgCfg.getIdentity()+" at Instant -> "+instantInPast.toString());
+	    //System.out.flush();
 
 	    tgFMFResidualsAvg += fmfResidual;
 	    //this.tgsResidualsAvgs.put(tgCfg, this.tgsResidualsAvgs.get(tgCfg) += fmfResidual);
 
-	    slog.info(mmi+"debug exit 0");
-            System.exit(0);
+	    //slog.info(mmi+"debug exit 0");
+            //System.exit(0);
 	    
 	  } // --- inner if-else block
 	} // ---  Loop on the Instant objects in this.fmfInstantsInPast
 
         if (this.tgsResiduals.get(tgCfg).size()==0) {
-	  throw new RuntimeException(mmi+"this.tgsResiduals.get(tgCfg).size() cannot be 0 here !!");  
-	}
+	    //throw new RuntimeException(mmi+"this.tgsResiduals.get(tgCfg).size() cannot be 0 here !!");
+            
+	    slog.warn(mmi+"No valid WLO found for TG -> "+tgCfg.getIdentity()+
+		      " in the near past, this TG location will be simply considered as another grid point");
 
-	this.tgsResidualsAvgs.put(tgCfg, tgFMFResidualsAvg/this.tgsResiduals.get(tgCfg).size());
-	
-	// --- re-Loop on the Instant objects in this.fmfInstantsInPast to fill-up
-	//     possible missing FMF residuals with their average for this TG
-        for (final Instant instantInPast: this.fmfInstantsInPast) {
+	    this.tgsResiduals.put(tgCfg, null);
 	    
-	  if (!this.tgsResiduals.get(tgCfg).containsKey(instantInPast)) {
-	    this.tgsResiduals.get(tgCfg).put(  instantInPast,this.tgsResidualsAvgs.get(tgCfg));
+	} else {
+	    
+	  this.tgsResidualsAvgs.put(tgCfg, tgFMFResidualsAvg/this.tgsResiduals.get(tgCfg).size());
+	  
+	  // --- re-Loop on the Instant objects in this.fmfInstantsInPast to fill-up
+	  //     possible missing FMF residuals with their average for this TG
+          for (final Instant instantInPast: this.fmfInstantsInPast) {
+	      
+	    if (!this.tgsResiduals.get(tgCfg).containsKey(instantInPast)) {
+		
+	      slog.warn(mmi+"Missing residual for TG -> "+tgCfg.getIdentity()+" at Instant -> "+
+			instantInPast.toString()+" replacing it by the TG residuals average -> "+this.tgsResidualsAvgs.get(tgCfg));
+	      
+	      this.tgsResiduals.get(tgCfg).put(instantInPast, this.tgsResidualsAvgs.get(tgCfg));
+	    }
 	  }
-	}
 
-	slog.info(mmi+"this.tgsResidualsAvgs="+this.tgsResidualsAvgs.get(tgCfg)+" for tg -> "+tgCfg.getIdentity());
-	slog.info(mmi+"debug exit 0");
-        System.exit(0);	
+	  slog.info(mmi+"this.tgsResidualsAvgs="+this.tgsResidualsAvgs.get(tgCfg)+" for TG -> "+tgCfg.getIdentity());
+	}
+	
+	//slog.info(mmi+"debug exit 0");
+        //System.exit(0);	
 	
       } else {
-	slog.warn(mmi+"WARNING: No valid WLO to use for residual at TG -> "+tgCfg.getIdentity());
+	
+	slog.warn(mmi+"No valid WLO to use for residual at TG -> "+
+		  tgCfg.getIdentity()+" this TG will be simply considered as another grid point");
+	
 	this.tgsResiduals.put(tgCfg, null);
       }	
     }
 
-    slog.info(mmi+"debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
 
     // --- Set the residuals of the upstreammost TG at 0.0
     //     in case it is not available
@@ -774,7 +779,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       //     NOTE: This handles the cast where no WLO data is available for all TGs.
       if ( (this.tgsResiduals.get(dnstreamTGCfg) == null) && (this.tgsResiduals.get(upstreamTGCfg) == null) ) {
 
-	slog.warn(mmi+"WARNING: No valid residual to use at TGs neighbors -> "+
+	slog.warn(mmi+"No valid residual to use at TGs neighbors -> "+
 		 dnstreamTGCfg .getIdentity()+" and -> "+upstreamTGCfg.getIdentity()+", No Spine FPP adjustment will be done for this run!!");
 	
 	this.doAdjust= false;  
@@ -785,14 +790,14 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
       //     no valid residual to use, this case was handled by the previous
       //     loop iteration
       if (this.tgsResiduals.get(upstreamTGCfg) == null) {
-	slog.warn(mmi+"WARNING: this.tgsResiduals.get(upstreamTGCfg) == null, skipping this TG -> "+upstreamTGCfg.getIdentity()+" as an upstream TG");
+	slog.warn(mmi+"this.tgsResiduals.get(upstreamTGCfg) == null, skipping this TG -> "+upstreamTGCfg.getIdentity()+" as an upstream TG");
 	continue;
       }
       
       // --- Replace the dnstreamTGCfg by its nearest downstream TG neighbor            
       if (this.tgsResiduals.get(dnstreamTGCfg) == null) {
 	  
-	slog.warn(mmi+"WARNING: Removing TG -> "+dnstreamTGCfg.getIdentity()+
+	slog.warn(mmi+"Removing TG -> "+dnstreamTGCfg.getIdentity()+
 		  " from the Spine FPP adjustments and replacing it with its nearest downstream neighbor-> "+this.locations.get(tgLocIdx+1).getIdentity());
 
         // --- NOTE: The downstream most TG residual located at this.locations.get(tgLocIdx)
@@ -811,8 +816,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     // --- TODO: Write the output file according to the required format.    
     slog.info(mmi+"end, this.doAdjust="+this.doAdjust);
     
-    slog.info(mmi+"debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
   }
 
   // --- 
@@ -845,8 +850,8 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     slog.info(mmi+"this.fmfBegAdjustInstantFutr="+this.fmfBegAdjustInstantFutr.toString());
     slog.info(mmi+"fmfInstantsPastAndFuture.first()="+fmfInstantsPastAndFuture.first());
     slog.info(mmi+"fmfInstantsPastAndFuture.last()="+fmfInstantsPastAndFuture.last());
-    slog.info(mmi+"debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"debug exit 0");
+    //System.exit(0);
     
     // --- Allocate the temp Map<Integer,List<MeasurementCustom>> that will be
     //     used in nested loops for the FMF WL adj. processing for all the ship
@@ -978,8 +983,11 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
 
 	final double lastUpsTGResidual= this.tgsResiduals.get(upstreamTGCfg).get(this.fmfInstantsInPast.last());
 	final double lastDnsTGResidual= this.tgsResiduals.get(dnstreamTGCfg).get(this.fmfInstantsInPast.last());
+	
 	slog.info(mmi+"lastUpsTGResidual="+lastUpsTGResidual);
-	slog.info(mmi+"lastDnsTGResidual="+lastDnsTGResidual);	
+	slog.info(mmi+"lastDnsTGResidual="+lastDnsTGResidual);
+	//slog.info(mmi+"debug exit 0");
+        //System.exit(0);
 	
 	// --- Get the time decaying factor for the residual at the upstream TG
 	final double upsShortTermFMFTSOffsetSecInv=
