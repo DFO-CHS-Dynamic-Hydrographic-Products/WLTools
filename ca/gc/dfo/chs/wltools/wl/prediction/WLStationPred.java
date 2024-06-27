@@ -32,6 +32,9 @@ import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
+import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPredFactory;
 
@@ -249,6 +252,40 @@ final public class WLStationPred extends WLStationPredFactory {
                                null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
                               );
 
+    }
+
+    // ---
+    if (argsMapKeySet.contains("--previousPredResultsFile")) {
+
+      final String [] previousPredResultsFileSplit= argsMap
+	.get("--previousPredResultsFile").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+	
+      final String prevPredResultsFileFMT= previousPredResultsFileSplit[0];
+
+      if (!prevPredResultsFileFMT.equals(IWLToolsIO.Format.CHS_JSON.name())) {
+	throw new RuntimeException(mmi+"Invalid file input format -> "+prevPredResultsFileFMT+
+				   " for the --previousPredResultsFile option, only the "+IWLToolsIO.Format.CHS_JSON.name()+" input file format is allowed for now");
+      }
+
+      final String previousPredResultsFile= previousPredResultsFileSplit[1];
+
+      if (!WLToolsIO.checkForFileExistence(previousPredResultsFile)) {
+	throw new RuntimeException(mmi+"previousPredResultsFile -> "+previousPredResultsFile+" not found!");
+      }
+	
+      slog.info(mmi+"Will use already existing WL prediction data from input file ->"+previousPredResultsFile);
+
+      // --- Here we do not need to check if the time stamps of the predictions are
+      //     consistent with what we want hence the -1 for the 2nd arg. for the
+      //     WLAdjustmentIO.getWLDataInJsonFmt() method. We also assume that the WL
+      //     predictions values are already referred to a global or regional vertical
+      //     datum (and not the local CHS ZC) hence the 0.0 value for the 3rd argument
+      //     of WLAdjustmentIO.getWLDataInJsonFmt() method.      
+      this.alreadyExistingPredData= new
+	MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(previousPredResultsFile,-1L,0.0) );
+      
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);
     }
 
     slog.info(mmi+"end");

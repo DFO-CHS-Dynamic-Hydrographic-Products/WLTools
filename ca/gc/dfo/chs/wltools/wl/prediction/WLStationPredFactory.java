@@ -31,6 +31,7 @@ import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.SecondsSinceEpoch;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 //import ca.gc.dfo.chs.wltools.nontidal.climatology.Climatology;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 import ca.gc.dfo.chs.wltools.tidal.stationary.astro.Constituent1D;
@@ -79,7 +80,7 @@ abstract public class WLStationPredFactory
    * package theory and related code.
    */
   //protected Stationary1DTidalPredFactory stationaryTidalPred= null;
-   protected Stationary1DTidalPredFactory tidalPred1D= null;
+  protected Stationary1DTidalPredFactory tidalPred1D= null;
 
   /**
    * River-discharge and-or atmospheric influenced (a.k.a. non-stationary) tidal prediction object.
@@ -104,6 +105,10 @@ abstract public class WLStationPredFactory
 
   protected boolean predictionReady= false;
 
+  // --- Could have already calculated prediction data to use
+  //     instead of re-calculating it.
+  protected MeasurementCustomBundle alreadyExistingPredData= null;
+    
   //protected List<MeasurementCustom> predictionData= null;
   //protected String outputDirectory= false;
 
@@ -116,6 +121,22 @@ abstract public class WLStationPredFactory
     this.predictionData= null;
     //this.unfortunateUTCOffsetSeconds = 0L;
   }
+
+  // --- Could have some already calculated prediction to use.
+  public WLStationPredFactory(final MeasurementCustomBundle alreadyExistingPredData) {
+
+    this();
+
+    final String mmi="WLStationPredFactory constructor: ";
+    
+    try {
+      this.alreadyExistingPredData.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe+" alreadyExistingPredData cannot be null here!");
+    }
+     
+    this.alreadyExistingPredData= alreadyExistingPredData;
+  }   
 
   /**
    * comments please!
@@ -421,6 +442,16 @@ abstract public class WLStationPredFactory
     //ArrayList<MeasurementCustom> retList= new ArrayList<MeasurementCustom>();
     this.predictionData= new ArrayList<MeasurementCustom>();
 
+    if (this.timeIncrSeconds < 1) {
+      throw new RuntimeException(mmi+"Invalid value -> "+this.timeIncrSeconds+" for this.timeIncrSeconds");
+    }
+
+    //---  It could probably be possible to go backward in time for tidal prediction but
+    //     we do not allow it here									 
+    if (this.endTimeSeconds < this.startTimeSeconds) {
+      throw new RuntimeException(mmi+"Cannot have this.endTimeSeconds < this.startTimeSeconds here!");
+    }    
+
     // --- Check nbTimeStamps value here >> Must be at least 1
     //     and this.endTimeSeconds - this.startTimeSeconds > this.timeIncrSeconds
     final int nbTimeStamps=
@@ -428,7 +459,55 @@ abstract public class WLStationPredFactory
 
     slog.info(mmi+"this.timeIncrSeconds="+this.timeIncrSeconds);
 
-    for (long tsIter= 0; tsIter< nbTimeStamps; tsIter++) {
+    long predIterStart= 0L;
+
+    // --- Use the already calculated-existing WL prediction data (if any)
+    //     up to its last item
+    if (this.alreadyExistingPredData != null) {
+
+      final long checkTimeIntrvSeconds= this.alreadyExistingPredData.getDataTimeIntervallSeconds();
+
+      if (checkTimeIntrvSeconds != this.timeIncrSeconds) {
+	throw new RuntimeException(mmi+"checkTimeIntrvSeconds MUST be the same as this.timeIncrSeconds here!");
+      }
+
+      slog.info(mmi+"Using the already calculated-existing WL prediction data");
+
+      for (long tsIter= 0L; tsIter< nbTimeStamps; tsIter++) {
+
+        final Instant timeStampInstant= Instant
+	  .ofEpochSecond(this.startTimeSeconds + tsIter*this.timeIncrSeconds);
+
+	final MeasurementCustom mcPredCheck= this.alreadyExistingPredData.getAtThisInstant(timeStampInstant);
+
+      	if (mcPredCheck != null) {
+	    
+	  // --- Need to set the MeasurementCustom uncertainty at 0.0 here to
+	  //     get the same thing as the tidal prediction sets for it.
+          mcPredCheck.setUncertainty(0.0);
+	  
+	  this.predictionData.add(mcPredCheck);
+
+	  // --- increment the predIterStart for the starting index for the next loop
+	  //     that calculates the WL tidal preds.
+	  predIterStart = tsIter + 1L;
+	}
+      }
+
+      slog.info(mmi+"Last Instant used for the already calculated-existing WL prediction data -> "+
+		Instant.ofEpochSecond(this.startTimeSeconds + (predIterStart - 1L)*this.timeIncrSeconds));
+    }
+
+    final Instant firstPredInstant= Instant
+      .ofEpochSecond(this.startTimeSeconds + predIterStart*this.timeIncrSeconds);
+
+    slog.info(mmi+"Will start WL prediction calculations at firstPredInstant -> "+firstPredInstant.toString());
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
+
+    // --- predIterStart is 0L here if this.alreadyExistingPredData is null
+    //     (i.e. no already calculated-existing WL prediction data to use)
+    for (long tsIter= predIterStart; tsIter< nbTimeStamps; tsIter++) {
 
       final long timeStampSeconds=
         this.startTimeSeconds + tsIter*this.timeIncrSeconds;
@@ -439,19 +518,15 @@ abstract public class WLStationPredFactory
         this.tidalPred1D.computeTidalPrediction(timeStampSeconds);
 
       //slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
-
       //final Instant instant= Instant.ofEpochSecond(timeStampSeconds);
-
       //slog.info(mmi+"instant.toString()="+instant.toString());
       //slog.info(mmi+"debug System.exit(0)");
       //System.exit(0);
-
       //final MeasurementCustom tmpMC= new
       //  MeasurementCustom( Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0 );
 
-      //retList.
       this.predictionData.add(new MeasurementCustom(Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0));
-
+      
       //if (tsIter<=47){
       //  slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
       //  slog.info(mmi+"debug System.exit(0)");
