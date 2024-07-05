@@ -1,0 +1,14 @@
+export CLASSPATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/bin:/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib:$CLASSPATH
+export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/lib/as/hdfql:$LD_LIBRARY_PATH
+
+time java -Xms4096m -Xmx8192m WLTools \
+--tool=modelDataExtraction \
+--extractionType=shipWayPoints:nearestNeighSpatialInterp \
+--pointLocationsInputFormat=NON_STATIONARY_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/cfg/tidal/nonStationary/StLawrence/channelGridPointsInfoDef \ #
+#--pointLocationsInputFormat=S104DCF8:multiple \ # 
+--modelInputDataFormat=S104DCF2 \ # S104 DCF2 always use tiles.
+#--modelInputDataFormat=NEMO_NCDF \ # Native T grid
+--outputDataFormat=S104DCF3 \ # S104DCF3 output format implies all the timestamps available in the model input file for all the way points (DCF3 timepoint dataset based). No time interp.
+#--outputDataFormat=S104DCF8:unary \ S104DCF8:unary implies only one time stamp for one way point (DCF8 point dataset based with timestamp in the WL compound type). time interp.
+#--outputDataFormat=S104DCF8:multiple \ -outputDataFormat=S104DCF8:multiple implies all timestamps for all the way points (DCF8 point dataset based, constant time interval). No time interp.
+#--outputDataFormat=CHS_JSON \ # implies one CHS_JSON file for one way point location for all the timestamps available in the model input file.
