@@ -13,16 +13,20 @@ public interface IWLTools {
     prediction,
     adjustment,
     IPPAdjToS104DCF8,
-    S104Dcf8ToAscii
+    S104Dcf8ToAscii,
+    modelDataExtraction
   }
 
   //--- Need to update BoxContentNames if we add
   //    or remove one Box enmm item.
-  String [] BoxContentNames= { Box.analysis.name(),
-                               Box.prediction.name(),
-                               Box.adjustment.name(),
-			       Box.IPPAdjToS104DCF8.name(),
-                               Box.S104Dcf8ToAscii.name() };
+  String [] BoxContentNames= {
+    Box.analysis.name(),
+    Box.prediction.name(),
+    Box.adjustment.name(),
+    Box.IPPAdjToS104DCF8.name(),
+    Box.S104Dcf8ToAscii.name(),
+    Box.modelDataExtraction.name()
+  };
 
 
   Set<String> BoxContent= Set.of(BoxContentNames);

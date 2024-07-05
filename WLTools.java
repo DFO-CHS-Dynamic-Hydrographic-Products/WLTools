@@ -115,7 +115,8 @@ final public class WLTools extends WLToolsIO {
                                  IWLTools.Box.adjustment.name()+" OR --tool="+
                                  IWLTools.Box.analysis.name()+" OR --tool="+
 				 IWLTools.Box.IPPAdjToS104DCF8+" OR --tool "+
-                                 IWLTools.Box.S104Dcf8ToAscii.name()+" option defined !!");
+                                 IWLTools.Box.S104Dcf8ToAscii.name()+" OR --tool "+
+				 IWLTools.Box.modelDataExtraction.name()+" option defined !!");
 
     }
 
@@ -159,7 +160,7 @@ final public class WLTools extends WLToolsIO {
     if (!tool.equals(IWLTools.Box.IPPAdjToS104DCF8)) {
 
       if (!argsMap.keySet().contains("--outputDataFormat")) {
-        mlog.error(mmi+"--outputDataFormat option must be used for this tool -> "+tool);
+        throw new RuntimeException(mmi+"--outputDataFormat option must be used for this tool -> "+tool);
       }
 
       WLToolsIO.setOutputDataFormat(argsMap.get("--outputDataFormat"));
@@ -284,6 +285,14 @@ final public class WLTools extends WLToolsIO {
 
      }
 
-    mlog.info(mmi+"end");
+     if (tool.equals(IWLTools.Box.modelDataExtraction.name())) {
+
+       mlog.info(mmi+"Starting tool "+IWLTools.Box.modelDataExtraction.name());
+
+       mlog.info(mmi+"Debug System.exit(0)");
+       System.exit(0);
+     }
+    
+     mlog.info(mmi+"end");
   }
 }
