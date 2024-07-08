@@ -289,6 +289,11 @@ final public class WLTools extends WLToolsIO {
 
        mlog.info(mmi+"Starting tool "+IWLTools.Box.modelDataExtraction.name());
 
+       final ModelDataExtraction modelDataExtraction= new ModelDataExtraction(argsMap);
+
+       //modelDataExtraction.run();
+       
+
        mlog.info(mmi+"Debug System.exit(0)");
        System.exit(0);
      }
