@@ -36,8 +36,7 @@ public interface IWLStationPred  {
 
   // --- Define prediction types
   enum Type {
-    TIDAL, // --- Can be of the non-stationary type (a.k.a mixed stage-discharge influence and astronomic tides)
-    STAGE,  // --- WL predictions calculed with stage-discharge coefficients (from NSTide regression results) only. The discharges data can be climatologic or from a model ouput
+    TIDAL, // --- Can be of the non-stationary type (a.k.a mixed stage-discharge influence and astronomic tides) or stage-discharge only.
     CLIMATOLOGY // --- simple climatologic WL data (direct usage, year wrap-around timestamps)
   }
 
