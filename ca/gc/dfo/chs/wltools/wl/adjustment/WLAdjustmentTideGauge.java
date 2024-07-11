@@ -687,10 +687,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     final double avgsDiff= adjFMFMcbStatsMc.getValue() - wlPredsAvg;
 
-    final String wlLocationIdentity= this.location.getIdentity();
+    final String wlLocationIdentityStr= this.location.getIdentity();
+    // (this.location.getIdentity().startsWith("0") ? this.location.getIdentity().substring(1): this.location.getIdentity());
 
+    slog.info(mmi+"wlLocationIdentityStr="+wlLocationIdentityStr);
+ 
     // --- Get the int value of the num. id of the tide gauge.
-    final int wlLocationIdentityIntValue= Integer.parseInt(wlLocationIdentity.substring(1));
+    //     (Need to get rid of the starting '0' char here)
+    final int wlLocationIdentityIntValue= Integer
+      .parseInt(wlLocationIdentityStr.startsWith("0") ? wlLocationIdentityStr.substring(1) : wlLocationIdentityStr); //wlLocationIdentity.substring(1));
 
     slog.info(mmi+"wlLocationIdentityIntValue="+wlLocationIdentityIntValue);
 
