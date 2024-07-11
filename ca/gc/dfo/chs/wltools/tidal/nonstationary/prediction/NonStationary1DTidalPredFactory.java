@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -74,7 +75,7 @@ final public class NonStationary1DTidalPredFactory
    */
   //private Map<String, Map<String,Constituent1DData>> constituent1DDataItems= null;
   private HashMap<String, Constituent1DData> constituent1DDataItems= null;
-
+    
   /**
    * The stage equation (polynomial) object.
    */
@@ -82,6 +83,12 @@ final public class NonStationary1DTidalPredFactory
 
   private boolean useAstroTidePart= false;
 
+  private Set<String> higherOrderStageCoeffsStrSet= null;
+
+  private HashMap<String,StageCoefficient> stageCoefficientMap= null;
+
+  private HashMap<Long,StageInputData> stageInputTimeStampedData= null;
+    
   ///**
   // * To store the stage input data (river discharges and-or atmos. data) with their related time stamps
   // */
@@ -98,6 +105,11 @@ final public class NonStationary1DTidalPredFactory
     this.stagePart= null;
     this.hoTcDataMaps= null;
     this.constituent1DDataItems= null;
+
+    this.stageCoefficientMap= null;
+    this.higherOrderStageCoeffsStrSet= null;
+
+    this.stageInputTimeStampedData= null;
 
     this.useAstroTidePart= false;
   }
@@ -123,7 +135,35 @@ final public class NonStationary1DTidalPredFactory
                                timeStartSeconds,timeEndSeconds,timeIncrSeconds,
                                stageInputDataFile,stageInputDataFileFormat);
 
+     //this.stageCoefficientMap= this.stagePart.getCoeffcientsMap();
+     //try {
+     //  this.stageCoefficientMap.size();
+     //} catch (NullPointerException npe) {
+     //  throw new RuntimeException(npe+": this.stageCoefficientMap cannot be null here !!");
+     //}
+     //if (!this.stageCoefficientMap.containsKey(IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY)) {
+     //  throw new RuntimeException(": IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY -> "+
+     //				  IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY+" must be a key in this.stageCoefficientMap !!");       
+     //}    
+     //// --- Get the this.higherOrderStageCoeffsStrSet Set<String> for the higher order coefficients only.
+     //this.higherOrderStageCoeffsStrSet= new HashSet<String>(this.stageCoefficientMap.keySet());
+     //// --- But need to remove the zero'th order String from this.higherOrderStageCoeffsStrSet here:
+     //this.higherOrderStageCoeffsStrSet.remove(IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY);
+
+     // --- Get the timestamped stage-discharge data
+     this.stageInputTimeStampedData= this.stagePart.getTimeStampedInputData();
+
+     try {
+       this.stageInputTimeStampedData.size();
+     } catch (NullPointerException npe) {
+       throw new RuntimeException(npe+mmi+"this.stageInputTimeStampedData cannot be null here !!");
+     }
+
+     if (this.stageInputTimeStampedData.size() == 0) {
+       throw new RuntimeException(mmi+"this.stageInputTimeStampedData.size() cannot 0 here !!");
+     }
   }
+    
   /**
    * @param timeStampSeconds : A time-stamp in seconds since the epoch where we want a single tidal prediction.
    * @return The newly computed single tidal prediction in double precision.
@@ -131,34 +171,14 @@ final public class NonStationary1DTidalPredFactory
   @Override
   final public double computeTidalPrediction(final long timeStampSeconds) {
 
-     //final Map<String,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
-     //final HashMap<Long,StageInputData> stageInputDataMap= this.stagePart.getInputDataMap();
-     //slog.info("computeTidalPrediction: start, timeStampSeconds="+timeStampSeconds);
-
-     try {
-       this.stagePart.hashCode();
-     } catch (NullPointerException npe) {
-       throw new RuntimeException(npe+": this.stagePart cannot be null here !!");
+     if (this.useAstroTidePart && (this.constituent1DDataItems.size() != this.higherOrderStageCoeffsStrSet.size() )) {
+       throw new RuntimeException(": Must have this.constituent1DDataItems.size() != this.higherOrderStageCoeffsStrSet.size() when this.useAstroTidePart is true here !!");
      }
-
-     final HashMap<String,StageCoefficient>
-       stageCoefficientMap= this.stagePart.getCoeffcientsMap();
-
-     //slog.info("computeTidalPrediction: stageCoefficientMap="+stageCoefficientMap.toString());
-     //slog.info("computeTidalPrediction: debug System.exit(0)");
-     //System.exit(0);
-
-     //final HashMap<String,MeasurementCustom> stageInputDataMap=
-     final HashMap<Long,StageInputData>
-       stageInputTimeStampedData= this.stagePart.getTimeStampedInputData();
-
-     //slog.info("computeTidalPrediction: aft. getting stage objects.");
-     //getInputDataAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
-
+     
      // --- The zero'th order non-stationary WL pred. part with or without
      //     the astro. tide part.
      double tidalPredValue=
-       stageCoefficientMap.get(STAGE_JSON_ZEROTH_ORDER_KEY).getValue() +
+       this.stageCoefficientMap.get(IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY).getValue() +
 	 (this.useAstroTidePart ? super.computeTidalPrediction(timeStampSeconds) : 0.0);
      
      //slog.info("computeTidalPrediction: stationary zero'th order tidalPredValue="+tidalPredValue);
@@ -167,9 +187,8 @@ final public class NonStationary1DTidalPredFactory
 
      // --- Get the stage coefficients string ids to use loop block below
      //     (this.constituent1DDataItems is null for the NON_STATIONARY_STAGE method here)
-     Set<String> stageCoeffsStrSet= ( this.useAstroTidePart ?
-				      this.constituent1DDataItems.keySet() : stageCoefficientMap.keySet() );
-
+     //Set<String> stageCoeffsStrSet= ( this.useAstroTidePart ?
+     //				      new HashSet<String>(this.constituent1DDataItems.keySet()) : new HashSet<String>(stageCoefficientMap.keySet()) );
      //try {
      //  stageCoeffsStrSet.size();
      //} catch (NullPointerException npe) {
@@ -177,54 +196,56 @@ final public class NonStationary1DTidalPredFactory
      //}
 
      // --- Need to remove the IStage.STAGE_JSON_ZEROTH_ORDER_KEY string (if present) for the loop block below
-     stageCoeffsStrSet.remove(IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY);
+     //stageCoeffsStrSet.remove(IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY);
 
      // --- Add the higher order(s) contribution(s) to the WL tidal pred. signal.
-     for (final String stageCoeffId: stageCoeffsStrSet) { // this.constituent1DDataItems.keySet()) { // stageInputDataMap.keySet()) {
+     for (final String stageCoeffId: this.higherOrderStageCoeffsStrSet) { // this.constituent1DDataItems.keySet()) { // stageInputDataMap.keySet()) {
 
         // --- Get the non-stationary WL tidal pred. contribution for this
-        //     higher order >=1/
-        //final double hoTidalValue= super.astroInfosFactory.
-        //  computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stageCoeffId));
-
-	// --- hoTidalValue is 0.0 here if this.useAstroTidePart == true
+        //     higher order >=1
+	//     NOTE: hoTidalValue is 0.0 here if this.useAstroTidePart == false
 	final double hoTidalValue= ( !this.useAstroTidePart ? 0.0 :
-	  super.astroInfosFactory.computeTidalPrediction(timeStampSeconds,this.constituent1DDataItems.get(stageCoeffId)) );
+	  super.astroInfosFactory.computeTidalPrediction(timeStampSeconds, this.constituent1DDataItems.get(stageCoeffId)) );
 			    
         //slog.info("computeTidalPrediction: stageCoeffId="+stageCoeffId+", aft. getting non-stationary hoTidalValue="+hoTidalValue);
 	//System.out.flush();
 	//System.exit(0);
 
-        //final StageInputData stageInputData= stageInputDataMap.get(stInputDataId);
+        // --- stage coefficient id.:
+        final StageCoefficient stageCoefficient= this.stageCoefficientMap.get(stageCoeffId);
 
-        final StageCoefficient stageCoefficient= stageCoefficientMap.get(stageCoeffId);
+	// --- stage coefficient value:
         final double stageCoefficientValue= stageCoefficient.getValue();
-
+	
         //slog.info("computeTidalPrediction: aft. getting stageCoefficientValue="+stageCoefficientValue);
         //slog.info("computeTidalPrediction: aft. getting stageCoefficientValue, stageCoefficient.getTimeLagSeconds()="+stageCoefficient.getTimeLagSeconds());
+
         // --- Get the stage value for this stage coefficient using the time lag
         //     as determined by the non-stationary tidal analysis.
-        //final double stageInputDataValue= stageInputDataMap.get(stageCoeffId).
-        //    getAtTimeStamp(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
+        //     Need to get the StageInputData object at the right timestamp considering
+	//     the related stage-discharge time lag in seconds.
         final StageInputData stageInputData=
-          stageInputTimeStampedData.get(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
+          this.stageInputTimeStampedData.get(timeStampSeconds - stageCoefficient.getTimeLagSeconds());
 
         //slog.info("computeTidalPrediction: aft. getting stageInputData="+stageInputData.toString());
         //slog.info("computeTidalPrediction: aft. getting stageInputData, stageCoeffId="+stageCoeffId);
 
+	// --- Get the stage value for this stageCoeffId
         final double stageInputDataValue=
           stageInputData.getValueForCoeff(stageCoeffId); //.getDataUnitValue();
 
-        slog.info("computeTidalPrediction: aft. getting stageInputDataValue="+stageInputDataValue);
+        //slog.info("computeTidalPrediction: aft. getting stageInputDataValue="+stageInputDataValue);
 
-        // ---- Apply the non-stationary calculation with the related stage value part and the
-        //      the hoTidalValue for this higher order.
+        // ---- Apply the non-stationary calculation with the related stage-discherge value part and 
+        //      the hoTidalValue for this higher order (>=1) coefficient
+	//      NOTE: this is different from the theoritical formulation but the outcome is the same,
+	//            we just avoid one costly multiplication per timestamp with this trick
         tidalPredValue += (stageCoefficientValue + hoTidalValue) * stageInputDataValue ; /// stageInputDataValue;
      }
 
-     slog.info("tidalPredValue for current timestamp="+tidalPredValue);
-     slog.info("computeTidalPrediction: end");
-     System.exit(0);
+     //slog.info("tidalPredValue for current timestamp="+tidalPredValue);
+     //slog.info("computeTidalPrediction: end");
+     //System.exit(0);
 
      // ---
      return tidalPredValue;
@@ -290,11 +311,35 @@ final public class NonStationary1DTidalPredFactory
     // --- Populate the this.stagePart with the stage equation coefficients.
     this.stagePart.setCoeffcientsMap(stageJsonObj);
 
-    //final HashMap<String,StageCoefficient>
-    final Set<String> stageCoefficientsIds=
-      this.stagePart.getCoeffcientsMap().keySet();
+    // --- We can set this.stageCoefficientMap now
+    this.stageCoefficientMap= this.stagePart.getCoeffcientsMap();
 
-    slog.info(mmi+"station stageCoefficientsIds="+stageCoefficientsIds); //.keySet().toString());
+    try {
+      this.stageCoefficientMap.size();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe+": this.stageCoefficientMap cannot be null here !!");
+    }
+
+    if (!this.stageCoefficientMap.containsKey(IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY)) {
+      throw new RuntimeException(mmi+": IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY -> "+
+			         IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY+" must be a key in this.stageCoefficientMap !!");       
+    }
+
+    // --- Get the this.higherOrderStageCoeffsStrSet Set<String> for the higher order coefficients only.
+    this.higherOrderStageCoeffsStrSet= new HashSet<String>(this.stageCoefficientMap.keySet());
+
+    // --- But need to remove the zero'th order String from this.higherOrderStageCoeffsStrSet here:
+    this.higherOrderStageCoeffsStrSet.remove(IStageIO.STAGE_JSON_ZEROTH_ORDER_KEY);    
+
+    slog.info(mmi+"location this.higherOrderStageCoeffsStrSet="+this.higherOrderStageCoeffsStrSet);
+    
+    // --- Get all the stage coefficients strings in a Set
+    final Set<String> stageCoefficientsIds= this.stageCoefficientMap.keySet();
+      //this.stagePart.getCoeffcientsMap().keySet();
+
+    slog.info(mmi+"location stageCoefficientsIds="+stageCoefficientsIds); //.keySet().toString());
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- Populate the non-stationary tidal constituents data with the Json
     //     formatted file content.

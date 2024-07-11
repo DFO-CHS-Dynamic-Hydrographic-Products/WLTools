@@ -471,9 +471,7 @@ abstract public class WLStationPredFactory
         this.tidalPred1D.computeTidalPrediction(timeStampSeconds);
 
       //slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
-
       //final Instant instant= Instant.ofEpochSecond(timeStampSeconds);
-
       //slog.info(mmi+"instant.toString()="+instant.toString());
       //slog.info(mmi+"debug System.exit(0)");
       //System.exit(0);
@@ -484,6 +482,10 @@ abstract public class WLStationPredFactory
       //retList.
       this.predictionData.add(new MeasurementCustom(Instant.ofEpochSecond(timeStampSeconds), wlPrediction, 0.0));
 
+      //slog.info(mmi+"aft. this.predictionData.add()");
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);
+
       //if (tsIter<=47){
       //  slog.info(mmi+"wlPrediction="+wlPrediction+", timeStampSeconds="+timeStampSeconds);
       //  slog.info(mmi+"debug System.exit(0)");
@@ -491,10 +493,12 @@ abstract public class WLStationPredFactory
       //}
     }
 
-    slog.info(mmi+"done with tidal predictions for station -> "+this.stationId);
+    slog.info(mmi+"done with tidal predictions for all the timestamps for station -> "+this.stationId);
     slog.info(mmi+"end");
+    //slog.info(mmi+"debug System.exit(0)");
+    //System.exit(0);
 
-     return this;
+    return this;
     //return retList;
   }
 
