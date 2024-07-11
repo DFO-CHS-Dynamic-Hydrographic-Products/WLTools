@@ -686,8 +686,26 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final double wlPredsAvg= predStatsMc.getValue();
 
     final double avgsDiff= adjFMFMcbStatsMc.getValue() - wlPredsAvg;
-    //final double amplitudesAdjFact= adjFMFMcbStatsMc.getUncertainty()/predStatsMc.getUncertainty();
-    final double amplitudesAdjFact= 1.0 - adjFMFMcbStatsMc.getUncertainty()/predStatsMc.getUncertainty();
+
+    final String wlLocationIdentity= this.location.getIdentity();
+
+    // --- Get the int value of the num. id of the tide gauge.
+    final int wlLocationIdentityIntValue= Integer.parseInt(wlLocationIdentity.substring(1));
+
+    slog.info(mmi+"wlLocationIdentityIntValue="+wlLocationIdentityIntValue);
+
+    // --- Calculate the amplitude adjust factor which depends on the ratio of the std devs.
+    //     of the adjusted FMF WL and the WL prediction. 
+    double amplitudesAdjFact= 1.0 - adjFMFMcbStatsMc.getUncertainty()/predStatsMc.getUncertainty();
+
+    // --- Do not do amplitude adjust of WL prediction for TGs upstream of FIRST_TG_WITH_WLO_AMP_AVG_ADJUST
+    //     if the predStatsMc.getUncertainty() < adjFMFMcbStatsMc.getUncertainty() to avoid producting
+    //     spurious oscillations with too much amplitudes for those tide gauges. The amplitude adjust for those
+    //     tide gauges is done only when predStatsMc.getUncertainty() > adjFMFMcbStatsMc.getUncertainty()
+    if ( wlLocationIdentityIntValue > FIRST_TG_WITH_WLO_AMP_AVG_ADJUST && predStatsMc.getUncertainty() < adjFMFMcbStatsMc.getUncertainty()) {
+      slog.info(mmi+"predStatsMc.getUncertainty() < adjFMFMcbStatsMc.getUncertainty() setting amplitudesAdjFact to 0.0 here !!");
+      amplitudesAdjFact= 0.0;
+    }
     
     slog.info(mmi+"avgsDiff="+avgsDiff);
     slog.info(mmi+"amplitudesAdjFact="+amplitudesAdjFact);   
