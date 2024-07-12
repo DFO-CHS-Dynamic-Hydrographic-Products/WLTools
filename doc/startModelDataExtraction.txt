@@ -3,8 +3,10 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 
 time java -Xms4096m -Xmx8192m WLTools \
 --tool=modelDataExtraction \
---extractionType=shipWayPoints:nearestNeighSpatialInterp \
---inputDatumConv=zc2Global:add \ # Datum conversion info should be defined in the --pointLocationsInputInfo data
+--inputDataType=WaterLevels \
+--extractionType=shipWayPointsSurface:nearestNeigh \ # --- nearestNeigh is the spatial interp type.
+--wlInputDatumConv=zc2Global \ # --- can be zc2Global (add) or global2zc (subtract) do nothing if not used, datum conversion info MUST be defined in the --pointLocationsInputInfo data
+#--wlInputDatumConv=glocbal2zc \ # --- can be zc2Global (add) or global2zc (subtract) do nothing if not used, datum conversion info MUST be defined in the --pointLocationsInputInfo data
 --pointLocationsInputInfo=NON_STATIONARY_JSON:<channelGridPointsInfoDef dir path, usually under the cfg folder of the package> \ #
 #--pointLocationsInputFormat=S104DCF8:multiple \ # 
 --modelInputDataInfo=S104DCF2:<S104 DCF2 input data dir. path> \ # S104 DCF2 always use tiles.

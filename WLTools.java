@@ -17,7 +17,8 @@ import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.tidal.ITidal;
 import ca.gc.dfo.chs.wltools.tidal.ITidalIO;
-import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
+//Not used on the gpsc clusters: import ca.gc.dfo.chs.util.spine.S104Dcf8ToAscii;
+import ca.gc.dfo.chs.modeldata.ModelDataExtraction;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStage;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
@@ -256,34 +257,28 @@ final public class WLTools extends WLToolsIO {
       //mlog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
     }
-        // S104Dcf8ToAscii
-    if (tool.equals(IWLTools.Box.S104Dcf8ToAscii.name())) {
-
-      mlog.info(mmi+"Generating SPINE Ascii files from S-104 Dcf8");
-
-      if (!argsMap.keySet().contains("--outputDirectory")) {
-        throw new RuntimeException(mmi+"Must have the --outputDirectory=<path to the output dir.> defined in the args.!");
-      }
-        final String outputDirArg= argsMap.get("--outputDirectory");
-
-      if (!argsMap.keySet().contains("--h5Path")) {
-        throw new RuntimeException(mmi+"Must have the --h5Path=<path to S-104 file.> defined in the args.!");
-      }
-      final String h5PathArg= argsMap.get("--h5Path");
-
-      if (!argsMap.keySet().contains("--time")) {
-        throw new RuntimeException(mmi+"Must have the --time=<ISO time> defined in the args.!");
-      }
-      final String timeArg= argsMap.get("--time");
-
-      if (!argsMap.keySet().contains("--type")) {
-        throw new RuntimeException(mmi+"Must have file type --type=UU,30,Q2,Q3,Q4 defined in the args.!");
-      }
-      final String typeArg= argsMap.get("--type");
-
-      S104Dcf8ToAscii.runConversion(timeArg, outputDirArg, h5PathArg, typeArg);
-
-     }
+    
+    // --- S104Dcf8ToAscii: not used on the gpsc clusters.
+    // if (tool.equals(IWLTools.Box.S104Dcf8ToAscii.name())) {
+    //   mlog.info(mmi+"Generating SPINE Ascii files from S-104 Dcf8");
+    //   if (!argsMap.keySet().contains("--outputDirectory")) {
+    //     throw new RuntimeException(mmi+"Must have the --outputDirectory=<path to the output dir.> defined in the args.!");
+    //   }
+    //     final String outputDirArg= argsMap.get("--outputDirectory");
+    //   if (!argsMap.keySet().contains("--h5Path")) {
+    //     throw new RuntimeException(mmi+"Must have the --h5Path=<path to S-104 file.> defined in the args.!");
+    //   }
+    //   final String h5PathArg= argsMap.get("--h5Path");
+    //   if (!argsMap.keySet().contains("--time")) {
+    //     throw new RuntimeException(mmi+"Must have the --time=<ISO time> defined in the args.!");
+    //   }
+    //   final String timeArg= argsMap.get("--time");
+    //   if (!argsMap.keySet().contains("--type")) {
+    //     throw new RuntimeException(mmi+"Must have file type --type=UU,30,Q2,Q3,Q4 defined in the args.!");
+    //   }
+    //   final String typeArg= argsMap.get("--type");
+    //   S104Dcf8ToAscii.runConversion(timeArg, outputDirArg, h5PathArg, typeArg);
+    //  }
 
      if (tool.equals(IWLTools.Box.modelDataExtraction.name())) {
 
@@ -293,7 +288,6 @@ final public class WLTools extends WLToolsIO {
 
        //modelDataExtraction.run();
        
-
        mlog.info(mmi+"Debug System.exit(0)");
        System.exit(0);
      }
