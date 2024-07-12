@@ -511,9 +511,10 @@ abstract public class WLAdjustmentFMF
 
     slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
 
-    // --- Get rid of the useless (for what we want to do) 1st char of wlLocationIdentity
+    // --- Get rid of the 1st char of wlLocationIdentity if it is '0'
     //     and get its integer value.
-    final int wlLocationIdentityIntValue= Integer.parseInt(wlLocationIdentity.substring(1));
+    final int wlLocationIdentityIntValue= Integer
+      .parseInt(wlLocationIdentity.startsWith("0") ? wlLocationIdentity.substring(1) : wlLocationIdentity); //wlLocationIdentity.substring(1));
 
     slog.info(mmi+"wlLocationIdentityIntValue="+wlLocationIdentityIntValue);
     //slog.info(mmi+"Debug exit 0");
@@ -584,8 +585,9 @@ abstract public class WLAdjustmentFMF
 
       // --- Get the subset of Instant objects that are between the m2WrapAroundInstantInPast and the
       //     mostRecentNowcastDataInstant (inclusive) for the WLO data
-      final NavigableSet<Instant> m2WrapAroundWLODataInPast= new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).
-	 subSet(m2WrapAroundInstantInPast, true, mostRecentNowcastDataInstant, true);
+      final NavigableSet<Instant> m2WrapAroundWLODataInPast=
+	new TreeSet<Instant>(this.mcbWLO.getInstantsKeySetCopy()).
+	   subSet(m2WrapAroundInstantInPast, true, mostRecentNowcastDataInstant, true);
 
       // --- Assuming here that the WLO data has been decimated using the same time intervall
       //     in seconds as for the FMF data.

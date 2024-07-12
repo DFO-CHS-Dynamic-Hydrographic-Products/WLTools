@@ -150,11 +150,23 @@ final public class WLStationPred extends WLStationPredFactory {
 
     final String stationPredType= argsMap.get("--stationPredType" );
 
-    if (!stationPredType.equals(IWLStationPred.Type.TIDAL.name()+":"+ITidal.Method.NON_STATIONARY_FOREMAN.name())) {
+    System.out.println(mmi+"stationPredType="+stationPredType);
 
-      throw new RuntimeException(mmi+"Only "+IWLStationPred.Type.TIDAL.name()+":"+
-                                 ITidal.Method.NON_STATIONARY_FOREMAN.name()+" prediction method allowed for now!!");
+    final String [] stationPredTypeSplit= stationPredType.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+
+    //if (!stationPredType.equals(IWLStationPred.Type.TIDAL.name()+":"+ITidal.Method.NON_STATIONARY_FOREMAN.name())) {
+
+    final String mainPredType= stationPredTypeSplit[0];
+    
+    if (!mainPredType.equals(IWLStationPred.Type.TIDAL.name())) {
+      throw new RuntimeException(mmi+"Only "+IWLStationPred.Type.TIDAL.name()+" main prediction type allowed for now !!");
     }
+
+    // if ( !stationPredTypeSplit[0].equals(ITidal.Method.NON_STATIONARY_FOREMAN.name())
+    // 	&& !stationPredTypeSplit[0].equals(ITidal.Method.NON_STATIONARY_STAGE.name()) ) {
+    //   throw new RuntimeException(mmi+"Only "+ITidal.Method.NON_STATIONARY_FOREMAN.name()+" or "+
+    // 				 ITidal.Method.NON_STATIONARY_STAGE.name()+" predictions methods allowed for now!!");
+    // }
 
     if (!argsMapKeySet.contains("--stationIdInfo")) {
       throw new RuntimeException(mmi+"Must have the mandatory prediction location info option: --stationIdInfo" );
@@ -162,15 +174,14 @@ final public class WLStationPred extends WLStationPredFactory {
 
     final String stationIdInfo= argsMap.get("--stationIdInfo" );
 
-    System.out.println(mmi+"stationPredType="+stationPredType);
+    //System.out.println(mmi+"stationPredType="+stationPredType);
     System.out.println(mmi+"stationIdInfo="+stationIdInfo);
 
     //WLStationPredFactory wlStnPrdFct= null;
 
-    final String [] stationPredTypeSplit=
-      stationPredType.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
-
-    final String mainPredType= stationPredTypeSplit[0];
+    //final String [] stationPredTypeSplit=
+    //  stationPredType.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+    //final String mainPredType= stationPredTypeSplit[0];
 
     if ( mainPredType.equals(IWLStationPred.Type.TIDAL.name())) { //  ("TIDAL") ) {
 
@@ -188,32 +199,43 @@ final public class WLStationPred extends WLStationPredFactory {
                                    " tidal prediction method is not allowed for now!!");
       }
 
+      // --- Default type for the stage discharge data.
       IStage.Type stageType= IStage.Type.DISCHARGE_CFG_STATIC;
 
-      if (tidalMethod == ITidal.Method.NON_STATIONARY_FOREMAN) {
+      if ( specTidalMethod.equals(ITidal.Method.NON_STATIONARY_FOREMAN.name())
+	   || specTidalMethod.equals(ITidal.Method.NON_STATIONARY_STAGE.name()) ) {
 
-      if (!argsMapKeySet.contains("--stageType")) {
+	// --- ITidal.Method.NON_STATIONARY_FOREMAN default method.
+	tidalMethod= ITidal.Method.NON_STATIONARY_FOREMAN;
 
-        throw new RuntimeException(mmi+
-                                   "Must have the --stageType option defined if tidal method is"+
-                                   ITidal.Method.NON_STATIONARY_FOREMAN.name()+ " !!");
-      }
+	if (specTidalMethod.equals(ITidal.Method.NON_STATIONARY_STAGE.name())) {
+	  tidalMethod= ITidal.Method.NON_STATIONARY_STAGE;
+	}
 
-      final String stageTypeCheck= argsMap.get("--stageType");
+	slog.info(mmi+"Using tidalMethod="+tidalMethod.name());
+	  
+        //// --- Default type for the stage discharge data.
+        //IStage.Type stageType= IStage.Type.DISCHARGE_CFG_STATIC;
+	  
+        if (!argsMapKeySet.contains("--stageType")) {
+          throw new RuntimeException(mmi+"Must have the --stageType option defined if tidal method is"+
+                                     ITidal.Method.NON_STATIONARY_FOREMAN.name()+ " !!");
+        }
 
-      if (stageTypeCheck.equals(IStage.Type.DISCHARGE_FROM_MODEL.name())) {
-        stageType= IStage.Type.DISCHARGE_FROM_MODEL;
-      }
+	// --- type for the stage discharge data.
+        final String stageTypeCheck= argsMap.get("--stageType");
 
-      if (stageType != IStage.Type.DISCHARGE_CFG_STATIC) {
+        if (stageTypeCheck.equals(IStage.Type.DISCHARGE_FROM_MODEL.name())) {
+          stageType= IStage.Type.DISCHARGE_FROM_MODEL;
+        }
 
-        throw new RuntimeException(mmi+"Only "+
-                                   IStage.Type.DISCHARGE_CFG_STATIC.name()+
+        if (stageType != IStage.Type.DISCHARGE_CFG_STATIC) {
+          throw new RuntimeException(mmi+"Only "+IStage.Type.DISCHARGE_CFG_STATIC.name()+
                                    " stage type allowed for now !!");
         }
       }
 
-      //if (!argsMapKeySet.contains("--tidalConstsInputFileFormat")) {
+      // ---
       if (!argsMapKeySet.contains("--tidalConstsInputInfo")) {
 
         throw new RuntimeException(mmi+
@@ -226,7 +248,7 @@ final public class WLStationPred extends WLStationPredFactory {
       final String checkTidalConstInputFileFmt=
         tidalConstsInputInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR)[0];
 
-      //if (!tidalConstsInputFileFormat.
+      // ---
       if (!checkTidalConstInputFileFmt.
             equals(ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON.name())) {
 
@@ -238,6 +260,10 @@ final public class WLStationPred extends WLStationPredFactory {
       //final ITidalIO.WLConstituentsInputFileFormat
       //  tidalConstsInputFileFmt= ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON;
 
+      slog.info(mmi+"Doing the tidal prediction configuration");
+      //slog.info(mmi+"debug System.exit(0)");
+      //System.exit(0);
+
       // --- Specific configuration for a tidal prediction.
       super.configureTidalPred(stationIdInfo,
                                startTimeSeconds, //testStartTime, //unixTimeNow,
@@ -246,13 +272,13 @@ final public class WLStationPred extends WLStationPredFactory {
                                tidalMethod, //ITidal.Method.NON_STATIONARY_FOREMAN,
                                null, //nsTCInputFile
                                tidalConstsInputInfo,
-                               //tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON,                                        >
-                               stageType, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB
-                               null, // --- Stage input data file
-                               null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default.
+                               //tidalConstsInputFileFmt,//ITidalIO.WLConstituentsInputFileFormat.NON_STATIONARY_JSON
+                               stageType, // --- IStage.Type.DISCHARGE_CFG_STATIC: Stage data taken from inner config DB, ignored by STATIONARY_FOREMAN method
+                               null, // --- Stage input data file, ignored by STATIONARY_FOREMAN method
+                               null  // --- IStage.Type.DISCHARGE_CFG_STATIC IStageIO.FileFormat is JSON by default, ignored by STATIONARY_FOREMAN method
                               );
 
-    }
+    } // --- mainPredType.equals(IWLStationPred.Type.TIDAL.name()
 
     // ---
     if (argsMapKeySet.contains("--previousPredResultsFile")) {

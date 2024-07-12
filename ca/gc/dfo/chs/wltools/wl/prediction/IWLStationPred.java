@@ -36,8 +36,8 @@ public interface IWLStationPred  {
 
   // --- Define prediction types
   enum Type {
-    TIDAL,
-    CLIMATOLOGY
+    TIDAL, // --- Can be of the non-stationary type (a.k.a mixed stage-discharge influence and astronomic tides) or stage-discharge only.
+    CLIMATOLOGY // --- simple climatologic WL data (direct usage, year wrap-around timestamps)
   }
 
   String [] allowedTypesDef= { Type.TIDAL.name(), Type.CLIMATOLOGY.name() };
