@@ -17,8 +17,20 @@ import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 
 import java.util.List;
 import org.slf4j.Logger;
-import javax.json.JsonObject;
+import java.nio.file.Path;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+//---
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonValue;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
 
 //import javax.validation.constraints.Min;
 //import javax.validation.constraints.NotNull;
@@ -94,11 +106,12 @@ public class WLLocation extends HBCoords implements IWLLocation {
     return this;
   }
 
+  // ---
   public WLLocation setConfig(final JsonObject wllJsonCfgObj) {
 
     final String mmi= "setConfig: ";
 
-    slog.info(mmi+"start");
+    //slog.info(mmi+"start");
 
     try {
       wllJsonCfgObj.size();
@@ -118,19 +131,49 @@ public class WLLocation extends HBCoords implements IWLLocation {
         getBoolean(IWLLocation.INFO_JSON_ZCIGLD_CONV_BOOL_KEY);
     }
 
-    slog.info(mmi+"this.identity="+this.identity+
-              ", this.zcVsVertDatum="+this.zcVsVertDatum+
-              ", this.doZCConvToVertDatum="+this.doZCConvToVertDatum);
+    //slog.info(mmi+"this.identity="+this.identity+
+    //          ", this.zcVsVertDatum="+this.zcVsVertDatum+
+    //          ", this.doZCConvToVertDatum="+this.doZCConvToVertDatum);
 
     this.setHBCoords(this.jsonCfgObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
                      this.jsonCfgObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
 
-    slog.info(mmi+"end");
-
+    //slog.info(mmi+"end");
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
 
     return this;
+  }
+
+  // ---
+  public final static WLLocation setConfigFromJSONFile(final Path wllocationJsonFilePath) {
+
+    final String mmi= "setConfigFromJSONFile: ";
+
+    WLLocation wllRet= new WLLocation(wllocationJsonFilePath.getFileName().toString());
+    
+    // --- 
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(wllocationJsonFilePath.toString());
+
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(mmi+e);
+    }
+
+    final JsonObject wllLocJsonFileObj= Json.createReader(jsonFileInputStream).readObject();
+
+    wllRet.setConfig(wllLocJsonFileObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY));    
+
+    // --- We can close the tide gauges info Json file now
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(mmi+e);
+    }    
+
+    return wllRet;
   }
 
   //final public HBCoords getHBCoords() {

@@ -8,7 +8,13 @@ import ca.gc.dfo.chs.wltools.IWLToolsIO;
 
 // ---
 public interface IModelDataExtraction extends IWLToolsIO { //, ICurrToolsIO {
-   
+
+  String locationsCoordsId= "LOCATIONS_COORDS";
+
+  String locationsCoordsSep= ";;"; // e.g: 49.69,-169.69;;52.45,-70.34;; ...
+
+  String latLonSep= ",";
+    
   enum Type {
     // 2DSlice,
     // 3DSlice,

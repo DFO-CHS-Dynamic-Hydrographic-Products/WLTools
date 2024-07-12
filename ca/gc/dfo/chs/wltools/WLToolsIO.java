@@ -149,6 +149,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     final Path inputDataDir= FileSystems.getDefault().getPath(inputDir);
 
     slog.info(mmi+"inputDataDir="+inputDataDir.toString());
+    slog.info(mmi+"relevantFilesRegExpr="+relevantFilesRegExpr);
 
     List<Path> inputDataDirFilesList= new ArrayList<Path>();
 
