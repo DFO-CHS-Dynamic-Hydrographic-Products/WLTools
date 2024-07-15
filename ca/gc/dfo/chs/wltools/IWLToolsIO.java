@@ -47,6 +47,9 @@ public interface IWLToolsIO {
 
   String SHIP_CHANNEL_POINTS_DEF_DIRNAME=  File.separator + "channelGridPointsInfoDef" + File.separator;
 
+  // --- stage only data info:
+  String PKG_CFG_STAGE_DIR= File.separator + "stage" + File.separator;
+    
   // --- IWLS specific:
 
   String IWLS_DB_TG_STR_ID_KEY= "id";
