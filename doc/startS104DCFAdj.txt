@@ -1,0 +1,28 @@
+export CLASSPATH=<local path>/WLTools/bin:<local path>/WLTools/lib:$CLASSPATH
+export LD_LIBRARY_PATH=<local path>WLTools/lib/as/hdfql:$LD_LIBRARY_PATH
+
+# --- 03335 TG id. can be passed in args or got from the maestro env. vars.
+
+time java WLTools \
+\
+--tool=adjustment \
+\
+--adjType=S104DCF2 \
+\
+--wloInputDataInfo=FILE_SYS:IWLS_JSON:<user home>/.suites/dfo_post_processing.rel-4.2.0.dev.h2d2-shop/hub/gpsc8/work/20240718060000/main/dfo_post_processing/pst_chs_dhp/s104dcf2/get_iwls_wlo/output
+\
+--minNumberOfObs=960 # 48 hours at 3mins time intervals
+\
+--referenceTimeISOFormat=2024-07-18T06:00:00Z
+\
+--fullForecastModelName=ECCC_OHPS_SLFE \
+\
+--modelInputDataDir=S104DCF2:<user home>/.suites/dfo_post_processing.rel-4.2.0.dev.h2d2-shop/hub/gpsc8/work/20240718060000/main/dfo_post_processing/pst_chs_dhp/s104dcf2/loop_s104dcf2_conv/LOOP_DHP_CONV_OUTPUTS
+\
+--outputDataFormat=S104DCF2
+\
+--modelWLResidualsAtTGStatsIODir=<user home>/.suites/dfo_post_processing.rel-4.2.0.dev.h2d2-shop/hub/gpsc8/modelWLResidualsAtTGStatsDB \
+\
+--outputDir=<need to be defined by the user>
+\
+--writeAllData=true
