@@ -202,8 +202,8 @@ abstract public class WLAdjustmentType
                                  modelForecastInputDataInfo[0]+" Must be one of -> "+allowedInputFormats.toString());
       }
 
-      this.modelForecastInputDataFormat= IWLAdjustmentIO.
-        DataTypesFormatsDef.valueOf(modelForecastInputDataInfo[0]);
+      this.modelForecastInputDataFormat= IWLAdjustmentIO
+        .DataTypesFormatsDef.valueOf(modelForecastInputDataInfo[0]);
 
       // --- modelInputDataInfo[1] could be: only one model forecast input data file OR an
       //     ASCII file that defines a list of at least two model forecast input data files
@@ -218,8 +218,8 @@ abstract public class WLAdjustmentType
 
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
   }
 
   // ---
