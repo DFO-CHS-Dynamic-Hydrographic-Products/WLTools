@@ -61,16 +61,17 @@ public interface IWLAdjustment extends ITimeMachine {
 
   String DEFAULT_MODEL_NAME= "MODEL_NAME_NOT_DEFINED";
 
-  String DEFAULT_H2D2_NAME= "ECCC_H2D2";
+  String DEFAULT_OHPS_NAME= "ECCC_OHPS";
 
   enum StormSurgeForecastModel {
-    ECCC_H2D2_SLFE //,
+    ECCC_OHPS_SLFE //,
     //DFO_NEMO_SJ100,
     //DFO_NEMO_VH20,
   }
 
   enum Type {
-    TideGauge, // --- Implies doing adjustments at one tide gauge only.
+    S104DCF2,  // --- Implies doing WL adjustments for one or many S104 DCF2 tile(s) (Only L6 tiles normally)  
+    TideGauge, // --- Implies doing WL adjustments at one tide gauge only.
     SpineIPP,  // --- Spine WL adjustments initial pre-processing done inside SSC-ECCC 24/7 oper. system.
     SpineFPP  // --- Spine WL adjustments final pre-processing done alongside DFO-IMTS Spine API system (Azure cloud).
   }
@@ -81,33 +82,55 @@ public interface IWLAdjustment extends ITimeMachine {
   //}
 
   String [] allowedTypesDef= {
+    Type.S104DCF2.name(),
     Type.TideGauge.name(),
     Type.SpineIPP.name(),
     Type.SpineFPP.name()
   }; //,
  
   // ---
-  Set<String> allowedTypes= Set.of(allowedTypesDef);
+  Set<String> allowedTypes= Set.of(allowedTypesDef);  
 
   // ---
-  enum TideGaugeAdjMethod {
-    CHS_IWLS_QC,
-    SINGLE_TIMEDEP_FMF_ERROR_STATS,
-    MULT_TIMEDEP_FMF_ERROR_STATS //,
-    //ECCC_H2D2_FORECAST_AUTOREG
+  //enum TideGaugeAdjMethod {
+    //CHS_IWLS_QC,
+    
+  enum ForecastAdjMethod {
+    TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS,
+    TGS_MULT_TIMEDEP_FMF_ERROR_STATS //,
+    //ECCC_OHPS_FORECAST_AUTOREG
   }
 
   // ---
-  String [] TideGaugeAdjMethodsDef= {
-    TideGaugeAdjMethod.CHS_IWLS_QC.name(),
-    TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS.name(),
-    TideGaugeAdjMethod.MULT_TIMEDEP_FMF_ERROR_STATS.name()
-    //TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()
-  };
+  //String [] TideGaugeAdjMethodsDef= {
+  //  //TideGaugeAdjMethod.CHS_IWLS_QC.name(),
+  //  TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS.name(),
+  //  TideGaugeAdjMethod.MULT_TIMEDEP_FMF_ERROR_STATS.name()
+  //  //TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG.name()
+  //};
+
+ String [] ForecastAdjMethodsDef= {
+    ForecastAdjMethod.TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS.name(),
+    ForecastAdjMethod.TGS_MULT_TIMEDEP_FMF_ERROR_STATS.name()
+    // TideGaugeAdjMethod.ECCC_OHPS_FORECAST_AUTOREG.name()
+  }; 
 
   // ---
-  Set<String> allowedTideGaugeAdjMethods= Set.of(TideGaugeAdjMethodsDef);
+  //Set<String> allowedTideGaugeAdjMethods= Set.of(TideGaugeAdjMethodsDef);
+  Set<String> allowedForecastAdjMethods= Set.of(ForecastAdjMethodsDef); 
 
+  // ---
+  //enum S104DCF2AdjMethod {
+  //    //MULT_TIMEDEP_FMF_ERROR_STATS
+  //   TideGaugeAdjMethod.MULT_TIMEDEP_FMF_ERROR_STATS
+  //}
+
+  //String [] S104DCF2AdjMethodsDef= {
+  //  TideGaugeAdjMethod.MULT_TIMEDEP_FMF_ERROR_STATS.name()
+  //};
+    
+  //Set<String> allowedS104DCF2AdjMethods= Set.of(S104DCF2AdjMethodsDef);
+    
   // --- To control which of the ship channel points locations that are
   //     the nearest to the two tide gauge locations used for the SpinePP
   //     adjustment types that we have to write (or not write) the adjusted

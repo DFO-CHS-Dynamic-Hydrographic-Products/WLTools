@@ -53,16 +53,19 @@ abstract public class WLAdjustmentType
 
   // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC
   //     for the prediction (WLP) data.
-  protected IWLAdjustment.TideGaugeAdjMethod
-    predictAdjType= IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC;
+  // protected IWLAdjustment.TideGaugeAdjMethod
+  //    predictAdjType= IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC;
 
   // --- Default IWLAdjustment.TideGaugeAdjMethod is IWLAdjustment.TideGaugeAdjMethod.ECCC_H2D2_FORECAST_AUTOREG
   //     for the forecast (WLF) data.
-  protected IWLAdjustment.TideGaugeAdjMethod forecastAdjType=
-    IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS; //MULT_TIMEDEP_FMF_ERROR_STATS;
+  //protected IWLAdjustment.TideGaugeAdjMethod forecastAdjType=
+  //  IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS; //MULT_TIMEDEP_FMF_ERROR_STATS;
+
+  protected IWLAdjustment.ForecastAdjMethod forecastAdjMethod=
+    IWLAdjustment.ForecastAdjMethod.TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS; //MULT_TIMEDEP_FMF_ERROR_STATS;    
 
   protected IWLAdjustment.SpinePPWriteCtrl spinePPWriteCtrl= IWLAdjustment.SpinePPWriteCtrl.BOTH_SIDES;
-    
+
   /**
    * Comments please!
    */
@@ -296,35 +299,38 @@ abstract public class WLAdjustmentType
     }
 
     // ---
-    switch (this.forecastAdjType) {
+    switch (this.forecastAdjMethod) {
 
       // ---
-      case SINGLE_TIMEDEP_FMF_ERROR_STATS:
+      case TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS:
 
         if (!this.haveWLOData) {
-	  throw new RuntimeException(mmi+"ERROR: this.haveWLOData cannot be false for the SINGLE_TIMEDEP_FMF_ERROR_STATS FMF adjustment type !");
+	  throw new RuntimeException(mmi+"ERROR: this.haveWLOData cannot be false for the "+this.forecastAdjMethod.name()+" FMF adjustment type !");
         }
 	  
         this.singleTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
                                            uniqueTGMapObj, mainJsonMapObj);
 
-        slog.info(mmi+"Done with SINGLE_TIMEDEP_FMF_ERROR_STATS");
+        slog.info(mmi+"Done with "+this.forecastAdjMethod.name()+" calculations");
 
         break;
 
       // ---
-      case MULT_TIMEDEP_FMF_ERROR_STATS:
+      case TGS_MULT_TIMEDEP_FMF_ERROR_STATS:
  
-        if (!argsMap.containsKey("--tgResidualsStatsIODirectory")) {
+	  //if (!argsMap.containsKey("--tgResidualsStatsIODirectory")) {
+	if (!argsMap.containsKey("--modelWLResidualsAtTGStatsIODir")) {
           throw new RuntimeException(mmi+
-            "Must have the --tgResidualsStatsIODirectory=<IO main folder for the FMF residuals stats at tide gauges> defined in the argsMap!!");
+            "Must have the --modelWLResidualsAtTGStatsIODir=<IO main folder for the FMF residuals stats at tide gauges> defined in the argsMap!!");
         }
 
-        final String tgResidualsStatsIODirectory= argsMap.get("--tgResidualsStatsIODirectory");
+        //final String tgResidualsStatsIODirectory= argsMap.get("--tgResidualsStatsIODirectory");
+	final String modelWLResidualsAtTGStatsIODir= argsMap.get("--modelWLResidualsAtTGStatsIODir");
 
         this.multTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
                                          uniqueTGMapObj, mainJsonMapObj,
-                                         tgResidualsStatsIODirectory);
+					 modelWLResidualsAtTGStatsIODir);
+	                                 //tgResidualsStatsIODirectory);
 
         slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
 
@@ -334,7 +340,7 @@ abstract public class WLAdjustmentType
         break;
 
       default:
-        throw new RuntimeException(mmi+"Invalid this.forecastAdjType -> "+this.forecastAdjType.name());
+        throw new RuntimeException(mmi+"Invalid this.forecastAdjMethod -> "+this.forecastAdjMethod.name());
     }
 
     slog.info(mmi+"end");

@@ -204,42 +204,47 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    if (argsMapKeysSet.contains("--tideGaugeAdjMethods")) {
+    if (argsMapKeysSet.contains("--forecastAdjMethod")) {
 
-      final String [] tideGaugeAdjMethodCheck= argsMap.
-        get("--tideGaugeAdjMethods").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+      final String checkForecastAdjMethod= argsMap.get("--forecastAdjMethod");
 
-      if (!IWLAdjustment.allowedTideGaugeAdjMethods.contains(tideGaugeAdjMethodCheck[0]) ) {
-        throw new RuntimeException(mmi+"Invalid tide gauge WL adjustment method -> "+tideGaugeAdjMethodCheck[0]+
-                                   " Must be one of -> "+IWLAdjustment.allowedTideGaugeAdjMethods.toString());
+      if (!IWLAdjustment.allowedForecastAdjMethods.contains(checkForecastAdjMethod)) {
+        throw new RuntimeException(mmi+"Invalid forecast WL adjustment method -> "+checkForecastAdjMethod+
+				   " Must be one of -> "+IWLAdjustment.allowedForecastAdjMethods.toString() );
       }
 
-      // --- WL prediction adjustment type
-      this.predictAdjType= IWLAdjustment.
-        TideGaugeAdjMethod.valueOf(tideGaugeAdjMethodCheck[0]);
+      this.forecastAdjMethod= IWLAdjustment
+        .ForecastAdjMethod.valueOf(checkForecastAdjMethod);
 
-      // --- Full Model Forecast (FMF) adjustment type (if any)
-      if (tideGaugeAdjMethodCheck.length == 2) {
-
-        if (!IWLAdjustment.allowedTideGaugeAdjMethods.contains(tideGaugeAdjMethodCheck[1]) ) {
-          throw new RuntimeException(mmi+"Invalid tide gauge WL adjustment method -> "+tideGaugeAdjMethodCheck[1]+
-                                     " Must be one of -> "+IWLAdjustment.allowedTideGaugeAdjMethods.toString() );
-        }
-
-        this.forecastAdjType= IWLAdjustment.
-          TideGaugeAdjMethod.valueOf(tideGaugeAdjMethodCheck[1]);
-      }
+	//final String [] forecastAdjMethodCheck= argsMap.
+        //get("--tideGaugeAdjMethods").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+	//if (!IWLAdjustment.allowedTideGaugeAdjMethods.contains(tideGaugeAdjMethodCheck[0]) ) {
+        //throw new RuntimeException(mmi+"Invalid tide gauge WL adjustment method -> "+tideGaugeAdjMethodCheck[0]+
+        //                           " Must be one of -> "+IWLAdjustment.allowedTideGaugeAdjMethods.toString());
+        //}
+      //// --- WL prediction adjustment type
+      //this.predictAdjType= IWLAdjustment.
+      //  TideGaugeAdjMethod.valueOf(tideGaugeAdjMethodCheck[0]);
+      // // --- Full Model Forecast (FMF) adjustment type (if any)
+      // if (tideGaugeAdjMethodCheck.length == 2) {
+      //   if (!IWLAdjustment.allowedForecastAdjMethods.contains(tideGaugeAdjMethodCheck[1]) ) {
+      //     throw new RuntimeException(mmi+"Invalid forecast WL adjustment method -> "+tideGaugeAdjMethodCheck[1]+
+      //                                " Must be one of -> "+IWLAdjustment.allowedTideGaugeAdjMethods.toString() );
+      //   }
+      //   this.forecastAdjType= IWLAdjustment.
+      //     TideGaugeAdjMethod.valueOf(tideGaugeAdjMethodCheck[1]);
+      // }
     }
 
-    if (this.predictAdjType != IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC) {
-      slog.info(mmi+"Only the tide gauge WL prediction adjustment type -> "+
-               IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC.name()+" is allowed for now !");
-    }
+    //if (this.predictAdjType != IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC) {
+    //  slog.info(mmi+"Only the tide gauge WL prediction adjustment type -> "+
+    //           IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC.name()+" is allowed for now !");
+    //}
 
-    slog.info(mmi+"this.predictAdjType="+this.predictAdjType.name());
-    slog.info(mmi+"this.forecastAdjType="+this.forecastAdjType.name());
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    //slog.info(mmi+"this.predictAdjType="+this.predictAdjType.name());
+    slog.info(mmi+"this.forecastAdjMethod="+this.forecastAdjMethod.name());
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     // --- Get the complete path of the file that contains the infi for
     //     all the tide gauges locations.
@@ -381,7 +386,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //System.exit(0);
       
     // --- Now proceed with the FMF adjustment:
-    if (this.forecastAdjType != null) {
+    if (this.forecastAdjMethod != null) {
 
       //if (this.forecastAdjType != IWLAdjustment.
       //      TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) {
@@ -416,11 +421,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
         //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
 
-        // --- Define the nb. hours in past to use depending on this.forecastAdjType:
+        // --- Define the nb. hours in past to use depending on this.forecastAdjMethod:
         //     0 means that it will be automagically be determined according to the FMF
         //     data duration after its lead time
         final long nbHoursInPastArg=
-          (this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
+	  (this.forecastAdjMethod.equals(ForecastAdjMethod.TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS)) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
+	//(this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
 
         // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII
