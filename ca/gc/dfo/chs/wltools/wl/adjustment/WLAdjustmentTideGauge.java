@@ -69,25 +69,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
    */
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  //private final static int MIN_NUMBER_OF_OBS= 480; // --- 24 hours at 3mins time intervals
-  //private int minNumberOfObs= MIN_NUMBER_OF_OBS;
-
   private Instant referenceTime= null; //Instant(Clock.systemUTC());
-
-  //private List<MeasurementCustom> tgLocationWLOData= null;
-  //private ArrayList<MeasurementCustom> tgLocationWLPData= null;
-  //private List<MeasurementCustom> tgLocationWLFData= null;
 
   /**
    * Comments please!
    */
   public WLAdjustmentTideGauge() {
     super();
-
-    //this.tgLocationWLPData= null;
-    //this.tgLocationWLOData=
-    //  this.tgLocationWLPData=
-    //    this.tgLocationWLFData = null;
   }
 
   /**
