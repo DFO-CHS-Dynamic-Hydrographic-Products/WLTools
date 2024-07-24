@@ -4,10 +4,12 @@ export LD_LIBRARY_PATH=/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLToo
 time java -Xms4096m -Xmx8192m WLTools \
 --tool=modelDataExtraction \
 --inputDataType=WaterLevels \
---extractionType=shipWayPointsSurface:nearestNeigh \ # --- nearestNeigh is the spatial interp type.
---wlInputDatumConv=zc2Global \ # --- can be zc2Global (add) or global2zc (subtract) do nothing if not used, datum conversion info MUST be defined in the --pointLocationsInputInfo data
+--extractionType=shipWayPoints:nearestNeigh \ # --- nearestNeigh is the spatial interp type.
+#--wlInputDatumConv=zc2Global \ # --- can be zc2Global (add) or global2zc (subtract) do nothing if not used, datum conversion info MUST be defined in the --pointLocationsInputInfo data
 #--wlInputDatumConv=glocbal2zc \ # --- can be zc2Global (add) or global2zc (subtract) do nothing if not used, datum conversion info MUST be defined in the --pointLocationsInputInfo data
---pointLocationsInputInfo=JSON:<channelGridPointsInfoDef dir path, usually under the cfg folder of the package> \ #
+#--pointLocationsInputInfo=JSON:<channelGridPointsInfoDef dir path, usually under the cfg folder of the package> \ #
+--pointLocationsInputInfo=CHS_TG_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/Dev/GH/CHS/WLTools/cfg/tideGaugeInfo/spineStlCHSTGs.json
+#--pointLocationsInputInfo=IWLS_JSON:/home/schs300/.suites/dfo_post_processing.rel-4.2.0.dev.h2d2-shop/hub/gpsc8/work/20240718060000/main/dfo_post_processing/pst_chs_dhp/s104dcf2/get_iwls_wlo/output
 #--pointLocationsInputFormat=S104DCF8:multiple \ # 
 --modelInputDataInfo=S104DCF2:<S104 DCF2 input data dir. path> \ # S104 DCF2 always use tiles.
 #--modelInputDataFormat=NEMO_NCDF \ # Native T grid

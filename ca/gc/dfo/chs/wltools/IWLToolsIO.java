@@ -26,8 +26,9 @@ public interface IWLToolsIO {
   // ---
   enum Format {
     CHS_JSON,
-    DHP_S104_DCF8,
+    IWLS_JSON,
     LEGACY_ASCII
+    //DHP_S104_DCF8,
     //CSV
   }
 

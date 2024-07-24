@@ -7,26 +7,23 @@ import org.slf4j.LoggerFactory;
 
 // ---
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
-import ca.gc.dfo.chs.modeldata.IModelDataExtraction;
 import ca.gc.dfo.chs.modeldata.ModelDataExtractionIO;
+import ca.gc.dfo.chs.modeldata.IModelDataExtractionIO;
 
 // ---
-public class ModelDataExtraction extends ModelDataExtractionIO implements IModelDataExtraction {
+public class ModelDataExtraction extends ModelDataExtractionIO { // implements IModelDataExtractionIO {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.modeldata.ModelDataExtraction";
 
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  // ---
-  protected IModelDataExtraction.Type type= null;
-    
-  protected IModelDataExtraction.InputDataType inputDataType= null;
-
-  protected IModelDataExtraction.SpatialInterpType spatialInterpType= null;
-
-  protected IModelDataExtraction.WLDatumConv wlInputDatumConv= null;
-  protected IModelDataExtraction.WLDatumConv wlOutputDatumConv= null;
+  // // ---
+  // protected IModelDataExtractionIO.Type type= null;
+  // protected IModelDataExtractionIO.InputDataType inputDataType= null;
+  // protected IModelDataExtractionIO.SpatialInterpType spatialInterpType= null;
+  // protected IModelDataExtractionIO.WLDatumConv wlInputDatumConv= null;
+  // protected IModelDataExtractionIO.WLDatumConv wlOutputDatumConv= null;
 
   // ---
   public ModelDataExtraction(final Map<String,String> argsMap) {
@@ -45,11 +42,11 @@ public class ModelDataExtraction extends ModelDataExtractionIO implements IModel
 
     final String inputDataTypeStr= argsMap.get("--inputDataType");
 
-    if (!IModelDataExtraction.allowedInputDataTypes.contains(inputDataTypeStr)) {
+    if (!IModelDataExtractionIO.allowedInputDataTypes.contains(inputDataTypeStr)) {
       throw new RuntimeException(mmi+"Invalid input data type -> "+inputDataTypeStr);
     }
 
-    this.inputDataType= IModelDataExtraction.InputDataType.valueOf(inputDataTypeStr); //enum.valueOf(IModelDataExtraction.InputDataType,inputDataTypeStr);
+    this.inputDataType= IModelDataExtractionIO.InputDataType.valueOf(inputDataTypeStr); //enum.valueOf(IModelDataExtraction.InputDataType,inputDataTypeStr);
 
     slog.info(mmi+"this.inputDataType="+this.inputDataType.name());
     //slog.info(mmi+"Debug exit 0");
@@ -63,21 +60,21 @@ public class ModelDataExtraction extends ModelDataExtractionIO implements IModel
     
     final String extractionTypeStr= extractionTypeInterpSplit[0];
 
-    if (!IModelDataExtraction.allowedTypes.contains(extractionTypeStr)) {
+    if (!IModelDataExtractionIO.allowedTypes.contains(extractionTypeStr)) {
       throw new RuntimeException(mmi+"Invalid extraction type -> "+extractionTypeStr);
     }
 
-    this.type= IModelDataExtraction.Type.valueOf(extractionTypeStr);
+    this.type= IModelDataExtractionIO.Type.valueOf(extractionTypeStr);
 
     slog.info(mmi+"this.type="+this.type.name());
 
     final String spatialInterpTypeStr= extractionTypeInterpSplit[1];
 
-    if (!IModelDataExtraction.allowedSpatialInterpTypes.contains(spatialInterpTypeStr)) {
+    if (!IModelDataExtractionIO.allowedSpatialInterpTypes.contains(spatialInterpTypeStr)) {
       throw new RuntimeException(mmi+"Invalid spatial interp. type -> "+extractionTypeStr);
     }
 
-    this.spatialInterpType= ModelDataExtraction.SpatialInterpType.valueOf(spatialInterpTypeStr);
+    this.spatialInterpType= IModelDataExtractionIO.SpatialInterpType.valueOf(spatialInterpTypeStr);
 
     //slog.info(mmi+"extractionTypeStr="+extractionTypeStr);
     slog.info(mmi+"this.spatialInterpType="+this.spatialInterpType.name());   
@@ -92,13 +89,17 @@ public class ModelDataExtraction extends ModelDataExtractionIO implements IModel
     //     we just need one or more location(s) coordinates (like for currents data extraction)
     final String pointLocationsInputInfoFmt= pointLocationsInputInfoStrSplit[0];
 
-    if (pointLocationsInputInfoFmt.equals(IModelDataExtraction.locationsCoordsId)) {
-      throw new RuntimeException(mmi+"The data extraction for "+IModelDataExtraction.locationsCoordsId+" not yet implemented !!");
+    if (pointLocationsInputInfoFmt.equals(IModelDataExtractionIO.Format.SIMPLE_LOCATIONS_COORDS.name())) {
+      throw new RuntimeException(mmi+"The data extraction for "+IModelDataExtractionIO.Format.SIMPLE_LOCATIONS_COORDS.name()+" not yet implemented !!");
     }
+
+    slog.info(mmi+"pointLocationsInputInfoFmt="+pointLocationsInputInfoFmt);
 
     // --- Could be a path to a folder OR a path to a single file OR just a series
     //     of coordinate pairs if pointLocationsInputInfoFmt == ONE_POINT_COORD
     final String pointLocationsInputInfo= pointLocationsInputInfoStrSplit[1];
+
+    slog.info(mmi+"pointLocationsInputInfo="+pointLocationsInputInfo);
 
     // ---
     if (this.inputDataType.equals(IModelDataExtraction.InputDataType.WaterLevels)) {
@@ -106,8 +107,12 @@ public class ModelDataExtraction extends ModelDataExtractionIO implements IModel
       slog.info(mmi+"Processing specific args. for WaterLevels input data");
 
       if (pointLocationsInputInfoFmt.equals(IModelDataExtraction.locationsCoordsId)) {
-	throw new RuntimeException(mmi+"The data extraction for simple "+IModelDataExtraction.locationsCoordsId+" cannot be used for Water levels !!");
+	throw new RuntimeException(mmi+"The data extraction for simple "+IModelDataExtraction.locationsCoordsId+" is not ready be used for Water levels yet !!");
       }
+
+      slog.info(mmi+"Reading the WLLocation(s) input info");
+      slog.info(mmi+"Debug exit 0");
+      System.exit(0);
       
       // --- Read the WLLocation target(s) info.
       this.readAllWLLocationTargetsInfo(pointLocationsInputInfo, pointLocationsInputInfoFmt);
@@ -124,7 +129,7 @@ public class ModelDataExtraction extends ModelDataExtractionIO implements IModel
           throw new RuntimeException(mmi+"Invalid wlInputDatumConv str id. -> "+wlInputDatumConvStr);
         }
 
-	this.wlInputDatumConv= IModelDataExtraction.WLDatumConv.valueOf(wlInputDatumConvStr);
+	this.wlInputDatumConv= IModelDataExtractionIO.WLDatumConv.valueOf(wlInputDatumConvStr);
 
 	slog.info(mmi+"this.wlInputDatumConv="+this.wlInputDatumConv.name());
 	
@@ -136,11 +141,11 @@ public class ModelDataExtraction extends ModelDataExtractionIO implements IModel
 
         final String wlOutputDatumConvStr= argsMap.get("--wlOutputDatumConv");
 	  
-        if (!IModelDataExtraction.allowedWLDatumConvTypes.contains(wlOutputDatumConvStr)) {
+        if (!IModelDataExtractionIO.allowedWLDatumConvTypes.contains(wlOutputDatumConvStr)) {
           throw new RuntimeException(mmi+"Invalid wlOutputDatumConv str id. -> "+wlOutputDatumConvStr);
         }
 
-	this.wlOutputDatumConv= IModelDataExtraction.WLDatumConv.valueOf(wlOutputDatumConvStr);
+	this.wlOutputDatumConv= IModelDataExtractionIO.WLDatumConv.valueOf(wlOutputDatumConvStr);
 
 	slog.info(mmi+"this.wlOutputDatumConv="+this.wlOutputDatumConv.name());
 	

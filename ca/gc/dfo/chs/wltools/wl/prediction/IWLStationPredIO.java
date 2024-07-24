@@ -10,6 +10,7 @@ import java.util.List;
 
 // ---
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
+import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 //import ca.gc.dfo.chs.wltools.wl.prediction.WLStationPred;
 
@@ -36,7 +37,8 @@ public interface IWLStationPredIO  {
 
   String [] allowedFormatsDef= {
     IWLToolsIO.Format.CHS_JSON.name(),
-    IWLToolsIO.Format.DHP_S104_DCF8.name()
+    ISProductIO.Format.S104DCF8.name()
+    //IWLToolsIO.Format.DHP_S104_DCF8.name()
   }; //, OutputFormats.CSV.name() };
 
   Set<String> allowedFormats= Set.of(allowedFormatsDef);

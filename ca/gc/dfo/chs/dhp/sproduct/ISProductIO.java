@@ -1,4 +1,4 @@
-package ca.gc.dfo.chs.dhp;
+package ca.gc.dfo.chs.dhp.sproduct;
 
 // --
 import java.io.File;
@@ -9,6 +9,13 @@ import java.util.Collections;
 // ---
 public interface ISProductIO {
 
+  //---
+  enum Format {
+    S104DCF8,
+    S104DCF2 //,
+    //S111DCF8
+  }
+    
   // ---
   enum FeatId {
     S104,

@@ -1,4 +1,4 @@
-package ca.gc.dfo.chs.dhp;
+package ca.gc.dfo.chs.dhp.sproduct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
 
 // ---
-import ca.gc.dfo.chs.dhp.ISProductIO;
+import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 
 // ---
 abstract public class SProduct implements ISProductIO {
