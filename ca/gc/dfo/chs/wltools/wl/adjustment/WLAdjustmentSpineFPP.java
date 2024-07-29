@@ -153,7 +153,7 @@ final public class WLAdjustmentSpineFPP extends WLAdjustmentSpinePP implements I
     // --- Verify the output file(s) format before going further
     //if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.DHP_S104_DCF8.name())) {
     
-    if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.LEGACY_ASCII.name())) {
+    if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.SPINE_LEGACY_ASCII.name())) {
       throw new RuntimeException(mmi+"Invalid output file(s) data format -> "+
 				 WLToolsIO.getOutputDataFormat()+" for the SpineFPP adjustment type sub-tool!");
     }

@@ -70,7 +70,7 @@ public interface IWLAdjustment extends ITimeMachine {
   }
 
   enum Type {
-    S104DCF2,  // --- Implies doing WL adjustments for one or many S104 DCF2 tile(s) (Only L6 tiles normally)  
+    DCF2Tile,  // --- Implies doing WL adjustments for one or many S104 DCF2 tile(s) (Only L6 tiles normally)  
     TideGauge, // --- Implies doing WL adjustments at one tide gauge only.
     SpineIPP,  // --- Spine WL adjustments initial pre-processing done inside SSC-ECCC 24/7 oper. system.
     SpineFPP  // --- Spine WL adjustments final pre-processing done alongside DFO-IMTS Spine API system (Azure cloud).
@@ -82,7 +82,7 @@ public interface IWLAdjustment extends ITimeMachine {
   //}
 
   String [] allowedTypesDef= {
-    Type.S104DCF2.name(),
+    Type.DCF2Tile.name(),
     Type.TideGauge.name(),
     Type.SpineIPP.name(),
     Type.SpineFPP.name()

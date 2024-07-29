@@ -193,8 +193,8 @@ abstract public class WLAdjustmentType
     //           files that are needed (e.g. H2D2 NetCDF file).
     if (this.argsMapKeySet.contains("--modelForecastInputDataInfo")) {
 
-      final String [] modelForecastInputDataInfo= argsMap.
-        get("--modelForecastInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
+      final String [] modelForecastInputDataInfo= argsMap
+        .get("--modelForecastInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
       if (!allowedInputFormats.contains(modelForecastInputDataInfo[0])) {
 
@@ -218,8 +218,8 @@ abstract public class WLAdjustmentType
 
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
   }
 
   // ---

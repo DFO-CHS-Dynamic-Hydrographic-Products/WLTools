@@ -1204,7 +1204,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     slog.info(mmi+"start: whatTimeIsItNow -> "+whatTimeIsItNow.toString());
     
-    if (outputDataFormat.equals(Format.LEGACY_ASCII.name())) {
+    if (outputDataFormat.equals(Format.SPINE_LEGACY_ASCII.name())) {
 	
       IWLPSLegacyIO.writeFiles(whatTimeIsItNow, mcbForSpine, outputDirectory);
       

@@ -6,6 +6,7 @@ import java.util.Map;
 
 // ---
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
+import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 //import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
 
 /**
@@ -28,52 +29,22 @@ public interface IWLAdjustmentIO {
 
   // ---
   enum DataTypesFormatsDef {
-    DHP_S104_DCF3,
+      //DHP_S104_DCF3,
     //DHP_S104_DCF2,
-    ECCC_H2D2_ASCII,
-    SPINE_ADHOC_ASCII,
+    //ECCC_H2D2_ASCII,
+    S104DCF2,
+    ECCC_OHPS_ASCII,
+    //SPINE_ADHOC_ASCII,
     //IWLStationPredIO.Format.CHS_JSON
   }
 
   String [] DataTypesFormatsDefArr= {
     //IWLStationPredIO.Formats.CHS_JSON.name(),
-    DataTypesFormatsDef.DHP_S104_DCF3.name(),
-    DataTypesFormatsDef.ECCC_H2D2_ASCII.name(),
-    DataTypesFormatsDef.SPINE_ADHOC_ASCII.name()
+    DataTypesFormatsDef.S104DCF2.name(),
+    DataTypesFormatsDef.ECCC_OHPS_ASCII.name(),
   };
 
   Set<String> allowedInputFormats= Set.of(DataTypesFormatsDefArr);
-
-  // ---
-  //String [] ECCC_H2D2_INPUT_FMTS= { InputDataTypesFormatsDef.NETCDF.name(),
-  //                                  InputDataTypesFormatsDef.ASCII.name() };
-
-  String [] CHS_DHP_S104_FMTS= {
-    DataTypesFormatsDef.DHP_S104_DCF3.name(),
-    //DataTypesFormatsDef.HDF5_DCF2.name()
-  };
-
-  //String [] ECCC_H2D2_FORECAST_INPUT_FMTS= {
-  //  InputDataTypesFormatsDef.ASCII.name() //,
-  //  // InputDataTypesFormatsDef.NetCDF.name()
-  //};
-
-  String [] CHS_IWLS_FMTS= {
-    IWLToolsIO.Format.CHS_JSON.name()
-  };
-
-  String [] CHS_SPINE_FMTS= {
-    IWLToolsIO.Format.CHS_JSON.name(),
-    DataTypesFormatsDef.DHP_S104_DCF3.name(),
-    DataTypesFormatsDef.SPINE_ADHOC_ASCII.name(),
-  };
-
-  // ---
-  String [] CHS_TIDEGAUGE_FMTS= {
-    IWLToolsIO.Format.CHS_JSON.name(),
-    DataTypesFormatsDef.ECCC_H2D2_ASCII.name() //,
-    //DataTypesFormatsDef.JSON.name()+ INPUT_DATA_FMT_SPLIT_CHAR + DataTypesFormatsDef.ECCC_H2D2_ASCII.name()
-  };
 
   int H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX= 2;
 

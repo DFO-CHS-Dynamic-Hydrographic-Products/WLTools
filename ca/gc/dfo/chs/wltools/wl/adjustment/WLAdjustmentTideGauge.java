@@ -126,8 +126,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final String [] tideGaugePredictInputDataInfo= argsMap.
        get("--tideGaugePredictInputDataInfo").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR) ;
 
-    if (!IWLStationPredIO.
-           allowedFormats.contains(tideGaugePredictInputDataInfo[0])) {
+    if (!IWLStationPredIO.allowedFormats.contains(tideGaugePredictInputDataInfo[0])) {
 
       throw new RuntimeException(mmi+"Invalid tideGaugePredictInputData file format -> "+
         tideGaugePredictInputDataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
@@ -154,10 +153,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     final String [] tideGaugeWLODataInfo=
       checkTGWLODataInfo.split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
 
-    if (!IWLStationPredIO.allowedFormats.contains(tideGaugeWLODataInfo[0])) {
+    //if (!IWLStationPredIO.allowedFormats.contains(tideGaugeWLODataInfo[0])) {
+    if (!IWLToolsIO.allowedFormats.contains(tideGaugeWLODataInfo[0])) {
 
       throw new RuntimeException(mmi+"Invalid TG WLO Input Data file format -> "+
-        tideGaugeWLODataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
+	tideGaugeWLODataInfo[0]+" Must be one of -> "+IWLToolsIO.allowedFormats.toString());			 
+      //tideGaugeWLODataInfo[0]+" Must be one of -> "+IWLStationPredIO.allowedFormats.toString());
     }
 
     // --- Define the WLO input data file format:
@@ -167,21 +168,30 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // --- Define the path of the WLO data file for the TG.
     this.tideGaugeWLODataFile= tideGaugeWLODataInfo[1]; ;//argsMap.get("--tideGaugeWLODataFile");
 
+    slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
+
     // --- Verify that we have the same name id. for the TG between the file name and
     //     the this.locationIdInfo attrbute.
     final String [] tideGaugeWLODataFilePathSplit= tideGaugeWLODataFile.split(File.separator);
 
     //--- Extract the 1st part of the WLO data file which MUST be the same string id. as for the
-    //    this.locationIdInfo attribute.
+    //    this.locationIdInfo attribute. We can also have to get rid of the IWLToolsIO.JSON_FEXT
+    //    file name extension (if any) with the replaceAll(IWLToolsIO.JSON_FEXT) call.
     final String tideGaugeNameIdFromFileName=
-      tideGaugeWLODataFilePathSplit[ tideGaugeWLODataFilePathSplit.length-1 ].split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0];
+      tideGaugeWLODataFilePathSplit[ tideGaugeWLODataFilePathSplit.length-1 ]
+	.split(IWLToolsIO.OUTPUT_DATA_FMT_SPLIT_CHAR)[0].replaceAll(IWLToolsIO.JSON_FEXT,"");
+    
+    slog.info(mmi+"tideGaugeNameIdFromFileName="+tideGaugeNameIdFromFileName);
 
     if (!tideGaugeNameIdFromFileName.equals(this.locationIdInfo)) {
       throw new RuntimeException(mmi+"tideGaugeNameIdFromFileName="+tideGaugeNameIdFromFileName+
                                  " is NOT the same tg station id. as this.locationIdInfo="+this.locationIdInfo);
     }
 
-    slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);    
+
+    //slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
 
     //} else {
     //  slog.warn(mmi+"No WLO data to use at this point !! this.locationIdInfo="+this.locationIdInfo);
@@ -189,8 +199,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"tideGaugePredictInputDataFile="+tideGaugePredictInputDataFile);
     slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     if (argsMapKeysSet.contains("--forecastAdjMethod")) {
 
@@ -400,7 +410,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       String prevFMFASCIIDataFilePath= null;
 
-      if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
+      if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
 
         // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
         //     method call.

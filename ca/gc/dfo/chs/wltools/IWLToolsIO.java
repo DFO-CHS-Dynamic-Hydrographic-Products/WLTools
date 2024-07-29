@@ -2,6 +2,7 @@ package ca.gc.dfo.chs.wltools;
 
 // --
 import java.io.File;
+import java.util.Set;
 
 /**
  * Comments please!
@@ -23,14 +24,22 @@ public interface IWLToolsIO {
 
   String ISO8601_UTC_EXT= "Z";
 
-  // ---
+  // --- Generic IO file formats
   enum Format {
     CHS_JSON,
     IWLS_JSON,
-    LEGACY_ASCII
+    SPINE_LEGACY_ASCII
     //DHP_S104_DCF8,
     //CSV
   }
+
+  String [] allowedFormatsDef= {
+    Format.CHS_JSON.name(),
+    Format.IWLS_JSON.name(),
+    Format.SPINE_LEGACY_ASCII.name()
+  };
+
+  Set<String> allowedFormats= Set.of(allowedFormatsDef);
 
   // --- the cfg main folder MUST exists at the same folder level as the the main Java classes lib folder.
   String PKG_CFG_MAIN_DIR= "cfg";

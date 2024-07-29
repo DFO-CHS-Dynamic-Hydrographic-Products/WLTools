@@ -143,7 +143,7 @@ abstract public class WLAdjustmentFMF
     final int actuFMFIndex= IWLAdjustmentIO.
       FullModelForecastType.ACTUAL.ordinal();
 
-    if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
+    if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
 
       // --- Read the previous H2D2 full model forecast data
       this.getH2D2ASCIIWLFProbesData(prevFMFASCIIDataFilePath,
@@ -496,7 +496,7 @@ abstract public class WLAdjustmentFMF
 	      ", this.prdDataTimeIntervalSeconds="+this.prdDataTimeIntervalSeconds);
 
     // --- Only the IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII input file format is allowed for now
-    if (this.modelForecastInputDataFormat != IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII) {
+    if (this.modelForecastInputDataFormat != IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
       throw new RuntimeException(mmi+
         "Invalid full model forecast input format -> "+this.modelForecastInputDataFormat.name());
     }
