@@ -556,20 +556,20 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     //boolean haveWLOData= true;
 
-    //if (!
-
     // --- check if the WL Obs. (a.k.a. WLO) input dat file exists
     //	   If it does not exists on disk then there is no WLO data
     //     to use 
     if ( WLToolsIO.checkForFileExistence(this.tideGaugeWLODataFile) ) {
 
       List<MeasurementCustom> tmpWLOMcList= null;
+
+      slog.info(mmi+"this.tideGaugeWLODataFile="+this.tideGaugeWLODataFile);
 	
       if (this.obsInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
 
         //this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
 
-	slog.info(mmi+"Reading WLO input data in the "+IWLToolsIO.Format.CHS_JSON.name()+" format");
+	slog.info(mmi+"Reading WLO input datausing the "+IWLToolsIO.Format.CHS_JSON.name()+" format");
 
         // --- Read the WLO data in a temp. List<MeasurementCustom> object
         //final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
@@ -581,6 +581,13 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         //slog.info(mmi+"Debug System.exit(0)");
         //System.exit(0);
 
+      } else if (this.obsInputDataFormat == IWLToolsIO.Format.IWLS_JSON) {
+
+	slog.info(mmi+"Reading WLO input data using the "+IWLToolsIO.Format.IWLS_JSON.name()+" format");
+
+	
+        slog.info(mmi+"Debug System.exit(0)");
+        System.exit(0);    
       }
 
       slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());

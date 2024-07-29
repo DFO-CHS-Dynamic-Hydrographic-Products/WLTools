@@ -338,7 +338,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     
     //---
     slog.info(mmi+"Reading the TG obs (WLO) at location -> "+
-              this.location.getIdentity()+" data using "+this.obsInputDataFormat.name());
+              this.location.getIdentity()+" data using "+this.obsInputDataFormat.name()+ " format");
 
     // --- Read-get the WLO data (if any)
     this.getTGObsData();
