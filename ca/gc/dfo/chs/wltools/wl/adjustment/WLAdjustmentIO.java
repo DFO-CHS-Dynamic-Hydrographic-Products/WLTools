@@ -556,46 +556,59 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     //boolean haveWLOData= true;
 
+    //if (!
+
     // --- check if the WL Obs. (a.k.a. WLO) input dat file exists
     //	   If it does not exists on disk then there is no WLO data
     //     to use 
     if ( WLToolsIO.checkForFileExistence(this.tideGaugeWLODataFile) ) {
+
+      List<MeasurementCustom> tmpWLOMcList= null;
 	
       if (this.obsInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
 
         //this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
 
-        // --- Read the WLO data in a temp. List<MeasurementCustom> object
-        final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
-          getWLDataInJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
+	slog.info(mmi+"Reading WLO input data in the "+IWLToolsIO.Format.CHS_JSON.name()+" format");
 
-        slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
-        slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
+        // --- Read the WLO data in a temp. List<MeasurementCustom> object
+        //final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
+	tmpWLOMcList= WLAdjustmentIO
+          .getWLDataInJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
+
+        //slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
+        //slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
         //slog.info(mmi+"Debug System.exit(0)");
         //System.exit(0);
 
-
-	if (tmpWLOMcList.size() >= IWLMeasurement.MIN_NUMBER_OF_WL_HFOSC_RMV) {
-	    
-          // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
-          //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
-          //     method to it before the assignation itself
-          this.nearestObsData.put(this.location.getIdentity(),
-                                   WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
-        } else {
-
-	  slog.warn(mmi+"WARNING!!: Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations method for TGat location -> "+this.location.getIdentity());
-
-	  // --- Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations
-	  //     method, just assign the tmpWLOMcList as is
-	  this.nearestObsData.put(this.location.getIdentity(), tmpWLOMcList);
-	}
-	
-        slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
-
-      } else {
-	throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
       }
+
+      slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
+      slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
+      slog.info(mmi+"Debug System.exit(0)");
+      System.exit(0);    
+
+      if (tmpWLOMcList.size() >= IWLMeasurement.MIN_NUMBER_OF_WL_HFOSC_RMV) {
+	    
+        // --- Assign the temp. List<MeasurementCustom> object to the this.nearestObsData object
+        //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
+        //     method to it before the assignation itself
+        this.nearestObsData.put(this.location.getIdentity(),
+                              WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
+      } else {
+
+	slog.warn(mmi+"WARNING!!: Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations method for TGat location -> "+this.location.getIdentity());
+
+	// --- Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations
+	//     method, just assign the tmpWLOMcList as is
+	this.nearestObsData.put(this.location.getIdentity(), tmpWLOMcList);
+      }
+	
+      slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
+
+      //} else {
+      //	throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
+      //}
 
     } else {	
       this.haveWLOData= false; 
@@ -605,8 +618,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       
     slog.info(mmi+"end");
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
 
     //return haveWLOData;
   }

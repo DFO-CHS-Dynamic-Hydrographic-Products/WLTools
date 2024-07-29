@@ -188,19 +188,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                                  " is NOT the same tg station id. as this.locationIdInfo="+this.locationIdInfo);
     }
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);    
-
-    //slog.info(mmi+"tideGaugeWLODataFile="+tideGaugeWLODataFile);
-
-    //} else {
-    //  slog.warn(mmi+"No WLO data to use at this point !! this.locationIdInfo="+this.locationIdInfo);
-    //}
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);    
 
     slog.info(mmi+"tideGaugePredictInputDataFile="+tideGaugePredictInputDataFile);
     slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     if (argsMapKeysSet.contains("--forecastAdjMethod")) {
 
@@ -241,13 +235,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     //slog.info(mmi+"this.predictAdjType="+this.predictAdjType.name());
     slog.info(mmi+"this.forecastAdjMethod="+this.forecastAdjMethod.name());
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     // --- Get the complete path of the file that contains the infi for
     //     all the tide gauges locations.
-    final String tideGaugeLocationsInfoFile= WLToolsIO.
-      getTideGaugeInfoFilePath(tideGaugeLocationsInfoFileName);
+    final String tideGaugeLocationsInfoFile= WLToolsIO
+      .getTideGaugeInfoFilePath(tideGaugeLocationsInfoFileName);
 
     //WLToolsIO.getMainCfgDir() + File.separator +
     //ITideGaugeConfig.INFO_FOLDER_NAME + File.separator + tideGaugeLocationsDefFileName ;
@@ -264,8 +258,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       throw new RuntimeException(mmi+e);
     }
 
-    final JsonObject mainJsonMapObj= Json.
-      createReader(jsonFileInputStream).readObject();
+    final JsonObject mainJsonMapObj= Json
+      .createReader(jsonFileInputStream).readObject();
 
     //double minDistRad= Double.MAX_VALUE;
     // String [] twoNearestTideGaugesIds= {null, null};
@@ -284,8 +278,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     // --- Set this.location (WLLocation) object with the tide gauge
     //     Json formatted config.
-    this.location.
-      setConfig(mainJsonMapObj.getJsonObject(this.locationIdInfo));
+    this.location.setConfig(mainJsonMapObj.getJsonObject(this.locationIdInfo));
 
     // --- Get the tide gauge ZC vs a global vertical datum conversion
     //     but just if we need to do a conversion.
@@ -332,8 +325,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //System.exit(0);
 
     // --- Need to get the WL predictions data time intervall increment here.
-    this.prdDataTimeIntervalSeconds= MeasurementCustom.
-      getDataTimeIntervallSeconds(this.locationPredData);
+    this.prdDataTimeIntervalSeconds= MeasurementCustom
+      .getDataTimeIntervallSeconds(this.locationPredData);
 
     slog.info(mmi+"Done with reading prediction input data from file -> "+tideGaugePredictInputDataFile);
     slog.info(mmi+"this.locationPredData.size()="+this.locationPredData.size());
@@ -349,6 +342,10 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     // --- Read-get the WLO data (if any)
     this.getTGObsData();
+
+    slog.info(mmi+"Done with this.getTGObsData()");
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);    
 
     // --- Do some checks on the WLO data (if any).
     if (this.haveWLOData) {	
