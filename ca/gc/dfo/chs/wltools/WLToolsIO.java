@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.Writer;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.FileNotFoundException;
@@ -136,6 +137,55 @@ abstract public class WLToolsIO implements IWLToolsIO {
     final File fileOutThere= new File(filePath);
 
     return (fileOutThere.exists()) ? true: false;
+  }
+
+  // ---
+  final public static ArrayList<MeasurementCustom>
+    getWLDataInIWLSJsonFmt(final String IWLSJsonFile, final long timeIncrToUseSeconds, final String workDir) {
+
+    final String mmi= "getWLDataInIWLSJsonFmt: ";
+
+    ArrayList<MeasurementCustom> retListMCs= null;
+    
+    slog.info(mmi+"start");  
+
+    slog.info(mmi+"IWLSJsonFile="+IWLSJsonFile);
+    slog.info(mmi+"timeIncrToUseSeconds="+timeIncrToUseSeconds);
+    slog.info(mmi+"workDir="+workDir);
+
+    // --- Deal with possible null IWLSJsonFile
+    try {
+      IWLSJsonFile.length();
+    } catch (NullPointerException npe) {
+	//slog.error(mmi+"WLDataJsonFile is null !!");
+      throw new RuntimeException(mmi+npe);
+    }
+
+    if (!checkForFileExistence(IWLSJsonFile)) {
+      throw new RuntimeException(mmi+"IWLSJsonFile -> "+IWLSJsonFile+" not found !!");
+    }
+
+    FileInputStream jsonFileInputStream= null;
+
+    try {
+      jsonFileInputStream= new FileInputStream(IWLSJsonFile);
+
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(mmi+e);
+    }    
+
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(mmi+e);
+    }    
+
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
+    
+    slog.info(mmi+"end");
+
+    return retListMCs;
   }
 
   // --- TODO: add some fool-proof checks
@@ -495,7 +545,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       // --- Read the ship channel point location adjusted WL from its
       //     CHS_JSON input file in the Map of MeasurementCustomBundle objects
       allSCLocsIPPInputData.put(scLocIndexKeyStr,
-	new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0) ));
+	new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInCHSJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0) ));
       
       //slog.info(mmi+"scLocFNamePrefixParts="+scLocFNamePrefixParts.toString());
 

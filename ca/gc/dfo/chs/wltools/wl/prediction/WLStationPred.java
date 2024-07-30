@@ -303,12 +303,12 @@ final public class WLStationPred extends WLStationPredFactory {
 
       // --- Here we do not need to check if the time stamps of the predictions are
       //     consistent with what we want hence the -1 for the 2nd arg. for the
-      //     WLAdjustmentIO.getWLDataInJsonFmt() method. We also assume that the WL
+      //     WLAdjustmentIO.getWLDataInCHSJsonFmt() method. We also assume that the WL
       //     predictions values are already referred to a global or regional vertical
       //     datum (and not the local CHS ZC) hence the 0.0 value for the 3rd argument
       //     of WLAdjustmentIO.getWLDataInJsonFmt() method.      
       this.alreadyExistingPredData= new
-	MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(previousPredResultsFile,-1L,0.0) );
+	MeasurementCustomBundle( WLAdjustmentIO.getWLDataInCHSJsonFmt(previousPredResultsFile,-1L,0.0) );
       
       //slog.info(mmi+"debug System.exit(0)");
       //System.exit(0);

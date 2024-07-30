@@ -305,13 +305,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       // --- Here we do not need to check if the time stamps of the predictions are
       //     consistent with what we want hence the -1 for the 2nd arg. for the
-      //     WLAdjustmentIO.getWLDataInJsonFmt() method. We also assume that the WL
+      //     WLAdjustmentIO.getWLDataInCHSJsonFmt() method. We also assume that the WL
       //     predictions values are already referred to a global or regional vertical
       //     datum (and not the local CHS ZC) hence the 0.0 value for the 3rd argument
-      //     of WLAdjustmentIO.getWLDataInJsonFmt() method.
+      //     of WLAdjustmentIO.getWLDataInCHSJsonFmt() method.
       //this.tgLocationWLPData=
-      this.locationPredData= WLAdjustmentIO.
-        getWLDataInJsonFmt(tideGaugePredictInputDataFile,-1L,0.0);
+      this.locationPredData= WLAdjustmentIO
+        .getWLDataInCHSJsonFmt(tideGaugePredictInputDataFile,-1L,0.0);
 
     } else {
       throw new RuntimeException(mmi+"Invalid prediction input data format -> "+this.predictInputDataFormat.name());

@@ -204,7 +204,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     // --- Read the adjusted FMF WL data for the ship channel point location
     //     that is the nearest to the lower side tide gauge.
     this.tgsNearestSCLocsAdjFMF.put(this.scReachIntrpUnit.getLowerSideScLocTGId(),
-        			    new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(fmfAdjAtLowerSideTGFile, -1L, 0.0)));
+        			    new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInCHSJsonFmt(fmfAdjAtLowerSideTGFile, -1L, 0.0)));
 
     // --- Get the path of the ship channel point location adjusted FMF WL data
     //     that is the nearest to the upper side (in terms of ship channel locations indices)
@@ -217,7 +217,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       // --- Read the adjusted FMF WL data for the ship channel point location
       //     that is the nearest to the upper side tide gauge.
     this.tgsNearestSCLocsAdjFMF.put(this.scReachIntrpUnit.getUpperSideScLocTGId(),
-      				     new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(fmfAdjAtUpperSideTGFile, -1L, 0.0)));  
+      				     new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInCHSJsonFmt(fmfAdjAtUpperSideTGFile, -1L, 0.0)));  
         
     // --- Verfiy the output file(s) format before going further
     if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.CHS_JSON.name())) {
@@ -311,7 +311,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       //slog.info(mmi+"idx="+idx+". Reading scLocFilePath="+scLocFilePath+" for scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
       
       this.scLocsNonAdjData.put(scLocFNameSpecSubStr,
-				new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(scLocFilePath, -1L, 0.0)));
+				new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInCHSJsonFmt(scLocFilePath, -1L, 0.0)));
        
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
@@ -343,7 +343,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     //System.exit(0);
     
     this.tgsNearestSCLocsNonAdjData.put(this.scReachIntrpUnit.getLowerSideScLocStrId(),
-			                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(lowerSideScLocFile, -1L, 0.0)));
+			                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInCHSJsonFmt(lowerSideScLocFile, -1L, 0.0)));
    
     slog.info(mmi+"this.scReachIntrpUnit.getUpperSideScLocStrId()="+this.scReachIntrpUnit.getUpperSideScLocStrId());
     
@@ -360,7 +360,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     slog.info(mmi+"upperSideScLocFile="+upperSideScLocFile);
 
     this.tgsNearestSCLocsNonAdjData.put(this.scReachIntrpUnit.getUpperSideScLocStrId(),
-	     		                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(upperSideScLocFile, -1L, 0.0)));
+	     		                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInCHSJsonFmt(upperSideScLocFile, -1L, 0.0)));
  
     slog.info(mmi+"end");
 

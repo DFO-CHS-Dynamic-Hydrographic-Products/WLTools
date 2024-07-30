@@ -574,7 +574,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         // --- Read the WLO data in a temp. List<MeasurementCustom> object
         //final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
 	tmpWLOMcList= WLAdjustmentIO
-          .getWLDataInJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
+	  .getWLDataInCHSJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
+	//.getWLDataInJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
 
         //slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
         //slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
@@ -585,6 +586,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
 	slog.info(mmi+"Reading WLO input data using the "+IWLToolsIO.Format.IWLS_JSON.name()+" format");
 
+	tmpWLOMcList= WLToolsIO
+	  .getWLDataInIWLSJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, WLToolsIO.getOutputDirectory()); //this.adjLocationZCVsVDatum);	
 	
         slog.info(mmi+"Debug System.exit(0)");
         System.exit(0);    
@@ -688,9 +691,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
    * Comments please!
    */
   final public static ArrayList<MeasurementCustom>
-      getWLDataInJsonFmt(final String WLDataJsonFile, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
+      getWLDataInCHSJsonFmt(final String WLDataJsonFile, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
 
-    final String mmi= "getWLDataInJsonFmt: ";
+    final String mmi= "getWLDataInCHSJsonFmt: ";
 
     slog.debug(mmi+"start");
     
@@ -702,13 +705,17 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       throw new RuntimeException(mmi+"Cannot have timeIncrToUse > MAX_TIMEINCR_DIFF_FOR_NNEIGH_TIMEINTERP_SECONDS !!");
     }
 
-    //--- Deal with possible null nsTidePredDataJsonFile String: if @NotNull not used
+    //--- Deal with possible null WLDataJsonFile
     try {
       WLDataJsonFile.length();
     } catch (NullPointerException npe) {
 	//slog.error(mmi+"WLDataJsonFile is null !!");
       throw new RuntimeException(mmi+npe);
     }
+
+    if (!WLToolsIO.checkForFileExistence(WLDataJsonFile)) {
+      throw new RuntimeException(mmi+"WLDataJsonFile -> "+WLDataJsonFile+" not found !!");
+    }   
 
     slog.debug(mmi+"start: WLDataJsonFile=" + WLDataJsonFile+
                ", fromZCToOtherDatumConvValue="+fromZCToOtherDatumConvValue);
@@ -722,8 +729,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       throw new RuntimeException(mmi+e);
     }
 
-    final JsonArray jsonWLDataArray= Json.
-      createReader(jsonFileInputStream).readArray();  //tmpJsonTcDataInputObj;
+    final JsonArray jsonWLDataArray= Json.createReader(jsonFileInputStream).readArray();  //tmpJsonTcDataInputObj;
 
     //List<String> checkTimeStamps= new ArrayList<String>();
     List<Instant> trackExistingInstants= new ArrayList<Instant>();
@@ -769,8 +775,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       //    fromZCToOtherDatumConvValue from the WLO value read from the json
       //    input file. Users have just to pass the same value but with the
       //    opposite sign to get the value being converted to the ZC.
-      final double wlDataValue= jsonWLDataObj.
-        getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
+      //    NOTE: fromZCToOtherDatumConvValue can simply be 0.0 here.
+      final double wlDataValue= jsonWLDataObj.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
 
       //slog.info(mmi+"wlPredValue="+wlPredValue);
       //slog.info(mmi+"Debug System.exit(0)");
@@ -779,17 +785,15 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       double uncertainty= MeasurementCustom.UNDEFINED_UNCERTAINTY;
 
       if (jsonWLDataObj.containsKey(IWLToolsIO.UNCERTAINTY_JSON_JEY)) {
-
-        uncertainty= jsonWLDataObj.
-          getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
+        uncertainty= jsonWLDataObj.getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
       }
 
       uncertainty= (uncertainty > IWL.MINIMUM_UNCERTAINTY_METERS) ? uncertainty: IWL.MAXIMUM_UNCERTAINTY_METERS;
 
       // --- Could have time stamps that are not defined with the "normal" time
       //     increment difference so just get rid of the related WL data.
-      //     e.g.: When WL obs data have 1mins time incr. intervalls (CHS TGs)
-      //           OR WL obs data have 5mins time incr. intervalls (ECCC TGs)
+      //     e.g.: When WL obs data have 1mins time incr. intervals (CHS TGs)
+      //           OR WL obs data have 5mins time incr. intervals (ECCC TGs)
       //           it means that for ECCC TGs we only use WL obs data at 15mins
       //           time intervals if timeIncrToUse is 3mins (180 seconds)
       //     NOTE: a timeIncrToUse < 0 means that we do not need to check
