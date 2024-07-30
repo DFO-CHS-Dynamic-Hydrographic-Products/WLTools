@@ -63,11 +63,28 @@ public interface IWLToolsIO {
   // --- IWLS specific:
 
   String IWLS_DB_TG_STR_ID_KEY= "id";
+    
   String IWLS_DB_TG_NUM_STRID_KEY= "code";
+
+  String IWLS_DB_DATUM_STRID_KEY= IWLS_DB_TG_NUM_STRID_KEY;
 
   String IWLS_DB_DTIME_END_STR= "%3A00%3A00Z";
 
   String IWLS_DB_QCFLAG_KEY= "qcFlagCode";
 
   String IWLS_DB_QCFLAG_VALID= "1";
+
+  String IWLS_DB_PROPS_ID_KEY= "properties";
+
+  String IWLS_DB_METDAT_ID_KEY= "metadata";
+    
+  String IWLS_DB_DATUMS_JSONARR_ID_KEY= "datums";
+
+  enum IWLS_CONV_DATUMS {
+    IGLD85,
+    CGVD28,
+    CGVD2013
+  }
+
+  String IWLS_DB_DEFAULT_CONV_DATUM= IWLS_CONV_DATUMS.IGLD85.name();
 }

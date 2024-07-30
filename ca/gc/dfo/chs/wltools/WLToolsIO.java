@@ -124,7 +124,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
   // ---
   final public static boolean checkForFileExistence(final String filePath) {
 
-    final String mmi= "checkForAsciiFileExistence: ";
+    final String mmi= "checkForFileExistence: ";
 
     //boolean asciiFileExists= true;
 
@@ -172,13 +172,38 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     } catch (FileNotFoundException e) {
       throw new RuntimeException(mmi+e);
-    }    
+    }
+
+    final JsonObject wloDataJsonObject= Json.createReader(jsonFileInputStream).readObject();
 
     try {
       jsonFileInputStream.close();
     } catch (IOException e) {
       throw new RuntimeException(mmi+e);
-    }    
+    }
+
+    slog.info(mmi+"Getting the IWLS WLO data {properties{metadata}} object");
+
+    //final JsonObject propsJsonObj= jsonWLDataObject.getJsonObject(IWLToolsIO.IWLS_DB_PROPS_ID_KEY);
+    final JsonObject propsMetaDataJsonObj= wloDataJsonObject
+      .getJsonObject(IWLToolsIO.IWLS_DB_PROPS_ID_KEY).getJsonObject(IWLToolsIO.IWLS_DB_METDAT_ID_KEY);
+    
+    final JsonArray wloDatumsJsonArray= propsMetaDataJsonObj.getJsonArray(IWLToolsIO.IWLS_DB_DATUMS_JSONARR_ID_KEY);
+
+    slog.info(mmi+"wloDatumsJsonArray.size()="+wloDatumsJsonArray.size());
+    
+    for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) {
+
+      slog.info(mmi+"itemIter="+itemIter);
+
+      //final JsonObject datumObj= jsonWLDatumsArray.getJsonObject(itemIter);
+	
+      final String checkDatumId= wloDatumsJsonArray.getJsonObject(itemIter).getString(IWLToolsIO.IWLS_DB_DATUM_STRID_KEY);
+
+      slog.info(mmi+"checkDatumId="+checkDatumId);
+    }
+
+    //final double convFromZcToGlobalDatumValue= jsonWLDatumsArray.getJsonObject(IWLToolsIO.IWLS_DB_DEFAULT_CONV_DATUM);
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);

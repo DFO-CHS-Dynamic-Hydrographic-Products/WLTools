@@ -691,7 +691,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
    * Comments please!
    */
   final public static ArrayList<MeasurementCustom>
-      getWLDataInCHSJsonFmt(final String WLDataJsonFile, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
+    getWLDataInCHSJsonFmt(final String WLDataJsonFile, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
 
     final String mmi= "getWLDataInCHSJsonFmt: ";
 
@@ -731,6 +731,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     final JsonArray jsonWLDataArray= Json.createReader(jsonFileInputStream).readArray();  //tmpJsonTcDataInputObj;
 
+    try {
+      jsonFileInputStream.close();
+    } catch (IOException e) {
+      throw new RuntimeException(mmi+e);
+    }   
+    
     //List<String> checkTimeStamps= new ArrayList<String>();
     List<Instant> trackExistingInstants= new ArrayList<Instant>();
 
@@ -821,8 +827,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
       slog.debug(mmi+"Trying to find WL replacements not too far in time for missing timestamps");
 
-      retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds,
-        mcsAtNonValidTimeStamps,tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
+      retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds, mcsAtNonValidTimeStamps, tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
 
       slog.debug(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
       slog.debug(mmi+"retListMCs.size() after WLMeasurement.findPossibleWLReplacements()="+retListMCs.size());
@@ -834,11 +839,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       retListMCs= tmpRetListMCs;
     }
 
-    try {
-      jsonFileInputStream.close();
-    } catch (IOException e) {
-      throw new RuntimeException(mmi+e);
-    }
+    // try {
+    //   jsonFileInputStream.close();
+    // } catch (IOException e) {
+    //   throw new RuntimeException(mmi+e);
+    // }
 
     slog.debug(mmi+"done with WLDataJsonFile=" + WLDataJsonFile);
 
