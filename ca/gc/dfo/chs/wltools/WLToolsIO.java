@@ -50,6 +50,7 @@ import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.IWLPSLegacyIO;
+import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.wl.IWLMeasurement;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
@@ -141,12 +142,13 @@ abstract public class WLToolsIO implements IWLToolsIO {
   }
 
   // ---
-  final public static ArrayList<MeasurementCustom>
+  final public static List<MeasurementCustom>
     getWLDataInIWLSJsonFmt(final String IWLSJsonFile, final long timeIncrToUseSeconds, final String workDir) {
 
     final String mmi= "getWLDataInIWLSJsonFmt: ";
 
-    ArrayList<MeasurementCustom> retListMCs= null;
+    List<MeasurementCustom> retListMCs= null;
+    //ArrayList<MeasurementCustom> retListMCs= null;
     
     slog.info(mmi+"start");  
 
@@ -226,7 +228,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     } // --- for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) loop block
 
     if (!convValueWasFound) {
-      throw new RuntimeException(mmi+"No ZC to global datum -> "+IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY+" conversion value found in the WLO Json file !1");
+      throw new RuntimeException(mmi+"No ZC to global datum -> "+
+				 IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY+" conversion value found in the WLO Json file !1");
     }
     
     slog.info(mmi+"convFromZCToGlobalDatumValue="+convFromZCToGlobalDatumValue);
@@ -238,51 +241,31 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     slog.info(mmi+"Nb. WLO data values="+wloValuesTimeStampsStrings.size());
 
-    // --- Use a local  List<MeasurementCustom> object
-    List<MeasurementCustom> tmpMCWLOData= new ArrayList<MeasurementCustom>();
+    final JsonArray wloDataCHSJsonArray= getCHSJsonArrayFromIWLSValuesJsonObj(wloValuesJsonObj, convFromZCToGlobalDatumValue);
 
-    // ---
-    for (final String wloTimeStampString: wloValuesTimeStampsStrings) {
+    slog.info(mmi+"Done with getting the wloDataCHSJsonArray");
 
-      // --- timestamp of this WLO data
-      final Instant wloTimeStampInstant= Instant.parse(wloTimeStampString);
-
-      //slog.info(mmi+"wloTimeStampInstant="+wloTimeStampInstant.toString());
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-
-      // --- WLO value at the wloTimeStampInstant
-      final double wloValueAtInstant= wloValuesJsonObj.getJsonNumber(wloTimeStampString).doubleValue() + convFromZCToGlobalDatumValue;
-
-      //slog.info(mmi+"wloValueAtInstant="+wloValueAtInstant);
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-
-      // --- No QC flag and no uncertainty for WLO data for now but we have to set
-      //     the uncertainty value to 2*IWL.MINIMUM_UNCERTAINTY_METERS to have something > 0.0 here
-      tmpMCWLOData.add( new MeasurementCustom(wloTimeStampInstant,wloValueAtInstant, 2*IWL.MINIMUM_UNCERTAINTY_METERS) );
-    }
-
-    // --- Now convert the tmpMCWLOData to a JsonArray in order to use the
-    //     method that check the WL data for missing timestamps (and that can
-    //     replace the missing WLO data with other WLO data not too far in time.
-    final JsonArray tmpWLODataJsonArr= getJsonArrayFromMCWLData(tmpMCWLOData);
-
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     //if (workDir != null) {
     //}
     
     slog.info(mmi+"end");
 
-    return retListMCs;
+    // --- ZC to global datum already added for IWLS DB data so
+    //     pass 0.0 as 3rd arg. to checkWLDataCHSJsonArray method
+    return checkWLDataCHSJsonArray(wloDataCHSJsonArray, timeIncrToUseSeconds, 0.0);
+    //return retListMCs;
   }
 
   // ---
-  final public static List<MeasurementCustom> checkWLData(final JsonArray wlDataJsonArray) {
+  final public static List<MeasurementCustom>
+    checkWLDataCHSJsonArray(final JsonArray wlDataCHSJsonArray, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue ) {
  
-    final String mmi= "checkWLData: ";
+    final String mmi= "checkWLDataCHSJsonArray: ";
+
+    //slog.info(mmi+"start");
       
     List<Instant> trackExistingInstants= new ArrayList<Instant>();
 
@@ -292,6 +275,100 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     ArrayList<MeasurementCustom> mcsAtNonValidTimeStamps= new ArrayList<MeasurementCustom>();
 
+    // --- loop on all the CHS_JSON WL data items
+    for (int itemIter= 0; itemIter < wlDataCHSJsonArray.size(); itemIter++) {
+
+      final JsonObject jsonWLDataObj=
+        wlDataCHSJsonArray.getJsonObject(itemIter);
+
+      final Instant wlDataInstant= Instant.
+        parse(jsonWLDataObj.getString(IWLToolsIO.INSTANT_JSON_KEY));
+
+      final long checkTimeStampSeconds= wlDataInstant.getEpochSecond();
+
+      if (trackExistingInstants.contains(wlDataInstant)) {
+
+        slog.warn(mmi+"Found an Instant timestamp duplicate - >"+
+                  wlDataInstant.toString()+" in the WL data, ignoring it !!");
+        continue;
+        //throw new RuntimeException(mmi+"The time stamp: "+wlDataInstant.toString()+" is duplicated !! ");
+      }
+
+      //--- NOTE: converting to the other vertical datum from the ZC by adding
+      //    fromZCToOtherDatumConvValue from the WLO value read from the json
+      //    input file. Users have just to pass the same value but with the
+      //    opposite sign to get the value being converted to the ZC.
+      //    NOTE: fromZCToOtherDatumConvValue can simply be 0.0 here.
+      final double wlDataValue= jsonWLDataObj.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
+
+      //slog.info(mmi+"wlDataValue="+wlDataValue);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+      double uncertainty= MeasurementCustom.UNDEFINED_UNCERTAINTY;
+
+      if (jsonWLDataObj.containsKey(IWLToolsIO.UNCERTAINTY_JSON_JEY)) {
+        uncertainty= jsonWLDataObj.getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
+      }
+
+      uncertainty= (uncertainty > IWL.MINIMUM_UNCERTAINTY_METERS) ? uncertainty: IWL.MAXIMUM_UNCERTAINTY_METERS;
+
+      // slog.info(mmi+"fromZCToOtherDatumConvValue="+fromZCToOtherDatumConvValue);
+      // slog.info(mmi+"wlDataValue ="+wlDataValue);
+      // slog.info(mmi+"uncertainty="+uncertainty);
+      // slog.info(mmi+"wlDataInstant="+wlDataInstant.toString());
+      // slog.info(mmi+"Debug System.exit(0)");
+      // System.exit(0);
+      
+      // --- Could have time stamps that are not defined with the "normal" time
+      //     increment difference so just get rid of the related WL data.
+      //     e.g.: When WL obs data have 1mins time incr. intervals (CHS TGs)
+      //           OR WL obs data have 5mins time incr. intervals (ECCC TGs)
+      //           it means that for ECCC TGs we only use WL obs data at 15mins
+      //           time intervals if timeIncrToUse is 3mins (180 seconds)
+      //     NOTE: a timeIncrToUse < 0 means that we do not need to check
+      //           the time increments (e.g. for predictions)
+      if ( (timeIncrToUseSeconds > 0L) && (checkTimeStampSeconds % timeIncrToUseSeconds != 0L)) {
+
+        // --- Store the data at this non-valid timestamp in the local mcsAtOtherTimeStamps List
+        //     to possibly use it later to fill-up missin data with it
+        mcsAtNonValidTimeStamps.add(new MeasurementCustom(wlDataInstant, wlDataValue, uncertainty));
+
+      } else {
+
+        // --- Put the data at this valid time stamp in the retListMCs List
+        tmpRetListMCs.add(new MeasurementCustom(wlDataInstant, wlDataValue, uncertainty));
+      }
+
+    } // --- for (int itemIter= 0; itemIter< jsonWLDataArray.size(); itemIter++) loop block
+
+    //slog.info(mmi+"tmpRetListMCs.size()="+tmpRetListMCs.size());
+    //slog.info(mmi+"timeIncrToUseSeconds="+timeIncrToUseSeconds);
+    //slog.info(mmi+"mcsAtNonValidTimeStamps.size="+mcsAtNonValidTimeStamps.size());
+
+    // --- Now check if the missing WL data could be replaced by data that is reasonably close
+    //     in terms of timestamps.
+    if ( (timeIncrToUseSeconds > 0L) && (mcsAtNonValidTimeStamps.size() > 0 ) ) {
+
+      slog.warn(mmi+"Trying to find WL replacements not too far in time for the missing timestamps");
+
+      retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds, mcsAtNonValidTimeStamps, tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
+
+      slog.warn(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
+      slog.warn(mmi+"retListMCs.size()="+retListMCs.size()+" after WLMeasurement.findPossibleWLReplacements() returns");
+
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+    } else {
+      retListMCs= tmpRetListMCs;
+    }
+
+    //slog.info(mmi+"retListMCs.size()="+retListMCs.size());
+    //slog.info(mmi+"end");
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+    
     return retListMCs;
   }
 
@@ -313,8 +390,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     // --- List all the relevant files in inputDir using a DirectoryStream<Path> object     
     //DirectoryStream<Path> inputDataDirFilesDS= null;
 
-    try ( final DirectoryStream<Path> inputDataDirFilesDS= Files
-           .newDirectoryStream(inputDataDir, relevantFilesRegExpr) ) {
+    try ( final DirectoryStream<Path> inputDataDirFilesDS= Files.newDirectoryStream(inputDataDir, relevantFilesRegExpr) ) {
 
       // --- Now put all the relevant files in the inputDataDirFilesList 
       //     object to be returned
@@ -429,8 +505,50 @@ abstract public class WLToolsIO implements IWLToolsIO {
     }
   }
 
-  // ---
-  final static JsonArray getJsonArrayFromMCWLData(final List<MeasurementCustom> mcWLData) {
+  // --- Generic method to add a CHS_JSON data structure type item.
+  final static public JsonArrayBuilder addCHSJsonItem(final double valueAtTimeStamp, final String timeStampStringISO8601,
+						      final double valueUncertainty, JsonArrayBuilder jsonArrayBuilderObj  ) {
+    jsonArrayBuilderObj.
+      add( Json.createObjectBuilder().
+        add(IWLToolsIO.VALUE_JSON_KEY, valueAtTimeStamp ).
+	  add( IWLToolsIO.INSTANT_JSON_KEY, timeStampStringISO8601).
+	    add(IWLToolsIO.UNCERTAINTY_JSON_JEY, valueUncertainty) );
+    
+    return jsonArrayBuilderObj;
+  }
+
+  // --- Return a JsonArray using the CHS_JSON WL data structure built with the content of an IWLS WL Json object
+  final public static JsonArray
+    getCHSJsonArrayFromIWLSValuesJsonObj(final JsonObject iwlsWLDataJsonObject, final double convFromZCToGlobalDatumValue) {
+
+    final String mmi= "getCHSJsonArrayFromIWLSJsonObj: "; 
+      
+    JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
+
+    final Set<String> wlValuesTimeStampsStrings= iwlsWLDataJsonObject.keySet();
+    
+    // --- Loop on all the MeasurementCustom objects that contain the WLO data.
+    for (final String wlTimeStampString: wlValuesTimeStampsStrings) {
+	
+      final double wlValueAtTimeStamp= iwlsWLDataJsonObject.getJsonNumber(wlTimeStampString).doubleValue();
+
+      //slog.info(mmi+"wlTimeStampString="+wlTimeStampString);
+      //slog.info(mmi+"wlValueAtTimeStamp="+wlValueAtTimeStamp);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+      // --- Apply the ZC to the global datum for any WL data coming from the IWLS DB.
+      //     No QC flag and no uncertainty for WLO data for now but we have to set
+      //     the uncertainty value to 2*IWL.MINIMUM_UNCERTAINTY_METERS to have an uncertainty > 0.0 here)     
+      addCHSJsonItem(wlValueAtTimeStamp + convFromZCToGlobalDatumValue,
+		     wlTimeStampString, 2*IWL.MINIMUM_UNCERTAINTY_METERS, jsonArrayBuilderObj);
+    }
+
+    return jsonArrayBuilderObj.build();
+  }    
+
+  // --- Return a JsonArray using the CHS_JSON WL data structure built with the content of a List<MeasurementCustom> object
+  final static JsonArray getCHSJsonArrayFromMCWLData(final List<MeasurementCustom> mcWLData) {
 
     JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
       
@@ -440,12 +558,13 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //final String eventDateISO8601= mc.getEventDate().toString();
       //final double wlpValue= mc.getValue();
 
-      jsonArrayBuilderObj.
-        add( Json.createObjectBuilder().
-          add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
-	    add(IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty() ).
-              add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
-              //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
+      addCHSJsonItem(mc.getValue(), mc.getEventDate().toString(), mc.getUncertainty(), jsonArrayBuilderObj);	
+
+      // jsonArrayBuilderObj.
+      //   add( Json.createObjectBuilder().
+      //     add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
+      // 	    add(IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty() ).
+      //         add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
     }
 
     return jsonArrayBuilderObj.build();
@@ -493,7 +612,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+e);
     }
 
-    final JsonArray mcWLDataJsonArray= getJsonArrayFromMCWLData(wlDataToWrite);
+    final JsonArray mcWLDataJsonArray= getCHSJsonArrayFromMCWLData(wlDataToWrite);
 
     // --- Now write the Json data bundle in the output file.
     Json.createWriter(jsonFileOutputStream).writeArray( mcWLDataJsonArray );
@@ -524,8 +643,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     slog.debug(mmi+"end");
 
-    //slog.info(mmi+"debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"debug System.exit(0)");
+    System.exit(0);
   }
 
   // ---

@@ -690,7 +690,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   /**
    * Comments please!
    */
-  final public static ArrayList<MeasurementCustom>
+  //final public static ArrayList<MeasurementCustom>
+  final public static List<MeasurementCustom>
     getWLDataInCHSJsonFmt(final String WLDataJsonFile, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
 
     final String mmi= "getWLDataInCHSJsonFmt: ";
@@ -735,103 +736,103 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       jsonFileInputStream.close();
     } catch (IOException e) {
       throw new RuntimeException(mmi+e);
-    }   
-    
-    //List<String> checkTimeStamps= new ArrayList<String>();
-    List<Instant> trackExistingInstants= new ArrayList<Instant>();
-
-    ArrayList<MeasurementCustom> retListMCs= null;
-
-    ArrayList<MeasurementCustom> tmpRetListMCs= new ArrayList<MeasurementCustom>();
-
-    ArrayList<MeasurementCustom> mcsAtNonValidTimeStamps= new ArrayList<MeasurementCustom>();
-
-    //for (final JsonObject jsonObj: jsonPredDataArray.toArray()) {
-    for (int itemIter= 0; itemIter < jsonWLDataArray.size(); itemIter++) {
-
-      final JsonObject jsonWLDataObj=
-        jsonWLDataArray.getJsonObject(itemIter);
-
-      final Instant wlDataInstant= Instant.
-        parse(jsonWLDataObj.getString(IWLToolsIO.INSTANT_JSON_KEY));
-
-      final long checkTimeStampSeconds= wlDataInstant.getEpochSecond();
-
-      if (trackExistingInstants.contains(wlDataInstant)) {
-
-        slog.warn(mmi+"Found an Instant timestamp duplicate - >"+
-                  wlDataInstant.toString()+" in the WL data, ignoring it !!");
-        continue;
-        //throw new RuntimeException(mmi+"The time stamp: "+wlDataInstant.toString()+" is duplicated !! ");
-      }
-
-      //--- NOTE: converting to the other vertical datum from the ZC by adding
-      //    fromZCToOtherDatumConvValue from the WLO value read from the json
-      //    input file. Users have just to pass the same value but with the
-      //    opposite sign to get the value being converted to the ZC.
-      //    NOTE: fromZCToOtherDatumConvValue can simply be 0.0 here.
-      final double wlDataValue= jsonWLDataObj.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
-
-      //slog.info(mmi+"wlPredValue="+wlPredValue);
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-
-      double uncertainty= MeasurementCustom.UNDEFINED_UNCERTAINTY;
-
-      if (jsonWLDataObj.containsKey(IWLToolsIO.UNCERTAINTY_JSON_JEY)) {
-        uncertainty= jsonWLDataObj.getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
-      }
-
-      uncertainty= (uncertainty > IWL.MINIMUM_UNCERTAINTY_METERS) ? uncertainty: IWL.MAXIMUM_UNCERTAINTY_METERS;
-
-      // --- Could have time stamps that are not defined with the "normal" time
-      //     increment difference so just get rid of the related WL data.
-      //     e.g.: When WL obs data have 1mins time incr. intervals (CHS TGs)
-      //           OR WL obs data have 5mins time incr. intervals (ECCC TGs)
-      //           it means that for ECCC TGs we only use WL obs data at 15mins
-      //           time intervals if timeIncrToUse is 3mins (180 seconds)
-      //     NOTE: a timeIncrToUse < 0 means that we do not need to check
-      //           the time increments (e.g. for predictions)
-      if ( (timeIncrToUseSeconds > 0L) && (checkTimeStampSeconds % timeIncrToUseSeconds != 0L)) {
-
-        // --- Store the data at this non-valid timestamp in the local mcsAtOtherTimeStamps List
-        //     to possibly use it later to fill-up missin data with it
-        mcsAtNonValidTimeStamps.add(new MeasurementCustom(wlDataInstant, wlDataValue, uncertainty));
-
-      } else {
-
-        // --- Put the data at this valid time stamp in the retListMCs List
-        tmpRetListMCs.add(new MeasurementCustom(wlDataInstant, wlDataValue, uncertainty));
-      }
-
-    } // --- for (int itemIter= 0; itemIter< jsonWLDataArray.size(); itemIter++) loop block
-
-    slog.debug(mmi+"tmpRetListMCs.size()="+tmpRetListMCs.size());
-    slog.debug(mmi+"mcsAtNonValidTimeStamps.size="+mcsAtNonValidTimeStamps.size());
-
-    // --- Now check if the mssing WL data could be replaced by data that is reasonably close
-    //     in terms of timestamps.
-    if ( (timeIncrToUseSeconds > 0L) && (mcsAtNonValidTimeStamps.size() > 0 ) ) {
-
-      slog.debug(mmi+"Trying to find WL replacements not too far in time for missing timestamps");
-
-      retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds, mcsAtNonValidTimeStamps, tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
-
-      slog.debug(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
-      slog.debug(mmi+"retListMCs.size() after WLMeasurement.findPossibleWLReplacements()="+retListMCs.size());
-
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
-
-    } else {
-      retListMCs= tmpRetListMCs;
     }
+    
+    // //List<String> checkTimeStamps= new ArrayList<String>();
+    // List<Instant> trackExistingInstants= new ArrayList<Instant>();
 
-    // try {
-    //   jsonFileInputStream.close();
-    // } catch (IOException e) {
-    //   throw new RuntimeException(mmi+e);
+    // ArrayList<MeasurementCustom> retListMCs= null;
+
+    // ArrayList<MeasurementCustom> tmpRetListMCs= new ArrayList<MeasurementCustom>();
+
+    // ArrayList<MeasurementCustom> mcsAtNonValidTimeStamps= new ArrayList<MeasurementCustom>();
+
+    // //for (final JsonObject jsonObj: jsonPredDataArray.toArray()) {
+    // for (int itemIter= 0; itemIter < jsonWLDataArray.size(); itemIter++) {
+
+    //   final JsonObject jsonWLDataObj=
+    //     jsonWLDataArray.getJsonObject(itemIter);
+
+    //   final Instant wlDataInstant= Instant.
+    //     parse(jsonWLDataObj.getString(IWLToolsIO.INSTANT_JSON_KEY));
+
+    //   final long checkTimeStampSeconds= wlDataInstant.getEpochSecond();
+
+    //   if (trackExistingInstants.contains(wlDataInstant)) {
+
+    //     slog.warn(mmi+"Found an Instant timestamp duplicate - >"+
+    //               wlDataInstant.toString()+" in the WL data, ignoring it !!");
+    //     continue;
+    //     //throw new RuntimeException(mmi+"The time stamp: "+wlDataInstant.toString()+" is duplicated !! ");
+    //   }
+
+    //   //--- NOTE: converting to the other vertical datum from the ZC by adding
+    //   //    fromZCToOtherDatumConvValue from the WLO value read from the json
+    //   //    input file. Users have just to pass the same value but with the
+    //   //    opposite sign to get the value being converted to the ZC.
+    //   //    NOTE: fromZCToOtherDatumConvValue can simply be 0.0 here.
+    //   final double wlDataValue= jsonWLDataObj.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
+
+    //   //slog.info(mmi+"wlPredValue="+wlPredValue);
+    //   //slog.info(mmi+"Debug System.exit(0)");
+    //   //System.exit(0);
+
+    //   double uncertainty= MeasurementCustom.UNDEFINED_UNCERTAINTY;
+
+    //   if (jsonWLDataObj.containsKey(IWLToolsIO.UNCERTAINTY_JSON_JEY)) {
+    //     uncertainty= jsonWLDataObj.getJsonNumber(IWLToolsIO.UNCERTAINTY_JSON_JEY).doubleValue();
+    //   }
+
+    //   uncertainty= (uncertainty > IWL.MINIMUM_UNCERTAINTY_METERS) ? uncertainty: IWL.MAXIMUM_UNCERTAINTY_METERS;
+
+    //   // --- Could have time stamps that are not defined with the "normal" time
+    //   //     increment difference so just get rid of the related WL data.
+    //   //     e.g.: When WL obs data have 1mins time incr. intervals (CHS TGs)
+    //   //           OR WL obs data have 5mins time incr. intervals (ECCC TGs)
+    //   //           it means that for ECCC TGs we only use WL obs data at 15mins
+    //   //           time intervals if timeIncrToUse is 3mins (180 seconds)
+    //   //     NOTE: a timeIncrToUse < 0 means that we do not need to check
+    //   //           the time increments (e.g. for predictions)
+    //   if ( (timeIncrToUseSeconds > 0L) && (checkTimeStampSeconds % timeIncrToUseSeconds != 0L)) {
+
+    //     // --- Store the data at this non-valid timestamp in the local mcsAtOtherTimeStamps List
+    //     //     to possibly use it later to fill-up missin data with it
+    //     mcsAtNonValidTimeStamps.add(new MeasurementCustom(wlDataInstant, wlDataValue, uncertainty));
+
+    //   } else {
+
+    //     // --- Put the data at this valid time stamp in the retListMCs List
+    //     tmpRetListMCs.add(new MeasurementCustom(wlDataInstant, wlDataValue, uncertainty));
+    //   }
+
+    // } // --- for (int itemIter= 0; itemIter< jsonWLDataArray.size(); itemIter++) loop block
+
+    // slog.debug(mmi+"tmpRetListMCs.size()="+tmpRetListMCs.size());
+    // slog.debug(mmi+"mcsAtNonValidTimeStamps.size="+mcsAtNonValidTimeStamps.size());
+
+    // // --- Now check if the mssing WL data could be replaced by data that is reasonably close
+    // //     in terms of timestamps.
+    // if ( (timeIncrToUseSeconds > 0L) && (mcsAtNonValidTimeStamps.size() > 0 ) ) {
+
+    //   slog.debug(mmi+"Trying to find WL replacements not too far in time for missing timestamps");
+
+    //   retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds, mcsAtNonValidTimeStamps, tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
+
+    //   slog.debug(mmi+"Done with WLMeasurement.findPossibleWLReplacements() method");
+    //   slog.debug(mmi+"retListMCs.size() after WLMeasurement.findPossibleWLReplacements()="+retListMCs.size());
+
+    //   //slog.info(mmi+"Debug System.exit(0)");
+    //   //System.exit(0);
+
+    // } else {
+    //   retListMCs= tmpRetListMCs;
     // }
+
+    // // try {
+    // //   jsonFileInputStream.close();
+    // // } catch (IOException e) {
+    // //   throw new RuntimeException(mmi+e);
+    // // }
 
     slog.debug(mmi+"done with WLDataJsonFile=" + WLDataJsonFile);
 
@@ -840,7 +841,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    return retListMCs;
+    // --- Need to use fromZCToOtherDatumConvValue (which can be 0.0) as 3rd arg.
+    //     to the WLToolsIO.checkWLDataCHSJsonArray
+    return WLToolsIO.checkWLDataCHSJsonArray(jsonWLDataArray, timeIncrToUseSeconds, fromZCToOtherDatumConvValue);
+    
+    //return retListMCs;
   }
 
   // ---
