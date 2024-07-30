@@ -80,11 +80,16 @@ public interface IWLToolsIO {
     
   String IWLS_DB_DATUMS_JSONARR_ID_KEY= "datums";
 
+  String IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY= "offset";
+
+  String IWLS_DB_WLO_DATA_ARR_ID_KEY= "wlo";
+
+  // ---
   enum IWLS_CONV_DATUMS {
     IGLD85,
     CGVD28,
     CGVD2013
   }
 
-  String IWLS_DB_DEFAULT_CONV_DATUM= IWLS_CONV_DATUMS.IGLD85.name();
+  String IWLS_DB_ZC_CONV_DATUM_TO_USE= IWLS_CONV_DATUMS.IGLD85.name();
 }

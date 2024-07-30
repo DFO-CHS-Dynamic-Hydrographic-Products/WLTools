@@ -182,28 +182,50 @@ abstract public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+e);
     }
 
-    slog.info(mmi+"Getting the IWLS WLO data {properties{metadata}} object");
+    //slog.info(mmi+"Getting the IWLS WLO data {properties{metadata}} object");
 
-    //final JsonObject propsJsonObj= jsonWLDataObject.getJsonObject(IWLToolsIO.IWLS_DB_PROPS_ID_KEY);
-    final JsonObject propsMetaDataJsonObj= wloDataJsonObject
-      .getJsonObject(IWLToolsIO.IWLS_DB_PROPS_ID_KEY).getJsonObject(IWLToolsIO.IWLS_DB_METDAT_ID_KEY);
-    
+    // --- Properties array
+    final JsonObject wloPropsJsonObj= wloDataJsonObject.getJsonObject(IWLToolsIO.IWLS_DB_PROPS_ID_KEY);
+
+    // --- Metadata Json object
+    final JsonObject propsMetaDataJsonObj= wloPropsJsonObj.getJsonObject(IWLToolsIO.IWLS_DB_METDAT_ID_KEY);
+
+    // --- datums Json array
     final JsonArray wloDatumsJsonArray= propsMetaDataJsonObj.getJsonArray(IWLToolsIO.IWLS_DB_DATUMS_JSONARR_ID_KEY);
 
-    slog.info(mmi+"wloDatumsJsonArray.size()="+wloDatumsJsonArray.size());
+    //slog.info(mmi+"wloDatumsJsonArray.size()="+wloDatumsJsonArray.size());
+
+    double convFromZCToGlobalDatumValue= 0.0;
     
+    // --- Get the value to apply to convert the WLO data from ZC to the global datum (IGLD85 normally)  
     for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) {
 
-      slog.info(mmi+"itemIter="+itemIter);
+      //slog.info(mmi+"itemIter="+itemIter);
 
-      //final JsonObject datumObj= jsonWLDatumsArray.getJsonObject(itemIter);
+      final JsonObject wloZCConvToGlobDatumJsonObj= wloDatumsJsonArray.getJsonObject(itemIter);
 	
-      final String checkDatumId= wloDatumsJsonArray.getJsonObject(itemIter).getString(IWLToolsIO.IWLS_DB_DATUM_STRID_KEY);
+      final String checkZCConvStrId= wloZCConvToGlobDatumJsonObj.getString(IWLToolsIO.IWLS_DB_DATUM_STRID_KEY);
 
-      slog.info(mmi+"checkDatumId="+checkDatumId);
-    }
+      //slog.info(mmi+"checkDatumId="+checkDatumId);
 
-    //final double convFromZcToGlobalDatumValue= jsonWLDatumsArray.getJsonObject(IWLToolsIO.IWLS_DB_DEFAULT_CONV_DATUM);
+      if (checkZCConvStrId.equals(IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_TO_USE)) {
+	  
+	convFromZCToGlobalDatumValue= wloZCConvToGlobDatumJsonObj
+	  .getJsonNumber(IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY).doubleValue();
+	
+	break;
+
+      } // ---
+    } // --- for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) loop block
+
+    slog.info(mmi+"convFromZCToGlobalDatumValue="+convFromZCToGlobalDatumValue);
+
+    // --- Get the WLO values as a Json object
+    final JsonObject wloValuesJsonObj= wloPropsJsonObj.getJsonObject(IWLToolsIO.IWLS_DB_WLO_DATA_ARR_ID_KEY);
+
+    final Set<String> wloValuesTimeStampsStrings= wloValuesJsonObj.keySet();
+    
+    slog.info(mmi+"wloValuesTimeStampsStrings.size()="+wloValuesTimeStampsStrings.size());
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
