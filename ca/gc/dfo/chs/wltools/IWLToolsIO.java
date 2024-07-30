@@ -84,6 +84,8 @@ public interface IWLToolsIO {
 
   String IWLS_DB_WLO_DATA_ARR_ID_KEY= "wlo";
 
+    //double UNDEFINED_ZC_CONV_VALUE= -777777.0;
+    
   // ---
   enum IWLS_CONV_DATUMS {
     IGLD85,

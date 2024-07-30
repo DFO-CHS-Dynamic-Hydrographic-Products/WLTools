@@ -1,6 +1,7 @@
 package ca.gc.dfo.chs.wltools;
 
 // ---
+import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.time.Instant;
@@ -151,8 +152,11 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     slog.info(mmi+"IWLSJsonFile="+IWLSJsonFile);
     slog.info(mmi+"timeIncrToUseSeconds="+timeIncrToUseSeconds);
-    slog.info(mmi+"workDir="+workDir);
 
+    if (workDir != null) {
+      slog.info(mmi+"workDir="+workDir);
+    }
+    
     // --- Deal with possible null IWLSJsonFile
     try {
       IWLSJsonFile.length();
@@ -196,6 +200,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //slog.info(mmi+"wloDatumsJsonArray.size()="+wloDatumsJsonArray.size());
 
     double convFromZCToGlobalDatumValue= 0.0;
+
+    boolean convValueWasFound= false;
     
     // --- Get the value to apply to convert the WLO data from ZC to the global datum (IGLD85 normally)  
     for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) {
@@ -212,12 +218,17 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	  
 	convFromZCToGlobalDatumValue= wloZCConvToGlobDatumJsonObj
 	  .getJsonNumber(IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY).doubleValue();
-	
+
+	convValueWasFound= true;
 	break;
 
       } // ---
     } // --- for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) loop block
 
+    if (!convValueWasFound) {
+      throw new RuntimeException(mmi+"No ZC to global datum -> "+IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY+" conversion value found in the WLO Json file !1");
+    }
+    
     slog.info(mmi+"convFromZCToGlobalDatumValue="+convFromZCToGlobalDatumValue);
 
     // --- Get the WLO values as a Json object
@@ -225,12 +236,61 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     final Set<String> wloValuesTimeStampsStrings= wloValuesJsonObj.keySet();
     
-    slog.info(mmi+"wloValuesTimeStampsStrings.size()="+wloValuesTimeStampsStrings.size());
+    slog.info(mmi+"Nb. WLO data values="+wloValuesTimeStampsStrings.size());
+
+    // --- Use a local  List<MeasurementCustom> object
+    List<MeasurementCustom> tmpMCWLOData= new ArrayList<MeasurementCustom>();
+
+    // ---
+    for (final String wloTimeStampString: wloValuesTimeStampsStrings) {
+
+      // --- timestamp of this WLO data
+      final Instant wloTimeStampInstant= Instant.parse(wloTimeStampString);
+
+      //slog.info(mmi+"wloTimeStampInstant="+wloTimeStampInstant.toString());
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+      // --- WLO value at the wloTimeStampInstant
+      final double wloValueAtInstant= wloValuesJsonObj.getJsonNumber(wloTimeStampString).doubleValue() + convFromZCToGlobalDatumValue;
+
+      //slog.info(mmi+"wloValueAtInstant="+wloValueAtInstant);
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);
+
+      // --- No QC flag and no uncertainty for WLO data for now but we have to set
+      //     the uncertainty value to 2*IWL.MINIMUM_UNCERTAINTY_METERS to have something > 0.0 here
+      tmpMCWLOData.add( new MeasurementCustom(wloTimeStampInstant,wloValueAtInstant, 2*IWL.MINIMUM_UNCERTAINTY_METERS) );
+    }
+
+    // --- Now convert the tmpMCWLOData to a JsonArray in order to use the
+    //     method that check the WL data for missing timestamps (and that can
+    //     replace the missing WLO data with other WLO data not too far in time.
+    final JsonArray tmpWLODataJsonArr= getJsonArrayFromMCWLData(tmpMCWLOData);
 
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);
+
+    //if (workDir != null) {
+    //}
     
     slog.info(mmi+"end");
+
+    return retListMCs;
+  }
+
+  // ---
+  final public static List<MeasurementCustom> checkWLData(final JsonArray wlDataJsonArray) {
+ 
+    final String mmi= "checkWLData: ";
+      
+    List<Instant> trackExistingInstants= new ArrayList<Instant>();
+
+    ArrayList<MeasurementCustom> retListMCs= null;
+
+    ArrayList<MeasurementCustom> tmpRetListMCs= new ArrayList<MeasurementCustom>();
+
+    ArrayList<MeasurementCustom> mcsAtNonValidTimeStamps= new ArrayList<MeasurementCustom>();
 
     return retListMCs;
   }
@@ -370,9 +430,31 @@ abstract public class WLToolsIO implements IWLToolsIO {
   }
 
   // ---
+  final static JsonArray getJsonArrayFromMCWLData(final List<MeasurementCustom> mcWLData) {
+
+    JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
+      
+    // --- Loop on all the MeasurementCustom objects that contain the WL data.
+    for (final MeasurementCustom mc: mcWLData) {
+
+      //final String eventDateISO8601= mc.getEventDate().toString();
+      //final double wlpValue= mc.getValue();
+
+      jsonArrayBuilderObj.
+        add( Json.createObjectBuilder().
+          add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
+	    add(IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty() ).
+              add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
+              //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
+    }
+
+    return jsonArrayBuilderObj.build();
+  }
+
+  // ---
   final public static void writeCHSJsonFormat(final List<MeasurementCustom> wlDataToWrite,
 					      final String locationId, final String outputDirectoryArg) {
-
+      
     final String mmi= "writeCHSJsonFormat: ";
 
     slog.debug(mmi+"start");
@@ -411,25 +493,27 @@ abstract public class WLToolsIO implements IWLToolsIO {
       throw new RuntimeException(mmi+e);
     }
 
-    JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
-
-    // --- Loop on all the MeasurementCustom objects that contains the WL data.
-    for (final MeasurementCustom mc: wlDataToWrite) {
-
-      //final String eventDateISO8601= mc.getEventDate().toString();
-      //final double wlpValue= mc.getValue();
-
-      jsonArrayBuilderObj.
-        add( Json.createObjectBuilder().
-          add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
-	    add(IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty() ).
-              add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
-              //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
-    }
+    final JsonArray mcWLDataJsonArray= getJsonArrayFromMCWLData(wlDataToWrite);
 
     // --- Now write the Json data bundle in the output file.
-    Json.createWriter(jsonFileOutputStream).
-      writeArray( jsonArrayBuilderObj.build() );
+    Json.createWriter(jsonFileOutputStream).writeArray( mcWLDataJsonArray );
+
+    // --- OLD inline code now implemented in the getJsonArrayFromMCWLData method
+    //JsonArrayBuilder jsonArrayBuilderObj= Json.createArrayBuilder();
+    //// --- Loop on all the MeasurementCustom objects that contains the WL data.
+    //for (final MeasurementCustom mc: wlDataToWrite) {
+    //  //final String eventDateISO8601= mc.getEventDate().toString();
+    //  //final double wlpValue= mc.getValue();
+    //   jsonArrayBuilderObj.
+    //     add( Json.createObjectBuilder().
+    //       add(IWLToolsIO.VALUE_JSON_KEY, mc.getValue() ).
+    // 	    add(IWLToolsIO.UNCERTAINTY_JSON_JEY, mc.getUncertainty() ).
+    //           add( IWLToolsIO.INSTANT_JSON_KEY, mc.getEventDate().toString() ) );
+    //           //add( Json.createObjectBuilder().add(IWLStationPredIO.VALUE_JSON_KEY, mc.getValue() ));
+    // }
+    // // --- Now write the Json data bundle in the output file.
+    // Json.createWriter(jsonFileOutputStream)
+    //   .writeArray( jsonArrayBuilderObj.build() );
 
     // --- We can close the Json file now
     try {

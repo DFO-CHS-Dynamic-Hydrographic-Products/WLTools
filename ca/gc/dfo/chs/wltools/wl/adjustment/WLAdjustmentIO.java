@@ -747,7 +747,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     ArrayList<MeasurementCustom> mcsAtNonValidTimeStamps= new ArrayList<MeasurementCustom>();
 
     //for (final JsonObject jsonObj: jsonPredDataArray.toArray()) {
-    for (int itemIter= 0; itemIter< jsonWLDataArray.size(); itemIter++) {
+    for (int itemIter= 0; itemIter < jsonWLDataArray.size(); itemIter++) {
 
       final JsonObject jsonWLDataObj=
         jsonWLDataArray.getJsonObject(itemIter);
@@ -756,18 +756,6 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         parse(jsonWLDataObj.getString(IWLToolsIO.INSTANT_JSON_KEY));
 
       final long checkTimeStampSeconds= wlDataInstant.getEpochSecond();
-
-      //// --- Could have time stamps that are not defined with the "normal" time
-     // //     increment difference so just get rid of the related WL data.
-     // //     e.g.: When WL obs data have 1mins time incr. intervalls (CHS TGs)
-     // //           OR WL obs data have 5mins time incr. intervalls (ECCC TGs)
-     // //           it means that for ECCC TGs we only use WL obs data at 15mins
-    //  //           time intervals if timeIncrToUse is 3mins (180 seconds)
-    //  //     NOTE: a timeIncrToUse < 0 means that we do not need to check
-    //  //           the time increments (e.g. for predictions)
-    //  if ( (timeIncrToUseSeconds > 0L) && (checkTimeStampSeconds % timeIncrToUseSeconds != 0L)) {
-    //    continue;
-    //  }
 
       if (trackExistingInstants.contains(wlDataInstant)) {
 
@@ -807,7 +795,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       if ( (timeIncrToUseSeconds > 0L) && (checkTimeStampSeconds % timeIncrToUseSeconds != 0L)) {
 
         // --- Store the data at this non-valid timestamp in the local mcsAtOtherTimeStamps List
-        //     to possibly use it later.
+        //     to possibly use it later to fill-up missin data with it
         mcsAtNonValidTimeStamps.add(new MeasurementCustom(wlDataInstant, wlDataValue, uncertainty));
 
       } else {
