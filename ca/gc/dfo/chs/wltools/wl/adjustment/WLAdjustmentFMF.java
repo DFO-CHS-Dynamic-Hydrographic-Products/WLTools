@@ -401,9 +401,9 @@ abstract public class WLAdjustmentFMF
 	           IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
 
         // ---  Put the previous full model forecast S104 DCF2 input data in the this.nearestModelData object:
-        prevFMFInputDataFilePathIter= this.getS104DCF2Data(prevFMFInputDataFilePathIter,
-                                                           uniqueTGMapObj, mainJsonMapObj,
-                                                           IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);	  
+        prevFMFInputDataFilePathIter= this.getS104DCF2InputData(prevFMFInputDataFilePathIter,
+                                                                uniqueTGMapObj, mainJsonMapObj,
+                                                                IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);	  
       } else {
 	 throw new RuntimeException(mmi+"Invalid FMF input data format -> "+this.modelForecastInputDataFormat.name()+" !!");
       }

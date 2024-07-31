@@ -312,30 +312,53 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   }
 
   // ---
-  final protected String getS104DCF2Data(final String S104DCF2DataFile, final Map<String, HBCoords> nearestsTGCoords,
-                                         final JsonObject mainJsonMapObj, final long nbHoursInPastArg, final int fmfTypeIndex ) {
+  final protected String getS104DCF2InputData(final String S104DCF2DataFile, final Map<String, HBCoords> nearestsTGCoords,
+                                              final JsonObject mainJsonMapObj, final long nbHoursInPastArg, final int fmfTypeIndex ) {
       
     final String mmi= "getS104DCF2Data: ";
 
-     if (nbHoursInPastArg < 0) {
+    if (nbHoursInPastArg < 0) {
       throw new RuntimeException(mmi+"nbHoursInPastArg must be >= 0 !!");
     }
 
     final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
 
-    slog.info(mmi+"start: nearestsTGCoordsIds="+
-              nearestsTGCoordsIds.toString()+", fmfTypeIndex="+fmfTypeIndex);  //fmfType="+fmfType.name());
+    if (nearestsTGCoordsIds.size() > 1) {
+      slog.warn(mmi+" nearestsTGCoordsIds.size() > 1 !! we will only use the 1st item here"); 
+    }
+
+    // --- Get the TG id. String
+    final String nearestTGIdStr= (String)nearestsTGCoordsIds.toArray()[0];
+
+    slog.info(mmi+"this.location.getIdentity()="+this.location.getIdentity());
+
+    if (!nearestTGIdStr.equals(this.location.getIdentity())) {
+      throw new RuntimeException(mmi+"The nearestTGIdStr must be the same as we have with this.location.getIdentity() !!");
+    }
+
+    slog.info(mmi+"start: nearestTGIdStr="+nearestTGIdStr+", fmfTypeIndex="+fmfTypeIndex);  //fmfType="+fmfType.name());
+
+    //slog.info(mmi+"nearestsTGCoords.get(nearestTGIdStr).getLongitude()="+nearestsTGCoords.get(nearestTGIdStr).getLongitude());
+    //slog.info(mmi+"nearestsTGCoords.get(nearestTGIdStr).getLatitude()="+nearestsTGCoords.get(nearestTGIdStr).getLatitude());
+    //slog.info(mmi+"this.location.getLongitude()="+this.location.getLongitude());
+    //slog.info(mmi+"this.location.getLatitude()="+this.location.getLatitude());
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);    
 
     slog.info(mmi+"S104DCF2DataFile="+S104DCF2DataFile);
     //slog.info(mmi+"this.modelInputDataFiles="+this.modelInputDataFiles);
 
-    //--- Create the this.nearestModelData object to store the H2D2 ASCII WL
-    //      forecast data
+    //--- Create the this.nearestModelData object to store the FMF WL input (non-adjusted) data
     this.nearestModelData.add( fmfTypeIndex, //fmfType.ordinal(),
                                new HashMap<String, List<MeasurementCustom>>() );
 
-    
+    //// --- Need to locate the S104 tile where the tide gauge is located.
+    //if (fmfTypeIndex == IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()) {
+    //}
 
+    // --- Get only the FMF data for the S104 DCF2 pixel that is the nearest to the tide gauge
+    //     location 
+	
     //--- Build the complete file path for the previous full model forecast ASCII
     //    input data file that could be used later for (WL0-WLF) error stats
     //final String prevFMFS104CDF2InputDataFilePath= inputFileNameFileObj.getParent() +
@@ -361,9 +384,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   final protected String getH2D2ASCIIWLFProbesData( final String H2D2ASCIIWLFProbesDataFile, final Map<String, HBCoords> nearestsTGCoords,
                                                     final JsonObject mainJsonMapObj, final long nbHoursInPastArg, final int fmfTypeIndex ) {
 
-    // --- TODO: Use a Set<String> object instead of a Map<String, HBCoords> object
-    //     because the HBCoords object is useless for this method ??
-
+    // ---
     final String mmi= "getH2D2ASCIIWLProbesData: ";
 
     if (nbHoursInPastArg < 0) {
@@ -469,8 +490,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //System.exit(0);
 
     // --- Need to get rid of the file lines < H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX
-    final List<String> relevantDataLines= H2D2ASCIIWLFProbesDataLines.
-      subList(H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX, H2D2ASCIIWLFProbesDataLines.size());
+    final List<String> relevantDataLines= H2D2ASCIIWLFProbesDataLines
+      .subList(H2D2_ASCII_FMT_1ST_DATA_LINE_INDEX, H2D2ASCIIWLFProbesDataLines.size());
 
     // ---
     for (final String inputDataLine: relevantDataLines ) {
@@ -494,8 +515,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
        // ---
        for (final String chsTGId: nearestsTGCoordsIds) {
 
-         final double tgWLFValue= Double.
-           parseDouble(inputDataLineSplit[tgDataColumnIndices.get(chsTGId)]);
+         final double tgWLFValue= Double
+           .parseDouble(inputDataLineSplit[tgDataColumnIndices.get(chsTGId)]);
 
          //slog.info(mmi+"timeStampSeconds="+timeStampSeconds+", tgWLValue="+tgWLValue);
          //--- Store the H2D2 WLF value for this CHS TG for this timestamp.

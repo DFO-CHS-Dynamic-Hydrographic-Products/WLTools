@@ -375,11 +375,11 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"this.modelForecastInputDataInfo="+this.modelForecastInputDataInfo);
 
-      // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
+      // --- Need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
       //     method call.
       final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
-
-      uniqueTGMapObj.put(this.location.getIdentity(), null);
+      
+      uniqueTGMapObj.put(this.location.getIdentity(), this.location);
 
       // --- Define the nb. hours in past to use depending on this.forecastAdjMethod:
       //     0 means that it will be automagically be determined according to the FMF
@@ -404,7 +404,6 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         //     method call.
         //final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
         //uniqueTGMapObj.put(this.location.getIdentity(), null);
-
         //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
 
         // // --- Define the nb. hours in past to use depending on this.forecastAdjMethod:
@@ -413,7 +412,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         // final long nbHoursInPastArg=
 	//   (this.forecastAdjMethod.equals(ForecastAdjMethod.TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS)) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
 	// //(this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
-
+	  
         // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII
         //     format. It should be the H2D2 model forecast data of the actual synoptic run as
@@ -442,9 +441,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
 	slog.info(mmi+"Using model FMF input data format -> "+ IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2.name());
 
-	prevFMFInputDataFilePath= this.getS104DCF2Data(this.modelForecastInputDataInfo,
-                                                       uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
-                                                       IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal());
+	prevFMFInputDataFilePath= this.getS104DCF2InputData(this.modelForecastInputDataInfo,
+                                                            uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
+                                                            IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal());
 
         slog.info(mmi+"Done with reading the model full forecast (FMF) WL input data at tide gauge -> "+
 		  this.location.getIdentity()+" for the actual synop run");	
