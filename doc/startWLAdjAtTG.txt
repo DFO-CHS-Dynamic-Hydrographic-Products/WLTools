@@ -12,25 +12,28 @@ time java WLTools \
 \
 --minNumberOfObs=480 \ # 24 hours at 3mins time intervals
 \
---referenceTimeISOFormat=2023-12-12T18:00:00Z \
+--referenceTimeISOFormat=2024-07-18T06:00:00Z \
 \
---fullForecastModelName=ECCC_H2D2_SLFE \
+--fullForecastModelName=ECCC_OHPS_SLFE \
+#--fullForecastModelInfo=ECCC_OHPS_SLFE:48 \
 \
 --tideGaugeLocationsInfoFileName=spineStlCHSTGs.json \
 \
 #--tideGaugeAdjMethods=CHS_IWLS_QC:SINGLE_TIMEDEP_FMF_ERROR_STATS \
---tideGaugeAdjMethods=CHS_IWLS_QC:MULT_TIMEDEP_FMF_ERROR_STATS \
+--tideGaugeAdjMethods=TGS_MULT_TIMEDEP_FMF_ERROR_STATS \
 \
---tideGaugeWLODataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/tgObs/20231212120000/03335-wloZC.json \
+--tideGaugeWLODataInfo=IWLS_JSON:/home/schs300/.suites/dfo_post_processing.rel-4.2.0.dev.h2d2-shop/hub/gpsc8/work/20240718060000/main/dfo_post_processing/pst_chs_dhp/s104dcf2/get_iwls_wlo/output/03335.json \
 \
---modelForecastInputDataInfo=ECCC_H2D2_ASCII:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2Input/20231212120000/ASCII/FORECAST_WL/2023121212_SLFE_NMM.csv \
+#--modelForecastInputDataInfo=ECCC_H2D2_ASCII:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/H2D2Input/20231212120000/ASCII/FORECAST_WL/2023121212_SLFE_NMM.csv \
+--modelForecastInputDataInfo=S104DCF2:/home/schs300/.suites/dfo_post_processing.rel-4.2.0.dev.h2d2-shop/hub/gpsc8/work/20240718060000/main/dfo_post_processing/pst_chs_dhp/s104dcf2/loop_s104dcf2_conv/LOOP_DHP_CONV_OUTPUTS/104CA0064656N07212W.h5
 \
---tideGaugePredictInputDataInfo=CHS_JSON:/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/NSTidePred/20231212120000/StLawrence-Deschaillons-gridPoint-540.json \
+--tideGaugePredictInputDataInfo=CHS_JSON:/home/schs300/.suites/dfo_post_processing.rel-4.2.0.dev.h2d2-shop/hub/gpsc8/work/20240718060000/main/dfo_post_processing/pst_chs_dhp/s104dcf2/loop_wl_pred/LOOP_WL_PRED_OUTPUTS/StLawrence-Deschaillons-gridPoint-540.json \
 \
---outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG/202312120000 \
+--outputDirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG/testS104DCF2Input/work \
 \
 --outputDataFormat=CHS_JSON
+#--outputDataFormat=S104DCF8
 \
---tgResidualsStatsIODirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG/residualsStatsDB \
+--tgResidualsStatsIODirectory=/home/gme042/slinks/fs7_isi_dfo_chs_enav/tmp/testWLTools/AdjAtTG/residualsStatsDBNew \
 \
 --writeAllData=true

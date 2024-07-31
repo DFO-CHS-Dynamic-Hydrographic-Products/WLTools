@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.time.temporal.ChronoUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,35 +204,6 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     this.argsMapKeySet= argsMap.keySet();
   }
 
-  // --- It does the same thing as the  HBCoords.getFromCHSJSONTCFile() method
-  // // --- Returns the HBCoords read from a Non-Stationary tidal consts. json file.
-  // final HBCoords getHBCoordsFromNSTCJsonFile(final String nsTCJsonFile) {
-
-  //   final String mmi= "getHBCoordsFromNSTCJsonFile: ";
-
-  //   FileInputStream jsonFileInputStream= null;
-
-  //   try {
-  //     jsonFileInputStream= new FileInputStream(nsTCJsonFile);
-
-  //   } catch (FileNotFoundException e) {
-  //     //this.log.error("tcInputfilePath"+tcInputfilePath+" not found !!");
-  //     throw new RuntimeException(mmi+e);
-  //   }
-
-  //   // --- Get the main json object from the file
-  //   final JsonObject mainJsonTcDataInputObj=
-  //     Json.createReader(jsonFileInputStream).readObject();
-
-  //   // --- TODO: check if IWLLocation.INFO_JSON_DICT_KEY is a key
-  //   //     in the mainJsonTcDataInputObj
-  //   final JsonObject channelGridPointJsonObj=
-  //     mainJsonTcDataInputObj.getJsonObject(IWLLocation.INFO_JSON_DICT_KEY);
-  
-  //   return new HBCoords(channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LONCOORD_KEY).doubleValue(),
-  // 			channelGridPointJsonObj.getJsonNumber(IWLLocation.INFO_JSON_LATCOORD_KEY).doubleValue());
-  // }
-
   // ---
   final MeasurementCustomBundle getMcbWLOData() {
 
@@ -276,33 +248,30 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     return new MeasurementCustomBundle(locationMCWLO); //mcbWLO;
   }
 
-  // ---
-  final public Instant getFMFLeadTimeInstantCopy() {
+  // // ---
+  // final public Instant getFMFLeadTimeInstantCopy() {
+  //   final String mmi= "getFMFLeadTimeInstantCopy: ";
+  //   try {
+  //     this.fmfLeadTimeInstant.toString();
+  //   } catch (NullPointerException npe) {
+  //     throw new RuntimeException(mmi+npe);
+  //   }
+  //   return this.fmfLeadTimeInstant.plusSeconds(0L);
+  // }
 
-    final String mmi= "getFMFLeadTimeInstantCopy: ";
+  // ---
+  final public String getFMFLeadTimeInstantECCCOperStr() {
       
+    final String mmi= "getFMFLeadTimeInstantECCCOperStr: ";
+    
     try {
       this.fmfLeadTimeInstant.toString();
     } catch (NullPointerException npe) {
       throw new RuntimeException(mmi+npe);
     }
     
-    return this.fmfLeadTimeInstant.plusSeconds(0L);
-  }
-
-  // ---
-  final public String getFMFLeadTimeInstantECCCOperStr() {
-
-    final String mmi= "getFMFLeadTimeInstantECCCOperStr: ";
-      
-    try {
-      this.fmfLeadTimeInstant.toString();
-    } catch (NullPointerException npe) {
-      throw new RuntimeException(mmi+npe);
-    }
-
     slog.info(mmi+"this.fmfLeadTimeInstant="+this.fmfLeadTimeInstant.toString());
-
+    
     // --- return <YYYYMMDDhh>0000 string built from the
     //     YYYY-MM-DDThh:mm:ssZ ISO8601 time string
     final String [] YYYYMMDDhhStrArray= this.fmfLeadTimeInstant.toString().
@@ -352,12 +321,23 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     this.nearestModelData.add( fmfTypeIndex, //fmfType.ordinal(),
                                new HashMap<String, List<MeasurementCustom>>() );
 
-    //// --- Need to locate the S104 tile where the tide gauge is located.
-    //if (fmfTypeIndex == IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()) {
-    //}
+    // --- Define the synop run lead time that will be used to not consider
+    //     the analysis part (which is before the synop run lead time) for the
+    //     non-adjusted forecast WL data returned. It depends on the fmfTypeIndex
+    //     int value which could be 0 in case the last (i.e. most recent) synop
+    //     run FMF data is processed.
+    final Instant synopRunLeadTime= this
+      .fmfLeadTimeInstant.minus(fmfTypeIndex * nbHoursInPastArg, ChronoUnit.HOURS);
+
+    slog.info(mmi+"this.fmfLeadTimeInstant="+this.fmfLeadTimeInstant.toString());
+    slog.info(mmi+"synopRunLeadTime="+synopRunLeadTime.toString());
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);   
 
     // --- Get only the FMF data for the S104 DCF2 pixel that is the nearest to the tide gauge
-    //     location 
+    //     location and only for the real forecast data which is in the future compared to
+    //     the synopRunLeadTime Instant
+    // ModelDataExtraction method call here.
 	
     //--- Build the complete file path for the previous full model forecast ASCII
     //    input data file that could be used later for (WL0-WLF) error stats

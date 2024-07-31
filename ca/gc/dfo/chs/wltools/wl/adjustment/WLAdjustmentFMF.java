@@ -100,7 +100,7 @@ abstract public class WLAdjustmentFMF
 
     final String mmi= "singleTimeDepFMFErrorStatsAdj: ";
 
-    slog.error(mmi+"method has now been decommissioned !!");
+    slog.error(mmi+"this method has now been decommissioned !!");
     System.exit(1);
     //throw new RuntimeException(mmi+"singleTimeDepFMFErrorStatsAdj method has been decommissioned !!");
     

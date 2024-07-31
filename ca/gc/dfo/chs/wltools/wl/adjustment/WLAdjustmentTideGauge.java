@@ -441,6 +441,13 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
 	slog.info(mmi+"Using model FMF input data format -> "+ IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2.name());
 
+	// --- Need to use the this.referenceTime for this.fmfLeadTimeInstant here.
+	this.fmfLeadTimeInstant= this.referenceTime;
+
+	slog.info(mmi+"this.fmfLeadTimeInstant="+this.fmfLeadTimeInstant.toString());
+	//slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);	
+
 	prevFMFInputDataFilePath= this.getS104DCF2InputData(this.modelForecastInputDataInfo,
                                                             uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
                                                             IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal());
