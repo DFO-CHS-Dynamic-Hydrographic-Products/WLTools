@@ -320,7 +320,7 @@ abstract public class WLAdjustmentFMF
   }
 
   // ---
-  final public Map<Long, MeasurementCustom> getNewTimeDepResidualsStats(final String prevFMFASCIIDataFilePath,
+  final public Map<Long, MeasurementCustom> getNewTimeDepResidualsStats(final String prevFMFInputDataFilePath,
 									final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj) {
     final String mmi= "getNewTimeDepResidualsStats: ";
 
@@ -339,8 +339,7 @@ abstract public class WLAdjustmentFMF
 
     // ---
     if (wloInstantsSet == null ) {
-      throw new RuntimeException(mmi+
-        "ERROR: wloInstantsSet == null !! It is abnormal that we have no WLO data to use at this point !!");
+      throw new RuntimeException(mmi+"wloInstantsSet == null !! It is abnormal that we have no WLO data to use at this point !!");
     }
 
     slog.info(mmi+"wloInstantsSet.size()="+wloInstantsSet.size());
@@ -359,11 +358,20 @@ abstract public class WLAdjustmentFMF
     //     time difference (in seconds since epoch) from the forecast lead time.
     Map<Long, List<Double>> timeDepResidualsAcc= new HashMap<Long, List<Double>>();
 
-    int prevFMFIdxIter= IWLAdjustmentIO.
-      FullModelForecastType.PREVIOUS.ordinal();
+    // --- Initialize the iteration index for the FMF synop runs that aer available in
+    //     the past compared to the actual (i.e. the last) synop run being processed.
+    //     Use the enum FullModelForecastType.PREVIOUS int value (should be 1) for that.
+    int prevFMFIdxIter= IWLAdjustmentIO
+      .FullModelForecastType.PREVIOUS.ordinal();
 
-    String prevFMFASCIIDataFilePathIter= prevFMFASCIIDataFilePath;
+    // --- Initialize the prevFMFInputDataFilePathIter String (which will be used
+    //     in the following while loop) with the prevFMFInputDataFilePath String
+    //     passed as an argument to this method.
+    //String prevFMFASCIIDataFilePathIter= prevFMFASCIIDataFilePath;
+    String prevFMFInputDataFilePathIter= prevFMFInputDataFilePath;
 
+    // --- boolean to signal that we have a time frame overlap between
+    //     the WLO data and the FMF data.
     boolean wloTimeFrameOverlap= true;
 
     int nbOverlapsCount= 0;
@@ -373,20 +381,33 @@ abstract public class WLAdjustmentFMF
 
        // --- Unlikely but could happen. In any case we "should" have at least one H2D2 ASCII
        //     input file to use at this point.
-       if (!WLToolsIO.checkForFileExistence(prevFMFASCIIDataFilePathIter)) {
+       if (!WLToolsIO.checkForFileExistence(prevFMFInputDataFilePathIter)) {
           
-        slog.warn(mmi+"WARNING: H2D2 FMF input file -> "+prevFMFASCIIDataFilePathIter+
+        slog.warn(mmi+"WARNING: FMF input data file -> "+prevFMFInputDataFilePathIter+
                   " not found !! skipping it and need to stop the getNewTimeDepResidualsStats calculation here !!");
         break;  
       }
 	
-      slog.info(mmi+"Processing FMF input file -> "+prevFMFASCIIDataFilePathIter);
+      slog.info(mmi+"Processing FMF input data file -> "+prevFMFInputDataFilePathIter);
 
-      // --- Read the previous H2D2 full model forecast data
-      prevFMFASCIIDataFilePathIter= this.getH2D2ASCIIWLFProbesData(prevFMFASCIIDataFilePathIter,
-                                                                   uniqueTGMapObj, mainJsonMapObj,
-                                                                   IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);
+      if (this.modelForecastInputDataFormat==
+	    IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
+	  
+        // --- Put the previous OHPS full model forecast ASCII input data in the this.nearestModelData object:
+        prevFMFInputDataFilePathIter= this.getH2D2ASCIIWLFProbesData(prevFMFInputDataFilePathIter,
+                                                                     uniqueTGMapObj, mainJsonMapObj,
+                                                                     IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);
+      } else if (this.modelForecastInputDataFormat==
+	           IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
 
+        // ---  Put the previous full model forecast S104 DCF2 input data in the this.nearestModelData object:
+        prevFMFInputDataFilePathIter= this.getS104DCF2Data(prevFMFInputDataFilePathIter,
+                                                           uniqueTGMapObj, mainJsonMapObj,
+                                                           IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);	  
+      } else {
+	 throw new RuntimeException(mmi+"Invalid FMF input data format -> "+this.modelForecastInputDataFormat.name()+" !!");
+      }
+      
       // --- Store the FMF data in a local MeasurementCustomBundle object:
       final MeasurementCustomBundle mcbPrevFMF= new
         MeasurementCustomBundle( this.nearestModelData.get(prevFMFIdxIter).get(wlLocationIdentity));
@@ -442,12 +463,12 @@ abstract public class WLAdjustmentFMF
             //slog.info(mmi+"WLO vs WLFMF Instant match for "+mcbPrevFMFInstant.toString());
 
             // --- Get the WLO at this Instant
-            final double wloValue= this.mcbWLO.
-              getAtThisInstant(mcbPrevFMFInstant).getValue();
+            final double wloValue= this.mcbWLO
+              .getAtThisInstant(mcbPrevFMFInstant).getValue();
 
             // --- Get the FMF WL at this same Instant
-            final double fmfWLValue= mcbPrevFMF.
-              getAtThisInstant(mcbPrevFMFInstant).getValue();
+            final double fmfWLValue= mcbPrevFMF
+              .getAtThisInstant(mcbPrevFMFInstant).getValue();
 
             //slog.info(mmi+"wloValue="+wloValue);
             //slog.info(mmi+"fmfWLValue="+fmfWLValue);
@@ -523,7 +544,7 @@ abstract public class WLAdjustmentFMF
     // --- Read the previous time dependent residuals stats that is stored
     //     on disk first: We could need to use it in case:
     //  
-    //     1). Some of the time offsets Long keys are missing in the
+    //     1). Some of the time offsets long keys are missing in the
     //         newly calculated time dependant residual stats.
     //
     //     2). There is no WLO data to use at all for the time frame

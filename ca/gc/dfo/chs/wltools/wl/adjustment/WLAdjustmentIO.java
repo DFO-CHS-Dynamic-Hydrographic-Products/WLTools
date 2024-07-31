@@ -311,20 +311,58 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     return YYYYMMDDhhStrArray[0].replace(IWLToolsIO.ISO8601_YYYYMMDD_SEP_CHAR, "") + YYYYMMDDhhStrArray[1] + "0000"; 
   }
 
+  // ---
+  final protected String getS104DCF2Data(final String S104DCF2DataFile, final Map<String, HBCoords> nearestsTGCoords,
+                                         final JsonObject mainJsonMapObj, final long nbHoursInPastArg, final int fmfTypeIndex ) {
+      
+    final String mmi= "getS104DCF2Data: ";
+
+     if (nbHoursInPastArg < 0) {
+      throw new RuntimeException(mmi+"nbHoursInPastArg must be >= 0 !!");
+    }
+
+    final Set<String> nearestsTGCoordsIds= nearestsTGCoords.keySet();
+
+    slog.info(mmi+"start: nearestsTGCoordsIds="+
+              nearestsTGCoordsIds.toString()+", fmfTypeIndex="+fmfTypeIndex);  //fmfType="+fmfType.name());
+
+    slog.info(mmi+"S104DCF2DataFile="+S104DCF2DataFile);
+    //slog.info(mmi+"this.modelInputDataFiles="+this.modelInputDataFiles);
+
+    //--- Create the this.nearestModelData object to store the H2D2 ASCII WL
+    //      forecast data
+    this.nearestModelData.add( fmfTypeIndex, //fmfType.ordinal(),
+                               new HashMap<String, List<MeasurementCustom>>() );
+
+    
+
+    //--- Build the complete file path for the previous full model forecast ASCII
+    //    input data file that could be used later for (WL0-WLF) error stats
+    //final String prevFMFS104CDF2InputDataFilePath= inputFileNameFileObj.getParent() +
+    //  File.separator + inputFileName.replace(zeroThHourYYYYMMDDhh,prevFMFInputFNamePrfx);
+
+    final String prevFMFS104CDF2InputDataFilePath= "not defined yet!";
+    
+    slog.info(mmi+"Will return prevFMFS104CDF2InputDataFilePath="+prevFMFS104CDF2InputDataFilePath);
+
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
+    slog.info(mmi+"end");
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
+
+    return prevFMFS104CDF2InputDataFilePath;   
+  }
+
   /**
    * Comments please!
    */
-  final protected String getH2D2ASCIIWLFProbesData( /*@NotNull*/ final String H2D2ASCIIWLFProbesDataFile,
-                                                    /*@NotNull*/ Map<String, HBCoords>  nearestsTGCoords,
-                                                    /*@NotNull*/ final JsonObject       mainJsonMapObj,
-                                                                 final long             nbHoursInPastArg,
-                                                                 final int              fmfTypeIndex ) {
-                                                       //final FullModelForecastType fmfType ) {
-
-                                       ///*@NotNull*/ Map<String,String> nearestsTGEcccIds ) {
+  final protected String getH2D2ASCIIWLFProbesData( final String H2D2ASCIIWLFProbesDataFile, final Map<String, HBCoords> nearestsTGCoords,
+                                                    final JsonObject mainJsonMapObj, final long nbHoursInPastArg, final int fmfTypeIndex ) {
 
     // --- TODO: Use a Set<String> object instead of a Map<String, HBCoords> object
-    //     because the HBCoords object is useless for this method.
+    //     because the HBCoords object is useless for this method ??
 
     final String mmi= "getH2D2ASCIIWLProbesData: ";
 
@@ -361,8 +399,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       //slog.info(mmi+"chsTGId="+chsTGId+", ecccId="+nearestsTGEcccIds.get(chsTGId));
 
       // --- Get the corresponding ECCC TG num. string id.
-      final String ecccTGId= mainJsonMapObj.
-        getJsonObject(chsTGId).getString(ITideGaugeConfig.INFO_ECCC_ID_JSON_KEY); //nearestsTGEcccIds.get(chsTGId);
+      final String ecccTGId= mainJsonMapObj
+	.getJsonObject(chsTGId).getString(ITideGaugeConfig.INFO_ECCC_ID_JSON_KEY); //nearestsTGEcccIds.get(chsTGId);
 
       tgDataColumnIndices.put(chsTGId, headerLineList.indexOf(ecccTGId));
 
@@ -371,8 +409,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
       // --- Create the Map entry for this CHS TG. in the nearestModelData (FMF data per-se)
       //this.nearestModelData.get(fmfType.ordinal()).
-      this.nearestModelData.get(fmfTypeIndex).
-        put(chsTGId, new ArrayList<MeasurementCustom>() );
+      this.nearestModelData.get(fmfTypeIndex)
+        .put(chsTGId, new ArrayList<MeasurementCustom>() );
 
       // --- Create the Map entry for this CHS TG. in the nearestModelNowcastData (nowcast data only)
       //     but ony if the chsTGId key does not already exists.

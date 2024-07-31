@@ -365,8 +365,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //            IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS.name()+" is allowed for now !");
       //}
 
-     this.fullForecastModelName= argsMapKeysSet
-       .contains("--fullForecastModelName") ? argsMap.get("--fullForecastModelName") : IWLAdjustment.DEFAULT_MODEL_NAME;
+      this.fullForecastModelName= argsMapKeysSet
+        .contains("--fullForecastModelName") ? argsMap.get("--fullForecastModelName") : IWLAdjustment.DEFAULT_MODEL_NAME;
 
       if (this.modelForecastInputDataInfo == null) {
         throw new RuntimeException(mmi+
@@ -390,13 +390,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"nbHoursInPastArg="+nbHoursInPastArg);
 
-      //String prevFMFASCIIDataFilePath= null;
+      // --- String to hold the path of the previous FMF input data file
+      //     (could be ASCII OR S104DCF2 format)
+      String prevFMFInputDataFilePath= null;
 
       // --- OHPS-SLFE ASCII (CSV in fact) WL input data format (WL data at tide gauges only)
       if (this.modelForecastInputDataFormat==
 	    IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
 
-        String prevFMFASCIIDataFilePath= null;
+	//String prevFMFASCIIDataFilePath= null;
 	  
         // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
         //     method call.
@@ -417,11 +419,11 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
         //     format. It should be the H2D2 model forecast data of the actual synoptic run as
         //     it is specified with the IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()
         //     argument to this method.
-        prevFMFASCIIDataFilePath= this.getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo,
+        prevFMFInputDataFilePath= this.getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo,
                                                                  uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
                                                                  IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()); // , this.nearestModelData);
 
-        slog.info(mmi+"Done with reading the model full forecast (FMF) WL data at tide gauge -> "+
+        slog.info(mmi+"Done with reading the model full forecast (FMF) WL ASCII input data at tide gauge -> "+
 		  this.location.getIdentity()+" for OHPS-SLFE and for the actual synop run");
 
         //slog.info(mmi+"this.nearestModelData.size()="+this.nearestModelData.size());
@@ -430,11 +432,22 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
         //slog.info(mmi+"previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
 
-      } else if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2) {
+	//slog.info(mmi+"Now doing full model forecast (FMF) adjustment-correction using previous forecast(s) ASCII format input data: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
+        //this.adjustFullModelForecast(argsMap, prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
+	//slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);	
+
+      } else if (this.modelForecastInputDataFormat==
+		   IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2) {
 
 	slog.info(mmi+"Using model FMF input data format -> "+ IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2.name());
 
-	
+	prevFMFInputDataFilePath= this.getS104DCF2Data(this.modelForecastInputDataInfo,
+                                                       uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
+                                                       IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal());
+
+        slog.info(mmi+"Done with reading the model full forecast (FMF) WL input data at tide gauge -> "+
+		  this.location.getIdentity()+" for the actual synop run");	
 
 	slog.info(mmi+"Debug System.exit(0)");
         System.exit(0);
@@ -453,19 +466,18 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       // --- Need to have this.fmfDataTimeIntervalSeconds == this.prdDataTimeIntervalSeconds at this point.
       //     because time interp. of forecast data is not implemented yet
       if (this.fmfDataTimeIntervalSeconds != this.prdDataTimeIntervalSeconds) {
-	  
         throw new RuntimeException(mmi+"this.fmfDataTimeIntervalSeconds != this.prdDataTimeIntervalSeconds, time interp. for forecasts not implemented yet!");
       }
 
-      slog.info(mmi+"Now doing full model forecast (FMF) adjustment-correction using previous forecast(s) data: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
-
-      this.adjustFullModelForecast(argsMap, prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
+      slog.info(mmi+"Now doing full model forecast (FMF) adjustment-correction using previous forecast(s) data: prevFMFInputDataFilePath="+prevFMFInputDataFilePath);
+      
+      //this.adjustFullModelForecast(argsMap, prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
+      this.adjustFullModelForecast(argsMap, prevFMFInputDataFilePath, uniqueTGMapObj, mainJsonMapObj); 
 
       slog.info(mmi+"Done with the specific FMF WL data adjustment at tide gauge -> "+this.location.getIdentity());
 
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
-
     } // --- this.forecastAdjType != null
 
     // --- Legacy FMS will eventually be completely decommissioned.
@@ -479,8 +491,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     slog.info(mmi+"end, tide gauge -> "+this.location.getIdentity());
 
-    //slog.info(mmi+"Debug System.exit(0)");
-    //System.exit(0);
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);
   }
 
   // --- Comments please!

@@ -266,26 +266,24 @@ abstract public class WLAdjustmentType
   }
    
   // ---
-  final public WLAdjustmentType adjustFullModelForecast(final HashMap<String,String> argsMap, final String prevFMFASCIIDataFilePath,
+  final public WLAdjustmentType adjustFullModelForecast(final HashMap<String,String> argsMap, final String prevFMFInputDataFilePath,  //final String prevFMFASCIIDataFilePath,
                                                         final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj ) {
-
     final String mmi= "adjustFullModelForecast: ";
 
-    slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath);
-    //slog.info(mmi+"Debug exit 0");
-    //System.exit(0);
+    slog.info(mmi+"start: this.modelForecastInputDataFormat.name()"+this.modelForecastInputDataFormat.name()); 
+    slog.info(mmi+"prevFMFInputDataFilePath="+prevFMFInputDataFilePath);
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     try {
-      prevFMFASCIIDataFilePath.length();
+      prevFMFInputDataFilePath.length();
     } catch (NullPointerException npe) {
-       //slog.error(mmi+"prevFMFASCIIDataFilePath is null !!");
       throw new RuntimeException(mmi+npe);
     }
 
     try {
       uniqueTGMapObj.size();
     } catch (NullPointerException npe) {
-       //slog.error(mmi+"uniqueTGMapObj is null !!");
       throw new RuntimeException(mmi+npe);
     }
 
@@ -303,13 +301,20 @@ abstract public class WLAdjustmentType
       case TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS:
 
         if (!this.haveWLOData) {
-	  throw new RuntimeException(mmi+"ERROR: this.haveWLOData cannot be false for the "+this.forecastAdjMethod.name()+" FMF adjustment type !");
+	  throw new RuntimeException(mmi+"this.haveWLOData cannot be false for the "+this.forecastAdjMethod.name()+" FMF adjustment type !");
         }
+
+	if (this.modelForecastInputDataFormat==
+	      IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2) {
+	    
+          throw new RuntimeException(mmi+"Cannot use the "+this.forecastAdjMethod.name()+
+				     " forecast adjustment method combined with the "+IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2+" model input data format type !");
+	}
 	  
-        this.singleTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
+        this.singleTimeDepFMFErrorStatsAdj(prevFMFInputDataFilePath,
                                            uniqueTGMapObj, mainJsonMapObj);
 
-        slog.info(mmi+"Done with "+this.forecastAdjMethod.name()+" calculations");
+        //slog.info(mmi+"Done with "+this.forecastAdjMethod.name()+" calculations");
 
         break;
 
@@ -325,13 +330,12 @@ abstract public class WLAdjustmentType
         //final String tgResidualsStatsIODirectory= argsMap.get("--tgResidualsStatsIODirectory");
 	final String modelWLResidualsAtTGStatsIODir= argsMap.get("--modelWLResidualsAtTGStatsIODir");
 
-        this.multTimeDepFMFErrorStatsAdj(prevFMFASCIIDataFilePath,
+        this.multTimeDepFMFErrorStatsAdj(prevFMFInputDataFilePath,
                                          uniqueTGMapObj, mainJsonMapObj,
 					 modelWLResidualsAtTGStatsIODir);
 	                                 //tgResidualsStatsIODirectory);
 
-        slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
-
+        //slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
         //slog.info(mmi+"Debug exit 0");
         //System.exit(0);
 
@@ -341,9 +345,11 @@ abstract public class WLAdjustmentType
         throw new RuntimeException(mmi+"Invalid this.forecastAdjMethod -> "+this.forecastAdjMethod.name());
     }
 
+    slog.info(mmi+"Done with "+this.forecastAdjMethod.name()+" calculations");
+
     slog.info(mmi+"end");
-    //slog.info(mmi+"Debug exit 0");
-    //System.exit(0);
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
 
     return this;
   } // --- adjustFullModelForecast method
