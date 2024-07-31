@@ -350,7 +350,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //     in terms of timestamps.
     if ( (timeIncrToUseSeconds > 0L) && (mcsAtNonValidTimeStamps.size() > 0 ) ) {
 
-      slog.warn(mmi+"Trying to find WL replacements not too far in time for the missing timestamps");
+      slog.warn(mmi+"Trying to find WL replacements not too far in time for the missing timestamps (if any)");
 
       retListMCs= WLMeasurement.findPossibleWLReplacements(timeIncrToUseSeconds, mcsAtNonValidTimeStamps, tmpRetListMCs, ITimeMachine.SECONDS_PER_MINUTE);
 

@@ -205,27 +205,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 				   " Must be one of -> "+IWLAdjustment.allowedForecastAdjMethods.toString() );
       }
 
-      this.forecastAdjMethod= IWLAdjustment
-        .ForecastAdjMethod.valueOf(checkForecastAdjMethod);
-
-	//final String [] forecastAdjMethodCheck= argsMap.
-        //get("--tideGaugeAdjMethods").split(IWLToolsIO.INPUT_DATA_FMT_SPLIT_CHAR);
-	//if (!IWLAdjustment.allowedTideGaugeAdjMethods.contains(tideGaugeAdjMethodCheck[0]) ) {
-        //throw new RuntimeException(mmi+"Invalid tide gauge WL adjustment method -> "+tideGaugeAdjMethodCheck[0]+
-        //                           " Must be one of -> "+IWLAdjustment.allowedTideGaugeAdjMethods.toString());
-        //}
-      //// --- WL prediction adjustment type
-      //this.predictAdjType= IWLAdjustment.
-      //  TideGaugeAdjMethod.valueOf(tideGaugeAdjMethodCheck[0]);
-      // // --- Full Model Forecast (FMF) adjustment type (if any)
-      // if (tideGaugeAdjMethodCheck.length == 2) {
-      //   if (!IWLAdjustment.allowedForecastAdjMethods.contains(tideGaugeAdjMethodCheck[1]) ) {
-      //     throw new RuntimeException(mmi+"Invalid forecast WL adjustment method -> "+tideGaugeAdjMethodCheck[1]+
-      //                                " Must be one of -> "+IWLAdjustment.allowedTideGaugeAdjMethods.toString() );
-      //   }
-      //   this.forecastAdjType= IWLAdjustment.
-      //     TideGaugeAdjMethod.valueOf(tideGaugeAdjMethodCheck[1]);
-      // }
+      this.forecastAdjMethod= IWLAdjustment.ForecastAdjMethod.valueOf(checkForecastAdjMethod);
     }
 
     //if (this.predictAdjType != IWLAdjustment.TideGaugeAdjMethod.CHS_IWLS_QC) {
@@ -260,10 +240,6 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     final JsonObject mainJsonMapObj= Json
       .createReader(jsonFileInputStream).readObject();
-
-    //double minDistRad= Double.MAX_VALUE;
-    // String [] twoNearestTideGaugesIds= {null, null};
-    //Map<Double,String> tmpDistCheck= new HashMap<Double,String>();
 
     final Set<String> tgStrNumIdKeysSet= mainJsonMapObj.keySet();
 
@@ -344,20 +320,20 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     this.getTGObsData();
 
     slog.info(mmi+"Done with this.getTGObsData()");
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);    
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);    
 
     // --- Do some checks on the WLO data (if any).
     if (this.haveWLOData) {	
 
       try {
 	this.nearestObsData.get(this.location.getIdentity()).size();
+	
       } catch (NullPointerException npe) {
 	throw new RuntimeException(mmi+"ERROR: this.nearestObsData.get(this.location.getIdentity()) cannot be null if this.haveWLOData is true");
       }
 
-      final int checkNumberOfObs= this.
-	nearestObsData.get(this.location.getIdentity()).size();
+      final int checkNumberOfObs= this.nearestObsData.get(this.location.getIdentity()).size();
       
       if (checkNumberOfObs < this.minNumberOfObs) {
 	  //throw new RuntimeException(mmi+"ERROR: We must have checkNumberOfObs -> "+
@@ -389,8 +365,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       //            IWLAdjustment.TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS.name()+" is allowed for now !");
       //}
 
-     this.fullForecastModelName= argsMapKeysSet.
-       contains("--fullForecastModelName") ? argsMap.get("--fullForecastModelName") : IWLAdjustment.DEFAULT_MODEL_NAME;
+     this.fullForecastModelName= argsMapKeysSet
+       .contains("--fullForecastModelName") ? argsMap.get("--fullForecastModelName") : IWLAdjustment.DEFAULT_MODEL_NAME;
 
       if (this.modelForecastInputDataInfo == null) {
         throw new RuntimeException(mmi+
@@ -405,10 +381,23 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       uniqueTGMapObj.put(this.location.getIdentity(), null);
 
-      String prevFMFASCIIDataFilePath= null;
+      // --- Define the nb. hours in past to use depending on this.forecastAdjMethod:
+      //     0 means that it will be automagically be determined according to the FMF
+      //     data duration after its lead time
+      final long nbHoursInPastArg= (this.forecastAdjMethod
+	.equals(ForecastAdjMethod.TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS)) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
+	//(this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
 
-      if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
+      slog.info(mmi+"nbHoursInPastArg="+nbHoursInPastArg);
 
+      //String prevFMFASCIIDataFilePath= null;
+
+      // --- OHPS-SLFE ASCII (CSV in fact) WL input data format (WL data at tide gauges only)
+      if (this.modelForecastInputDataFormat==
+	    IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
+
+        String prevFMFASCIIDataFilePath= null;
+	  
         // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
         //     method call.
         //final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
@@ -416,12 +405,12 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
         //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
 
-        // --- Define the nb. hours in past to use depending on this.forecastAdjMethod:
-        //     0 means that it will be automagically be determined according to the FMF
-        //     data duration after its lead time
-        final long nbHoursInPastArg=
-	  (this.forecastAdjMethod.equals(ForecastAdjMethod.TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS)) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
-	//(this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
+        // // --- Define the nb. hours in past to use depending on this.forecastAdjMethod:
+        // //     0 means that it will be automagically be determined according to the FMF
+        // //     data duration after its lead time
+        // final long nbHoursInPastArg=
+	//   (this.forecastAdjMethod.equals(ForecastAdjMethod.TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS)) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
+	// //(this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
 
         // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII
@@ -432,7 +421,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
                                                                  uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
                                                                  IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()); // , this.nearestModelData);
 
-        slog.info(mmi+"Done with reading the model full forecast at tide gauge -> "+this.location.getIdentity());
+        slog.info(mmi+"Done with reading the model full forecast (FMF) WL data at tide gauge -> "+
+		  this.location.getIdentity()+" for OHPS-SLFE and for the actual synop run");
 
         //slog.info(mmi+"this.nearestModelData.size()="+this.nearestModelData.size());
         //slog.info(mmi+"this.nearestModelData.get(IWLAdjustmentIO.FullModelForecastType.ACTUAL).get(this.location.getIdentity()).get(0).getValue()="+
@@ -440,9 +430,18 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
         //slog.info(mmi+"previousFMFASCIIDataFilePath="+previousFMFASCIIDataFilePath);
 
+      } else if (this.modelForecastInputDataFormat == IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2) {
+
+	slog.info(mmi+"Using model FMF input data format -> "+ IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2.name());
+
+	
+
+	slog.info(mmi+"Debug System.exit(0)");
+        System.exit(0);
+	
       } else {
-        throw new RuntimeException(mmi+"Invalid this.modelForecastInputDataFormat -> "
-                                   +this.modelForecastInputDataFormat.name() ); //+" for inputDataType ->"+this.inputDataType.name()+" !!");
+        throw new RuntimeException(mmi+"Invalid this.modelForecastInputDataFormat -> "+this.modelForecastInputDataFormat.name() );
+	//+" for inputDataType ->"+this.inputDataType.name()+" !!");
       }
 
       if (this.fmfDataTimeIntervalSeconds > MAX_FULL_FORECAST_TIME_INTERVAL_SECONDS) {

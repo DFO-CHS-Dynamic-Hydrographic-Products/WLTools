@@ -39,12 +39,10 @@ import as.hdfql.HDFqlConstants;
 import ca.gc.dfo.chs.wltools.wl.IWL;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
-//import ca.gc.dfo.chs.wltools.wl.fms.FMS;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.wl.IWLLocation;
-//import ca.gc.dfo.chs.wltools.wl.fms.FMSInput;
 import ca.gc.dfo.chs.wltools.util.TimeMachine;
 import ca.gc.dfo.chs.wltools.util.ASCIIFileIO;
 import ca.gc.dfo.chs.wltools.wl.WLMeasurement;
@@ -54,18 +52,16 @@ import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-//import ca.gc.dfo.chs.wltools.nontidal.stage.IStageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPred;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.wl.prediction.IWLStationPredIO;
-//import ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentSpine;
 
 /**
  * Comments please!
  */
-abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment { //extends <>
+abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
   private final static String whoAmI=
      "ca.gc.dfo.chs.wltools.wl.adjustment.WLAdjustmentIO";
@@ -587,16 +583,16 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 	slog.info(mmi+"Reading WLO input data using the "+IWLToolsIO.Format.IWLS_JSON.name()+" format");
 
 	tmpWLOMcList= WLToolsIO
-	  .getWLDataInIWLSJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, WLToolsIO.getOutputDirectory()); //this.adjLocationZCVsVDatum);	
+	    .getWLDataInIWLSJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, null); //WLToolsIO.getOutputDirectory());	
 	
-        slog.info(mmi+"Debug System.exit(0)");
-        System.exit(0);    
+        //slog.info(mmi+"Debug System.exit(0)");
+        //System.exit(0);    
       }
 
-      slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
-      slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
-      slog.info(mmi+"Debug System.exit(0)");
-      System.exit(0);    
+      //slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
+      //slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
+      //slog.info(mmi+"Debug System.exit(0)");
+      //System.exit(0);    
 
       if (tmpWLOMcList.size() >= IWLMeasurement.MIN_NUMBER_OF_WL_HFOSC_RMV) {
 	    
@@ -616,10 +612,6 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 	
       slog.info(mmi+"Done with reading the TG obs (WLO) at location -> "+this.location.getIdentity());
 
-      //} else {
-      //	throw new RuntimeException(mmi+"Invalid TG observation input data format -> "+this.obsInputDataFormat.name());
-      //}
-
     } else {	
       this.haveWLOData= false; 
     }
@@ -628,8 +620,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       
     slog.info(mmi+"end");
 
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
 
     //return haveWLOData;
   }
