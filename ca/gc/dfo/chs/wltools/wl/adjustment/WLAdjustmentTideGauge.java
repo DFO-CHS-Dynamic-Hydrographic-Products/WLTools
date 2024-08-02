@@ -78,6 +78,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
   //private ArrayList<MeasurementCustom> tgLocationWLPData= null;
   //private List<MeasurementCustom> tgLocationWLFData= null;
 
+  private Double wloQCThresholdAbsVal= null;
+
   /**
    * Comments please!
    */
@@ -103,12 +105,25 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
     final Set<String> argsMapKeysSet =argsMap.keySet();
 
+    if (!argsMapKeysSet.contains("--wloQCThresholdAbsVal")) {
+      throw new RuntimeException(mmi+
+        "Must have the --wloQCThresholdAbsVal=<min. number of WL obs> defined in argsMap");
+    }
+
+    this.wloQCThresholdAbsVal= Double.parseDouble(argsMap.get("--wloQCThresholdAbsVal"));
+
+    slog.info(mmi+"this.wloQCThresholdAbsVal="+this.wloQCThresholdAbsVal);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);
+
     if (!argsMapKeysSet.contains("--minNumberOfObs")) {
       throw new RuntimeException(mmi+
         "Must have the --minNumberOfObs=<min. number of WL obs> defined in argsMap");
     }
 
     this.minNumberOfObs= Integer.parseInt(argsMap.get("--minNumberOfObs"));
+
+    slog.info(mmi+"this.minNumberOfObs="+this.minNumberOfObs);
 
     if (!argsMapKeysSet.contains("--referenceTimeISOFormat")) {
       throw new RuntimeException(mmi+
@@ -308,14 +323,14 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     if (this.predictInputDataFormat == IWLToolsIO.Format.CHS_JSON ) {
 
       // --- Here we do not need to check if the time stamps of the predictions are
-      //     consistent with what we want hence the -1 for the 2nd arg. for the
+      //     consistent with what we want hence the -1L for the 2nd arg. for the
       //     WLAdjustmentIO.getWLDataInJsonFmt() method. We also assume that the WL
       //     predictions values are already referred to a global or regional vertical
       //     datum (and not the local CHS ZC) hence the 0.0 value for the 3rd argument
-      //     of WLAdjustmentIO.getWLDataInJsonFmt() method.
+      //     of WLAdjustmentIO.getWLDataInJsonFmt() method. The 4th arg. is the WL QC
+      //     threshold which is only used for WLO data so we pass null here for this last arg.
       //this.tgLocationWLPData=
-      this.locationPredData= WLAdjustmentIO.
-        getWLDataInJsonFmt(tideGaugePredictInputDataFile,-1L,0.0);
+      this.locationPredData= WLAdjustmentIO.getWLDataInJsonFmt(tideGaugePredictInputDataFile, -1L, 0.0, null);
 
     } else {
       throw new RuntimeException(mmi+"Invalid prediction input data format -> "+this.predictInputDataFormat.name());
@@ -329,8 +344,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     //System.exit(0);
 
     // --- Need to get the WL predictions data time intervall increment here.
-    this.prdDataTimeIntervalSeconds= MeasurementCustom.
-      getDataTimeIntervallSeconds(this.locationPredData);
+    this.prdDataTimeIntervalSeconds= MeasurementCustom
+      .getDataTimeIntervallSeconds(this.locationPredData);
 
     slog.info(mmi+"Done with reading prediction input data from file -> "+tideGaugePredictInputDataFile);
     slog.info(mmi+"this.locationPredData.size()="+this.locationPredData.size());
@@ -345,7 +360,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
               this.location.getIdentity()+" data using "+this.obsInputDataFormat.name());
 
     // --- Read-get the WLO data (if any)
-    this.getTGObsData();
+    this.getTGObsData(this.wloQCThresholdAbsVal);
 
     // --- Do some checks on the WLO data (if any).
     if (this.haveWLOData) {	

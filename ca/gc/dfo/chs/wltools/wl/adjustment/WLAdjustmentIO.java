@@ -548,11 +548,11 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   }
 
   // ---
-  final protected void getTGObsData() {
+  final protected void getTGObsData(final Double wloQCThresholdAbsVal) {
 
     final String mmi= "getTGObsData: ";
 
-    slog.info(mmi+"start");
+    slog.info(mmi+"start: wloQCThresholdAbsVal="+wloQCThresholdAbsVal);
 
     //boolean haveWLOData= true;
 
@@ -566,8 +566,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         //this.nearestObsData= new HashMap<String,List<MeasurementCustom>>();
 
         // --- Read the WLO data in a temp. List<MeasurementCustom> object
-        final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO.
-          getWLDataInJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum);
+        final List<MeasurementCustom> tmpWLOMcList= WLAdjustmentIO
+	  .getWLDataInJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, this.adjLocationZCVsVDatum, wloQCThresholdAbsVal);
 
         slog.info(mmi+"tmpWLOMcList.size()="+tmpWLOMcList.size());
         slog.info(mmi+"tmpWLOMcList.get(0).getValue()="+tmpWLOMcList.get(0).getValue());
@@ -668,7 +668,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
    * Comments please!
    */
   final public static ArrayList<MeasurementCustom>
-      getWLDataInJsonFmt(final String WLDataJsonFile, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue) {
+      getWLDataInJsonFmt(final String WLDataJsonFile, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue, final Double wlQCThresholdAbsVal) {
 
     final String mmi= "getWLDataInJsonFmt: ";
 
@@ -702,8 +702,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       throw new RuntimeException(mmi+e);
     }
 
-    final JsonArray jsonWLDataArray= Json.
-      createReader(jsonFileInputStream).readArray();  //tmpJsonTcDataInputObj;
+    final JsonArray jsonWLDataArray= Json
+      .createReader(jsonFileInputStream).readArray();  //tmpJsonTcDataInputObj;
 
     //List<String> checkTimeStamps= new ArrayList<String>();
     List<Instant> trackExistingInstants= new ArrayList<Instant>();
@@ -749,9 +749,20 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
       //    fromZCToOtherDatumConvValue from the WLO value read from the json
       //    input file. Users have just to pass the same value but with the
       //    opposite sign to get the value being converted to the ZC.
-      final double wlDataValue= jsonWLDataObj.
-        getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
+      final double wlDataValue= jsonWLDataObj
+        .getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
 
+      // --- *** IMPORTANT NOTE *** :
+      //     This QC check is normally only done for WLO data because rejecting predictions
+      //     or model data would cause problems elsewhere in the code.
+      if (wlQCThresholdAbsVal != null && Math.abs(wlDataValue) > wlQCThresholdAbsVal) {
+	  
+	slog.warn(mmi+"Invalid WL value (assuming it is WLO) -> "+wlDataValue+
+		  " at time stamp -> "+wlDataInstant.toString()+" !! Rejecting this WL value !!");
+
+	continue;
+      }
+      
       //slog.info(mmi+"wlPredValue="+wlPredValue);
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);

@@ -10,23 +10,18 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
-//import java.util.Iterator;
 import java.nio.file.Path;
-//import java.nio.file.Paths;
 import java.util.SortedSet;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.NavigableSet;
-//import java.nio.file.PathMatcher;
 import java.nio.file.FileSystems;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 
-//import java.awt.geom.Point2D; //.Double;
-//import java.util.concurrent.ConcurrentHashMap;
-
+//---
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -204,20 +199,20 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     // --- Read the adjusted FMF WL data for the ship channel point location
     //     that is the nearest to the lower side tide gauge.
     this.tgsNearestSCLocsAdjFMF.put(this.scReachIntrpUnit.getLowerSideScLocTGId(),
-        			    new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(fmfAdjAtLowerSideTGFile, -1L, 0.0)));
+        			    new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(fmfAdjAtLowerSideTGFile, -1L, 0.0, null)));
 
     // --- Get the path of the ship channel point location adjusted FMF WL data
     //     that is the nearest to the upper side (in terms of ship channel locations indices)
     //     tide gauge.
-    final String fmfAdjAtUpperSideTGFile= WLToolsIO.
-      getSCLocFilePath(adjFMFAtTGSInputDataDirFilesList,this.scReachIntrpUnit.getUpperSideScLocTGId()+IWLToolsIO.JSON_FEXT);
+    final String fmfAdjAtUpperSideTGFile= WLToolsIO
+      .getSCLocFilePath(adjFMFAtTGSInputDataDirFilesList, this.scReachIntrpUnit.getUpperSideScLocTGId()+IWLToolsIO.JSON_FEXT);
 
     slog.info(mmi+"fmfAdjAtUpperSideTGFile="+fmfAdjAtUpperSideTGFile);
 
       // --- Read the adjusted FMF WL data for the ship channel point location
       //     that is the nearest to the upper side tide gauge.
     this.tgsNearestSCLocsAdjFMF.put(this.scReachIntrpUnit.getUpperSideScLocTGId(),
-      				     new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(fmfAdjAtUpperSideTGFile, -1L, 0.0)));  
+				    new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(fmfAdjAtUpperSideTGFile, -1L, 0.0, null)));  
         
     // --- Verfiy the output file(s) format before going further
     if (!WLToolsIO.getOutputDataFormat().equals(IWLToolsIO.Format.CHS_JSON.name())) {
@@ -311,7 +306,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
       //slog.info(mmi+"idx="+idx+". Reading scLocFilePath="+scLocFilePath+" for scLocFNameSpecSubStr="+scLocFNameSpecSubStr);
       
       this.scLocsNonAdjData.put(scLocFNameSpecSubStr,
-				new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(scLocFilePath, -1L, 0.0)));
+				new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(scLocFilePath, -1L, 0.0, null)));
        
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
@@ -343,7 +338,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     //System.exit(0);
     
     this.tgsNearestSCLocsNonAdjData.put(this.scReachIntrpUnit.getLowerSideScLocStrId(),
-			                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(lowerSideScLocFile, -1L, 0.0)));
+			                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(lowerSideScLocFile, -1L, 0.0, null)));
    
     slog.info(mmi+"this.scReachIntrpUnit.getUpperSideScLocStrId()="+this.scReachIntrpUnit.getUpperSideScLocStrId());
     
@@ -360,7 +355,7 @@ final public class WLAdjustmentSpineIPP extends WLAdjustmentSpinePP {
     slog.info(mmi+"upperSideScLocFile="+upperSideScLocFile);
 
     this.tgsNearestSCLocsNonAdjData.put(this.scReachIntrpUnit.getUpperSideScLocStrId(),
-	     		                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(upperSideScLocFile, -1L, 0.0)));
+	     		                new MeasurementCustomBundle( WLAdjustmentIO.getWLDataInJsonFmt(upperSideScLocFile, -1L, 0.0, null)));
  
     slog.info(mmi+"end");
 
