@@ -48,7 +48,6 @@ import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-//import ca.gc.dfo.chs.wltools.nontidal.stage.StageIO;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
@@ -338,7 +337,7 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
     // --- Read-get the WLO data (if any)
     this.getTGObsData(this.wloQCThresholdAbsVal);
 
-    slog.info(mmi+"Done with this.getTGObsData()");
+    slog.info(mmi+"Done with this.getTGObsData(this.wloQCThresholdAbsVal)");
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);    
 

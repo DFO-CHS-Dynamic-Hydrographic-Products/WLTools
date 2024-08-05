@@ -1,14 +1,26 @@
 package ca.gc.dfo.chs.modeldata;
 
+// ---
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+
+// --
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // ---
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
+import ca.gc.dfo.chs.wltools.wl.WLLocation;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.modeldata.ModelDataExtractionIO;
 import ca.gc.dfo.chs.modeldata.IModelDataExtractionIO;
+import ca.gc.dfo.chs.dhp.sproduct.S104DCFNCompoundType;
+import ca.gc.dfo.chs.dhp.sproduct.S104HeightTrendCompoundType;
+
+// ---
+
 
 // ---
 public class ModelDataExtraction extends ModelDataExtractionIO { // implements IModelDataExtractionIO {
@@ -167,5 +179,26 @@ public class ModelDataExtraction extends ModelDataExtractionIO { // implements I
 
     slog.info(mmi+"Debug exit 0");
     System.exit(0);
+  }
+
+  // --- 
+  final static public List<MeasurementCustom> getNearestS104DCF2Data(final String S104DCF2InputDataFile, final WLLocation wlLocation) {
+
+    final String mmi= "getNearestS104DCF2Data: ";
+
+    List<MeasurementCustom> mcOfS104DCF2Data= new ArrayList<MeasurementCustom>();
+
+    slog.info(mmi+"start");
+    slog.info(mmi+"S104DCF2InputDataFile="+S104DCF2InputDataFile);
+    slog.info(mmi+"wlLocation id="+wlLocation.getIdentity());
+    slog.info(mmi+"wlLocation lat="+wlLocation.getLatitude());
+    slog.info(mmi+"wlLocation lon="+wlLocation.getLongitude());
+
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);
+
+    slog.info(mmi+"end");
+
+    return mcOfS104DCF2Data;
   }
 }

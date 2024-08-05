@@ -61,9 +61,9 @@ import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustmentIO;
 import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 
 // --- CHS SProduct package
-import ca.gc.dfo.chs.dhp.SProduct;
-import ca.gc.dfo.chs.dhp.ISProductIO;
-import ca.gc.dfo.chs.dhp.S104DCF8CompoundType;
+import ca.gc.dfo.chs.dhp.sproduct.SProduct;
+import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
+import ca.gc.dfo.chs.dhp.sproduct.S104DCFNCompoundType;
 
 // --- HDFql lib
 import as.hdfql.HDFql;
@@ -312,10 +312,13 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
 	continue;
       }    
-      
-      //slog.info(mmi+"wlDataValue="+wlDataValue);
-      //slog.info(mmi+"Debug System.exit(0)");
-      //System.exit(0);
+
+      // if (wlQCThresholdAbsVal != null) {
+      // slog.info(mmi+"wlDataInstant="+wlDataInstant.toString());
+      // slog.info(mmi+"wlDataValue="+wlDataValue);
+      // slog.info(mmi+"Debug System.exit(0)");
+      // System.exit(0);
+      // }
 
       double uncertainty= MeasurementCustom.UNDEFINED_UNCERTAINTY;
 
@@ -971,7 +974,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     // --- Need to use an array of S104DCF8CompoundType objects in order
     //     to fill-up the HDF5 dataset of S104 compound types objects for
     //     this ship channel point location (Dimension -> nbInstants)
-    final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= new S104DCF8CompoundType[nbInstants];
+    final S104DCFNCompoundType [] s104DcfNCmpdTypeArray= new S104DCFNCompoundType[nbInstants];
     //final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= S104DCF8CompoundType.createAndInitArray(nbInstants);
     
     int checkStatus= -1;
@@ -1085,8 +1088,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
 	  //s104Dcf8CmpdTypeArray[cmpdTypeIdx++]
 	  //.set(mc.getValue().floatValue(), mc.getUncertainty().floatValue(), unknownTrendByte);
 						 
-        s104Dcf8CmpdTypeArray[cmpdTypeIdx++]= new
-	  S104DCF8CompoundType(mc.getValue().floatValue(), mc.getUncertainty().floatValue(), unknownTrendByte);
+        s104DcfNCmpdTypeArray[cmpdTypeIdx++]= new
+	  S104DCFNCompoundType(mc.getValue().floatValue(), mc.getUncertainty().floatValue(), unknownTrendByte);
       }
 
       //slog.info(mmi+"s104Dcf8CmpdTypeArray now filled-up");
@@ -1095,7 +1098,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //     for each INSERT command (i.e. for each ship channel point location) 
       //     TODO check if we have a performance gain by using the HDFql.variableRegister
       //     method just once outside of the loop on the ship channel point locations.
-      final int registerNb= HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray);
+      final int registerNb= HDFql.variableTransientRegister(s104DcfNCmpdTypeArray);
 
       if (registerNb < 0) {
 	throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), registerNb  ->"+registerNb);
@@ -1247,22 +1250,22 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //final Instant [] fmfInstants= new Instant[nbInstants[0]];
     Instant [] fmfInstants= new Instant[nbInstants[0]];
     
-    // --- Allocate the array of S104DCF8CompoundType objects.
-    final S104DCF8CompoundType [] s104Dcf8CmpdTypeArray= new S104DCF8CompoundType[nbInstants[0]];
+    // --- Allocate the array of S104DCFNCompoundType objects.
+    final S104DCFNCompoundType [] s104DcfNCmpdTypeArray= new S104DCFNCompoundType[nbInstants[0]];
     
     // --- Instantiate all S104DCF8CompoundType objects in the s104Dcf8CmpdTypeArray
     for (int instantIdx= 0; instantIdx < nbInstants[0]; instantIdx++) {
 	
-      s104Dcf8CmpdTypeArray[instantIdx]= new S104DCF8CompoundType();
+      s104DcfNCmpdTypeArray[instantIdx]= new S104DCFNCompoundType();
       
       fmfInstants[instantIdx]= fmfLeastRecentInstant.plusSeconds((long)instantIdx*timeIntervalSeconds[0]);
     }
 
     // ---
-    final int s104Dcf8CmpdTypeArrRegisterNb= HDFql.variableRegister(s104Dcf8CmpdTypeArray);
+    final int s104DcfNCmpdTypeArrRegisterNb= HDFql.variableRegister(s104DcfNCmpdTypeArray);
 
-    if (s104Dcf8CmpdTypeArrRegisterNb < 0) {
-      throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), s104Dcf8CmpdTypeArrRegisterNb ->"+s104Dcf8CmpdTypeArrRegisterNb);
+    if (s104DcfNCmpdTypeArrRegisterNb < 0) {
+      throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), s104Dcf8CmpdTypeArrRegisterNb ->"+s104DcfNCmpdTypeArrRegisterNb);
     }
 
     slog.info(mmi+"Reading the full model forecast data for all the ship channel point locations from the HDF5 file, could take ~10 secs");
@@ -1312,7 +1315,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //  throw new RuntimeException(mmi+"Problem with HDFql.variableTransientRegister(s104Dcf8CmpdTypeArray), s104Dcf8CmpdTypeArrRegisterNb ->"+s104Dcf8CmpdTypeArrRegisterNb);
       //}
 
-      hdfqlCmdStatus= HDFql.execute("SELECT FROM DATASET \""+valuesDSetIdInGrp+"\" INTO MEMORY " + s104Dcf8CmpdTypeArrRegisterNb);
+      hdfqlCmdStatus= HDFql.execute("SELECT FROM DATASET \""+valuesDSetIdInGrp+"\" INTO MEMORY " + s104DcfNCmpdTypeArrRegisterNb);
 
       if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
         throw new RuntimeException(mmi+"Problem with HDFql cmd \"SELECT FROM DATASET \""+
@@ -1333,7 +1336,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //    the timestamps.
       for (int instantIdx= 0; instantIdx < nbInstants[0]; instantIdx++) {
 
-	final S104DCF8CompoundType s104CmpTypeAtInstant= s104Dcf8CmpdTypeArray[instantIdx];
+	final S104DCFNCompoundType s104CmpTypeAtInstant= s104DcfNCmpdTypeArray[instantIdx];
 
 	// --- Using a copy of the Instant objects for the eventDate attribute of the
 	//     new MeasurementCustom object.
@@ -1357,7 +1360,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
     } // --- Loop block on all the ship channel point locations 
 
     // --- Avoid JNI calls SEGFAULTs with HDFql.variableUnregister(Object obj)
-    HDFql.variableUnregister(s104Dcf8CmpdTypeArrRegisterNb);
+    HDFql.variableUnregister(s104DcfNCmpdTypeArrRegisterNb);
 
     // --- HDFql.variableUnregister(Object obj) seems to be buggy and would cause intermittent SEGFAULTs
     //hdfqlCmdStatus= HDFql.variableUnregister(s104Dcf8CmpdTypeArray);

@@ -52,6 +52,7 @@ import ca.gc.dfo.chs.wltools.util.ITimeMachine;
 import ca.gc.dfo.chs.wltools.util.Trigonometry;
 import ca.gc.dfo.chs.wltools.wl.TideGaugeConfig;
 import ca.gc.dfo.chs.wltools.wl.ITideGaugeConfig;
+import ca.gc.dfo.chs.modeldata.ModelDataExtraction;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.wl.adjustment.IWLAdjustment;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustomBundle;
@@ -321,6 +322,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     this.nearestModelData.add( fmfTypeIndex, //fmfType.ordinal(),
                                new HashMap<String, List<MeasurementCustom>>() );
 
+    // --- Create the Map of ArrayList<MeasurementCustom> for this TG
+    this.nearestModelData.get(fmfTypeIndex)
+      .put(nearestTGIdStr, new ArrayList<MeasurementCustom>() );
+    
     // --- Define the synop run lead time that will be used to not consider
     //     the analysis part (which is before the synop run lead time) for the
     //     non-adjusted forecast WL data returned. It depends on the fmfTypeIndex
@@ -331,14 +336,19 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 
     slog.info(mmi+"this.fmfLeadTimeInstant="+this.fmfLeadTimeInstant.toString());
     slog.info(mmi+"synopRunLeadTime="+synopRunLeadTime.toString());
-    slog.info(mmi+"Debug System.exit(0)");
-    System.exit(0);   
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);   
 
     // --- Get only the FMF data for the S104 DCF2 pixel that is the nearest to the tide gauge
     //     location and only for the real forecast data which is in the future compared to
     //     the synopRunLeadTime Instant
-    // ModelDataExtraction method call here.
-	
+    // ModelDataExtraction method call here
+    final List<MeasurementCustom> tmpMCWLData= ModelDataExtraction.getNearestS104DCF2Data(S104DCF2DataFile,this.location);
+
+    slog.info(mmi+"Nearest FMF S104 DCF2 data has now been extracted");
+    slog.info(mmi+"Debug System.exit(0)");
+    System.exit(0);  
+    
     //--- Build the complete file path for the previous full model forecast ASCII
     //    input data file that could be used later for (WL0-WLF) error stats
     //final String prevFMFS104CDF2InputDataFilePath= inputFileNameFileObj.getParent() +
@@ -414,7 +424,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         .put(chsTGId, new ArrayList<MeasurementCustom>() );
 
       // --- Create the Map entry for this CHS TG. in the nearestModelNowcastData (nowcast data only)
-      //     but ony if the chsTGId key does not already exists.
+      //     but only if the chsTGId key does not already exists.
       if (!this.nearestModelNowcastData.containsKey(chsTGId)) {
 	this.nearestModelNowcastData.put(chsTGId, new ArrayList<MeasurementCustom>());
       }
@@ -508,12 +518,12 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 	 //  if (timeStampInstant.compareTo(zeroThHourInstant) < 0 ) {
 	 if (timeStampInstant.compareTo(zeroThHourInstant) <= 0 ) {
 
-	   // --- in the nowcast data part.
+	   // --- the mcTmp object goes in the nowcast data part.
 	   this.nearestModelNowcastData.get(chsTGId).add(mcTmp);
 	   
 	 } else {
 	     
-	   // --- in the FMF time part.
+	   // --- ithe mcTmp object goes in the FMF futur time part.
 	   this.nearestModelData.get(fmfTypeIndex).get(chsTGId).add(mcTmp);
            //   add( new MeasurementCustom(timeStampInstant, tgWLFValue, IWL.MAXIMUM_UNCERTAINTY_METERS) );
 	 }
@@ -639,7 +649,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
         //     using the TG location id as key but apply the WLMeasurement.removeHFWLOscillations
         //     method to it before the assignation itself
         this.nearestObsData.put(this.location.getIdentity(),
-                              WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
+                                WLMeasurement.removeHFWLOscillations(MAX_TIMEDIFF_FOR_HF_OSCILLATIONS_REMOVAL_SECONDS, tmpWLOMcList)) ;
       } else {
 
 	slog.warn(mmi+"WARNING!!: Not enough WLO data to apply the WLMeasurement.removeHFWLOscillations method for TGat location -> "+this.location.getIdentity());
@@ -773,7 +783,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //slog.info(mmi+"Debug System.exit(0)");
     //System.exit(0);
 
-    // --- Need to use fromZCToOtherDatumConvValue (which can be 0.0) as 3rd arg.
+    // --- Need to use fromZCToOtherDatumConvValue (which can be 0.0) as 4th arg.
     //     to the WLToolsIO.checkWLDataCHSJsonArray
     return WLToolsIO.checkWLDataCHSJsonArray(jsonWLDataArray, timeIncrToUseSeconds, wlQCThresholdAbsVal, fromZCToOtherDatumConvValue );
     
