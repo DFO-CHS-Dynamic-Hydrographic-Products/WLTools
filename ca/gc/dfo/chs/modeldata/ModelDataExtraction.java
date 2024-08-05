@@ -14,13 +14,17 @@ import org.slf4j.LoggerFactory;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 import ca.gc.dfo.chs.modeldata.ModelDataExtractionIO;
 import ca.gc.dfo.chs.modeldata.IModelDataExtractionIO;
 import ca.gc.dfo.chs.dhp.sproduct.S104DCFNCompoundType;
 import ca.gc.dfo.chs.dhp.sproduct.S104HeightTrendCompoundType;
 
-// ---
-
+// --- HDFql lib
+import as.hdfql.HDFql;
+import as.hdfql.HDFqlJNI;
+import as.hdfql.HDFqlCursor;
+import as.hdfql.HDFqlConstants;
 
 // ---
 public class ModelDataExtraction extends ModelDataExtractionIO { // implements IModelDataExtractionIO {
@@ -182,18 +186,55 @@ public class ModelDataExtraction extends ModelDataExtractionIO { // implements I
   }
 
   // --- 
-  final static public List<MeasurementCustom> getNearestS104DCF2Data(final String S104DCF2InputDataFile, final WLLocation wlLocation) {
+  final static public List<MeasurementCustom> getNearestS104DCF2Data(final String S104DCF2InputDataFilePath, final WLLocation wlLocation) {
 
     final String mmi= "getNearestS104DCF2Data: ";
 
     List<MeasurementCustom> mcOfS104DCF2Data= new ArrayList<MeasurementCustom>();
 
+    try {
+      S104DCF2InputDataFilePath.length();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe+"S104DCF2InputDataFilePath cannot be null here !!");
+    }
+
+    if (!checkForFileExistence(S104DCF2InputDataFilePath)) {
+      throw new RuntimeException(mmi+"S104DCF2InputDataFilePath -> "+S104DCF2InputDataFilePath+" not found !!");
+    }
+
     slog.info(mmi+"start");
-    slog.info(mmi+"S104DCF2InputDataFile="+S104DCF2InputDataFile);
+    slog.info(mmi+"S104DCF2InputDataFilePath="+S104DCF2InputDataFilePath);
     slog.info(mmi+"wlLocation id="+wlLocation.getIdentity());
     slog.info(mmi+"wlLocation lat="+wlLocation.getLatitude());
     slog.info(mmi+"wlLocation lon="+wlLocation.getLongitude());
 
+    int hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+S104DCF2InputDataFilePath);
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "
+				 +S104DCF2InputDataFilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
+    }
+  
+    // --- First check that the WLLocation coordinates are indeed inside the
+    //     S104 DCF2 tile bounding box.
+
+    // --- Instantiate a RegularBoundingBox object with the S104 DCF2 tile coordinates limits.
+    final RegularBoundingBox s104Dcf2BBox= new RegularBoundingBox();
+
+    // --- verify that the WLLocation is indeed inside the S104 DCF tile bounding box.
+    final boolean wlLocationInside= s104Dcf2BBox.isHBCoordsinside(wlLocation);
+
+    if (!wlLocationInside) {
+      throw new RuntimeException(mmi+"wlLocation is outside the S104 DCF2 tile bounding box !!");
+    }
+
+    hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+S104DCF2InputDataFilePath);
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql close file command \"CLOSE \" for file -> "
+				 +S104DCF2InputDataFilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
+    } 
+   
     slog.info(mmi+"Debug exit 0");
     System.exit(0);
 
