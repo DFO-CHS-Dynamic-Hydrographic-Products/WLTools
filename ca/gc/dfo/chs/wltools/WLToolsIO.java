@@ -141,9 +141,10 @@ abstract public class WLToolsIO implements IWLToolsIO {
     return (fileOutThere.exists()) ? true: false;
   }
 
-  // ---
-  final public static List<MeasurementCustom>
-    getWLDataInIWLSJsonFmt(final String IWLSJsonFile, final long timeIncrToUseSeconds, final String workDir) {
+  // --- Read d IWLS json format input data file to a list of MeasurementCustom objects.
+  final public static List<MeasurementCustom> getWLDataInIWLSJsonFmt(final String IWLSJsonFile,
+								     final long timeIncrToUseSeconds,
+								     final Double wloQCThresholdAbsVal, final String workDir) {
 
     final String mmi= "getWLDataInIWLSJsonFmt: ";
 
@@ -241,7 +242,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     slog.info(mmi+"Nb. WLO data values="+wloValuesTimeStampsStrings.size());
 
-    final JsonArray wloDataCHSJsonArray= getCHSJsonArrayFromIWLSValuesJsonObj(wloValuesJsonObj, convFromZCToGlobalDatumValue);
+    // --- No conversion from ZC applied here (it is done in the checkWLDataCHSJsonArray below)
+    final JsonArray wloDataCHSJsonArray= getCHSJsonArrayFromIWLSValuesJsonObj(wloValuesJsonObj, 0.0); //convFromZCToGlobalDatumValue);
 
     slog.info(mmi+"Done with getting the wloDataCHSJsonArray");
 
@@ -253,15 +255,14 @@ abstract public class WLToolsIO implements IWLToolsIO {
     
     slog.info(mmi+"end");
 
-    // --- ZC to global datum already added for IWLS DB data so
-    //     pass 0.0 as 3rd arg. to checkWLDataCHSJsonArray method
-    return checkWLDataCHSJsonArray(wloDataCHSJsonArray, timeIncrToUseSeconds, 0.0);
+    // --- 
+    return checkWLDataCHSJsonArray(wloDataCHSJsonArray, timeIncrToUseSeconds, wloQCThresholdAbsVal, convFromZCToGlobalDatumValue);
     //return retListMCs;
   }
 
   // ---
-  final public static List<MeasurementCustom>
-    checkWLDataCHSJsonArray(final JsonArray wlDataCHSJsonArray, final long timeIncrToUseSeconds, final double fromZCToOtherDatumConvValue ) {
+  final public static List<MeasurementCustom> checkWLDataCHSJsonArray(final JsonArray wlDataCHSJsonArray, final long timeIncrToUseSeconds,
+								      final Double wlQCThresholdAbsVal, final double fromZCToOtherDatumConvValue ) {
  
     final String mmi= "checkWLDataCHSJsonArray: ";
 
@@ -301,6 +302,17 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //    NOTE: fromZCToOtherDatumConvValue can simply be 0.0 here.
       final double wlDataValue= jsonWLDataObj.getJsonNumber(IWLToolsIO.VALUE_JSON_KEY).doubleValue() + fromZCToOtherDatumConvValue;
 
+      // --- *** IMPORTANT NOTE *** :
+      //     This QC check is normally only done for WLO data because rejecting predictions
+      //     or model data would cause problems elsewhere in the code.
+      if (wlQCThresholdAbsVal != null && Math.abs(wlDataValue) > wlQCThresholdAbsVal) {
+	  
+	slog.warn(mmi+"Invalid WL value (assuming it is WLO !!) -> "+wlDataValue+
+		  " at time stamp -> "+wlDataInstant.toString()+" !! Rejecting this WL value !!");
+
+	continue;
+      }    
+      
       //slog.info(mmi+"wlDataValue="+wlDataValue);
       //slog.info(mmi+"Debug System.exit(0)");
       //System.exit(0);
@@ -795,7 +807,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       // --- Read the ship channel point location adjusted WL from its
       //     CHS_JSON input file in the Map of MeasurementCustomBundle objects
       allSCLocsIPPInputData.put(scLocIndexKeyStr,
-				new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0, null) ));
+				new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInCHSJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0, null) ));
       
       //slog.info(mmi+"scLocFNamePrefixParts="+scLocFNamePrefixParts.toString());
 
