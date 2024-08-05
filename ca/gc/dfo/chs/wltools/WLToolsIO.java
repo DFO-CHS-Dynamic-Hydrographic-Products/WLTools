@@ -494,7 +494,7 @@ abstract public class WLToolsIO implements IWLToolsIO {
       // --- Read the ship channel point location adjusted WL from its
       //     CHS_JSON input file in the Map of MeasurementCustomBundle objects
       allSCLocsIPPInputData.put(scLocIndexKeyStr,
-	new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0) ));
+				new MeasurementCustomBundle ( WLAdjustmentIO.getWLDataInJsonFmt(adjSpineIPPInputDataFileStr, -1L, 0.0, null) ));
       
       //slog.info(mmi+"scLocFNamePrefixParts="+scLocFNamePrefixParts.toString());
 
