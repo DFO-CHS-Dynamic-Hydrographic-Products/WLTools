@@ -62,6 +62,7 @@ import ca.gc.dfo.chs.wltools.tidal.nonstationary.INonStationaryIO;
 
 // --- CHS SProduct package
 import ca.gc.dfo.chs.dhp.sproduct.SProduct;
+import ca.gc.dfo.chs.dhp.sproduct.SProductIO;
 import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 import ca.gc.dfo.chs.dhp.sproduct.S104DCFNCompoundType;
 
@@ -909,11 +910,11 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //slog.info(mmi+"hhmmssZ="+hhmmssZ);
 
     // --- MUST use HDFql.variableTransientRegister here!
-    SProduct.updTransientAttrInGroup(ISProductIO.ISSUE_YYYYMMDD_ID, ISProductIO.GRP_SEP_ID,
-                                     HDFql.variableTransientRegister(new String [] {YYYYMMDDStr}) );
+    SProductIO.updTransientAttrInGroup(ISProductIO.ISSUE_YYYYMMDD_ID, ISProductIO.GRP_SEP_ID,
+                                       HDFql.variableTransientRegister(new String [] {YYYYMMDDStr}) );
     
-    SProduct.updTransientAttrInGroup(ISProductIO.ISSUE_HHMMSS_ID, ISProductIO.GRP_SEP_ID,
-				     HDFql.variableTransientRegister( new String [] {hhmmssZStr} ) );
+    SProductIO.updTransientAttrInGroup(ISProductIO.ISSUE_HHMMSS_ID, ISProductIO.GRP_SEP_ID,
+	  			       HDFql.variableTransientRegister( new String [] {hhmmssZStr} ) );
 
     // --- Get the S104 feature code String
     final String s104FeatureId= ISProductIO.FEATURE_IDS.get(ISProductIO.FeatId.S104);
@@ -936,36 +937,36 @@ abstract public class WLToolsIO implements IWLToolsIO {
 
     // --- Update the first (least recent) timestamp HDF5 file attribute
     //     in the S104 forecast feature code HDF5 GROUP   
-    SProduct.updTransientAttrInGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( new String [] {firstTimeStampStr} )); 
+    SProductIO.updTransientAttrInGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
+	   			       HDFql.variableTransientRegister( new String [] {firstTimeStampStr} )); 
     
     // --- Update the last (most recent) timestamp HDF5 file attribute
     //     in the S104 forecast feature code HDF5 GROUP  
-    SProduct.updTransientAttrInGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
+    SProductIO.updTransientAttrInGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID, s104FcstDataGrpId,
+	  			       HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
 
     // --- Define the unary array of int for the nb. of ship channel point locations.
     final int [] tmpNBSCPointLocsArr= new int [] {nbSCPointLocs};
     
     // --- Update the number of GROUPS for the point locations HDF5 file attribute
     //     in the S104 forecast feature code HDF5 GROUP  
-    SProduct.updTransientAttrInGroup(ISProductIO.NB_GROUPS_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( tmpNBSCPointLocsArr ));
+    SProductIO.updTransientAttrInGroup(ISProductIO.NB_GROUPS_ID, s104FcstDataGrpId,
+				       HDFql.variableTransientRegister( tmpNBSCPointLocsArr ));
 
     // --- Update the number of "stations" for the point locations HDF5 file attribute
     //     in the S104 forecast feature code HDF5 GROUP (Same as for the number of GROUPS for DCF8).  
-    SProduct.updTransientAttrInGroup(ISProductIO.NB_STATIONS_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( tmpNBSCPointLocsArr ));
+    SProductIO.updTransientAttrInGroup(ISProductIO.NB_STATIONS_ID, s104FcstDataGrpId,
+	  			       HDFql.variableTransientRegister( tmpNBSCPointLocsArr ));
 
     // --- Update the nb. of timestamps HDF5 file attribute
     //     in the S104 forecast feature code HDF5 GROUP
-    SProduct.updTransientAttrInGroup(ISProductIO.NB_TIMESTAMPS_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( new int [] {nbInstants} ));
+    SProductIO.updTransientAttrInGroup(ISProductIO.NB_TIMESTAMPS_ID, s104FcstDataGrpId,
+				       HDFql.variableTransientRegister( new int [] {nbInstants} ));
     
     // --- Update the time intervall of the timestamps HDF5 file attribute
     //     in the S104 forecast feature code HDF5 GROUP
-    SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, s104FcstDataGrpId,
-				     HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
+    SProductIO.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, s104FcstDataGrpId,
+	   			       HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
 
     // --- Now using the unknown WL trend flag (useless for Spine stuff for now).
     final byte unknownTrendByte= ISProductIO
@@ -1001,8 +1002,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //slog.info(mmi+"scLocStrId="+scLocStrId);
 
       // --- Update the ship channel location string id. in his own group
-      SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STNID_ID, scLocGrpNNNNIdStr,
-				       HDFql.variableTransientRegister( new String [] {scLocStrId} ));
+      SProductIO.updTransientAttrInGroup(ISProductIO.DCF8_STNID_ID, scLocGrpNNNNIdStr,
+				         HDFql.variableTransientRegister( new String [] {scLocStrId} ));
 
       // --- Define the ship channel location string (human readable) name
       final String scLocStnName= IWLAdjustmentIO.SCLOC_STN_ID_PRFX + scLocStrId;
@@ -1010,28 +1011,28 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //slog.info(mmi+"scLocStnName="+scLocStnName);
 
       // --- Update the ship channel location string (human readable) name HDF5 attribute.
-      SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_NAME_ID, scLocGrpNNNNIdStr,
-				       HDFql.variableTransientRegister( new String [] {scLocStnName} ));
+      SProductIO.updTransientAttrInGroup(ISProductIO.DCF8_STN_NAME_ID, scLocGrpNNNNIdStr,
+				         HDFql.variableTransientRegister( new String [] {scLocStnName} ));
       
       // --- Update the nb. of timestamps HDF5 file attribute
       //     in the ship channel point location Group_nnnn
-      SProduct.updTransientAttrInGroup(ISProductIO.NB_TIMESTAMPS_ID, scLocGrpNNNNIdStr,
-      			               HDFql.variableTransientRegister( new int [] {nbInstants} ));
+      SProductIO.updTransientAttrInGroup(ISProductIO.NB_TIMESTAMPS_ID, scLocGrpNNNNIdStr,
+      			                 HDFql.variableTransientRegister( new int [] {nbInstants} ));
 
       // --- Update the first timestamp for this ship channel location
       //     (Same value as for the S104 feature forecast GROUP)
-      SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID, scLocGrpNNNNIdStr,
-				       HDFql.variableTransientRegister( new String [] {firstTimeStampStr} ));
+      SProductIO.updTransientAttrInGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID, scLocGrpNNNNIdStr,
+		  		         HDFql.variableTransientRegister( new String [] {firstTimeStampStr} ));
 
       // --- Update the last timestamp for this ship channel location
       //     (Same value as for the S104 feature forecast GROUP)
-      SProduct.updTransientAttrInGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID, scLocGrpNNNNIdStr,
-				       HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
+      SProductIO.updTransientAttrInGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID, scLocGrpNNNNIdStr,
+				         HDFql.variableTransientRegister( new String [] {lastTimeStampStr} ));
 
       // --- Update the time interval of the timestamps HDF5 file attribute
       //     for this ship channel location (Same value as for the S104 feature forecast GROUP)
-      SProduct.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, scLocGrpNNNNIdStr,
-  				       HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
+      SProductIO.updTransientAttrInGroup(ISProductIO.TIME_INTRV_ID, scLocGrpNNNNIdStr,
+  				         HDFql.variableTransientRegister( new int [] { (int)timeIntervallSeconds } ));
       // --- 
       final String valuesDSetIdInGrp= scLocGrpNNNNIdStr + ISProductIO.GRP_SEP_ID + ISProductIO.VAL_DSET_ID;
 
@@ -1179,8 +1180,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //Integer [] nbScLocs= {0};
     Integer [] nbScLocs= new Integer [] {0}; //{ Integer.valueOf(0) }; //{0};
 
-    SProduct.setTransientAttrFromGroup(ISProductIO.NB_STATIONS_ID,
-				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbScLocs));
+    SProductIO.setTransientAttrFromGroup(ISProductIO.NB_STATIONS_ID,
+				         s104FcstDataGrpId, HDFql.variableTransientRegister(nbScLocs));
 
     slog.info(mmi+"nbScLocs[0]="+nbScLocs[0]);
     System.out.flush();
@@ -1189,8 +1190,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //Integer [] nbInstants= {0};
     Integer [] nbInstants= new Integer [] {0};//{ Integer.valueOf(0) }; // {0};
 
-    SProduct.setTransientAttrFromGroup(ISProductIO.NB_TIMESTAMPS_ID,
-				       s104FcstDataGrpId, HDFql.variableTransientRegister(nbInstants));
+    SProductIO.setTransientAttrFromGroup(ISProductIO.NB_TIMESTAMPS_ID,
+				         s104FcstDataGrpId, HDFql.variableTransientRegister(nbInstants));
 
     slog.info(mmi+"nbInstants[0]="+nbInstants[0]);
     System.out.flush();
@@ -1199,8 +1200,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //String [] dateTimeOfFirstRecord= {""};
     String [] dateTimeOfFirstRecord= new String [] { new String() };
     
-    SProduct.setTransientAttrFromGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID,
-				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfFirstRecord));
+    SProductIO.setTransientAttrFromGroup(ISProductIO.LEAST_RECENT_TIMESTAMP_ID,
+				         s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfFirstRecord));
 
     slog.info(mmi+"dateTimeOfFirstRecord[0]="+dateTimeOfFirstRecord[0]);
     //System.out.flush();
@@ -1222,8 +1223,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //String [] dateTimeOfLastRecord= {""};
     String [] dateTimeOfLastRecord= new String [] { new String() };
     
-    SProduct.setTransientAttrFromGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID,
-				       s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfLastRecord));    
+    SProductIO.setTransientAttrFromGroup(ISProductIO.MOST_RECENT_TIMESTAMP_ID,
+				         s104FcstDataGrpId, HDFql.variableTransientRegister(dateTimeOfLastRecord));    
 
     slog.info(mmi+"dateTimeOfLastRecord[0]="+dateTimeOfLastRecord[0]);
     System.out.flush();
@@ -1232,8 +1233,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //Integer [] timeIntervalSeconds=
     Integer [] timeIntervalSeconds= new Integer [] {0}; //{ Integer.valueOf(0) };	
     
-    SProduct.setTransientAttrFromGroup(ISProductIO.TIME_INTRV_ID,
-				       s104FcstDataGrpId, HDFql.variableTransientRegister(timeIntervalSeconds));
+    SProductIO.setTransientAttrFromGroup(ISProductIO.TIME_INTRV_ID,
+				         s104FcstDataGrpId, HDFql.variableTransientRegister(timeIntervalSeconds));
 
     slog.info(mmi+"timeIntervalSeconds[0]="+timeIntervalSeconds[0]);
     System.out.flush();
@@ -1290,8 +1291,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //String [] checkStartDate= {""};
       String [] checkStartDate= new String [] { new String() };
 
-      SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID,
-					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkStartDate));
+      SProductIO.setTransientAttrFromGroup(ISProductIO.DCF8_STN_FIRST_TIMESTAMP_ID,
+					   scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkStartDate));
 
       if (!checkStartDate[0].equals(dateTimeOfFirstRecord[0])) {
 	throw new RuntimeException(mmi+"Must have checkStartDate[0] being the same as dateTimeOfFirstRecord[0] here!!");
@@ -1301,8 +1302,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
       //String [] checkLastDate= {""};
       String [] checkLastDate= new String [] { new String() };
 
-      SProduct.setTransientAttrFromGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID,
-					 scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkLastDate));
+      SProductIO.setTransientAttrFromGroup(ISProductIO.DCF8_STN_LAST_TIMESTAMP_ID,
+					   scLocGrpNNNNIdStr, HDFql.variableTransientRegister(checkLastDate));
 
       if (!checkLastDate[0].equals(dateTimeOfLastRecord[0])) {
 	throw new RuntimeException(mmi+"Must have checkLastDate[0] being the same as dateTimeOfLastRecord[0] here!!");

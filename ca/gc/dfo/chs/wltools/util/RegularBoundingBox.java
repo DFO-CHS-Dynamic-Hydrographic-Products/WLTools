@@ -82,7 +82,7 @@ public final class RegularBoundingBox {
   }  
 
   // ---
-  public boolean isHBCoordsinside(final HBCoords checkHBCoords) {
+  public boolean isHBCoordsInside(final HBCoords checkHBCoords) {
 
     final String mmi= "isHBCoordsinside: ";
 

@@ -96,6 +96,8 @@ public interface ISProductIO {
   String ISSUE_HHMMSS_ID=   "issueTime";    
   String ISSUE_YYYYMMDD_ID= "issueDate";
 
+  // --- TODO: the 3 following String definitions
+  //     are probably only relevant for the DCF8 format
   String FCST_ID= ".01";
   String PRED_ID= ".02";
   String OBSV_ID= ".03";  
@@ -112,6 +114,19 @@ public interface ISProductIO {
   String VAL_DSET_ID= "values";
 
   // String SCLOC_STN_ID_PRFX= "STLT_WLPS ship channel point location #";
+
+  String GEO_HORIZ_DATUM_REF_ATTR_ID= "horizontalDatumReference";
+  String GEO_HORIZ_CRS_ATTR_ID= "horizontalCRS";
+
+  // --- Only the EPSG:4326 CRS is allowed for CHS DHP data.
+  String GEO_HORIZ_DATUM_REF_ATTR_ALLOWED= "EPSG";    
+  Integer GEO_HORIZ_CRS_ATTR_ALLOWED= 4326;
+    
+  // --- Tiles bounding boxes limits HDF5 attributes (root group)
+  String SWC_BBOX_LON_ATTR_ID= "westBoundLongitude";
+  String SWC_BBOX_LAT_ATTR_ID= "southBoundLatitude";
+  String NEC_BBOX_LON_ATTR_ID= "eastBoundLongitude";
+  String NEC_BBOX_LAT_ATTR_ID= "northBoundLatitude";
 
   // --- Specific HDF5 attritbutes ids for DCF8
   String DCF8_STN_LAST_TIMESTAMP_ID= "endDateTime";

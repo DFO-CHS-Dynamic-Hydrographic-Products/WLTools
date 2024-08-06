@@ -300,7 +300,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     // --- Get the TG id. String
     final String nearestTGIdStr= (String)nearestsTGCoordsIds.toArray()[0];
 
-    slog.info(mmi+"this.location.getIdentity()="+this.location.getIdentity());
+    slog.info(mmi+"this.location.getIdentity() (CHS tide gauge id. code)="+this.location.getIdentity());
 
     if (!nearestTGIdStr.equals(this.location.getIdentity())) {
       throw new RuntimeException(mmi+"The nearestTGIdStr must be the same as we have with this.location.getIdentity() !!");
@@ -343,9 +343,9 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //     location and only for the real forecast data which is in the future compared to
     //     the synopRunLeadTime Instant
     // ModelDataExtraction method call here
-    final List<MeasurementCustom> tmpMCWLData= ModelDataExtraction.getNearestS104DCF2Data(S104DCF2DataFile,this.location);
+    final List<MeasurementCustom> tmpMCWLData= ModelDataExtraction.getNearestS104DCF2Data(S104DCF2DataFile, this.location);
 
-    slog.info(mmi+"Nearest FMF S104 DCF2 data has now been extracted");
+    slog.info(mmi+"Nearest FMF S104 DCF2 data has now been extracted for TG -> "+nearestTGIdStr);
     slog.info(mmi+"Debug System.exit(0)");
     System.exit(0);  
     
