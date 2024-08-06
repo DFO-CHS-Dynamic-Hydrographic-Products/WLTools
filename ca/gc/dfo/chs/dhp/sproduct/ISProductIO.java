@@ -84,6 +84,12 @@ public interface ISProductIO {
   String PKG_CFG_MAIN_DCF8_TMPLF_DIR=
     PKG_CFG_MAIN_TMPLF_DIR + File.separator + "DCF8";
 
+  String PKG_CFG_MAIN_DCF2_TMPLF_DIR=
+    PKG_CFG_MAIN_TMPLF_DIR + File.separator + "DCF2";
+
+  String PKG_CFG_MAIN_DCF3_TMPLF_DIR=
+    PKG_CFG_MAIN_TMPLF_DIR + File.separator + "DCF3";    
+
   String PKG_CFG_MAIN_DCF8_104_TMPLF_DIR=
     PKG_CFG_MAIN_DCF8_TMPLF_DIR + File.separator + FeatId.S104.name(); //WATLEVELS_PR0D_ID;
     
@@ -134,11 +140,18 @@ public interface ISProductIO {
   String NEC_BBOX_LON_ATTR_ID= "eastBoundLongitude";
   String NEC_BBOX_LAT_ATTR_ID= "northBoundLatitude";
 
-  // --- Specific HDF5 attritbutes ids for DCF8
+  // --- Specific HDF5 attributes ids for DCF8
   String DCF8_STN_LAST_TIMESTAMP_ID= "endDateTime";
   String DCF8_STN_FIRST_TIMESTAMP_ID= "startDateTime";
     
   String DCF8_STNID_ID= "stationIdentification";
 
-  String DCF8_STN_NAME_ID= "stationName";   
+  String DCF8_STN_NAME_ID= "stationName";
+
+  // --- Specific HDF5 attributes ids for DCF2
+  String DCF2_GRID_ORIG_LON_ATTR_ID= "gridOriginLongitude";
+  String DCF2_GRID_ORIG_LAT_ATTR_ID= "gridOriginLatitude";
+
+  String DCF2_GRID_SPACING_LON_ATTR_ID= "gridSpacingLongitudinal";
+  String DCF2_GRID_SPACING_LAT_ATTR_ID= "gridSpacingLatitudinal";   
 }

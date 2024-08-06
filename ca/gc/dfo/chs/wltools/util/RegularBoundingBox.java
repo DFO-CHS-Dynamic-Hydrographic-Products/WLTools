@@ -72,6 +72,13 @@ public final class RegularBoundingBox {
   }
 
   // ---
+  public String toString() {
+
+    return "South-West corner -> ("+this.SouthWestCorner.getLongitude()+","+ this.SouthWestCorner.getLatitude()+")"+
+	   ", North-East corner -> ("+this.NorthEastCorner.getLongitude()+","+ this.NorthEastCorner.getLatitude()+")";
+  }
+
+  // ---
   public HBCoords getSouthWestCornerHBCoordsCopy() {
     return new HBCoords( this.SouthWestCorner.getLongitude(), this.SouthWestCorner.getLatitude() );
   }

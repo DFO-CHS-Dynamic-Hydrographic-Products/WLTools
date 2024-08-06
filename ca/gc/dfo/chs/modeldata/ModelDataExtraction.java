@@ -11,38 +11,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // ---
+import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.dhp.sproduct.SProduct;
 import ca.gc.dfo.chs.dhp.sproduct.SProductIO;
 import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
+import ca.gc.dfo.chs.dhp.sproduct.SProductDCF2;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-//import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
-import ca.gc.dfo.chs.modeldata.ModelDataExtractionIO;
+//import ca.gc.dfo.chs.modeldata.ModelDataExtractionIO;
 import ca.gc.dfo.chs.modeldata.IModelDataExtractionIO;
 import ca.gc.dfo.chs.dhp.sproduct.S104DCFNCompoundType;
 import ca.gc.dfo.chs.dhp.sproduct.S104HeightTrendCompoundType;
 
-// --- HDFql lib
-import as.hdfql.HDFql;
-import as.hdfql.HDFqlJNI;
-import as.hdfql.HDFqlCursor;
-import as.hdfql.HDFqlConstants;
+// // --- HDFql lib
+// import as.hdfql.HDFql;
+// import as.hdfql.HDFqlJNI;
+// import as.hdfql.HDFqlCursor;
+// import as.hdfql.HDFqlConstants;
 
 // ---
-public class ModelDataExtraction extends ModelDataExtractionIO { // implements IModelDataExtractionIO {
+public class ModelDataExtraction implements IModelDataExtractionIO {
 
   private final static String whoAmI=
     "ca.gc.dfo.chs.modeldata.ModelDataExtraction";
 
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
-  // // ---
-  // protected IModelDataExtractionIO.Type type= null;
-  // protected IModelDataExtractionIO.InputDataType inputDataType= null;
-  // protected IModelDataExtractionIO.SpatialInterpType spatialInterpType= null;
-  // protected IModelDataExtractionIO.WLDatumConv wlInputDatumConv= null;
-  // protected IModelDataExtractionIO.WLDatumConv wlOutputDatumConv= null;
+  // ---
+  protected IModelDataExtractionIO.Type type= null;
+  protected IModelDataExtractionIO.InputDataType inputDataType= null;
+  protected IModelDataExtractionIO.SpatialInterpType spatialInterpType= null;
+  protected IModelDataExtractionIO.WLDatumConv wlInputDatumConv= null;
+  protected IModelDataExtractionIO.WLDatumConv wlOutputDatumConv= null;
 
   // ---
   public ModelDataExtraction(final Map<String,String> argsMap) {
@@ -134,7 +135,10 @@ public class ModelDataExtraction extends ModelDataExtractionIO { // implements I
       System.exit(0);
       
       // --- Read the WLLocation target(s) info.
-      this.readAllWLLocationTargetsInfo(pointLocationsInputInfo, pointLocationsInputInfoFmt);
+      //     NOTE: The ModelDataExtractionIO class source file has been lost at some point
+      //           after a merge that went wrong and this readAllWLLocationTargetsInfo method
+      //           was defined in it. 
+      //this.readAllWLLocationTargetsInfo(pointLocationsInputInfo, pointLocationsInputInfoFmt);
 
       slog.info(mmi+"Done with reading the WLLocation(s) input info");
       slog.info(mmi+"Debug exit 0");
@@ -201,7 +205,7 @@ public class ModelDataExtraction extends ModelDataExtractionIO { // implements I
       throw new RuntimeException(mmi+npe+"S104DCF2InputDataFilePath cannot be null here !!");
     }
 
-    if (!checkForFileExistence(S104DCF2InputDataFilePath)) {
+    if (!WLToolsIO.checkForFileExistence(S104DCF2InputDataFilePath)) {
       throw new RuntimeException(mmi+"S104DCF2InputDataFilePath -> "+S104DCF2InputDataFilePath+" not found !!");
     }
 
@@ -211,7 +215,7 @@ public class ModelDataExtraction extends ModelDataExtractionIO { // implements I
     slog.info(mmi+"wlLocation lat="+wlLocation.getLatitude());
     slog.info(mmi+"wlLocation lon="+wlLocation.getLongitude());
 
-    final SProduct S104DCF2InputData= new SProduct(S104DCF2InputDataFilePath, ISProductIO.FILE_READ_ONLY_MODE);
+    final SProduct S104DCF2InputData= new SProductDCF2(S104DCF2InputDataFilePath, ISProductIO.FILE_READ_ONLY_MODE);
 
     // int hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+S104DCF2InputDataFilePath);
 
@@ -221,18 +225,15 @@ public class ModelDataExtraction extends ModelDataExtractionIO { // implements I
     // }
   
     // --- First check that the WLLocation coordinates are indeed inside the
-    //     S104 DCF2 tile bounding box but before doing that we need to
-    //     check that the geo reference used in the S104 DCF2 file is the
-    //     right one (i.e, EPSG:4326)
-    //SProduct.checkGeoRef();
+    //     S104 DCF2 tile bounding box.
+    if (!S104DCF2InputData.isHBCoordsInsideDHPTile(wlLocation)) {
+       throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
+    }
 
-    // if (!SProduct.isHBCoordsInsideDHPTile(wlLocation)) {
-    //   throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
-    // }
+    slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box");
 
-    // slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box");
-
-    
+    // --- Close the file from which the S104 DCF2 data was read.
+    S104DCF2InputData.closeFileInUse();
     
     slog.info(mmi+"Debug exit 0");
     System.exit(0);
