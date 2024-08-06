@@ -17,7 +17,7 @@ import ca.gc.dfo.chs.dhp.sproduct.SProduct;
 import ca.gc.dfo.chs.dhp.sproduct.SProductIO;
 import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
-import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
+//import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 import ca.gc.dfo.chs.modeldata.ModelDataExtractionIO;
 import ca.gc.dfo.chs.modeldata.IModelDataExtractionIO;
 import ca.gc.dfo.chs.dhp.sproduct.S104DCFNCompoundType;
@@ -223,53 +223,25 @@ public class ModelDataExtraction extends ModelDataExtractionIO { // implements I
     //     check that the geo reference used in the S104 DCF2 file is the
     //     right one (i.e, EPSG:4326)
     SProduct.checkGeoRef();
-    
-    // // --- This seems strange but this is what HDFql needs to be able
-    // //     to extract an String attribute from an HDF5 file GROUP structure
-    // //     (unary array of String objects with just one String object in it)
-    // String [] checkHorizDatumRefAttr= new String [] { new String() };
 
-    // // --- get the horiz. datum reference String Id.
-    // SProduct.setTransientAttrFromGroup( ISProductIO.GEO_HORIZ_DATUM_REF_ATTR_ID,
-    // 				        ISProductIO.ROOT_GRP_ID, HDFql.variableTransientRegister(checkHorizDatumRefAttr) );
+    if (!SProduct.isHBCoordsInsideDHPTile(wlLocation)) {
+      throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
+    }
 
-    // if (!checkHorizDatumRefAttr[0].equals(ISProductIO.GEO_HORIZ_DATUM_REF_ATTR_ALLOWED)) {
-	
-    //   throw new RuntimeException(mmi+"Invalid "+ISProductIO.GEO_HORIZ_DATUM_REF_ATTR_ID+
-    // 				 " value -> "+checkHorizDatumRefAttr[0]+", it MUST be -> "+ISProductIO.GEO_HORIZ_DATUM_REF_ATTR_ALLOWED+" !!");
-    // }
-    
-    // // --- Need an array of Integer objects with just one Integer object in it
-    // //     in order to have HDFql being able to extract an int attribute value.
-    // //     (NOTE: No low-level int variable can be used here) 
-    // Integer [] checkHorizCRSAttr= new Integer [] {0};
-
-    // // --- get the horiz. CRS String Id.
-    // SProduct.setTransientAttrFromGroup( ISProductIO.GEO_HORIZ_CRS_ATTR_ID,
-    // 				        ISProductIO.ROOT_GRP_ID, HDFql.variableTransientRegister(checkHorizCRSAttr) );
-
-    // // --- We cannot use the != operator here since we compare Integer objects not low-level int values.
-    // if (!checkHorizCRSAttr[0].equals(ISProductIO.GEO_HORIZ_CRS_ATTR_ALLOWED)) {
-	
-    //   throw new RuntimeException(mmi+"Invalid "+ISProductIO.GEO_HORIZ_CRS_ATTR_ID+" value -> "+
-    // 				 checkHorizCRSAttr[0]+", it MUST be -> "+ISProductIO.GEO_HORIZ_CRS_ATTR_ALLOWED+" !!");
-    // }    
-    
-    // //slog.info(mmi+"checkHorizDatumRefAttr[0]="+checkHorizDatumRefAttr[0]);
-    // //slog.info(mmi+"checkHorizCRSAttr[0]="+checkHorizCRSAttr[0]);
+    slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box"); 
     
     slog.info(mmi+"Debug exit 0");
     System.exit(0);
 
-    // --- Instantiate a RegularBoundingBox object with the S104 DCF2 tile coordinates limits.
-    final RegularBoundingBox s104Dcf2TileBBox= new RegularBoundingBox();
+    // // --- Instantiate a RegularBoundingBox object with the S104 DCF2 tile coordinates limits.
+    // final RegularBoundingBox s104Dcf2TileBBox= new RegularBoundingBox();
 
-    // --- verify that the WLLocation is indeed inside the S104 DCF tile bounding box.
-    final boolean wlLocationInside= s104Dcf2TileBBox.isHBCoordsInside(wlLocation);
+    // // --- verify that the WLLocation is indeed inside the S104 DCF tile bounding box.
+    // final boolean wlLocationInside= s104Dcf2TileBBox.isHBCoordsInside(wlLocation);
 
-    if (!wlLocationInside) {
-      throw new RuntimeException(mmi+"wlLocation is outside the S104 DCF2 tile bounding box !!");
-    }
+    // if (!wlLocationInside) {
+    //   throw new RuntimeException(mmi+"wlLocation is outside the S104 DCF2 tile bounding box !!");
+    // }
 
     hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+S104DCF2InputDataFilePath);
 
