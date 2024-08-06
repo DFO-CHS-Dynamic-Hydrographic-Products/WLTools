@@ -122,12 +122,12 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
     slog.info(mmi+"pointLocationsInputInfo="+pointLocationsInputInfo);
 
     // ---
-    if (this.inputDataType.equals(IModelDataExtraction.InputDataType.WaterLevels)) {
+    if (this.inputDataType.equals(IModelDataExtractionIO.InputDataType.WaterLevels)) {
 
       slog.info(mmi+"Processing specific args. for WaterLevels input data");
 
-      if (pointLocationsInputInfoFmt.equals(IModelDataExtraction.locationsCoordsId)) {
-	throw new RuntimeException(mmi+"The data extraction for simple "+IModelDataExtraction.locationsCoordsId+" is not ready be used for Water levels yet !!");
+      if (pointLocationsInputInfoFmt.equals(IModelDataExtractionIO.locationsCoordsId)) {
+	throw new RuntimeException(mmi+"The data extraction for simple "+IModelDataExtractionIO.locationsCoordsId+" is not ready be used for Water levels yet !!");
       }
 
       slog.info(mmi+"Reading the WLLocation(s) input info");
@@ -148,7 +148,7 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
 
         final String wlInputDatumConvStr= argsMap.get("--wlInputDatumConv");
 	  
-        if (!IModelDataExtraction.allowedWLDatumConvTypes.contains(wlInputDatumConvStr)) {
+        if (!IModelDataExtractionIO.allowedWLDatumConvTypes.contains(wlInputDatumConvStr)) {
           throw new RuntimeException(mmi+"Invalid wlInputDatumConv str id. -> "+wlInputDatumConvStr);
         }
 

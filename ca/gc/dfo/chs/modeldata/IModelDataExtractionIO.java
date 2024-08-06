@@ -10,7 +10,7 @@ import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 // ---
 public interface IModelDataExtractionIO extends IWLToolsIO { //, ICurrToolsIO {
 
-    //String locationsCoordsId= "SIMPLE_LOCATIONS_COORDS";
+  String locationsCoordsId= "SIMPLE_LOCATIONS_COORDS";
 
   String locationsCoordsSep= ";;"; // e.g: 49.69,-169.69;;52.45,-70.34;; ...
 
@@ -85,5 +85,4 @@ public interface IModelDataExtractionIO extends IWLToolsIO { //, ICurrToolsIO {
   };
 
   Set<String> allowedWLDatumConvTypes= Set.of(allowedWLDatumConvDef);
-  
 }
