@@ -1,5 +1,9 @@
 package ca.gc.dfo.chs.dhp.sproduct;
 
+// ---
+import java.util.Map;
+
+// ---
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +13,7 @@ import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
 
 // ---
+import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 
@@ -16,15 +21,57 @@ import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 
 // ---
-abstract public class SProduct extends SProductIO {
-    //public class SProduct implements ISProductIO {
+//abstract public class SProduct extends SProductIO {
+public class SProduct extends SProductIO implements ISProductIO {
 
   private final static String whoAmI= "ca.gc.dfo.chs.dhp.SProduct";
 
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  // --- 
+  public SProduct(final String SPrdFilePath, final String openModeStr) {
+
+    final String mmi= "constructor: ";
+
+    slog.info(mmi+"start: SPrdFilePath="+SPrdFilePath+", openModeStr=\""+openModeStr+"\"");
+
+    try {
+      SPrdFilePath.length();
+    } catch (NullPointerException npe) {
+      throw new RuntimeException(mmi+npe+"SPrdFilePath cannot be null here !!");
+    }
+
+    if (!WLToolsIO.checkForFileExistence(SPrdFilePath)) {
+      throw new RuntimeException(mmi+"SPrdFilePath -> "+SPrdFilePath+" not found !!");
+    }
+
+    if (!openModeStr.equals(ISProductIO.FILE_READ_ONLY_MODE) &&
+	!openModeStr.equals(ISProductIO.FILE_READ_WRITE_MODE)) {
+	
+      throw new RuntimeException(mmi+"Invalid file open mode -> "+openModeStr+" !!");
+    }
+
+    int hdfqlCmdStatus= HDFql.execute(openModeStr+SPrdFilePath);
+
+    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+      throw new RuntimeException(mmi+"Problem with HDFql open file command \"openModeStr\" for file -> "
+				 +SPrdFilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
+    }
+
+    this.tileGeoId= this.readTileGeoIdFromFileInUse();
+
+    slog.info(mmi+"checkFile="+this.tileGeoId);
+
+    slog.info(mmi+"end");
+  }
+
   // ---
-  public static final void checkGeoRef() {
+  public void closeFileInUse() {
+      
+  }
+    
+  // ---
+  public final void checkGeoRef() {
 
     // --- NOTE: this is using the HDF5 file that is opened and defined
     //           as the file being processed if more than one HDF5 file

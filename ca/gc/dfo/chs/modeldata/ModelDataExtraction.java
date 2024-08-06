@@ -211,44 +211,38 @@ public class ModelDataExtraction extends ModelDataExtractionIO { // implements I
     slog.info(mmi+"wlLocation lat="+wlLocation.getLatitude());
     slog.info(mmi+"wlLocation lon="+wlLocation.getLongitude());
 
-    int hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+S104DCF2InputDataFilePath);
+    final SProduct S104DCF2InputData= new SProduct(S104DCF2InputDataFilePath, ISProductIO.FILE_READ_ONLY_MODE);
 
-    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "
-				 +S104DCF2InputDataFilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
-    }
+    // int hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+S104DCF2InputDataFilePath);
+
+    // if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+    //   throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "
+    // 				 +S104DCF2InputDataFilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
+    // }
   
     // --- First check that the WLLocation coordinates are indeed inside the
     //     S104 DCF2 tile bounding box but before doing that we need to
     //     check that the geo reference used in the S104 DCF2 file is the
     //     right one (i.e, EPSG:4326)
-    SProduct.checkGeoRef();
+    //SProduct.checkGeoRef();
 
-    if (!SProduct.isHBCoordsInsideDHPTile(wlLocation)) {
-      throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
-    }
+    // if (!SProduct.isHBCoordsInsideDHPTile(wlLocation)) {
+    //   throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
+    // }
 
-    slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box"); 
+    // slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box");
+
+    
     
     slog.info(mmi+"Debug exit 0");
     System.exit(0);
 
-    // // --- Instantiate a RegularBoundingBox object with the S104 DCF2 tile coordinates limits.
-    // final RegularBoundingBox s104Dcf2TileBBox= new RegularBoundingBox();
+    // hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+S104DCF2InputDataFilePath);
 
-    // // --- verify that the WLLocation is indeed inside the S104 DCF tile bounding box.
-    // final boolean wlLocationInside= s104Dcf2TileBBox.isHBCoordsInside(wlLocation);
-
-    // if (!wlLocationInside) {
-    //   throw new RuntimeException(mmi+"wlLocation is outside the S104 DCF2 tile bounding box !!");
-    // }
-
-    hdfqlCmdStatus= HDFql.execute("CLOSE FILE "+S104DCF2InputDataFilePath);
-
-    if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-      throw new RuntimeException(mmi+"Problem with HDFql close file command \"CLOSE \" for file -> "
-				 +S104DCF2InputDataFilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
-    } 
+    // if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
+    //   throw new RuntimeException(mmi+"Problem with HDFql close file command \"CLOSE \" for file -> "
+    // 				 +S104DCF2InputDataFilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
+    // } 
    
     slog.info(mmi+"Debug exit 0");
     System.exit(0);

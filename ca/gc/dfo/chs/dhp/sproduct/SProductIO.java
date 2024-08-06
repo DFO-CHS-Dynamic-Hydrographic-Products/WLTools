@@ -1,5 +1,9 @@
 package ca.gc.dfo.chs.dhp.sproduct;
 
+// ---
+import java.util.Map;
+
+// ---
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,6 +11,10 @@ import org.slf4j.LoggerFactory;
 import as.hdfql.HDFql;
 import as.hdfql.HDFqlCursor;
 import as.hdfql.HDFqlConstants;
+
+// ---
+import ca.gc.dfo.chs.wltools.util.HBCoords;
+import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 
 // ---
 import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
@@ -19,6 +27,23 @@ abstract public class SProductIO implements ISProductIO {
 
   private final static Logger slog= LoggerFactory.getLogger(whoAmI);
 
+  protected String tileGeoId= null;
+    
+  protected Map<String, RegularBoundingBox> tilesBoundingBoxes= null;
+
+  // ---
+  final public String readTileGeoIdFromFileInUse() {
+    
+    // --- This seems strange but this is what HDFql needs to be able
+    //     to extract an String attribute from an HDF5 file GROUP structure
+    //     (unary array of String objects with just one String object in it)
+    String [] tileGeoIdTmp= new String [] { new String() };
+
+    SProductIO.setTransientAttrFromGroup(ISProductIO.TILE_GEO_ID_ATTR_ID,
+					 ISProductIO.ROOT_GRP_ID, HDFql.variableTransientRegister(tileGeoIdTmp));
+    return tileGeoIdTmp[0];
+  }
+    
   // ---
   static public void setTransientAttrFromGroup(final String attrId, final String groupId, final int transientAttrId ) {
       

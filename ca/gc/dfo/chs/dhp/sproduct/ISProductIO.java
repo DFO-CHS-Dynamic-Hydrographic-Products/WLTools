@@ -9,6 +9,12 @@ import java.util.Collections;
 // ---
 public interface ISProductIO {
 
+  String TILE_GEO_ID_ATTR_ID= "geographicIdentifier";  
+
+  // --- NOTE: the blank space at the end of the Strings are relevant
+  String FILE_READ_WRITE_MODE= "USE FILE ";
+  String FILE_READ_ONLY_MODE= "USE READONLY FILE ";
+    
   //---
   enum Format {
     S104DCF8,
