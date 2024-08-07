@@ -1,7 +1,11 @@
 package ca.gc.dfo.chs.dhp.sproduct;
 
 // ---
-import java.util.Map;
+//import java.util.Map;
+//import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+
 
 // ---
 import org.slf4j.Logger;
@@ -16,6 +20,8 @@ import as.hdfql.HDFqlConstants;
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
+import ca.gc.dfo.chs.wltools.wl.WLLocation;
+import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 
 // ---
@@ -186,10 +192,29 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
 
     slog.info(mmi+"this.havePixelsOverlap="+this.havePixelsOverlap);
     
-    slog.info(mmi+"Debug exit 0");
-    System.exit(0);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
 
     slog.info(mmi+"end");
+  }
+
+  // ---
+  public final List<MeasurementCustom> getMCAtWLLocation(final WLLocation wlLocation, final String h5CmpndTypeDataId, final String h5CmpndTypeUncrtId) {
+
+    final String mmi= "getMCAtWLLocation: ";
+      
+    slog.info(mmi+"start: h5CmpndTypeDataId="+h5CmpndTypeDataId+", h5CmpndTypeUncrtId="+h5CmpndTypeUncrtId);
+
+    List<MeasurementCustom> mcAtWLLocation= new ArrayList<MeasurementCustom>();
+
+     
+
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);    
+
+    slog.info(mmi+"end");
+
+    return mcAtWLLocation;
   }
     
 } // --- class SProductDCF2

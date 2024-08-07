@@ -21,7 +21,7 @@ import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 
 // ---
-public class SProduct extends SProductIO implements ISProductIO {
+abstract public class SProduct extends SProductIO implements ISProductIO {
 
   private final static String whoAmI= "ca.gc.dfo.chs.dhp.SProduct";
 

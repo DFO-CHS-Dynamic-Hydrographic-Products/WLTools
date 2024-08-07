@@ -197,7 +197,7 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
 
     final String mmi= "getNearestS104DCF2Data: ";
 
-    List<MeasurementCustom> mcOfS104DCF2Data= new ArrayList<MeasurementCustom>();
+    //List<MeasurementCustom> mcOfS104DCF2Data= new ArrayList<MeasurementCustom>();
 
     try {
       S104DCF2InputDataFilePath.length();
@@ -218,7 +218,7 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
     //final String watLevO1GrpId= ISProductIO.ROOT_GRP_ID ISProductIO.FEATURE_IDS.S104
 
     // --- Instantiate a SProductDCF2 object with the S104DCF2InputDataFilePath HDF5 file content
-    final SProduct S104DCF2InputData=
+    final SProductDCF2 S104DCF2InputData=
       new SProductDCF2(S104DCF2InputDataFilePath, ISProductIO.FILE_READ_ONLY_MODE, ISProductIO.FeatId.S104, ISProductIO.FCST_ID);
   
     // --- First check that the WLLocation coordinates are indeed inside the
@@ -229,9 +229,11 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
 
     slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box");
 
-    // --- Now find the S104 DCF2 pixel that is the nearest to the  WLLocation (point) object
-    //     (which is usually a tide gauge location OR a coordinate point location where we
-    //     want to extract the model forecasted WLs.
+    // --- Now get the forecast WL data of tje S104 DCF2 pixel that is the nearest to the WLLocation (point) object
+    //     (WLLocation which is usually the location of f tide gauge OR a coordinate point location where we want
+    //     to extract the model forecasted WLs. Note here that we pass null as the 3rd arg. to the getMCAtWLLocation
+    //     method because we do not need to get the uncertainties values in the MeasurementCustom objects.
+    final List<MeasurementCustom> mcOfS104DCF2Data= S104DCF2InputData.getMCAtWLLocation(wlLocation, ISProductIO.S104_CMPD_TYPE_HGHT_ID, null);
 
     // --- Close the file from which the S104 DCF2 data was read.
     S104DCF2InputData.closeFileInUse();
