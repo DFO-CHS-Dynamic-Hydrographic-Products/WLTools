@@ -63,7 +63,7 @@ public interface IWLAdjustment extends ITimeMachine {
 
   String DEFAULT_OHPS_NAME= "ECCC_OHPS";
 
-  enum StormSurgeForecastModel {
+  enum FMFNames {
     ECCC_OHPS_SLFE //,
     //DFO_NEMO_SJ100,
     //DFO_NEMO_VH20,

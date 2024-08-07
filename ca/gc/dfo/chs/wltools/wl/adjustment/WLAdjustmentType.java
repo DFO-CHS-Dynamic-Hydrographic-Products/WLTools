@@ -266,12 +266,13 @@ abstract public class WLAdjustmentType
   }
    
   // ---
-  final public WLAdjustmentType adjustFullModelForecast(final HashMap<String,String> argsMap, final String prevFMFInputDataFilePath,  //final String prevFMFASCIIDataFilePath,
-                                                        final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj ) {
+  final public WLAdjustmentType adjustFullModelForecast(final HashMap<String,String> argsMap,final String prevFMFInputDataFilePath,  //final String prevFMFASCIIDataFilePath,
+                                                        final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj, final double fmfFromZCConvVal ) {
     final String mmi= "adjustFullModelForecast: ";
 
     slog.info(mmi+"start: this.modelForecastInputDataFormat.name()"+this.modelForecastInputDataFormat.name()); 
     slog.info(mmi+"prevFMFInputDataFilePath="+prevFMFInputDataFilePath);
+    slog.info(mmi+"fmfFromZCConvVal="+fmfFromZCConvVal);
     slog.info(mmi+"Debug exit 0");
     System.exit(0);
 
@@ -330,14 +331,12 @@ abstract public class WLAdjustmentType
         //final String tgResidualsStatsIODirectory= argsMap.get("--tgResidualsStatsIODirectory");
 	final String modelWLResidualsAtTGStatsIODir= argsMap.get("--modelWLResidualsAtTGStatsIODir");
 
-        this.multTimeDepFMFErrorStatsAdj(prevFMFInputDataFilePath,
-                                         uniqueTGMapObj, mainJsonMapObj,
-					 modelWLResidualsAtTGStatsIODir);
-	                                 //tgResidualsStatsIODirectory);
+        this.multTimeDepFMFErrorStatsAdj(prevFMFInputDataFilePath, fmfFromZCConvVal,
+                                         uniqueTGMapObj, mainJsonMapObj, modelWLResidualsAtTGStatsIODir);
 
-        //slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
-        //slog.info(mmi+"Debug exit 0");
-        //System.exit(0);
+        slog.info(mmi+"Done with MULT_TIMEDEP_FMF_ERROR_STATS");
+        slog.info(mmi+"Debug exit 0");
+        System.exit(0);
 
         break;
 

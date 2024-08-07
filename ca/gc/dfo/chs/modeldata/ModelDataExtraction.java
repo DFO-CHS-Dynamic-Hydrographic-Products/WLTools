@@ -193,7 +193,8 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
   }
 
   // --- 
-  final static public List<MeasurementCustom> getNearestS104DCF2Data(final String S104DCF2InputDataFilePath, final WLLocation wlLocation) {
+  final static public List<MeasurementCustom> getNearestS104DCF2Data(final String S104DCF2InputDataFilePath,
+								     final double fmfFromZCConvVal, final WLLocation wlLocation) {
 
     final String mmi= "getNearestS104DCF2Data: ";
 
@@ -211,6 +212,7 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
 
     slog.info(mmi+"start");
     slog.info(mmi+"S104DCF2InputDataFilePath="+S104DCF2InputDataFilePath);
+    slog.info(mmi+"fmfFromZCConvVal="+fmfFromZCConvVal);
     slog.info(mmi+"wlLocation id="+wlLocation.getIdentity());
     slog.info(mmi+"wlLocation lat="+wlLocation.getLatitude());
     slog.info(mmi+"wlLocation lon="+wlLocation.getLongitude());
@@ -233,7 +235,8 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
     //     (WLLocation which is usually the location of f tide gauge OR a coordinate point location where we want
     //     to extract the model forecasted WLs. Note here that we pass null as the 3rd arg. to the getMCAtWLLocation
     //     method because we do not need to get the uncertainties values in the MeasurementCustom objects.
-    final List<MeasurementCustom> mcOfS104DCF2Data= S104DCF2InputData.getMCAtWLLocation(wlLocation, ISProductIO.S104_CMPD_TYPE_HGHT_ID, null);
+    final List<MeasurementCustom> mcOfS104DCF2Data= S104DCF2InputData
+      .getMCAtWLLocation(wlLocation, fmfFromZCConvVal, ISProductIO.S104_CMPD_TYPE_HGHT_ID, null);
 
     // --- Close the file from which the S104 DCF2 data was read.
     S104DCF2InputData.closeFileInUse();

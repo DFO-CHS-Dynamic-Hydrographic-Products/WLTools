@@ -396,7 +396,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       // --- Need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
       //     method call.
       final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
-      
+
+      // --- Just define this.location for the uniqueTGMapObj Map   
       uniqueTGMapObj.put(this.location.getIdentity(), this.location);
 
       // --- Define the nb. hours in past to use depending on this.forecastAdjMethod:
@@ -408,6 +409,9 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"nbHoursInPastArg="+nbHoursInPastArg);
 
+      //// --- No FMF WL data conversion from a ZC by default.
+      double fmfFromZCConvVal= 0.0;
+      
       // --- String to hold the path of the previous FMF input data file
       //     (could be ASCII OR S104DCF2 format)
       String prevFMFInputDataFilePath= null;
@@ -415,27 +419,15 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
       // --- OHPS-SLFE ASCII (CSV in fact) WL input data format (WL data at tide gauges only)
       if (this.modelForecastInputDataFormat==
 	    IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
-
-	//String prevFMFASCIIDataFilePath= null;
 	  
-        // --- Just need the tide gauge CHS Id. for the getH2D2ASCIIWLFProbesData
-        //     method call.
-        //final Map<String, HBCoords> uniqueTGMapObj= new HashMap<String, HBCoords>();
-        //uniqueTGMapObj.put(this.location.getIdentity(), null);
-        //this.nearestModelData= new HashMap<String, List<MeasurementCustom>>();
-
-        // // --- Define the nb. hours in past to use depending on this.forecastAdjMethod:
-        // //     0 means that it will be automagically be determined according to the FMF
-        // //     data duration after its lead time
-        // final long nbHoursInPastArg=
-	//   (this.forecastAdjMethod.equals(ForecastAdjMethod.TGS_SINGLE_TIMEDEP_FMF_ERROR_STATS)) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
-	// //(this.forecastAdjType==TideGaugeAdjMethod.SINGLE_TIMEDEP_FMF_ERROR_STATS) ? 0L : IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR;
-	  
-        // --- Here the this.modelForecastInputDataInfo attribute is the complete path to
+        // --- Here this.modelForecastInputDataInfo attribute is the complete path to
         //     an ECCC_H2D2 probes (at the CHS TGs locations in fact) file of the ECCC_H2D2_ASCII
-        //     format. It should be the H2D2 model forecast data of the actual synoptic run as
+        //     format. It should be the OHPS model forecast data of the actual synoptic run as
         //     it is specified with the IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()
         //     argument to this method.
+	//
+	//     ***IMPORTANT***: Here the OHPS WL input data MUST already be defined with respect
+	//     to the same global datum used to convert the WLO data from its ZC.
         prevFMFInputDataFilePath= this.getH2D2ASCIIWLFProbesData(this.modelForecastInputDataInfo,
                                                                  uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
                                                                  IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal()); // , this.nearestModelData);
@@ -463,15 +455,40 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 	this.fmfLeadTimeInstant= this.referenceTime;
 
 	slog.info(mmi+"this.fmfLeadTimeInstant="+this.fmfLeadTimeInstant.toString());
+
+	// --- Define the fmfFromZCConvVal using the TG location
+	fmfFromZCConvVal= this.location.getZcVsVertDatum();
+
+	if (argsMapKeysSet.contains("--fmfFromZCConvDataInfo")) {
+
+	  slog.info(mmi+"Need to determine the conversion from ZC to a global datum for the TG location from a 2D input file for the FMF input data");
+
+	  slog.info(mmi+"Code not implemeted yet!!");
+          slog.info(mmi+"Debug System.exit(0)");
+          System.exit(0);
+	  
+	} else {
+
+	   // --- The conversion from ZC to a global datum of the TG location can only be used
+	   //     for he FMF input data of the ECCC_OHPS_SLFE model
+	   if (!this.fullForecastModelName.equals(IWLAdjustment.FMFNames.ECCC_OHPS_SLFE.name())) {
+	       throw new RuntimeException(mmi+"Cannot use the TG location ZC to a global datum for the "+this.fullForecastModelName+" FMF input data !!");
+	   }
+
+	  slog.warn(mmi+"Directly using the conversion from ZC to a global datum of the TG location for the "+
+		    IWLAdjustment.FMFNames.ECCC_OHPS_SLFE.name()+" FMF input data");
+	}
+
+	slog.info(mmi+"Will use fmfFromZCConvVal="+fmfFromZCConvVal);
 	//slog.info(mmi+"Debug System.exit(0)");
         //System.exit(0);	
 
-	prevFMFInputDataFilePath= this.getS104DCF2InputData(this.modelForecastInputDataInfo,
+	prevFMFInputDataFilePath= this.getS104DCF2InputData(this.modelForecastInputDataInfo, fmfFromZCConvVal,
                                                             uniqueTGMapObj, mainJsonMapObj, nbHoursInPastArg,
                                                             IWLAdjustmentIO.FullModelForecastType.ACTUAL.ordinal());
 
         slog.info(mmi+"Done with reading the model full forecast (FMF) WL input data at tide gauge -> "+
-		  this.location.getIdentity()+" for the actual synop run");	
+		  this.location.getIdentity()+" for the actual synop run");
 
 	slog.info(mmi+"Debug System.exit(0)");
         System.exit(0);
@@ -495,8 +512,8 @@ final public class WLAdjustmentTideGauge extends WLAdjustmentType {
 
       slog.info(mmi+"Now doing full model forecast (FMF) adjustment-correction using previous forecast(s) data: prevFMFInputDataFilePath="+prevFMFInputDataFilePath);
       
-      //this.adjustFullModelForecast(argsMap, prevFMFASCIIDataFilePath, uniqueTGMapObj, mainJsonMapObj);
-      this.adjustFullModelForecast(argsMap, prevFMFInputDataFilePath, uniqueTGMapObj, mainJsonMapObj); 
+      // ---
+      this.adjustFullModelForecast(argsMap, prevFMFInputDataFilePath, uniqueTGMapObj, mainJsonMapObj, fmfFromZCConvVal); 
 
       slog.info(mmi+"Done with the specific FMF WL data adjustment at tide gauge -> "+this.location.getIdentity());
 

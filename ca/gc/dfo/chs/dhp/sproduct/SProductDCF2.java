@@ -199,15 +199,18 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
   }
 
   // ---
-  public final List<MeasurementCustom> getMCAtWLLocation(final WLLocation wlLocation, final String h5CmpndTypeDataId, final String h5CmpndTypeUncrtId) {
+  public final List<MeasurementCustom> getMCAtWLLocation(final WLLocation wlLocation, final double fmfFromZCConvVal,
+							 final String h5CmpndTypeDataId, final String h5CmpndTypeUncrtId) {
 
     final String mmi= "getMCAtWLLocation: ";
       
-    slog.info(mmi+"start: h5CmpndTypeDataId="+h5CmpndTypeDataId+", h5CmpndTypeUncrtId="+h5CmpndTypeUncrtId);
+    slog.info(mmi+"start:");
+
+    slog.info(mmi+"wlLocation.getIdentity()="+wlLocation.getIdentity());
+    slog.info(mmi+"fmfFromZCConvVal="+fmfFromZCConvVal);
+    slog.info(mmi+"h5CmpndTypeDataId="+h5CmpndTypeDataId+", h5CmpndTypeUncrtId="+h5CmpndTypeUncrtId);
 
     List<MeasurementCustom> mcAtWLLocation= new ArrayList<MeasurementCustom>();
-
-     
 
     slog.info(mmi+"Debug exit 0");
     System.exit(0);    

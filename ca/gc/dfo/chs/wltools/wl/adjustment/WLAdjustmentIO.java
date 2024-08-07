@@ -282,8 +282,10 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
   }
 
   // ---
-  final protected String getS104DCF2InputData(final String S104DCF2DataFile, final Map<String, HBCoords> nearestsTGCoords,
-                                              final JsonObject mainJsonMapObj, final long nbHoursInPastArg, final int fmfTypeIndex ) {
+  final protected String getS104DCF2InputData(final String S104DCF2DataFile,
+					      final double fmfFromZCConvVal,
+					      final Map<String, HBCoords> nearestsTGCoords,
+					      final JsonObject mainJsonMapObj, final long nbHoursInPastArg, final int fmfTypeIndex ) {
       
     final String mmi= "getS104DCF2Data: ";
 
@@ -343,7 +345,8 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
     //     location and only for the real forecast data which is in the future compared to
     //     the synopRunLeadTime Instant
     // ModelDataExtraction method call here
-    final List<MeasurementCustom> tmpMCWLData= ModelDataExtraction.getNearestS104DCF2Data(S104DCF2DataFile, this.location);
+    final List<MeasurementCustom> tmpMCWLData= ModelDataExtraction
+      .getNearestS104DCF2Data(S104DCF2DataFile, fmfFromZCConvVal, this.location);
 
     slog.info(mmi+"Nearest FMF S104 DCF2 data has now been extracted for TG -> "+nearestTGIdStr);
     slog.info(mmi+"Debug System.exit(0)");
@@ -632,7 +635,7 @@ abstract public class WLAdjustmentIO implements IWLAdjustmentIO, IWLAdjustment {
 	slog.info(mmi+"Reading WLO input data using the "+IWLToolsIO.Format.IWLS_JSON.name()+" format");
 
 	tmpWLOMcList= WLToolsIO
-	  .getWLDataInIWLSJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, wloQCThresholdAbsVal, WLToolsIO.getOutputDirectory()); //WLToolsIO.getOutputDirectory());	
+	  .getWLDataInIWLSJsonFmt(this.tideGaugeWLODataFile, this.prdDataTimeIntervalSeconds, (Double)this.adjLocationZCVsVDatum, wloQCThresholdAbsVal); //WLToolsIO.getOutputDirectory());	
 	
         //slog.info(mmi+"Debug System.exit(0)");
         //System.exit(0);    

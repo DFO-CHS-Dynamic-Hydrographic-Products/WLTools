@@ -320,13 +320,13 @@ abstract public class WLAdjustmentFMF
   }
 
   // ---
-  final public Map<Long, MeasurementCustom> getNewTimeDepResidualsStats(final String prevFMFInputDataFilePath,
-									final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj) {
+  final public Map<Long, MeasurementCustom> getNewTimeDepResidualsStats(final String prevFMFInputDataFilePath, final double fmfFromZCConvVal,
+									final Map<String, HBCoords> uniqueTGMapObj,final JsonObject mainJsonMapObj) {
     final String mmi= "getNewTimeDepResidualsStats: ";
 
     final String wlLocationIdentity= this.location.getIdentity();
 
-    slog.info(mmi+"wlLocationIdentity="+wlLocationIdentity);
+    slog.info(mmi+"start: wlLocationIdentity="+wlLocationIdentity); //+", fmfFromZCConversion="+fmfFromZCConversion);
     
     // --- Instantiate this.mcbWLO MeasurementCustomBundle object with the WLO data
     //     List<MeasurementCustom> object for this TG location.
@@ -398,12 +398,11 @@ abstract public class WLAdjustmentFMF
                                                                      uniqueTGMapObj, mainJsonMapObj,
                                                                      IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);
       } else if (this.modelForecastInputDataFormat==
-	           IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
+	           IWLAdjustmentIO.DataTypesFormatsDef.S104DCF2) {
 
         // ---  Put the previous full model forecast S104 DCF2 input data in the this.nearestModelData object:
-        prevFMFInputDataFilePathIter= this.getS104DCF2InputData(prevFMFInputDataFilePathIter,
-                                                                uniqueTGMapObj, mainJsonMapObj,
-                                                                IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);	  
+	prevFMFInputDataFilePathIter= this.getS104DCF2InputData(prevFMFInputDataFilePathIter, fmfFromZCConvVal, uniqueTGMapObj,
+                                                                mainJsonMapObj, IWLAdjustment.SYNOP_RUNS_TIME_OFFSET_HOUR, prevFMFIdxIter);	  
       } else {
 	 throw new RuntimeException(mmi+"Invalid FMF input data format -> "+this.modelForecastInputDataFormat.name()+" !!");
       }
@@ -462,13 +461,15 @@ abstract public class WLAdjustmentFMF
 
             //slog.info(mmi+"WLO vs WLFMF Instant match for "+mcbPrevFMFInstant.toString());
 
-            // --- Get the WLO at this Instant
+            // --- Get the WLO at this Instant (assuming that the conversion from its ZC
+	    //     to a global datum has already been done).
             final double wloValue= this.mcbWLO
               .getAtThisInstant(mcbPrevFMFInstant).getValue();
 
-            // --- Get the FMF WL at this same Instant
+            // --- Get the FMF WL at this same Instant (assuming that the conversion from its ZC
+	    //     to the same global datum as the WLO data has already been done).
             final double fmfWLValue= mcbPrevFMF
-              .getAtThisInstant(mcbPrevFMFInstant).getValue();
+	      .getAtThisInstant(mcbPrevFMFInstant).getValue();
 
             //slog.info(mmi+"wloValue="+wloValue);
             //slog.info(mmi+"fmfWLValue="+fmfWLValue);
@@ -507,14 +508,13 @@ abstract public class WLAdjustmentFMF
   }
 
   // ---
-  final public WLAdjustmentFMF multTimeDepFMFErrorStatsAdj(final String prevFMFASCIIDataFilePath,
-                                                           final Map<String, HBCoords> uniqueTGMapObj,
-                                                           final JsonObject mainJsonMapObj, final String tgResidualsStatsIODirectory) {
+  final public WLAdjustmentFMF multTimeDepFMFErrorStatsAdj(final String prevFMFASCIIDataFilePath, final double fmfFromZCConvVal,
+							   final Map<String, HBCoords> uniqueTGMapObj, final JsonObject mainJsonMapObj, final String tgResidualsStatsIODirectory) {
 
     final String mmi= "multTimeDepFMFErrorStatsAdj: ";
 
     slog.info(mmi+"start: prevFMFASCIIDataFilePath="+prevFMFASCIIDataFilePath+
-	      ", this.prdDataTimeIntervalSeconds="+this.prdDataTimeIntervalSeconds);
+	      ", this.prdDataTimeIntervalSeconds="+this.prdDataTimeIntervalSeconds+", fmfFromZCConvVal="+fmfFromZCConvVal);
 
     // --- Only the IWLAdjustmentIO.DataTypesFormatsDef.ECCC_H2D2_ASCII input file format is allowed for now
     if (this.modelForecastInputDataFormat != IWLAdjustmentIO.DataTypesFormatsDef.ECCC_OHPS_ASCII) {
@@ -580,7 +580,7 @@ abstract public class WLAdjustmentFMF
       slog.info(mmi+"this.haveWLOData == true: Produce the new time dependant residuals stats");
       
       timeDepResidualsStats= this.getNewTimeDepResidualsStats(prevFMFASCIIDataFilePath,
-							      uniqueTGMapObj, mainJsonMapObj);
+							      fmfFromZCConvVal, uniqueTGMapObj, mainJsonMapObj);
 
       // --- Now check if we have enough WLO data in the near past (-25h: M2 wrap-around cycle) to use to do the amplitude & avg. adjustment.
       //final long m2WrapAroundDurationSeconds= ITidal.M2_WRAP_AROUND_CYCLE_HOURS * SECONDS_PER_HOUR;

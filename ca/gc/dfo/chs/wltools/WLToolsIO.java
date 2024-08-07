@@ -143,10 +143,8 @@ abstract public class WLToolsIO implements IWLToolsIO {
   }
 
   // --- Read d IWLS json format input data file to a list of MeasurementCustom objects.
-  final public static List<MeasurementCustom> getWLDataInIWLSJsonFmt(final String IWLSJsonFile,
-								     final long timeIncrToUseSeconds,
-								     final Double wloQCThresholdAbsVal, final String workDir) {
-
+  final public static List<MeasurementCustom> getWLDataInIWLSJsonFmt(final String IWLSJsonFile, final long timeIncrToUseSeconds,
+								     final Double fromZCToGloBDatuConvValArg, final Double wloQCThresholdAbsVal) {
     final String mmi= "getWLDataInIWLSJsonFmt: ";
 
     List<MeasurementCustom> retListMCs= null;
@@ -157,9 +155,9 @@ abstract public class WLToolsIO implements IWLToolsIO {
     slog.info(mmi+"IWLSJsonFile="+IWLSJsonFile);
     slog.info(mmi+"timeIncrToUseSeconds="+timeIncrToUseSeconds);
 
-    if (workDir != null) {
-      slog.info(mmi+"workDir="+workDir);
-    }
+    //if (workDir != null) {
+    //  slog.info(mmi+"workDir="+workDir);
+    //}
     
     // --- Deal with possible null IWLSJsonFile
     try {
@@ -204,37 +202,52 @@ abstract public class WLToolsIO implements IWLToolsIO {
     //slog.info(mmi+"wloDatumsJsonArray.size()="+wloDatumsJsonArray.size());
 
     double convFromZCToGlobalDatumValue= 0.0;
-
-    boolean convValueWasFound= false;
     
-    // --- Get the value to apply to convert the WLO data from ZC to the global datum (IGLD85 normally)  
-    for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) {
+    if ( fromZCToGloBDatuConvValArg != null) {
 
-      //slog.info(mmi+"itemIter="+itemIter);
+      slog.info(mmi+"Will use fromZCToGloBDatuConvValArg="+
+		  fromZCToGloBDatuConvValArg+" for the local convFromZCToGlobalDatumValue");
+    
+      convFromZCToGlobalDatumValue= fromZCToGloBDatuConvValArg;
 
-      final JsonObject wloZCConvToGlobDatumJsonObj= wloDatumsJsonArray.getJsonObject(itemIter);
+    } else {
+
+      slog.info(mmi+"Need to get the convFromZCToGlobalDatumValue from the IWLS JSON file itself");	
+
+      boolean convValueWasFound= false;
+    
+      // --- Get the value to apply to convert the WLO data from ZC to the global datum (IGLD85 normally)  
+      for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) {
+
+        //slog.info(mmi+"itemIter="+itemIter);
+ 
+        final JsonObject wloZCConvToGlobDatumJsonObj= wloDatumsJsonArray.getJsonObject(itemIter);
 	
-      final String checkZCConvStrId= wloZCConvToGlobDatumJsonObj.getString(IWLToolsIO.IWLS_DB_DATUM_STRID_KEY);
+        final String checkZCConvStrId= wloZCConvToGlobDatumJsonObj.getString(IWLToolsIO.IWLS_DB_DATUM_STRID_KEY);
 
-      //slog.info(mmi+"checkDatumId="+checkDatumId);
+        //slog.info(mmi+"checkDatumId="+checkDatumId);
 
-      if (checkZCConvStrId.equals(IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_TO_USE)) {
+        if (checkZCConvStrId.equals(IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_TO_USE)) {
 	  
-	convFromZCToGlobalDatumValue= wloZCConvToGlobDatumJsonObj
-	  .getJsonNumber(IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY).doubleValue();
+	  convFromZCToGlobalDatumValue= wloZCConvToGlobDatumJsonObj
+	    .getJsonNumber(IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY).doubleValue();
 
-	convValueWasFound= true;
-	break;
+	  convValueWasFound= true;
+	  break;
 
-      } // ---
-    } // --- for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) loop block
+        } // ---
+      } // --- for (int itemIter= 0; itemIter < wloDatumsJsonArray.size(); itemIter++) loop block
 
-    if (!convValueWasFound) {
-      throw new RuntimeException(mmi+"No ZC to global datum -> "+
-				 IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY+" conversion value found in the WLO Json file !1");
+      // --- Avoid to have a convFromZCToGlobalDatumValue == 0.0 here
+      if (!convValueWasFound) {
+        throw new RuntimeException(mmi+"No ZC to global datum -> "+
+	    			   IWLToolsIO.IWLS_DB_ZC_CONV_DATUM_VAL_ID_KEY+" conversion value found in the WLO Json file !1");
+      }
     }
     
     slog.info(mmi+"convFromZCToGlobalDatumValue="+convFromZCToGlobalDatumValue);
+    //slog.info(mmi+"Debug System.exit(0)");
+    //System.exit(0);    
 
     // --- Get the WLO values as a Json object
     final JsonObject wloValuesJsonObj= wloPropsJsonObj.getJsonObject(IWLToolsIO.IWLS_DB_WLO_DATA_ARR_ID_KEY);
