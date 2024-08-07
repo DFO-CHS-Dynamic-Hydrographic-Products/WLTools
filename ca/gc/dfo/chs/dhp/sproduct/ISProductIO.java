@@ -108,7 +108,7 @@ public interface ISProductIO {
   String ISSUE_HHMMSS_ID=   "issueTime";    
   String ISSUE_YYYYMMDD_ID= "issueDate";
 
-  // --- TODO: the 3 following String definitions
+  // --- TODO: the PRED_ID and OBSV_ID String definitions
   //     are probably only relevant for the DCF8 format
   String FCST_ID= ".01";
   String PRED_ID= ".02";

@@ -215,22 +215,23 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
     slog.info(mmi+"wlLocation lat="+wlLocation.getLatitude());
     slog.info(mmi+"wlLocation lon="+wlLocation.getLongitude());
 
-    final SProduct S104DCF2InputData= new SProductDCF2(S104DCF2InputDataFilePath, ISProductIO.FILE_READ_ONLY_MODE);
+    //final String watLevO1GrpId= ISProductIO.ROOT_GRP_ID ISProductIO.FEATURE_IDS.S104
 
-    // int hdfqlCmdStatus= HDFql.execute("USE READONLY FILE "+S104DCF2InputDataFilePath);
-
-    // if (hdfqlCmdStatus != HDFqlConstants.SUCCESS) {
-    //   throw new RuntimeException(mmi+"Problem with HDFql open file command \"USE READONLY FILE \" for file -> "
-    // 				 +S104DCF2InputDataFilePath+", hdfqlCmdStatus="+hdfqlCmdStatus);
-    // }
+    // --- Instantiate a SProductDCF2 object with the S104DCF2InputDataFilePath HDF5 file content
+    final SProduct S104DCF2InputData=
+      new SProductDCF2(S104DCF2InputDataFilePath, ISProductIO.FILE_READ_ONLY_MODE, ISProductIO.FeatId.S104, ISProductIO.FCST_ID);
   
     // --- First check that the WLLocation coordinates are indeed inside the
     //     S104 DCF2 tile bounding box.
     if (!S104DCF2InputData.isHBCoordsInsideDHPTile(wlLocation)) {
-       throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
+      throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
     }
 
     slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box");
+
+    // --- Now find the S104 DCF2 pixel that is the nearest to the  WLLocation (point) object
+    //     (which is usually a tide gauge location OR a coordinate point location where we
+    //     want to extract the model forecasted WLs.
 
     // --- Close the file from which the S104 DCF2 data was read.
     S104DCF2InputData.closeFileInUse();

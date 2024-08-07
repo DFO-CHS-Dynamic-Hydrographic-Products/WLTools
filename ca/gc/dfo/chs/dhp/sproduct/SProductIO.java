@@ -30,14 +30,14 @@ abstract public class SProductIO implements ISProductIO {
     
   protected RegularBoundingBox tileBoundingBox= null;
 
-  // --- To deal with the possibility that DCF2 pixels
-  //     are overlapping for neighbor tiles (i.e. that
-  //     the DCF2 tiles have pixels right on all their
-  //     bounding boxes sides. If true then it also
-  //     means that the DCF2 grid origin coordinates
-  //     are the same as the tiles bounding boxes
-  //     South-West corner coordinates.
-  protected boolean dcf2PixelsOverlap= false;
+  // // --- To deal with the possibility that DCF2 pixels
+  // //     are overlapping for neighbor tiles (i.e. that
+  // //     the DCF2 tiles have pixels right on all their
+  // //     bounding boxes sides. If true then it also
+  // //     means that the DCF2 grid origin coordinates
+  // //     are the same as the tiles bounding boxes
+  // //     South-West corner coordinates.
+  // protected boolean dcf2PixelsOverlap= false;
 
   protected String filePathInUse= null;
 
