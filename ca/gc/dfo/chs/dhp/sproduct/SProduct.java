@@ -129,7 +129,7 @@ abstract public class SProduct extends SProductIO implements ISProductIO {
   }
     
   // ---
-  public final boolean isHBCoordsInsideDHPTile(final HBCoords checkHBCoords) {
+  public final boolean isHBCoordsInsideDHPTile(final HBCoords checkHBCoords, final boolean excludeUpperSides) {
 
     // --- NOTE: this is using the HDF5 file that is opened and defined
     //           as the file being processed if more than one HDF5 file
@@ -138,39 +138,6 @@ abstract public class SProduct extends SProductIO implements ISProductIO {
     final String mmi= "isHBCoordsInsideDHPTile: ";
 
     slog.info(mmi+"start");
-
-    // --- Get the 4 DHP tile bounding box lat-lon limits from the HDF5 file
-
-    // Float [] tbbWestSideLon= new Float [] { 0.0f };
-    // Float [] tbbEastSideLon= new Float [] { 0.0f };
-    // Float [] tbbSouthSideLat= new Float [] { 0.0f };
-    // Float [] tbbNorthSideLat= new Float [] { 0.0f };
-
-    // // --- Tile BB West lon (left side) limit
-    // SProductIO.setTransientAttrFromGroup( ISProductIO.SWC_BBOX_LON_ATTR_ID,
-    // 				          ISProductIO.ROOT_GRP_ID, HDFql.variableTransientRegister(tbbWestSideLon) );
-
-    // // --- Tile BB East lon (right side) limit
-    // SProductIO.setTransientAttrFromGroup( ISProductIO.NEC_BBOX_LON_ATTR_ID,
-    // 				          ISProductIO.ROOT_GRP_ID, HDFql.variableTransientRegister(tbbEastSideLon) );    
-
-    // // --- Tile BB South lat (bottom side) limit
-    // SProductIO.setTransientAttrFromGroup( ISProductIO.SWC_BBOX_LAT_ATTR_ID,
-    // 				          ISProductIO.ROOT_GRP_ID, HDFql.variableTransientRegister(tbbSouthSideLat) );
-
-    // // --- Tile BB North lat (top side) limit
-    // SProductIO.setTransientAttrFromGroup( ISProductIO.NEC_BBOX_LAT_ATTR_ID,
-    // 				          ISProductIO.ROOT_GRP_ID, HDFql.variableTransientRegister(tbbNorthSideLat) );
-
-    // //final double tbbWestSideLon= Double.parseDouble(tbbWestLonStr[0]);
-    // //final double tbbEastSideLon= Double.parseDouble(tbbEastLonStr[0]);
-    // //final double tbbSouthSideLat= Double.parseDouble(tbbSouthLatStr[0]);
-    // //final double tbbNorthSideLat= Double.parseDouble(tbbNorthLatStr[0]);
-
-    // slog.info(mmi+"tbbWestSideLon[0]="+tbbWestSideLon[0]);
-    // slog.info(mmi+"tbbEastSideLon[0]="+tbbEastSideLon[0]);
-    // slog.info(mmi+"tbbSouthSideLat[0]="+tbbSouthSideLat[0]);
-    // slog.info(mmi+"tbbNorthSideLat[0]="+tbbNorthSideLat[0]);
 
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
@@ -182,7 +149,10 @@ abstract public class SProduct extends SProductIO implements ISProductIO {
     slog.info(mmi+"end");
     
     // --- Verify that the checkHBCoords object is inside the tile bounding box.
-    return this.tileBoundingBox.isHBCoordsInside(checkHBCoords);
+    //     The true as the 2nd arg. is for telling the method that we need to
+    //     exclude the upper boundaries (i.e. North and East sides) of the tile
+    //     to determine that an checkHBCoords is inside this tile.
+    return this.tileBoundingBox.isHBCoordsInside(checkHBCoords, excludeUpperSides);
   }
     
 } // --- class SProduct

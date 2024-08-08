@@ -13,12 +13,15 @@ import org.slf4j.LoggerFactory;
 // ---
 import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.IWLToolsIO;
+import ca.gc.dfo.chs.wltools.util.IHBGeom;
+import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
 import ca.gc.dfo.chs.dhp.sproduct.SProduct;
 import ca.gc.dfo.chs.dhp.sproduct.SProductIO;
 import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 import ca.gc.dfo.chs.dhp.sproduct.SProductDCF2;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
+import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 //import ca.gc.dfo.chs.modeldata.ModelDataExtractionIO;
 import ca.gc.dfo.chs.modeldata.IModelDataExtractionIO;
 import ca.gc.dfo.chs.dhp.sproduct.S104DCFNCompoundType;
@@ -195,7 +198,6 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
   // --- 
   final static public List<MeasurementCustom> getNearestS104DCF2Data(final String S104DCF2InputDataFilePath,
 								     final double fmfFromZCConvVal, final WLLocation wlLocation) {
-
     final String mmi= "getNearestS104DCF2Data: ";
 
     //List<MeasurementCustom> mcOfS104DCF2Data= new ArrayList<MeasurementCustom>();
@@ -222,25 +224,25 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
     // --- Instantiate a SProductDCF2 object with the S104DCF2InputDataFilePath HDF5 file content
     final SProductDCF2 S104DCF2InputData=
       new SProductDCF2(S104DCF2InputDataFilePath, ISProductIO.FILE_READ_ONLY_MODE, ISProductIO.FeatId.S104, ISProductIO.FCST_ID);
-  
-    // // --- First check that the WLLocation coordinates are indeed inside the
-    // //     S104 DCF2 tile bounding box.
-    // if (!S104DCF2InputData.isHBCoordsInsideDHPTile(wlLocation)) {
-    //   throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
-    // }
-    //slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box");
 
+    // --- Get the indices combo of the DCF2 pixel that is the nearest from the wlLocation.
+    //     ***IMPORTANT NOTE***: this is okay only for DCF2 pixels resolution <= 25m otherwise
+    //     can end up wut something being far from what we want in terms of respect of the original
+    ///    input data especially where the tidal amplitudes are large.
+    final int [] nearestPixelIJIndices= S104DCF2InputData.getNearestPixelIJIndices(wlLocation);
+    
     // --- Now get the forecast WL data of tje S104 DCF2 pixel that is the nearest to the WLLocation (point) object
     //     (WLLocation which is usually the location of f tide gauge OR a coordinate point location where we want
     //     to extract the model forecasted WLs. Note here that we pass null as the 3rd arg. to the getMCAtWLLocation
     //     method because we do not need to get the uncertainties values in the MeasurementCustom objects.
-    List<MeasurementCustom> mcOfS104DCF2Data= S104DCF2InputData.getMCAtWLLocation(wlLocation, ISProductIO.S104_CMPD_TYPE_HGHT_ID, null);
+    //List<MeasurementCustom> mcOfS104DCF2WLData= S104DCF2InputData.getMCAtWLLocation(wlLocation, ISProductIO.S104_CMPD_TYPE_HGHT_ID, null);
+    List<MeasurementCustom> mcOfS104DCF2WLData= S104DCF2InputData.getMCAtGridIJIndices(nearestPixelIJIndices, ISProductIO.S104_CMPD_TYPE_HGHT_ID, null);
 
     // --- Now do the conversion from the ZC to the global datum of all
     //     the FMF WL timestamped data at the wlLocation
-    for (int mcIter=0; mcIter < mcOfS104DCF2Data.size(); mcIter++) {
+    for (int mcIter=0; mcIter < mcOfS104DCF2WLData.size(); mcIter++) {
 
-      MeasurementCustom mcIterObj= mcOfS104DCF2Data.get(mcIter);
+      MeasurementCustom mcIterObj= mcOfS104DCF2WLData.get(mcIter);
 
       slog.info(mmi+"before conv. from ZC="+mcIterObj.getValue());
       
@@ -269,6 +271,58 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
 
     slog.info(mmi+"end");
 
-    return mcOfS104DCF2Data;
+    return mcOfS104DCF2WLData;
+  }
+
+  // ---
+  public final static int [] getRegGridNearestIJIndices(final HBCoords hbCoords2Check, final RegularBoundingBox regGridBBox, final boolean excludeGridBBoxUpperSides,
+	  					        final double gridILonSpacing, final double gridJLatSpacing, final int nbGridPtsIAxis, final int nbGridPtsJAxis ) {
+      
+    final String mmi= "getRegGridNearestIJIndices: ";
+
+    slog.info(mmi+"start:");
+    slog.info(mmi+"excludeGridBBoxUpperSides="+excludeGridBBoxUpperSides);
+    slog.info(mmi+"gridILonSpacing="+gridILonSpacing);
+    slog.info(mmi+"gridJLatSpacing="+gridJLatSpacing);
+    slog.info(mmi+"nbGridPtsIAxis="+nbGridPtsIAxis);
+    slog.info(mmi+"nbGridPtsJAxis="+nbGridPtsJAxis);
+
+    int [] regGridNearestIJIndices= { -1, -1 };
+
+    // --- First verify that the HBCoords object hbCoords2Check is inside the
+    //     RegularBoundingBox object that defines the coordinates limits of the regular grid
+    //     (the upper sides of the RegularBoundingBox object are not considered as being part
+    //      of the domain if it is true)
+    if (!regGridBBox.isHBCoordsInside(hbCoords2Check, excludeGridBBoxUpperSides)) {
+      throw new RuntimeException(mmi+"The HBCoords object hbCoords2Check is outside the regular grid bounding box !!"); 
+    }
+
+    // --- Get the coordinates of the South-West corner of the RegularBoundingBox object
+    //     that defines the coordinates limits of the regular grid
+    final HBCoords regGridSWCCorner= regGridBBox.getSouthWestCornerHBCoordsCopy();
+    
+    // --- Calculate the (I,J) indices combo of the regular grid cell in which the hbCoords2Check object is located
+    regGridNearestIJIndices[IINDEX]= (int)((hbCoords2Check.getLongitude() - regGridSWCCorner.getLongitude())/gridILonSpacing);
+    regGridNearestIJIndices[JINDEX]= (int)((hbCoords2Check.getLatitude() - regGridSWCCorner.getLatitude())/gridJLatSpacing);
+
+    if (regGridNearestIJIndices[IINDEX] >= nbGridPtsIAxis) {
+      throw new RuntimeException(mmi+"Invalid (too large) regular grid I index -> "+
+				 regGridNearestIJIndices[IINDEX]+" > nbGridPtsIAxis -> "+nbGridPtsIAxis+" !!");
+    }
+
+    if (regGridNearestIJIndices[JINDEX] >= nbGridPtsJAxis) {
+      throw new RuntimeException(mmi+"Invalid (too large) regular grid J index -> "+
+				 regGridNearestIJIndices[JINDEX]+" > nbGridPtsJAxis -> "+nbGridPtsJAxis+" !!");
+    }    
+    
+    slog.info(mmi+"regGridNearestIJIndices[IINDEX]="+regGridNearestIJIndices[IINDEX]);
+    slog.info(mmi+"regGridNearestIJIndices[JINDEX]="+regGridNearestIJIndices[JINDEX]);      
+    
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
+
+    slog.info(mmi+"end");
+
+    return regGridNearestIJIndices;
   }
 }

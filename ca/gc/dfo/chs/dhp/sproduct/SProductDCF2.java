@@ -21,6 +21,7 @@ import ca.gc.dfo.chs.wltools.WLToolsIO;
 import ca.gc.dfo.chs.wltools.util.IHBGeom;
 import ca.gc.dfo.chs.wltools.util.HBCoords;
 import ca.gc.dfo.chs.wltools.wl.WLLocation;
+import ca.gc.dfo.chs.modeldata.ModelDataExtraction;
 import ca.gc.dfo.chs.wltools.util.MeasurementCustom;
 import ca.gc.dfo.chs.wltools.util.RegularBoundingBox;
 
@@ -45,6 +46,9 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
     
   protected int numPointsLongitudinal= 0;
   protected int numPointsLatitudinal= 0;
+
+  // final int IIndex= 0;
+  // final int JIndex= 1;  
     
   // --- havePixelsOverlap:
   //
@@ -251,63 +255,66 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
   }
 
   // ---
-  public final List<MeasurementCustom> getMCAtWLLocation(final WLLocation wlLocation,
-							 final String h5CmpndTypeDataId, final String h5CmpndTypeUncrtId) {
+  public final int [] getNearestPixelIJIndices(final WLLocation wlLocation) {
 
-    final String mmi= "getMCAtWLLocation: ";
+    final String mmi= "getNearestPixelIJIndices: ";
+	
+    // --- Use the generic ModelDataExtractionget.RegGridNearestIJIndices method here.
+    //     (the true for the 3rd arg is for telling the method that it needs to consider
+    //     that the upper sides of the tile b. box are not considered ad being part of
+    //     the tile itself. This means that a wlLocation that would be located directly
+    //     on one of the two upper sides will be considered as being outside of the tile b. box)
+    final int [] nearestPixelIJIndices= ModelDataExtraction
+      .getRegGridNearestIJIndices(wlLocation, this.tileBoundingBox, true, this.gridLonSpacing, this.gridLatSpacing, this.numPointsLongitudinal, this.numPointsLatitudinal);
+
+    // --- Easier case: no pixels overlaps, the indices combo of the nearest pixel
+    //     is directly defined with values in nearestPixelIJIndices so we can take
+    //     them to extract the wanted data at this nearest pixel 
+
+    // --- More complicated case: having pixels overlaps
+    if (this.havePixelsOverlap) {
+	
+      slog.info(mmi+"Dealing with pixels overlaps case");
+
+      // --- Determine which of West or East side is the nearest from the wlLocation.
+      //if ()
+    }
+
+    slog.info(mmi+"Debug exit 0");
+    System.exit(0);      
+    
+    return nearestPixelIJIndices;
+  }
+
+  // --- NOTE: h5CmpndTypeDataId String could be either the WL value HDF5 attribute id.
+  //           or the WL trend HDF5 attribute id.
+  //public final List<MeasurementCustom> getMCAtWLLocation(final WLLocation wlLocation,
+  //							 final String h5CmpndTypeDataId , final String h5CmpndTypeUncrtId) {
+
+  // --- NOTE: h5CmpndTypeDataId String could be either the WL value HDF5 attribute id.
+  //           or the WL trend HDF5 attribute id
+  public final List<MeasurementCustom> getMCAtGridIJIndices(final int [] nearestPixelIJIndices,
+							    final String h5CmpndTypeDataId, final String h5CmpndTypeUncrtId) {
+	  
+    final String mmi= "getMCAtGridIJIndices: ";
       
     slog.info(mmi+"start:");
 
-    // --- First check that the WLLocation coordinates are indeed inside the
-    //     S104 DCF2 tile bounding box.
-    if (!this.isHBCoordsInsideDHPTile(wlLocation)) {
-      throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
-    }
+    // // --- First check that the WLLocation coordinates are indeed inside the
+    // //     S104 DCF2 tile bounding box.The true as the 2nd arg. of the method
+    // //     is for telling it that we need to exclude the upper sides (i.e.
+    // //     North and East sides) of the tile to determine that an checkHBCoords
+    // //     is inside this tile.
+    // if (!this.isHBCoordsInsideDHPTile(wlLocation, true)) {
+    //   throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
+    // }
 
-    slog.info(mmi+"The WLLocation (point) object -> "+wlLocation.getIdentity()+" is indeed inside the DCF2 tile bounding box");
-    //slog.info(mmi+"fmfFromZCConvVal="+fmfFromZCConvVal);
-    slog.info(mmi+"h5CmpndTypeDataId="+h5CmpndTypeDataId+", h5CmpndTypeUncrtId="+h5CmpndTypeUncrtId);
+    // slog.info(mmi+"The WLLocation (point) object -> "+wlLocation.getIdentity()+" is indeed inside the DCF2 tile bounding box");
+    // //slog.info(mmi+"fmfFromZCConvVal="+fmfFromZCConvVal);
+    // slog.info(mmi+"h5CmpndTypeDataId="+h5CmpndTypeDataId+", h5CmpndTypeUncrtId="+h5CmpndTypeUncrtId);
 
     List<MeasurementCustom> mcAtWLLocation= new ArrayList<MeasurementCustom>();
     
-    // --- Use the tile b. box limits to determine inside which DF2 grid cell
-    //     (i.e. a rectangular cell made of 4 lon,lat coordinates) the wlLocation
-    //     is. First get the (I,J) indices of the South-West corner of
-    //     the DF2 grid cell in which the wlLocation is inside.
-
-    final HBCoords tileSWCornerHBCoords= this.tileBoundingBox.getSouthWestCornerHBCoordsCopy();
-
-    // final HBCoords tileNECornerHBCoords= this.tileBoundingBox.getNorthEastCornerHBCoordsCopy();
-    // // --- Longitude of the SW corner of the last DCF2 cell (at the NE limit of the tile)
-    // final double lastCellSWCLon= tileNECornerHBCoords.getLongitude() - this.gridLonSpacing;
-    // // --- Latitude of the SW corner of the last DCF2 cell (at the NE limit of the tile)
-    // final double lastCellSWCLat= tileNECornerHBCoords.getLatitude() - this.gridLatSpacing;
-    // slog.info(mmi+"lastCellSWCLon="+lastCellSWCLon);
-    // slog.info(mmi+"lastCellSWCLat="+lastCellSWCLat);
-
-    final int cellSWCIAxisIndex= (int)((wlLocation.getLongitude() - tileSWCornerHBCoords.getLongitude())/this.gridLonSpacing);
-    final int cellSWCJAxisIndex= (int)((wlLocation.getLatitude() - tileSWCornerHBCoords.getLatitude())/this.gridLatSpacing);
-
-    if (cellSWCIAxisIndex >= this.numPointsLongitudinal) {
-      throw new RuntimeException(mmi+"Invalid (too large) DCF2 grid I index -> "+cellSWCIAxisIndex+
-				 " > this.numPointsLongitudinal -> "+this.numPointsLongitudinal+" !!");
-    }
-
-    if (cellSWCJAxisIndex >= this.numPointsLatitudinal) {
-      throw new RuntimeException(mmi+"Invalid (too large) DFC2 grid J index -> "+cellSWCJAxisIndex+
-				 " > this.numPointsLatitudinal -> "+this.numPointsLatitudinal+" !!");
-    }    
-    
-    slog.info(mmi+"cellSWCIAxisIndex="+cellSWCIAxisIndex);
-    slog.info(mmi+"cellSWCJAxisIndex="+cellSWCJAxisIndex); 
-    
-    // --- Once the DF2 grid cell inside which the wlLocation is located has been found
-    //     we have to consider if the we have (or not have) pixels overlaps at the
-    //     the boundaries between adjacent tiles in order to find the nearest DCF2
-    //     pixel from the wlLocation being processed.
-
-    // --- easier case: no pixels overlaps, we just have 
-
     slog.info(mmi+"Debug exit 0");
     System.exit(0);    
 

@@ -88,8 +88,8 @@ public final class RegularBoundingBox {
     return new HBCoords( this.NorthEastCorner.getLongitude(), this.NorthEastCorner.getLatitude() );
   }  
 
-  // ---
-  public boolean isHBCoordsInside(final HBCoords checkHBCoords) {
+  // --- Assuming EPSG:4326 for checkHBCoords
+  public boolean isHBCoordsInside(final HBCoords checkHBCoords, final boolean excludeUpperSides) {
 
     final String mmi= "isHBCoordsinside: ";
 
@@ -102,10 +102,26 @@ public final class RegularBoundingBox {
     final double checkHBCoordsLon= checkHBCoords.getLongitude();
     final double checkHBCoordsLat= checkHBCoords.getLatitude();
 
+    // --- We always include the lower sides of the bounding box for the check
+    //     (i.e. West and South sides).
+    final boolean lowerSidesCheck= ( checkHBCoordsLat >= this.SouthWestCorner.getLatitude() &&
+				     checkHBCoordsLon >= this.SouthWestCorner.getLongitude() );
+
+    // --- But we allow to exclude the upper (East and North) sides of the b. box
+    //     as being part of this b. box
+    final double bbEastSideLon= this.NorthEastCorner.getLongitude();
+    final double bbNorthSideLat= this.NorthEastCorner.getLatitude();
+    
+    final boolean upperSidesCheck= excludeUpperSides ?
+      ( checkHBCoordsLat < bbNorthSideLat && checkHBCoordsLon < bbEastSideLon ) :
+	(checkHBCoordsLat <= bbNorthSideLat && checkHBCoordsLon <= bbEastSideLon) ;
+
+    return (lowerSidesCheck && upperSidesCheck);	
+	
     // --- Assuming EPSG:4326 for checkHBCoords
-    return ( checkHBCoordsLat >= this.SouthWestCorner.getLatitude()  &&
-	     checkHBCoordsLat <= this.NorthEastCorner.getLatitude()  &&
-	     checkHBCoordsLon >= this.SouthWestCorner.getLongitude() &&
-	     checkHBCoordsLon <= this.NorthEastCorner.getLongitude()    );
+    //return ( checkHBCoordsLat >= this.SouthWestCorner.getLatitude()  &&
+    //     checkHBCoordsLat <= this.NorthEastCorner.getLatitude()  &&
+    //     checkHBCoordsLon >= this.SouthWestCorner.getLongitude() &&
+    //     checkHBCoordsLon <= this.NorthEastCorner.getLongitude()    );
   }	
 }

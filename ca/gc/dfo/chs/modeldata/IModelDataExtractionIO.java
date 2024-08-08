@@ -10,6 +10,9 @@ import ca.gc.dfo.chs.dhp.sproduct.ISProductIO;
 // ---
 public interface IModelDataExtractionIO extends IWLToolsIO { //, ICurrToolsIO {
 
+  int IINDEX= 0;
+  int JINDEX= 1; 
+    
   String locationsCoordsId= "SIMPLE_LOCATIONS_COORDS";
 
   String locationsCoordsSep= ";;"; // e.g: 49.69,-169.69;;52.45,-70.34;; ...
