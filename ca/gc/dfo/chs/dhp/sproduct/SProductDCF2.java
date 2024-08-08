@@ -41,6 +41,11 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
   protected double gridLonSpacing= IHBGeom.UNDEFINED_COORD;
   protected double gridLatSpacing= IHBGeom.UNDEFINED_COORD;
 
+  protected ISProductIO.gridScanDirection gridScanDirection;
+    
+  protected int numPointsLongitudinal= 0;
+  protected int numPointsLatitudinal= 0;
+    
   // --- havePixelsOverlap:
   //
   //        A boolean used To deal with the possibility
@@ -78,15 +83,18 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
       throw new RuntimeException(mmi+npe+" this.tileBoundingBox cannot be null here !!");
     }
 
-    // --- Build the HDF5 GROUP id to use here:
-    //     TODO: move this to the SProduct super-class constructor
-    //           and use a class member String object to store it??
-    final String dataTypeH5GrpId= ISProductIO.ROOT_GRP_ID +
-	                          ISProductIO.FEATURE_IDS.get(featureDataTypeId) +
-	                          ISProductIO.GRP_SEP_ID +
-	                          ISProductIO.FEATURE_IDS.get(featureDataTypeId) + dotPlusH5GrpNumId;
+    // --- Build the HDF5 /<feature dataType> GROUP String id.:
+    final String dataTypeH5GrpId= ISProductIO.ROOT_GRP_ID + ISProductIO.FEATURE_IDS.get(featureDataTypeId);
 
     slog.info(mmi+"dataTypeH5GrpId="+dataTypeH5GrpId);
+    
+    // --- Build the HDF5 /<feature dataType>/<feature dataType>.NN GROUP String id:
+    //     TODO: move this to the SProduct super-class constructor
+    //           and use a class member String object to store it??
+    final String dataTypeNNH5GrpId= dataTypeH5GrpId + ISProductIO.GRP_SEP_ID +
+	                            ISProductIO.FEATURE_IDS.get(featureDataTypeId) + dotPlusH5GrpNumId;
+
+    slog.info(mmi+"dataTypeNNH5GrpId="+dataTypeNNH5GrpId);
     //slog.info(mmi+"Debug exit 0");
     //System.exit(0);
     
@@ -97,10 +105,10 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
     Double [] gridOriginLatTmp= new Double [] {0.0};
 
     SProductIO.setTransientAttrFromGroup( ISProductIO.DCF2_GRID_ORIG_LON_ATTR_ID,
-				          dataTypeH5GrpId, HDFql.variableTransientRegister(gridOriginLonTmp) );    
+				          dataTypeNNH5GrpId, HDFql.variableTransientRegister(gridOriginLonTmp) );    
 
     SProductIO.setTransientAttrFromGroup( ISProductIO.DCF2_GRID_ORIG_LAT_ATTR_ID,
-				          dataTypeH5GrpId, HDFql.variableTransientRegister(gridOriginLatTmp) );
+				          dataTypeNNH5GrpId, HDFql.variableTransientRegister(gridOriginLatTmp) );
 
     this.gridOriginLon= gridOriginLonTmp[0];
     this.gridOriginLat= gridOriginLatTmp[0];
@@ -116,10 +124,10 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
     Double [] gridLatSpacingTmp= new Double [] {0.0};
 
     SProductIO.setTransientAttrFromGroup( ISProductIO.DCF2_GRID_SPACING_LON_ATTR_ID,
-				          dataTypeH5GrpId, HDFql.variableTransientRegister(gridLonSpacingTmp) );    
+				          dataTypeNNH5GrpId, HDFql.variableTransientRegister(gridLonSpacingTmp) );    
     
     SProductIO.setTransientAttrFromGroup( ISProductIO.DCF2_GRID_SPACING_LAT_ATTR_ID,
-				          dataTypeH5GrpId, HDFql.variableTransientRegister(gridLatSpacingTmp) );
+				          dataTypeNNH5GrpId, HDFql.variableTransientRegister(gridLatSpacingTmp) );
 
     // --- Check if the lon-lat grid spacings are the same for now.
     final String checkGridLonSpcStr= Double.toString(gridLonSpacingTmp[0]);
@@ -138,6 +146,50 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
     
     slog.info(mmi+"this.gridLonSpacing="+this.gridLonSpacing);
     slog.info(mmi+"this.gridLatSpacing="+this.gridLatSpacing);
+
+    // --- Get the DCF2 grid mapping (I,J) direction.
+    //     Should be "longitude,latitude" for now, we
+    //     will see later if we will need to use the
+    //     other type which is "latitude,longitude"
+    String [] gridScanDirectionStrTmp= new String [] { new String() };
+
+    // --- The attrribute is in the parent HDF5 /<feature dataType> GROUP 
+    SProductIO.setTransientAttrFromGroup( ISProductIO.DCF2_GRID_AXES_MAPPING_ATTR_ID,
+					  dataTypeH5GrpId, HDFql.variableTransientRegister(gridScanDirectionStrTmp));
+
+    //slog.info(mmi+"gridScanDirectionStrTmp[0]="+gridScanDirectionStrTmp[0]);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);
+
+    if (!ISProductIO.allowedGScanDirections.containsKey(gridScanDirectionStrTmp[0])) {
+      throw new RuntimeException(mmi+"Invalid (not allowed) DF2 grid scan direction -> "+gridScanDirectionStrTmp[0]);
+    }
+
+    // --- Define this.gridScanDirection type: 
+    this.gridScanDirection= ISProductIO.allowedGScanDirections.get( gridScanDirectionStrTmp[0] );
+
+    slog.info(mmi+"Will use this.gridScanDirection="+this.gridScanDirection.name());
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0);    
+	
+    // --- Now get the nb. of DCF2 grid points for both axis.
+    //     (assuming (I,J) LON_LAT grid mapping)
+    Integer [] nbPtsLonDirTmp= new Integer [] {0};
+    Integer [] nbPtsLatDirTmp= new Integer [] {0};
+
+    SProductIO.setTransientAttrFromGroup( ISProductIO.DCF2_GRID_IAXIS_SIZE_ATTR_ID,
+					  dataTypeNNH5GrpId, HDFql.variableTransientRegister(nbPtsLonDirTmp));
+
+    SProductIO.setTransientAttrFromGroup( ISProductIO.DCF2_GRID_JAXIS_SIZE_ATTR_ID,
+					  dataTypeNNH5GrpId, HDFql.variableTransientRegister(nbPtsLatDirTmp));    
+    
+    this.numPointsLongitudinal= nbPtsLonDirTmp[0];
+    this.numPointsLatitudinal= nbPtsLatDirTmp[0];
+
+    slog.info(mmi+"this.numPointsLongitudinal="+this.numPointsLongitudinal);
+    slog.info(mmi+"his.numPointsLatitudinal="+this.numPointsLatitudinal);
+    //slog.info(mmi+"Debug exit 0");
+    //System.exit(0); 
 
     // --- Now check if we have a DCF2 pixels overlap at the
     //     boundaries between adjacent tiles. Just need to
@@ -199,18 +251,62 @@ public class SProductDCF2 extends SProduct implements ISProductIO {
   }
 
   // ---
-  public final List<MeasurementCustom> getMCAtWLLocation(final WLLocation wlLocation, final double fmfFromZCConvVal,
+  public final List<MeasurementCustom> getMCAtWLLocation(final WLLocation wlLocation,
 							 final String h5CmpndTypeDataId, final String h5CmpndTypeUncrtId) {
 
     final String mmi= "getMCAtWLLocation: ";
       
     slog.info(mmi+"start:");
 
-    slog.info(mmi+"wlLocation.getIdentity()="+wlLocation.getIdentity());
-    slog.info(mmi+"fmfFromZCConvVal="+fmfFromZCConvVal);
+    // --- First check that the WLLocation coordinates are indeed inside the
+    //     S104 DCF2 tile bounding box.
+    if (!this.isHBCoordsInsideDHPTile(wlLocation)) {
+      throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
+    }
+
+    slog.info(mmi+"The WLLocation (point) object -> "+wlLocation.getIdentity()+" is indeed inside the DCF2 tile bounding box");
+    //slog.info(mmi+"fmfFromZCConvVal="+fmfFromZCConvVal);
     slog.info(mmi+"h5CmpndTypeDataId="+h5CmpndTypeDataId+", h5CmpndTypeUncrtId="+h5CmpndTypeUncrtId);
 
     List<MeasurementCustom> mcAtWLLocation= new ArrayList<MeasurementCustom>();
+    
+    // --- Use the tile b. box limits to determine inside which DF2 grid cell
+    //     (i.e. a rectangular cell made of 4 lon,lat coordinates) the wlLocation
+    //     is. First get the (I,J) indices of the South-West corner of
+    //     the DF2 grid cell in which the wlLocation is inside.
+
+    final HBCoords tileSWCornerHBCoords= this.tileBoundingBox.getSouthWestCornerHBCoordsCopy();
+
+    // final HBCoords tileNECornerHBCoords= this.tileBoundingBox.getNorthEastCornerHBCoordsCopy();
+    // // --- Longitude of the SW corner of the last DCF2 cell (at the NE limit of the tile)
+    // final double lastCellSWCLon= tileNECornerHBCoords.getLongitude() - this.gridLonSpacing;
+    // // --- Latitude of the SW corner of the last DCF2 cell (at the NE limit of the tile)
+    // final double lastCellSWCLat= tileNECornerHBCoords.getLatitude() - this.gridLatSpacing;
+    // slog.info(mmi+"lastCellSWCLon="+lastCellSWCLon);
+    // slog.info(mmi+"lastCellSWCLat="+lastCellSWCLat);
+
+    final int cellSWCIAxisIndex= (int)((wlLocation.getLongitude() - tileSWCornerHBCoords.getLongitude())/this.gridLonSpacing);
+    final int cellSWCJAxisIndex= (int)((wlLocation.getLatitude() - tileSWCornerHBCoords.getLatitude())/this.gridLatSpacing);
+
+    if (cellSWCIAxisIndex >= this.numPointsLongitudinal) {
+      throw new RuntimeException(mmi+"Invalid (too large) DCF2 grid I index -> "+cellSWCIAxisIndex+
+				 " > this.numPointsLongitudinal -> "+this.numPointsLongitudinal+" !!");
+    }
+
+    if (cellSWCJAxisIndex >= this.numPointsLatitudinal) {
+      throw new RuntimeException(mmi+"Invalid (too large) DFC2 grid J index -> "+cellSWCJAxisIndex+
+				 " > this.numPointsLatitudinal -> "+this.numPointsLatitudinal+" !!");
+    }    
+    
+    slog.info(mmi+"cellSWCIAxisIndex="+cellSWCIAxisIndex);
+    slog.info(mmi+"cellSWCJAxisIndex="+cellSWCJAxisIndex); 
+    
+    // --- Once the DF2 grid cell inside which the wlLocation is located has been found
+    //     we have to consider if the we have (or not have) pixels overlaps at the
+    //     the boundaries between adjacent tiles in order to find the nearest DCF2
+    //     pixel from the wlLocation being processed.
+
+    // --- easier case: no pixels overlaps, we just have 
 
     slog.info(mmi+"Debug exit 0");
     System.exit(0);    

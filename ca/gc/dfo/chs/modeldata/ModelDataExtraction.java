@@ -223,20 +223,33 @@ public class ModelDataExtraction implements IModelDataExtractionIO {
     final SProductDCF2 S104DCF2InputData=
       new SProductDCF2(S104DCF2InputDataFilePath, ISProductIO.FILE_READ_ONLY_MODE, ISProductIO.FeatId.S104, ISProductIO.FCST_ID);
   
-    // --- First check that the WLLocation coordinates are indeed inside the
-    //     S104 DCF2 tile bounding box.
-    if (!S104DCF2InputData.isHBCoordsInsideDHPTile(wlLocation)) {
-      throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
-    }
-
-    slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box");
+    // // --- First check that the WLLocation coordinates are indeed inside the
+    // //     S104 DCF2 tile bounding box.
+    // if (!S104DCF2InputData.isHBCoordsInsideDHPTile(wlLocation)) {
+    //   throw new RuntimeException(mmi+"The WLLocation (point) object is outside the S104 DCF2 tile bounding box !!"); 
+    // }
+    //slog.info(mmi+"The WLLocation (point) object is inside the S104 DCF2 tile bounding box");
 
     // --- Now get the forecast WL data of tje S104 DCF2 pixel that is the nearest to the WLLocation (point) object
     //     (WLLocation which is usually the location of f tide gauge OR a coordinate point location where we want
     //     to extract the model forecasted WLs. Note here that we pass null as the 3rd arg. to the getMCAtWLLocation
     //     method because we do not need to get the uncertainties values in the MeasurementCustom objects.
-    final List<MeasurementCustom> mcOfS104DCF2Data= S104DCF2InputData
-      .getMCAtWLLocation(wlLocation, fmfFromZCConvVal, ISProductIO.S104_CMPD_TYPE_HGHT_ID, null);
+    List<MeasurementCustom> mcOfS104DCF2Data= S104DCF2InputData.getMCAtWLLocation(wlLocation, ISProductIO.S104_CMPD_TYPE_HGHT_ID, null);
+
+    // --- Now do the conversion from the ZC to the global datum of all
+    //     the FMF WL timestamped data at the wlLocation
+    for (int mcIter=0; mcIter < mcOfS104DCF2Data.size(); mcIter++) {
+
+      MeasurementCustom mcIterObj= mcOfS104DCF2Data.get(mcIter);
+
+      slog.info(mmi+"before conv. from ZC="+mcIterObj.getValue());
+      
+      mcIterObj.setValue(mcIterObj.getValue() + fmfFromZCConvVal);
+
+      slog.info(mmi+"after conv. from ZC="+mcIterObj.getValue());
+      slog.info(mmi+"Debug exit 0");
+      System.exit(0);
+    }
 
     // --- Close the file from which the S104 DCF2 data was read.
     S104DCF2InputData.closeFileInUse();

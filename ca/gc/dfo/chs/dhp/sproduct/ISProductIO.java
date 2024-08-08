@@ -48,15 +48,13 @@ public interface ISProductIO {
   }
 
   // ---
-  Map<S104TrendFlag,Byte> S104_TREND_FLAGS=
-    Collections.unmodifiableMap(			
+  Map<S104TrendFlag,Byte>
+    S104_TREND_FLAGS= Collections.unmodifiableMap(
        new HashMap<S104TrendFlag,Byte>() {{
-	   
 	 put(S104TrendFlag.Unknown,    (byte)0);
 	 put(S104TrendFlag.Decreasing, (byte)1);
 	 put(S104TrendFlag.Increasing, (byte)2);
 	 put(S104TrendFlag.Steady,     (byte)3);
-	 
        }}       
     );
 
@@ -153,5 +151,24 @@ public interface ISProductIO {
   String DCF2_GRID_ORIG_LAT_ATTR_ID= "gridOriginLatitude";
 
   String DCF2_GRID_SPACING_LON_ATTR_ID= "gridSpacingLongitudinal";
-  String DCF2_GRID_SPACING_LAT_ATTR_ID= "gridSpacingLatitudinal";   
+  String DCF2_GRID_SPACING_LAT_ATTR_ID= "gridSpacingLatitudinal";
+
+  String DCF2_GRID_AXES_MAPPING_ATTR_ID= "sequencingRule.scanDirection";
+
+  enum gridScanDirection {
+    LON_LAT,
+    LAT_LON
+  }
+
+  // ---
+  Map<String, gridScanDirection>
+    allowedGScanDirections= Collections.unmodifiableMap(			
+      new HashMap<String, gridScanDirection>() {{
+	put( "longitude,latitude", gridScanDirection.LON_LAT);
+	 //put("latitude,longitude", gridScanDirections.LAT_LON);
+      }}       
+    );     
+    
+  String DCF2_GRID_IAXIS_SIZE_ATTR_ID= "numPointsLongitudinal";
+  String DCF2_GRID_JAXIS_SIZE_ATTR_ID= "numPointsLatitudinal";
 }
